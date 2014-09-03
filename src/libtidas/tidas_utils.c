@@ -40,7 +40,7 @@ void tidas_error_default ( tidas_error_code errcode, char const * file, int line
 		return;
 		break;
 	}
-	fprintf ( stderr, "TIDAS ERROR %d:  %s in file %s, line %d -- %s\n", errcode, file, line, errorstr, msg );
+	fprintf ( stderr, "TIDAS ERROR %d:  %s in file %s, line %d -- %s\n", (int)errcode, errorstr, file, line, msg );
 	return;
 }
 
@@ -60,42 +60,91 @@ void tidas_error ( tidas_error_code errcode, char const * file, int line, char c
 }
 
 
-char ** tidas_string_list ( size_t n, size_t len ) {
-	size_t i, j;
-	char ** array = NULL;
-	if ( n == 0 ) {
-		TIDAS_ERROR_VAL( TIDAS_ERR_ALLOC, "cannot allocate string list of size zero", NULL );
+tidas_vector * tidas_vector_alloc ( size_t elem_size ) {
+	tidas_vector * vec = (tidas_vector *) malloc ( sizeof ( tidas_vector ) );
+	if ( ! vec ) {
+		TIDAS_ERROR_VAL( TIDAS_ERR_ALLOC, "cannot allocate tidas vector", NULL );
 	}
-	array = (char **) calloc (n, sizeof(char *) );
-	if ( ! array ) {
-		TIDAS_ERROR_VAL( TIDAS_ERR_ALLOC, "cannot allocate string list", NULL );
-	}
-	for (i = 0; i < n; i++) {
-		array[i] = NULL;
-		array[i] = (char *) calloc ( len, sizeof(char) );
-		if ( ! array[i] ) {
-			for ( j = 0; j < i; ++j ) {
-				free( array[j] );
-			}
-			free( array );
-			TIDAS_ERROR_VAL( TIDAS_ERR_ALLOC, "cannot allocate string list element", NULL );
-		}
-	}
-	return array;
+	vec->n = 0;
+	vec->elem_size = elem_size;
+	vec->data = NULL;
+	return vec;
 }
 
 
-int tidas_string_list_free ( char ** array, size_t n ) {
+tidas_vector * tidas_vector_copy ( tidas_vector const * orig ) {
 	size_t i;
-	if ( ( array == NULL ) || ( n == 0 ) ) {
-		return 0;
-	}
-	for ( i = 0; i < n; ++i ) {
-		free( array[i] );
-	}
-	free( array );
-	return 0;
+	void * dst;
+
+	TIDAS_PTR_CHECK(orig);
+
+	tidas_vector * vec = tidas_vector_alloc ( orig->elem_size );
+	tidas_vector_resize ( vec, orig->n );
+	dst = memcpy ( vec->data, orig->data, vec->elem_size * vec->n );
+
+	return vec;
 }
 
+
+void tidas_vector_free ( tidas_vector * vec ) {
+	if ( vec ) {
+		if ( vec->n > 0 ) {
+			if ( vec->data ) {
+				free ( vec->data );
+			} else {
+				TIDAS_ERROR_VOID( TIDAS_ERR_FREE, "on free, tidas vector corrupted (data == null, but n > 0)" );
+			}
+		} else {
+			if ( vec->data ) {
+				TIDAS_ERROR_VOID( TIDAS_ERR_FREE, "on free, tidas vector size == 0, but data not null" );
+			}
+		}
+		free ( vec );
+	}
+	return;
+}
+
+
+void tidas_vector_resize ( tidas_vector * vec, size_t newsize ) {
+
+	TIDAS_PTR_CHECK(vec);
+
+	if ( newsize > 0 ) {
+
+		vec->data = (void *) realloc ( vec->data, newsize * vec->elem_size );
+		if ( ! vec->data ) {
+			TIDAS_ERROR_VOID( TIDAS_ERR_ALLOC, "cannot resize tidas vector" );
+		}
+
+	} else {
+		/* just clear memory */
+
+		if ( vec->n > 0 ) {
+			if ( vec->data ) {
+				free ( vec->data );
+			} else {
+				TIDAS_ERROR_VOID( TIDAS_ERR_FREE, "on resize, tidas vector corrupted (data == null, but n > 0)" );
+			}
+		} else {
+			if ( vec->data ) {
+				TIDAS_ERROR_VOID( TIDAS_ERR_FREE, "on resize, tidas vector size == 0, but data not null" );
+			}
+		}
+		vec->n = 0;
+		vec->data = NULL;
+	}
+
+	return;
+}
+
+
+void * tidas_vector_at ( tidas_vector * vec, size_t elem ) {
+	size_t cursor;
+
+	TIDAS_PTR_CHECK(vec);
+
+	cursor = elem * vec->elem_size;
+	return (void*) &( ((char*)vec->data)[ cursor ] );
+}
 
 

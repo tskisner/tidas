@@ -27,7 +27,8 @@ EXTRA_DIST = gen_pkgconfig.sh
 lib_LTLIBRARIES = libtidas.la
 
 libtidas_la_SOURCES = \
-tidas.c
+tidas.c \
+tidas_utils.c
 
 libtidas_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@
 

@@ -14,7 +14,9 @@
 
 typedef enum {
 	TIDAS_ERR_NONE,
-	TIDAS_ERR_ALLOC
+	TIDAS_ERR_ALLOC,
+	TIDAS_ERR_FREE,
+	TIDAS_ERR_PTR
 } tidas_error_code;
 
 typedef void tidas_error_handler_t ( tidas_error_code errcode, char const * file, int line, char const * msg );
@@ -43,12 +45,31 @@ tidas_error_handler_t * tidas_set_error_handler ( tidas_error_handler_t * newhan
 		return; \
 	} while (0)
 
+#define TIDAS_PTR_CHECK(handle) \
+	if ( ! handle ) { \
+		tidas_error (TIDAS_ERR_PTR, __FILE__, __LINE__, "pointer is NULL"); \
+	}
 
-/* list of strings */
 
-char ** tidas_string_list ( size_t n, size_t len );
+/* a "vector" of memory blocks.  too bad we can't use libstdc+++ ... */
 
-int tidas_string_list_free ( char ** array, size_t n );
+typedef struct {
+	size_t n;
+	size_t elem_size;
+	void * data;
+} tidas_vector;
+
+tidas_vector * tidas_vector_alloc ( size_t elem_size );
+
+tidas_vector * tidas_vector_copy ( tidas_vector const * orig );
+
+void tidas_vector_free ( tidas_vector * vec );
+
+void tidas_vector_resize ( tidas_vector * vec, size_t newsize );
+
+void * tidas_vector_at ( tidas_vector * vec, size_t elem );
+
+
 
 
 #endif

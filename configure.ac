@@ -6,7 +6,7 @@ dnl | Initialize package info
 dnl +------------------------
 AC_INIT([TIDAS], [1.0-alpha], [work@theodorekisner.com], [tidas], [https://theodorekisner.com/software/tidas/])
 AC_CONFIG_SRCDIR([Makefile.am])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 dnl +-------------------------
@@ -43,12 +43,9 @@ dnl +-------------------------
 dnl | C++ support
 dnl +-------------------------
 tidas_cxx=yes
-AC_ARG_ENABLE(c++, [AC_HELP_STRING([--disable-c++], [Disable C++ bindings])], [tidas_cxx=$enable_c++])
+AC_ARG_ENABLE(c++, [AC_HELP_STRING([--disable-c++], [Disable C++ bindings])], [tidas_cxx=$enable_c++], [tidas_cxx=yes])
 if test $tidas_cxx = yes; then
   AC_PROG_CXX
-  if test x"$CXX" = "x"; then
-    tidas_cxx=no
-  fi
 fi
 AM_CONDITIONAL([HAVE_AM_CXX], [test $tidas_cxx = yes])
 dnl +-------------------------
@@ -56,39 +53,48 @@ dnl | Fortran support
 dnl +-------------------------
 tidas_fortran=yes
 FCMODEXT="mod"
-AC_ARG_ENABLE(fortran, [AC_HELP_STRING([--disable-fortran], [Disable Fortran 2003 bindings])], [tidas_fortran=$enable_fortran])
+AC_ARG_ENABLE(fortran, [AC_HELP_STRING([--disable-fortran], [Disable Fortran 2003 bindings])], [tidas_fortran=$enable_fortran], [tidas_fortran=yes])
 if test $tidas_fortran = yes; then
   AC_PROG_FC([], [2000])
   AC_FC_LIBRARY_LDFLAGS
   AC_FC_WRAPPERS
   ACX_FC_PP_SRCEXT([f03])
   ACX_FC_PP_DEFINE
-  if test x"$FC" = x; then
-    tidas_fortran=no
-  else
-    AX_F90_MODULE_EXTENSION
-    FCMODEXT="$ax_cv_f90_modext"
-  fi
+  AX_F90_MODULE_EXTENSION
+  FCMODEXT="$ax_cv_f90_modext"
 fi
-AM_CONDITIONAL([HAVE_AM_FC], [test $tidas_fortran != yes])
+AM_CONDITIONAL([HAVE_AM_FC], [test $tidas_fortran = yes])
 AC_SUBST(FCMODEXT)
 dnl +------------------------------------------------
 dnl | Check for MPI
 dnl +------------------------------------------------
 AC_LANG([C])
-tidas_mpi=no
+tidas_mpi=yes
 tidas_mpi_cxx=no
 tidas_mpi_fortran=no
-ACX_MPI([tidas_mpi=yes], [])
-if test $tidas_cxx = yes; then
-  AC_LANG_PUSH([C++])
-  ACX_MPI([tidas_mpi_cxx=yes], [])
-  AC_LANG_POP([C++])
-fi
-if test $tidas_fortran = yes; then
-  AC_LANG_PUSH([Fortran])
-  ACX_MPI([tidas_mpi_fortran=yes], [])
-  AC_LANG_POP([Fortran])
+AC_ARG_ENABLE([mpi], [AC_HELP_STRING([--disable-mpi], [Disable all checks for MPI])], [tidas_mpi=$enable_mpi], [tidas_mpi=yes])
+if test $tidas_mpi = yes; then
+  ACX_MPI
+  if test x"$MPICC" = x; then
+    tidas_mpi=no
+  else
+    if test $tidas_cxx = yes; then
+      AC_LANG_PUSH([C++])
+      ACX_MPI
+      AC_LANG_POP([C++])
+      if test x"$MPICXX" != x; then
+        tidas_mpi_cxx=yes
+      fi
+    fi
+    if test $tidas_fortran = yes; then
+      AC_LANG_PUSH([Fortran])
+      ACX_MPI
+      AC_LANG_POP([Fortran])
+      if test x"$MPIFC" != x; then
+        tidas_mpi_fortran=yes
+      fi
+    fi
+  fi
 fi
 AM_CONDITIONAL([HAVE_AM_MPI], [test tidas_mpi = yes])
 AM_CONDITIONAL([HAVE_AM_MPI_CXX], [test tidas_mpi_cxx = yes])
@@ -106,6 +112,15 @@ if test x"$enable_all_static" = x"yes"; then
   tidas_static=yes
 fi
 AM_CONDITIONAL([USE_AM_ALLSTATIC], [test "$tidas_static" = "yes"])
+dnl +-------------------------
+dnl | Should we enable expensive debugging checks?
+dnl +-------------------------
+tidas_debug=no
+AC_ARG_ENABLE([debug], [AC_HELP_STRING([--enable-debug], [Enable expensive debugging checks])])
+if test x"$enable_debug" = x"yes"; then
+  tidas_debug=yes
+fi
+AM_CONDITIONAL([ENABLE_AM_DEBUG], [test $tidas_debug = yes])
 dnl +------------------------------------------------
 dnl | Check for Python
 dnl +------------------------------------------------
@@ -115,7 +130,11 @@ if test $tidas_python = yes; then
   AM_PATH_PYTHON
   ACX_PYTHON_DEV
   ACX_NUMPY
+  if test x"$NUMPY_CPPFLAGS" = x; then
+    tidas_python=no
+  fi
 fi
+AM_CONDITIONAL([HAVE_AM_PYTHON], [test $tidas_python = yes])
 dnl +------------------------------------------------
 dnl | Check for HDF5
 dnl +------------------------------------------------
@@ -149,31 +168,31 @@ AC_MSG_NOTICE([=========== Build Configuration ===========])
 AC_MSG_NOTICE([                                           ])
 AC_MSG_NOTICE([  Serial C Compiler         : $CC])
 AC_MSG_NOTICE([  C Compile Flags           : $CFLAGS])
-if test tidas_cxx = yes; then
+if test $tidas_cxx = yes; then
   AC_MSG_NOTICE([  Serial C++ Compiler       : $CXX])
   AC_MSG_NOTICE([  C++ Compile Flags         : $CXXFLAGS])
 else
   AC_MSG_NOTICE([  Serial C++ Compiler       : Disabled])
   AC_MSG_NOTICE([  C++ Compile Flags         : Disabled])
 fi
-if test tidas_fortran = yes; then
+if test $tidas_fortran = yes; then
   AC_MSG_NOTICE([  Serial F03 Compiler       : $FC])
   AC_MSG_NOTICE([  F03 Compile Flags         : $FCFLAGS])
 else
   AC_MSG_NOTICE([  Serial F03 Compiler       : Disabled])
   AC_MSG_NOTICE([  F03 Compile Flags         : Disabled])
 fi
-if test tidas_mpi = yes; then
+if test $tidas_mpi = yes; then
   AC_MSG_NOTICE([  MPI C Compiler            : $MPICC])
 else
   AC_MSG_NOTICE([  MPI C Compiler            : Disabled])
 fi
-if test tidas_mpi_cxx = yes; then
+if test $tidas_mpi_cxx = yes; then
   AC_MSG_NOTICE([  MPI C++ Compiler          : $MPICXX])
 else
   AC_MSG_NOTICE([  MPI C++ Compiler          : Disabled])
 fi
-if test tidas_mpi_fortran = yes; then
+if test $tidas_mpi_fortran = yes; then
   AC_MSG_NOTICE([  MPI F03 Compiler          : $MPIFC])
 else
   AC_MSG_NOTICE([  MPI F03 Compiler          : Disabled])

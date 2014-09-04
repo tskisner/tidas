@@ -2,6 +2,7 @@
 
 Makefile
 Makefile.in
+/test-driver
 
 # http://www.gnu.org/software/autoconf
 

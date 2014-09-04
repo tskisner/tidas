@@ -27,7 +27,7 @@ void tidas_intrvl_free ( tidas_intrvl * intrvl );
 
 typedef struct {
 	size_t n;
-	tidas_intrvl * data;
+	void * data;
 } tidas_intervals;
 
 

@@ -12,15 +12,13 @@
 
 typedef struct {
 	char path[ TIDAS_PATH_LEN ];
-	tidas_block * blocks;
+	tidas_vector * blocks;
 } tidas_volume;
 
 
 tidas_volume * tidas_volume_create ( char const * path );
 
-
 tidas_volume * tidas_volume_open ( char const * path );
-
 
 void tidas_volume_close ( tidas_volume * vol );
 

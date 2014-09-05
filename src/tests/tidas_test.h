@@ -13,5 +13,7 @@
 
 void tidas_test_utils ( );
 
+void tidas_test_intervals ( );
+
 
 #endif

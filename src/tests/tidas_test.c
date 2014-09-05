@@ -14,6 +14,7 @@ int main ( int argc, char *argv[] ) {
 
 	tidas_test_utils();
 
+	tidas_test_intervals();
 
 	fprintf ( stderr, "\n" );
 

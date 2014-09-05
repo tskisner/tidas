@@ -66,9 +66,13 @@ fi
 AM_CONDITIONAL([HAVE_AM_FC], [test $tidas_fortran = yes])
 AC_SUBST(FCMODEXT)
 dnl +------------------------------------------------
-dnl | Check for MPI
+dnl | Check for PCRE (required)
 dnl +------------------------------------------------
 AC_LANG([C])
+AX_PATH_LIB_PCRE([AC_DEFINE(HAVE_PCRE,1,[Define if you have the pcre library.])], [AC_MSG_ERROR([Cannot find pcre library!])])
+dnl +------------------------------------------------
+dnl | Check for MPI
+dnl +------------------------------------------------
 tidas_mpi=yes
 tidas_mpi_cxx=no
 tidas_mpi_fortran=no
@@ -136,11 +140,47 @@ if test $tidas_python = yes; then
 fi
 AM_CONDITIONAL([HAVE_AM_PYTHON], [test $tidas_python = yes])
 dnl +------------------------------------------------
+dnl | Check for check (unit test framework)
+dnl +------------------------------------------------
+tidas_checkunit=yes
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.4])
+if test x"$CHECK_LIBS" = x; then
+  tidas_checkunit=no
+  AC_MSG_WARN([The CHECK unit test framework was not found- disabling all tests!])
+fi
+AM_CONDITIONAL([HAVE_AM_CHECKUNIT], [test $tidas_checkunit = yes])
+dnl +------------------------------------------------
 dnl | Check for HDF5
 dnl +------------------------------------------------
-AX_LIB_HDF5([serial])
-if test x"$HDF5_CC" = x; then
-  AC_MSG_ERROR([Could not find serial HDF5 library- is h5cc in your PATH?])
+tidas_hdf5=yes
+AC_ARG_ENABLE(hdf5, [AC_HELP_STRING([--disable-hdf5], [Disable HDF5 backend])], [tidas_hdf5=$enable_hdf5])
+if test $tidas_hdf5 = yes; then
+  AX_LIB_HDF5([serial])
+  if test x"$HDF5_CC" = x; then
+    tidas_hdf5=no
+    AC_MSG_WARN([Could not find serial HDF5 library- disabling backend])
+  fi
+fi
+AM_CONDITIONAL([HAVE_AM_HDF5], [test $tidas_hdf5 = yes])
+dnl +------------------------------------------------
+dnl | Check for GetData
+dnl +------------------------------------------------
+tidas_getdata=yes
+AC_ARG_ENABLE(getdata, [AC_HELP_STRING([--disable-getdata], [Disable GetData backend])], [tidas_getdata=$enable_getdata])
+if test $tidas_getdata = yes; then
+  ACX_GETDATA([], [tidas_getdata=no])
+  if test $tidas_getdata = no; then
+    AC_MSG_WARN([Could not find GetData library- disabling backend])
+  fi
+fi
+AM_CONDITIONAL([HAVE_AM_GETDATA], [test $tidas_getdata = yes])
+dnl +------------------------------------------------
+dnl | Do we have at least one backend?
+dnl +------------------------------------------------
+if test $tidas_hdf5 = no; then
+  if test $tidas_getdata = no; then
+    AC_MSG_ERROR([All possible backends have been disabled!])
+  fi
 fi
 dnl +------------------------------------------------
 dnl | Set outputs
@@ -204,6 +244,27 @@ if test $tidas_python = yes; then
 else
   AC_MSG_NOTICE([  Python                    : Disabled])
 fi
-AC_MSG_NOTICE([  HDF5 Compile              : $HDF5_CPPFLAGS])
-AC_MSG_NOTICE([  HDF5 Link                 : $HDF5_LDFLAGS $HDF5_LIBS])
+AC_MSG_NOTICE([  PCRE Compile              : $PCRE_CFLAGS])
+AC_MSG_NOTICE([  PCRE Link                 : $PCRE_LIBS])
+if test $tidas_checkunit = yes; then
+  AC_MSG_NOTICE([  Check Compile             : $CHECK_CFLAGS])
+  AC_MSG_NOTICE([  Check Link                : $CHECK_LIBS])
+else
+  AC_MSG_NOTICE([  Check Compile             : Disabled])
+  AC_MSG_NOTICE([  Check Link                : Disabled])
+fi
+if test $tidas_hdf5 = yes; then
+  AC_MSG_NOTICE([  HDF5 Compile              : $HDF5_CPPFLAGS])
+  AC_MSG_NOTICE([  HDF5 Link                 : $HDF5_LDFLAGS $HDF5_LIBS])
+else
+  AC_MSG_NOTICE([  HDF5 Compile              : Disabled])
+  AC_MSG_NOTICE([  HDF5 Link                 : Disabled])
+fi
+if test $tidas_hdf5 = yes; then
+  AC_MSG_NOTICE([  GetData Compile           : $GETDATA_CPPFLAGS])
+  AC_MSG_NOTICE([  GetData Link              : $GETDATA])
+else
+  AC_MSG_NOTICE([  GetData Compile           : Disabled])
+  AC_MSG_NOTICE([  GetData Link              : Disabled])
+fi
 AC_MSG_NOTICE([                                           ])

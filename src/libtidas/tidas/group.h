@@ -6,17 +6,25 @@
 */
 
 
-#ifndef TIDAS_BLOCK_H
-#define TIDAS_BLOCK_H
+#ifndef TIDAS_GROUP_H
+#define TIDAS_GROUP_H
 
 
 typedef struct {
 	char name[ TIDAS_NAME_LEN ];
-	tidas_group * groupss;
-} tidas_block;
+	tidas_backend backend;
+	tidas_schema * schema;
+	void * backdat;
+} tidas_group;
+
+void tidas_group_init ( void * addr );
+
+void tidas_group_clear ( void * addr );
+
+void tidas_group_copy ( void * dest, void const * src );
 
 
-tidas_block * tidas_block_create ( char const * path );
+tidas_group * tidas_group_alloc ( char const * name, tidas_backend backend );
 
 
 tidas_volume * tidas_volume_open ( char const * path );

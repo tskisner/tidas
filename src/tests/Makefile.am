@@ -26,7 +26,12 @@ TESTS = tidas_test
 
 tidas_test_SOURCES = \
 tidas_test.c \
-tidas_test_utils.c
+tidas_test_utils.c \
+tidas_test_intervals.c
 
 tidas_test_LDADD = $(AM_LIBS)
+
+
+clean-local :
+	@rm -f *.out
 

@@ -7,16 +7,11 @@
 #
 #   This macro looks for a version of the getdata (http://getdata.sourceforge.net)
 #   library.  By default, it checks user options and then uses pkg-config.
-#   The GETDATA_CPPFLAGS, GETDATA, and GETDATAPLUS output variables 
-#   hold the compile, C and C++ link flags.
+#   The GETDATA_CPPFLAGS, and GETDATA output variables hold the compile and link flags.
 #
 #   To link an application with Getdata, you should link with:
 #
 #   	$GETDATA (serial, C)
-#
-#          *OR*
-#
-#     $GETDATAPLUS (serial, C++)
 #
 #   The user may use:
 # 
@@ -33,11 +28,11 @@
 #
 # LAST MODIFICATION
 #
-#   2013-03-09
+#   2014-09-04
 #
 # COPYING
 #
-#   Copyright (c) 2013 Theodore Kisner <tskisner@lbl.gov>
+#   Copyright (c) 2014 Theodore Kisner <tskisner@lbl.gov>
 #
 #   All rights reserved.
 #
@@ -67,24 +62,22 @@ AC_DEFUN([ACX_GETDATA], [
 AC_PREREQ(2.50)
 
 acx_gd_ok=no
-acx_gd_plus=no
 
 GETDATA_CPPFLAGS=""
 GETDATA=""
-GETDATAPLUS=""
 
 AC_ARG_WITH(getdata, [AC_HELP_STRING([--with-getdata=<PATH>], [use the getdata installed in <PATH>.])])
 
 if test x"$with_getdata" != x; then
    GETDATA_CPPFLAGS="-I$with_getdata/include"
    GETDATA="-L$with_getdata/lib -lgetdata -lbz2 -lz"
-   GETDATAPLUS="-L$with_getdata/lib -lgetdata++ -lgetdata -lbz2 -lz"
 else
    # use pkg-config
-   GETDATA_CPPFLAGS=`pkg-config --cflags getdata`
-   acx_getdata_ldir=`pkg-config --libs-only-L getdata`
-   GETDATA="$acx_getdata_ldir -lgetdata -lbz2 -lz"
-   GETDATAPLUS="$acx_getdata_ldir -lgetdata++ -lgetdata -lbz2 -lz"
+   PKG_CHECK_EXISTS([getdata],[
+      PKG_CHECK_MODULES([GETDATAPKG], [getdata])
+      GETDATA_CPPFLAGS="$GETDATAPKG_CFLAGS"
+      GETDATA="$GETDATAPKG_LIBS -lbz2 -lz"
+   ], [])
 fi
 
 # Check for headers and libraries                                                                                    
@@ -106,24 +99,6 @@ AC_MSG_RESULT($acx_gd_ok)
 
 AC_LANG_POP([C])
 
-AC_LANG_PUSH([C++])
-
-LIBS="$GETDATAPLUS $acx_gd_save_LIBS"
-
-AC_CHECK_HEADERS([getdata/dirfile.h])
-
-AC_MSG_CHECKING([for GetData::Dirfile])
-
-AC_LINK_IFELSE([AC_LANG_PROGRAM([
-   [#include <getdata/dirfile.h>]
-   ],[
-   GetData::Dirfile df;
-])],[acx_gd_plus=yes;AC_DEFINE(HAVE_GETDATA_PLUS,1,[Define if you have the C++ getdata library.])])
-
-AC_MSG_RESULT($acx_gd_plus)
-
-AC_LANG_POP([C++])
-
 CPP="$acx_gd_save_CPP"
 LIBS="$acx_gd_save_LIBS"
 CPPFLAGS="$acx_gd_save_CPPFLAGS"
@@ -135,13 +110,8 @@ if test $acx_gd_ok = no; then
    GETDATA=""
 fi
 
-if test $acx_gd_plus = no; then
-   GETDATAPLUS=""
-fi
-
 AC_SUBST(GETDATA_CPPFLAGS)
 AC_SUBST(GETDATA)
-AC_SUBST(GETDATAPLUS)
 
 # Execute ACTION-IF-FOUND/ACTION-IF-NOT-FOUND:
 

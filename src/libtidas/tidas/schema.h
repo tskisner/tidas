@@ -17,27 +17,32 @@ typedef struct {
 	char units[ TIDAS_NAME_LEN ];
 } tidas_field;
 
-tidas_field * tidas_field_alloc ( tidas_type type, char const * name, char const * units );
+void tidas_field_init ( void * addr );
 
-tidas_field * tidas_field_copy ( tidas_field const * orig );
+void tidas_field_clear ( void * addr );
 
-void tidas_field_free ( tidas_field * field );
+void tidas_field_copy ( void * dest, void const * src );
+
+int tidas_field_comp ( void const * addr1, void const * addr2 );
 
 
 /* a schema used for a group */
 
 typedef struct {
-	size_t n;
-	tidas_field * fields;
+	tidas_vector * data;
 } tidas_schema;
 
 tidas_schema * tidas_schema_alloc ();
 
-tidas_schema * tidas_schema_copy ( tidas_field const * orig );
+void tidas_schema_clear ( tidas_schema * schema );
+
+tidas_schema * tidas_schema_copy ( tidas_schema const * orig );
 
 void tidas_schema_free ( tidas_schema * schema );
 
-void tidas_schema_append ( tidas_field const * field );
+void tidas_schema_append ( tidas_schema * schema, tidas_field const * field );
+
+tidas_field const * tidas_schema_lookup ( tidas_schema const * schema, char const * name );
 
 
 #endif

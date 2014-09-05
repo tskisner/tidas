@@ -9,7 +9,7 @@
 
 
 #define TEST_LEN 100
-#define VEC_N 10
+#define VEC_N 3
 
 typedef struct {
 	double * dval;
@@ -17,7 +17,13 @@ typedef struct {
 	float fval;
 	int32_t i32val;
 	char sval[ TEST_LEN ];
+	size_t indx;
 } test_elem;
+
+typedef struct {
+	float factor;
+} test_elem_assign_props;
+
 
 void test_elem_init ( void * addr ) {
 	size_t i;
@@ -69,6 +75,72 @@ void test_elem_copy ( void * dest, void const * src ) {
 	return;
 }
 
+int test_elem_comp ( void const * addr1, void const * addr2 ) {
+	size_t j;
+	int ret = 0;
+	test_elem const * cursor1;
+	test_elem const * cursor2;
+
+	cursor1 = (test_elem const *)addr1;
+	cursor2 = (test_elem const *)addr2;
+
+	if ( cursor1->i16val != cursor2->i16val ) {
+		ret = -1;
+	}
+	if ( cursor1->i32val != cursor2->i32val ) {
+		ret = -1;
+	}
+	if ( cursor1->fval != cursor2->fval ) {
+		ret = -1;
+	}
+	for ( j = 0; j < VEC_N; ++j ) {
+		if ( cursor1->dval[j] != cursor2->dval[j] ) {
+			ret = -1;
+		}
+	}
+	return ret;
+}
+
+void test_elem_assign ( void * addr, size_t i, void * props ) {
+	size_t j;
+	float factor;
+	int ret;
+	test_elem * cursor;
+	test_elem_assign_props * wrapper = (test_elem_assign_props *)props;
+	
+	factor = wrapper->factor;
+	cursor = (test_elem *)addr;
+
+	for ( j = 0; j < VEC_N; ++j ) {
+		cursor->dval[j] = (double)i * (double)factor;
+	}
+	cursor->i16val = (int16_t)i;
+	cursor->fval = (float)i;
+	cursor->i32val = (int32_t)i;
+	cursor->indx = i;
+	ret = snprintf ( cursor->sval, TEST_LEN, "%d", (int)i );
+
+	return;
+}
+
+void test_elem_print ( void const * addr, size_t i, void * props ) {
+	size_t j;
+	test_elem const * cursor;
+
+	cursor = (test_elem const *)addr;
+
+	fprintf ( stderr, "  test elem %d:\n", (int)i );
+	fprintf ( stderr, "   " );
+	for ( j = 0; j < VEC_N; ++j ) {
+		fprintf ( stderr, " %f", cursor->dval[j] );
+	}
+	fprintf ( stderr, "\n" );
+	fprintf ( stderr, "    (%d) %d %f %d %s\n", (int)cursor->indx, (int)cursor->i16val, cursor->fval, (int)cursor->i32val, cursor->sval );
+
+	return;
+}
+
+
 
 void tidas_test_utils ( ) {
 	size_t i, j;
@@ -76,62 +148,46 @@ void tidas_test_utils ( ) {
 	test_elem * cursor;
 	test_elem const * ccursor;
 	char compare[ TEST_LEN ];
+	tidas_vector_ops ops;
+	tidas_vector * vec;
+	test_elem_assign_props props;
+	test_elem const * cur1;
+	test_elem const * cur2;
 
 	/* test vector ops */
 
 	fprintf ( stderr, "Testing tidas_vector operations\n" );
 
-	tidas_vector_ops ops;
 	ops.size = sizeof( test_elem );
 	ops.init = test_elem_init;
 	ops.clear = test_elem_clear;
 	ops.copy = test_elem_copy;
+	ops.comp = test_elem_comp;
 
-	tidas_vector * vec = tidas_vector_alloc ( ops );
+	vec = tidas_vector_alloc ( ops );
 
-	tidas_vector_resize ( vec, 10 );
+	tidas_vector_resize ( vec, 3 );
 
-	for ( i = 0; i < vec->n; ++i ) {
-		cursor = (test_elem *) tidas_vector_set ( vec, i );
-		for ( j = 0; j < VEC_N; ++j ) {
-			cursor->dval[j] = (double)i * (double)j;
-		}
-		cursor->i16val = (int16_t)i;
-		cursor->fval = (float)i;
-		cursor->i32val = (int32_t)i;
-		ret = snprintf ( cursor->sval, TEST_LEN, "%d", (int)i );
-	}
+	props.factor = 1.5;
+
+	tidas_vector_process ( vec, test_elem_assign, (void*)(&props) );
+
+	tidas_vector_view ( vec, test_elem_print, NULL );
 
 	tidas_vector * copy = tidas_vector_copy ( vec );
 
-	tidas_vector_free ( vec );
-
 	for ( i = 0; i < vec->n; ++i ) {
-		ccursor = (test_elem const *) tidas_vector_get ( copy, i );
-		for ( j = 0; j < VEC_N; ++j ) {
-			if ( ccursor->dval[j] != (double)i * (double)j ) {
-				fprintf( stderr, "  failed consistency on vector elem %d, double value %d (%f != %f)\n", (int)i, (int)j, ccursor->dval[j], (double)i*(double)j );
-				exit(0);
-			}
-		}
-		if ( ccursor->i16val != (int16_t)i ) {
-			fprintf( stderr, "  failed consistency on vector elem %d, int16 value (%d != %d)\n", (int)i, (int)ccursor->i16val, (int)i );
-			exit(0);
-		}
-		if ( ccursor->fval != (float)i ) {
-			fprintf( stderr, "  failed consistency on vector elem %d, float value (%f != %f)\n", (int)i, ccursor->fval, (float)i );
-			exit(0);
-		}
-		if ( ccursor->i32val != (int32_t)i ) {
-			fprintf( stderr, "  failed consistency on vector elem %d, int32 value (%d != %d)\n", (int)i, ccursor->i32val, (int)i );
-			exit(0);
-		}
-		ret = snprintf ( compare, TEST_LEN, "%d", (int)i );
-		if ( strncmp ( ccursor->sval, compare, TEST_LEN ) != 0 ) {
-			fprintf( stderr, "  failed consistency on vector elem %d, string value (%s != %s)\n", (int)i, ccursor->sval, compare );
+		cur1 = (test_elem const *) tidas_vector_get ( vec, i );
+		cur2 = (test_elem const *) tidas_vector_seek_get ( vec, cur1 );
+		if ( cur2->indx != i ) {
+			fprintf( stderr, "  failed consistency on copy\n" );
 			exit(0);
 		}
 	}
+
+	tidas_vector_view ( copy, test_elem_print, NULL );
+
+	tidas_vector_free ( vec );
 
 	tidas_vector_free ( copy );
 

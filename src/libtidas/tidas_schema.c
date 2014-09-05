@@ -78,6 +78,7 @@ tidas_schema * tidas_schema_alloc () {
 	ops.init = tidas_field_init;
 	ops.clear = tidas_field_clear;
 	ops.copy = tidas_field_copy;
+	ops.comp = tidas_field_comp;
 
 	schema->data = tidas_vector_alloc ( ops );
 
@@ -91,6 +92,23 @@ void tidas_schema_free ( tidas_schema * schema ) {
 		free ( schema );
 	}
 	return;
+}
+
+
+void tidas_schema_clear ( tidas_schema * schema ) {
+	TIDAS_PTR_CHECK( schema );
+	tidas_vector_clear ( schema->data );
+	return;
+}
+
+
+tidas_schema * tidas_schema_copy ( tidas_schema const * orig ) {
+	tidas_schema * schema = (tidas_schema *) malloc ( sizeof( tidas_schema ) );
+	if ( ! schema ) {
+		TIDAS_ERROR_VAL( TIDAS_ERR_ALLOC, "cannot allocate tidas schema", NULL );
+	}
+	schema->data = tidas_vector_copy ( orig->data );
+	return schema;
 }
 
 
@@ -108,7 +126,7 @@ void tidas_schema_append ( tidas_schema * schema, tidas_field const * field ) {
 
 	cursor = tidas_vector_set ( schema->data, cursize );
 
-	tidas_intrvl_copy ( cursor, (void const *) field );
+	tidas_field_copy ( cursor, (void const *) field );
 
 	return;
 }

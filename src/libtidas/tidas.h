@@ -49,8 +49,8 @@ typedef enum {
 
 #include <tidas/utils.h>
 #include <tidas/intervals.h>
-/*
 #include <tidas/schema.h>
+/*
 #include <tidas/group.h>
 #include <tidas/block.h>
 #include <tidas/volume.h>

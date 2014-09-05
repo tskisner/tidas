@@ -38,4 +38,7 @@ m4/lt~obsolete.m4
 # Build outputs
 
 *~
+*.o
+
+/src/tests/tidas_test
 

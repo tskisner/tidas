@@ -49,13 +49,13 @@ tidas_intrvl const * tidas_intervals_seek_ceil ( tidas_intervals const * interva
 
 tidas_intrvl const * tidas_intervals_seek_floor ( tidas_intervals const * intervals, TIDAS_DTYPE_TIME time );
 
-void tidas_intervals_read ( tidas_intervals * intervals, char const * path, tidas_backend backend );
+void tidas_intervals_read ( tidas_intervals * intervals, tidas_backend backend, char const * fspath, char const * metapath, char const * name );
 
-void tidas_intervals_write ( tidas_intervals const * intervals, char const * path, tidas_backend backend );
+void tidas_intervals_write ( tidas_intervals const * intervals, tidas_backend backend, char const * fspath, char const * metapath, char const * name );
 
-void tidas_intervals_read_hdf5 ( tidas_intervals * intervals, char const * path );
+void tidas_intervals_read_hdf5 ( tidas_intervals * intervals, char const * path, char const * h5path, char const * name );
 
-void tidas_intervals_write_hdf5 ( tidas_intervals const * intervals, char const * path );
+void tidas_intervals_write_hdf5 ( tidas_intervals const * intervals, char const * path, char const * h5path, char const * name );
 
 
 

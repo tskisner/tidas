@@ -15,6 +15,11 @@ AM_LDFLAGS = \
 
 AM_LIBS = $(top_builddir)/src/libtidas/libtidas.la
 
+# Add check flags
+
+AM_CPPFLAGS += $(CHECK_CFLAGS)
+AM_LIBS += $(CHECK_LIBS)
+
 # Append compile and linking flags based on configure variables
 include $(top_srcdir)/src/build_options.am
 
@@ -33,5 +38,5 @@ tidas_test_LDADD = $(AM_LIBS)
 
 
 clean-local :
-	@rm -f *.out
+	@rm -rf *.out
 

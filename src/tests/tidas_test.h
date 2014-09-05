@@ -10,10 +10,18 @@
 
 #include <tidas_internal.h>
 
+#include <float.h>
+#include <math.h>
 
-void tidas_test_utils ( );
+#include <check.h>
 
-void tidas_test_intervals ( );
+
+int check_dbl_eq ( double d1, double d2 );
+
+
+Suite * make_suite_utils();
+
+Suite * make_suite_intervals();
 
 
 #endif

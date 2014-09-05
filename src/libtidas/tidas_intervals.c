@@ -197,7 +197,7 @@ tidas_intrvl const * tidas_intervals_seek_floor ( tidas_intervals const * interv
 }
 
 
-void tidas_intervals_read ( tidas_intervals * intervals, char const * path, tidas_backend backend ) {
+void tidas_intervals_read ( tidas_intervals * intervals, tidas_backend backend, char const * fspath, char const * metapath, char const * name ) {
 
 	TIDAS_PTR_CHECK( intervals );
 
@@ -206,7 +206,7 @@ void tidas_intervals_read ( tidas_intervals * intervals, char const * path, tida
 			/* this is a no-op */
 			break;
 		case TIDAS_BACKEND_HDF5:
-			tidas_intervals_read_hdf5 ( intervals, path );
+			tidas_intervals_read_hdf5 ( intervals, fspath, metapath, name );
 			break;
 		case TIDAS_BACKEND_GETDATA:
 			TIDAS_ERROR_VOID( TIDAS_ERR_OPTION, "getdata backend not yet implemented" );
@@ -220,7 +220,7 @@ void tidas_intervals_read ( tidas_intervals * intervals, char const * path, tida
 }
 
 
-void tidas_intervals_write ( tidas_intervals const * intervals, char const * path, tidas_backend backend ) {
+void tidas_intervals_write ( tidas_intervals const * intervals, tidas_backend backend, char const * fspath, char const * metapath, char const * name ) {
 
 	TIDAS_PTR_CHECK( intervals );
 
@@ -229,7 +229,7 @@ void tidas_intervals_write ( tidas_intervals const * intervals, char const * pat
 			/* this is a no-op */
 			break;
 		case TIDAS_BACKEND_HDF5:
-			tidas_intervals_write_hdf5 ( intervals, path );
+			tidas_intervals_write_hdf5 ( intervals, fspath, metapath, name );
 			break;
 		case TIDAS_BACKEND_GETDATA:
 			TIDAS_ERROR_VOID( TIDAS_ERR_OPTION, "getdata backend not yet implemented" );
@@ -245,7 +245,7 @@ void tidas_intervals_write ( tidas_intervals const * intervals, char const * pat
 
 #ifdef HAVE_HDF5
 
-void tidas_intervals_read_hdf5 ( tidas_intervals * intervals, char const * path ) {
+void tidas_intervals_read_hdf5 ( tidas_intervals * intervals, char const * path, char const * h5path, char const * name ) {
 	hid_t file;
 	herr_t status;
 	int64_t fsize;
@@ -260,6 +260,7 @@ void tidas_intervals_read_hdf5 ( tidas_intervals * intervals, char const * path 
 	size_t n;
 	size_t i;
 	tidas_intrvl intrvl;
+	char metapath[ TIDAS_PATH_LEN ];
 
 	/* check if file exists */
 
@@ -278,7 +279,9 @@ void tidas_intervals_read_hdf5 ( tidas_intervals * intervals, char const * path 
 
 	/* open dataset and get dimensions */
 
-	dataset = H5Dopen ( file, "/intervals", H5P_DEFAULT);
+	snprintf ( metapath, TIDAS_PATH_LEN, "%s/%s", h5path, name );
+
+	dataset = H5Dopen ( file, metapath, H5P_DEFAULT);
 
 	dataspace = H5Dget_space ( dataset );
 	datatype = H5Dget_type ( dataset );
@@ -332,23 +335,20 @@ void tidas_intervals_hdf5_packer ( void const * addr, size_t indx, void * props 
 }
 
 
-void tidas_intervals_write_hdf5 ( tidas_intervals const * intervals, char const * path ) {
+void tidas_intervals_write_hdf5 ( tidas_intervals const * intervals, char const * path, char const * h5path, char const * name ) {
 	hid_t file;
 	herr_t status;
 	hid_t dataset;
 	hid_t datatype;
 	hid_t dataspace;
 	hsize_t dims[1];
+	char metapath[ TIDAS_PATH_LEN ];
 
 	tidas_intervals_hdf5_pack pack;
 
-	/* delete file if it exists */
+	/* open file in write mode */
 
-	tidas_fs_rm ( path );
-
-	/* create new file */
-
-	file = H5Fcreate ( path, H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT );
+	file = H5Fopen ( path, H5F_ACC_RDWR, H5P_DEFAULT );
 
 	/* create dataset */
 
@@ -360,7 +360,9 @@ void tidas_intervals_write_hdf5 ( tidas_intervals const * intervals, char const 
 
 	status = H5Tset_order ( datatype, H5T_ORDER_LE );
 
-	dataset = H5Dcreate ( file, "/intervals", datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	snprintf ( metapath, TIDAS_PATH_LEN, "%s/%s", h5path, name );
+
+	dataset = H5Dcreate ( file, metapath, datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
 	/* repack interval data into contiguous buffer */
 

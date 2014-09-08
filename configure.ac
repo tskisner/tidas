@@ -71,6 +71,14 @@ dnl +------------------------------------------------
 AC_LANG([C])
 AX_PATH_LIB_PCRE([AC_DEFINE(HAVE_PCRE,1,[Define if you have the pcre library.])], [AC_MSG_ERROR([Cannot find pcre library!])])
 dnl +------------------------------------------------
+dnl | Check for SQLite (required)
+dnl +------------------------------------------------
+AC_LANG([C])
+AX_LIB_SQLITE3
+if test x"$SQLITE3_LDFLAGS" = x; then
+  AC_MSG_ERROR([Cannot find sqlite3 library])
+fi
+dnl +------------------------------------------------
 dnl | Check for MPI
 dnl +------------------------------------------------
 tidas_mpi=yes
@@ -246,6 +254,8 @@ else
 fi
 AC_MSG_NOTICE([  PCRE Compile              : $PCRE_CFLAGS])
 AC_MSG_NOTICE([  PCRE Link                 : $PCRE_LIBS])
+AC_MSG_NOTICE([  SQLite Compile            : $SQLITE3_CFLAGS])
+AC_MSG_NOTICE([  SQLite Link               : $SQLITE3_LDFLAGS])
 if test $tidas_checkunit = yes; then
   AC_MSG_NOTICE([  Check Compile             : $CHECK_CFLAGS])
   AC_MSG_NOTICE([  Check Link                : $CHECK_LIBS])

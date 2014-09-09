@@ -5,18 +5,15 @@
   level LICENSE file for details.
 */
 
-#ifndef TIDAS_H
-#define TIDAS_H
+#ifndef TIDAS_HPP
+#define TIDAS_HPP
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
+#include <iostream>
+#include <string>
+#include <sstream>
 
+#include <cstdint>
 
-#define TIDAS_PATH_LEN 512
-#define TIDAS_NAME_LEN 64
-#define TIDAS_ERR_LEN 32
 
 
 typedef enum {
@@ -46,14 +43,12 @@ typedef enum {
 
 
 
+#include <tidas/utils.hpp>
+//#include <tidas/intervals.hpp>
+//#include <tidas/schema.hpp>
+//#include <tidas/group.hpp>
+//#include <tidas/block.hpp>
+//#include <tidas/volume.hpp>
 
-#include <tidas/utils.h>
-#include <tidas/intervals.h>
-#include <tidas/schema.h>
-/*
-#include <tidas/group.h>
-#include <tidas/block.h>
-#include <tidas/volume.h>
-*/
 
 #endif

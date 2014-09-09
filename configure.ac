@@ -42,12 +42,7 @@ AC_PROG_CC
 dnl +-------------------------
 dnl | C++ support
 dnl +-------------------------
-tidas_cxx=yes
-AC_ARG_ENABLE(c++, [AC_HELP_STRING([--disable-c++], [Disable C++ bindings])], [tidas_cxx=$enable_c++], [tidas_cxx=yes])
-if test $tidas_cxx = yes; then
-  AC_PROG_CXX
-fi
-AM_CONDITIONAL([HAVE_AM_CXX], [test $tidas_cxx = yes])
+AC_PROG_CXX
 dnl +-------------------------
 dnl | Fortran support
 dnl +-------------------------
@@ -66,37 +61,34 @@ fi
 AM_CONDITIONAL([HAVE_AM_FC], [test $tidas_fortran = yes])
 AC_SUBST(FCMODEXT)
 dnl +------------------------------------------------
-dnl | Check for PCRE (required)
+dnl | This is a C++ project...
 dnl +------------------------------------------------
-AC_LANG([C])
-AX_PATH_LIB_PCRE([AC_DEFINE(HAVE_PCRE,1,[Define if you have the pcre library.])], [AC_MSG_ERROR([Cannot find pcre library!])])
+AC_LANG([C++])
 dnl +------------------------------------------------
 dnl | Check for SQLite (required)
 dnl +------------------------------------------------
-AC_LANG([C])
+AC_LANG_PUSH([C])
 AX_LIB_SQLITE3
 if test x"$SQLITE3_LDFLAGS" = x; then
   AC_MSG_ERROR([Cannot find sqlite3 library])
 fi
+AC_LANG_POP([C])
 dnl +------------------------------------------------
 dnl | Check for MPI
 dnl +------------------------------------------------
 tidas_mpi=yes
-tidas_mpi_cxx=no
 tidas_mpi_fortran=no
 AC_ARG_ENABLE([mpi], [AC_HELP_STRING([--disable-mpi], [Disable all checks for MPI])], [tidas_mpi=$enable_mpi], [tidas_mpi=yes])
 if test $tidas_mpi = yes; then
   ACX_MPI
-  if test x"$MPICC" = x; then
+  if test x"$MPICXX" = x; then
     tidas_mpi=no
   else
-    if test $tidas_cxx = yes; then
-      AC_LANG_PUSH([C++])
-      ACX_MPI
-      AC_LANG_POP([C++])
-      if test x"$MPICXX" != x; then
-        tidas_mpi_cxx=yes
-      fi
+    AC_LANG_PUSH([C])
+    ACX_MPI
+    AC_LANG_POP([C])
+    if test x"$MPICC" = x; then
+      tidas_mpi=no
     fi
     if test $tidas_fortran = yes; then
       AC_LANG_PUSH([Fortran])
@@ -109,7 +101,6 @@ if test $tidas_mpi = yes; then
   fi
 fi
 AM_CONDITIONAL([HAVE_AM_MPI], [test tidas_mpi = yes])
-AM_CONDITIONAL([HAVE_AM_MPI_CXX], [test tidas_mpi_cxx = yes])
 AM_CONDITIONAL([HAVE_AM_MPI_FC], [test tidas_mpi_fortran = yes])
 dnl +-------------------------
 dnl | Option to perform full static linking of executables, not just
@@ -136,6 +127,7 @@ AM_CONDITIONAL([ENABLE_AM_DEBUG], [test $tidas_debug = yes])
 dnl +------------------------------------------------
 dnl | Check for Python
 dnl +------------------------------------------------
+AC_LANG_PUSH([C])
 tidas_python=yes
 AC_ARG_ENABLE(python, [AC_HELP_STRING([--disable-python], [Disable python bindings])], [tidas_python=$enable_python])
 if test $tidas_python = yes; then
@@ -146,20 +138,12 @@ if test $tidas_python = yes; then
     tidas_python=no
   fi
 fi
+AC_LANG_POP([C])
 AM_CONDITIONAL([HAVE_AM_PYTHON], [test $tidas_python = yes])
-dnl +------------------------------------------------
-dnl | Check for check (unit test framework)
-dnl +------------------------------------------------
-tidas_checkunit=yes
-PKG_CHECK_MODULES([CHECK], [check >= 0.9.4])
-if test x"$CHECK_LIBS" = x; then
-  tidas_checkunit=no
-  AC_MSG_WARN([The CHECK unit test framework was not found- disabling all tests!])
-fi
-AM_CONDITIONAL([HAVE_AM_CHECKUNIT], [test $tidas_checkunit = yes])
 dnl +------------------------------------------------
 dnl | Check for HDF5
 dnl +------------------------------------------------
+AC_LANG_PUSH([C])
 tidas_hdf5=yes
 AC_ARG_ENABLE(hdf5, [AC_HELP_STRING([--disable-hdf5], [Disable HDF5 backend])], [tidas_hdf5=$enable_hdf5])
 if test $tidas_hdf5 = yes; then
@@ -169,10 +153,12 @@ if test $tidas_hdf5 = yes; then
     AC_MSG_WARN([Could not find serial HDF5 library- disabling backend])
   fi
 fi
+AC_LANG_POP([C])
 AM_CONDITIONAL([HAVE_AM_HDF5], [test $tidas_hdf5 = yes])
 dnl +------------------------------------------------
 dnl | Check for GetData
 dnl +------------------------------------------------
+AC_LANG_PUSH([C])
 tidas_getdata=yes
 AC_ARG_ENABLE(getdata, [AC_HELP_STRING([--disable-getdata], [Disable GetData backend])], [tidas_getdata=$enable_getdata])
 if test $tidas_getdata = yes; then
@@ -181,6 +167,7 @@ if test $tidas_getdata = yes; then
     AC_MSG_WARN([Could not find GetData library- disabling backend])
   fi
 fi
+AC_LANG_POP([C])
 AM_CONDITIONAL([HAVE_AM_GETDATA], [test $tidas_getdata = yes])
 dnl +------------------------------------------------
 dnl | Do we have at least one backend?
@@ -196,7 +183,7 @@ dnl +------------------------------------------------
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([src/libtidas/Makefile])
-AC_CONFIG_FILES([src/tests/Makefile])
+dnl AC_CONFIG_FILES([src/tests/Makefile])
 dnl AC_CONFIG_FILES([src/apps/Makefile])
 dnl AC_CONFIG_FILES([src/python/Makefile])
 dnl AC_CONFIG_FILES([src/tests-python/Makefile])
@@ -214,15 +201,10 @@ dnl +------------------------------------------------
 AC_MSG_NOTICE([                                           ])
 AC_MSG_NOTICE([=========== Build Configuration ===========])
 AC_MSG_NOTICE([                                           ])
+AC_MSG_NOTICE([  Serial C++ Compiler       : $CXX])
+AC_MSG_NOTICE([  C++ Compile Flags         : $CXXFLAGS])
 AC_MSG_NOTICE([  Serial C Compiler         : $CC])
 AC_MSG_NOTICE([  C Compile Flags           : $CFLAGS])
-if test $tidas_cxx = yes; then
-  AC_MSG_NOTICE([  Serial C++ Compiler       : $CXX])
-  AC_MSG_NOTICE([  C++ Compile Flags         : $CXXFLAGS])
-else
-  AC_MSG_NOTICE([  Serial C++ Compiler       : Disabled])
-  AC_MSG_NOTICE([  C++ Compile Flags         : Disabled])
-fi
 if test $tidas_fortran = yes; then
   AC_MSG_NOTICE([  Serial F03 Compiler       : $FC])
   AC_MSG_NOTICE([  F03 Compile Flags         : $FCFLAGS])
@@ -231,14 +213,11 @@ else
   AC_MSG_NOTICE([  F03 Compile Flags         : Disabled])
 fi
 if test $tidas_mpi = yes; then
+  AC_MSG_NOTICE([  MPI C++ Compiler          : $MPICXX])
   AC_MSG_NOTICE([  MPI C Compiler            : $MPICC])
 else
-  AC_MSG_NOTICE([  MPI C Compiler            : Disabled])
-fi
-if test $tidas_mpi_cxx = yes; then
-  AC_MSG_NOTICE([  MPI C++ Compiler          : $MPICXX])
-else
   AC_MSG_NOTICE([  MPI C++ Compiler          : Disabled])
+  AC_MSG_NOTICE([  MPI C Compiler            : Disabled])
 fi
 if test $tidas_mpi_fortran = yes; then
   AC_MSG_NOTICE([  MPI F03 Compiler          : $MPIFC])
@@ -252,17 +231,8 @@ if test $tidas_python = yes; then
 else
   AC_MSG_NOTICE([  Python                    : Disabled])
 fi
-AC_MSG_NOTICE([  PCRE Compile              : $PCRE_CFLAGS])
-AC_MSG_NOTICE([  PCRE Link                 : $PCRE_LIBS])
 AC_MSG_NOTICE([  SQLite Compile            : $SQLITE3_CFLAGS])
 AC_MSG_NOTICE([  SQLite Link               : $SQLITE3_LDFLAGS])
-if test $tidas_checkunit = yes; then
-  AC_MSG_NOTICE([  Check Compile             : $CHECK_CFLAGS])
-  AC_MSG_NOTICE([  Check Link                : $CHECK_LIBS])
-else
-  AC_MSG_NOTICE([  Check Compile             : Disabled])
-  AC_MSG_NOTICE([  Check Link                : Disabled])
-fi
 if test $tidas_hdf5 = yes; then
   AC_MSG_NOTICE([  HDF5 Compile              : $HDF5_CPPFLAGS])
   AC_MSG_NOTICE([  HDF5 Link                 : $HDF5_LDFLAGS $HDF5_LIBS])

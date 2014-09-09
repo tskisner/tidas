@@ -5,11 +5,11 @@
   level LICENSE file for details.
 */
 
-#ifndef TIDAS_INTERNAL_H
-#define TIDAS_INTERNAL_H
+#ifndef TIDAS_INTERNAL_HPP
+#define TIDAS_INTERNAL_HPP
 
 #include <config.h>
-#include <tidas.h>
+#include <tidas.hpp>
 
 
 #endif

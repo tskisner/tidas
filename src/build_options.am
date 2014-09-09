@@ -14,11 +14,6 @@ if USE_AM_ALLSTATIC
   AM_LDFLAGS += -all-static
 endif
 
-# pcre
-
-AM_CPPFLAGS += $(PCRE_CFLAGS)
-AM_LIBS += $(PCRE_LIBS)
-
 # sqlite
 
 AM_CPPFLAGS += $(SQLITE_CFLAGS)

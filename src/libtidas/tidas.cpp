@@ -5,6 +5,6 @@
   level LICENSE file for details.
 */
 
-#include <tidas_internal.h>
+#include <tidas_internal.hpp>
 
 

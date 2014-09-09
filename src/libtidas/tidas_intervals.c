@@ -16,7 +16,7 @@
 
 
 
-void tidas_intrvl_init ( void * addr ) {
+void tidas_intrvl_vec_init ( void * addr ) {
 
 	tidas_intrvl * elem = (tidas_intrvl *)addr;
 
@@ -27,7 +27,7 @@ void tidas_intrvl_init ( void * addr ) {
 }
 
 
-void tidas_intrvl_clear ( void * addr ) {
+void tidas_intrvl_vec_clear ( void * addr ) {
 
 	tidas_intrvl * elem = (tidas_intrvl *)addr;
 
@@ -38,7 +38,7 @@ void tidas_intrvl_clear ( void * addr ) {
 }
 
 
-void tidas_intrvl_copy ( void * dest, void const * src ) {
+void tidas_intrvl_vec_copy ( void * dest, void const * src ) {
 
 	tidas_intrvl * elem_dest = (tidas_intrvl *)dest;
 
@@ -51,7 +51,97 @@ void tidas_intrvl_copy ( void * dest, void const * src ) {
 }
 
 
-int tidas_intrvl_comp ( void const * addr1, void const * addr2 ) {
+int tidas_intrvl_vec_comp ( void const * addr1, void const * addr2 ) {
+	int ret;
+	tidas_intrvl const * elem1 = (tidas_intrvl *)addr1;
+	tidas_intrvl const * elem2 = (tidas_intrvl *)addr2;
+
+	if ( fabs ( elem1->start - elem2->start ) < DBL_EPSILON ) {
+		ret = 0;
+	} else if ( elem1->start <= elem2->start ) {
+		ret = -1;
+	} else {
+		ret = 1;
+	}
+	return ret;
+}
+
+
+void tidas_intervals_vec_init ( void * addr ) {
+
+	tidas_intervals * elem = (tidas_intervals *)addr;
+
+	strcpy ( elem->name, "" );
+
+	tidas_vector_ops ops;
+	ops.size = sizeof( tidas_intrvl );
+	ops.init = tidas_intrvl_init;
+	ops.clear = tidas_intrvl_clear;
+	ops.copy = tidas_intrvl_copy;
+	ops.comp = tidas_intrvl_comp;
+
+	elem->data = tidas_vector_alloc ( ops );
+
+	elem->backend = TIDAS_BACKEND_MEM;
+
+	elem->backdat = NULL;
+
+	return;
+}
+
+
+void tidas_intervals_vec_clear ( void * addr ) {
+
+	tidas_intervals * elem = (tidas_intervals *)addr;
+
+	strcpy ( elem->name, "" );
+
+	tidas_vector_free ( elem->data );
+	elem->data = NULL;
+
+	switch ( elem->backend ) {
+		case TIDAS_BACKEND_MEM:
+			tidas_intervals_mem_clear ( elem );
+			break;
+		case TIDAS_BACKEND_HDF5:
+			tidas_intervals_hdf5_clear ( elem );
+			break;
+		case TIDAS_BACKEND_GETDATA:
+			tidas_intervals_getdata_clear ( elem );
+			break;
+		default:
+			TIDAS_ERROR_VOID( TIDAS_ERR_OPTION, "backend not recognized" );
+			break;
+	}
+
+	elem->backdat = NULL;
+
+	return;
+}
+
+
+void tidas_intervals_vec_copy ( void * dest, void const * src ) {
+
+	tidas_intervals * elem_dest = (tidas_intervals *)dest;
+
+	tidas_intervals * const * elem_src = (tidas_intervals *)src;
+
+	elem_dest->backend = elem_src->backend;
+
+	strncpy ( elem_dest->name, elem_src->name, TIDAS_NAME_LEN );
+
+	tidas_vector_content
+
+
+
+	elem_dest->start = elem_src->start;
+	elem_dest->stop = elem_src->stop;
+
+	return;
+}
+
+
+int tidas_intervals_vec_comp ( void const * addr1, void const * addr2 ) {
 	int ret;
 	tidas_intrvl const * elem1 = (tidas_intrvl *)addr1;
 	tidas_intrvl const * elem2 = (tidas_intrvl *)addr2;
@@ -245,7 +335,7 @@ void tidas_intervals_write ( tidas_intervals const * intervals, tidas_backend ba
 
 #ifdef HAVE_HDF5
 
-void tidas_intervals_read_hdf5 ( tidas_intervals * intervals, char const * path, char const * h5path, char const * name ) {
+void tidas_intervals_hdf5_read ( tidas_intervals * intervals, char const * path, char const * h5path, char const * name ) {
 	hid_t file;
 	herr_t status;
 	int64_t fsize;
@@ -335,7 +425,7 @@ void tidas_intervals_hdf5_packer ( void const * addr, size_t indx, void * props 
 }
 
 
-void tidas_intervals_write_hdf5 ( tidas_intervals const * intervals, char const * path, char const * h5path, char const * name ) {
+void tidas_intervals_hdf5_write ( tidas_intervals const * intervals, char const * path, char const * h5path, char const * name ) {
 	hid_t file;
 	herr_t status;
 	hid_t dataset;
@@ -386,13 +476,13 @@ void tidas_intervals_write_hdf5 ( tidas_intervals const * intervals, char const 
 
 #else
 
-void tidas_intervals_read_hdf5 ( tidas_intervals * intervals, char const * path ) {
+void tidas_intervals_hdf5_read ( tidas_intervals * intervals, char const * path ) {
 	TIDAS_ERROR_VOID( TIDAS_ERR_HDF5, "TIDAS not compiled with HDF5 support" );
 	return;
 }
 
 
-void tidas_intervals_write_hdf5 ( tidas_intervals const * intervals, char const * path ) {
+void tidas_intervals_hdf5_write ( tidas_intervals const * intervals, char const * path ) {
 	TIDAS_ERROR_VOID( TIDAS_ERR_HDF5, "TIDAS not compiled with HDF5 support" );
 	return;
 }

@@ -187,7 +187,7 @@ dnl | Do we have at least one backend?
 dnl +------------------------------------------------
 if test $tidas_hdf5 = no; then
   if test $tidas_getdata = no; then
-    AC_MSG_ERROR([All possible backends have been disabled!])
+    AC_MSG_WARN([Only the MEMORY backend is enabled- are you sure this is what you want?])
   fi
 fi
 dnl +------------------------------------------------

@@ -23,15 +23,21 @@ void tidas_group_clear ( void * addr );
 
 void tidas_group_copy ( void * dest, void const * src );
 
-
-tidas_group * tidas_group_alloc ( char const * name, tidas_backend backend );
-
-
-tidas_volume * tidas_volume_open ( char const * path );
+int tidas_group_comp ( void const * addr1, void const * addr2 );
 
 
-void tidas_volume_close ( tidas_volume * vol );
+tidas_group * tidas_group_alloc ( char const * name, tidas_schema * schema, tidas_backend backend );
 
+void tidas_group_free ( tidas_group * group );
+
+tidas_group * tidas_group_copy ( tidas_group const * orig );
+
+
+void tidas_group_mem_free ( tidas_group * group );
+
+void tidas_group_hdf5_free ( tidas_group * group );
+
+void tidas_group_getdata_free ( tidas_group * group );
 
 
 #endif

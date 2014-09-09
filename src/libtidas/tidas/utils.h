@@ -130,7 +130,11 @@ tidas_vector * tidas_vector_alloc ( tidas_vector_ops ops );
 
 tidas_vector * tidas_vector_copy ( tidas_vector const * orig );
 
-void tidas_vector_clear ( tidas_vector * vec );
+void tidas_vector_content_init ( tidas_vector * vec, tidas_vector_ops ops );
+
+void tidas_vector_content_copy ( tidas_vector * dest, tidas_vector const * source );
+
+void tidas_vector_content_clear ( tidas_vector * vec );
 
 void tidas_vector_free ( tidas_vector * vec );
 

@@ -14,6 +14,7 @@ typedef struct {
 	char name[ TIDAS_NAME_LEN ];
 	tidas_vector * blocks;
 	tidas_vector * groups;
+	tidas_vector * intervals;
 } tidas_block;
 
 

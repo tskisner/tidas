@@ -12,7 +12,8 @@
 
 typedef struct {
 	char path[ TIDAS_PATH_LEN ];
-	tidas_vector * blocks;
+	tidas_block * root;
+	tidas_index * index;
 } tidas_volume;
 
 

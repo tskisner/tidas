@@ -243,36 +243,57 @@ tidas_vector * tidas_vector_alloc ( tidas_vector_ops ops ) {
 	if ( ! vec ) {
 		TIDAS_ERROR_VAL( TIDAS_ERR_ALLOC, "cannot allocate tidas vector", NULL );
 	}
-	vec->n = 0;
-	vec->ops = ops;
-	vec->data = NULL;
+	tidas_vector_content_init ( vec, ops );
 	return vec;
 }
 
 
 tidas_vector * tidas_vector_copy ( tidas_vector const * orig ) {
-	size_t i;
-	void const * src;
-	void * dst;
-
-	TIDAS_PTR_CHECK( orig );
-
+	
 	tidas_vector * vec = tidas_vector_alloc ( orig->ops );	
-
-	tidas_vector_resize ( vec, orig->n );
-
-	for ( i = 0; i < vec->n; ++i ) {
-		/* deep copy each element */
-		src = tidas_vector_get ( orig, i );
-		dst = tidas_vector_set ( vec, i );
-		(*(vec->ops.copy))( dst, src );
-	}
+	tidas_vector_content_copy ( vec, orig );
 
 	return vec;
 }
 
 
-void tidas_vector_clear ( tidas_vector * vec ) {
+void tidas_vector_content_init ( tidas_vector * vec, tidas_vector_ops ops ) {
+	
+	TIDAS_PTR_CHECK( vec );
+
+	if ( vec->n > 0 ) {
+		tidas_vector_content_clear ( vec );
+	}
+
+	vec->ops = ops;
+
+	return;
+}
+
+
+void tidas_vector_content_copy ( tidas_vector * dest, tidas_vector const * source ) {
+	size_t i;
+	void const * src;
+	void * dst;
+
+	TIDAS_PTR_CHECK( source );
+
+	tidas_vector_content_init ( dest, source->ops );
+
+	tidas_vector_resize ( dest, source->n );
+
+	for ( i = 0; i < dest->n; ++i ) {
+		/* deep copy each element */
+		src = tidas_vector_get ( source, i );
+		dst = tidas_vector_set ( dest, i );
+		(*(dest->ops.copy))( dst, src );
+	}
+
+	return;
+}
+
+
+void tidas_vector_content_clear ( tidas_vector * vec ) {
 	size_t i;
 	void * cursor;
 
@@ -309,7 +330,7 @@ void tidas_vector_free ( tidas_vector * vec ) {
 	void * cursor;
 
 	if ( vec ) {
-		tidas_vector_clear ( vec );
+		tidas_vector_content_clear ( vec );
 		free ( vec );
 	}
 	return;
@@ -329,7 +350,7 @@ void tidas_vector_resize ( tidas_vector * vec, size_t newsize ) {
 	if ( newsize == 0 ) {
 		/* we are clearing all elements */
 
-		tidas_vector_clear ( vec );
+		tidas_vector_content_clear ( vec );
 
 	} else {
 

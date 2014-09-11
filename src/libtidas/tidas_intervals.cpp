@@ -5,500 +5,361 @@
   level LICENSE file for details.
 */
 
-#include <tidas_internal.h>
+#include <tidas_internal.hpp>
 
 #include <float.h>
 #include <math.h>
 
 #ifdef HAVE_HDF5
-#include <hdf5.h>
+extern "C" {
+	#include <hdf5.h>
+}
 #endif
 
 
+using namespace std;
+using namespace tidas;
 
-void tidas_intrvl_vec_init ( void * addr ) {
 
-	tidas_intrvl * elem = (tidas_intrvl *)addr;
+tidas::intervals_backend_mem::intervals_backend_mem () : intervals_backend () {
 
-	elem->start = 0.0;
-	elem->stop = 0.0;
+}
 
-	return;
+tidas::intervals_backend_mem::~intervals_backend_mem () {
+
 }
 
 
-void tidas_intrvl_vec_clear ( void * addr ) {
-
-	tidas_intrvl * elem = (tidas_intrvl *)addr;
-
-	elem->start = 0.0;
-	elem->stop = 0.0;
-
-	return;
-}
-
-
-void tidas_intrvl_vec_copy ( void * dest, void const * src ) {
-
-	tidas_intrvl * elem_dest = (tidas_intrvl *)dest;
-
-	tidas_intrvl const * elem_src = (tidas_intrvl *)src;
-
-	elem_dest->start = elem_src->start;
-	elem_dest->stop = elem_src->stop;
-
-	return;
-}
-
-
-int tidas_intrvl_vec_comp ( void const * addr1, void const * addr2 ) {
-	int ret;
-	tidas_intrvl const * elem1 = (tidas_intrvl *)addr1;
-	tidas_intrvl const * elem2 = (tidas_intrvl *)addr2;
-
-	if ( fabs ( elem1->start - elem2->start ) < DBL_EPSILON ) {
-		ret = 0;
-	} else if ( elem1->start <= elem2->start ) {
-		ret = -1;
-	} else {
-		ret = 1;
-	}
+intervals_backend_mem * tidas::intervals_backend_mem::clone () {
+	intervals_backend_mem * ret = new intervals_backend_mem ( *this );
 	return ret;
 }
 
 
-void tidas_intervals_vec_init ( void * addr ) {
-
-	tidas_intervals * elem = (tidas_intervals *)addr;
-
-	strcpy ( elem->name, "" );
-
-	tidas_vector_ops ops;
-	ops.size = sizeof( tidas_intrvl );
-	ops.init = tidas_intrvl_init;
-	ops.clear = tidas_intrvl_clear;
-	ops.copy = tidas_intrvl_copy;
-	ops.comp = tidas_intrvl_comp;
-
-	elem->data = tidas_vector_alloc ( ops );
-
-	elem->backend = TIDAS_BACKEND_MEM;
-
-	elem->backdat = NULL;
-
+void tidas::intervals_backend_mem::read ( backend_path const & loc, interval_list & intr ) {
+	intr = store_;
 	return;
 }
 
 
-void tidas_intervals_vec_clear ( void * addr ) {
-
-	tidas_intervals * elem = (tidas_intervals *)addr;
-
-	strcpy ( elem->name, "" );
-
-	tidas_vector_free ( elem->data );
-	elem->data = NULL;
-
-	switch ( elem->backend ) {
-		case TIDAS_BACKEND_MEM:
-			tidas_intervals_mem_clear ( elem );
-			break;
-		case TIDAS_BACKEND_HDF5:
-			tidas_intervals_hdf5_clear ( elem );
-			break;
-		case TIDAS_BACKEND_GETDATA:
-			tidas_intervals_getdata_clear ( elem );
-			break;
-		default:
-			TIDAS_ERROR_VOID( TIDAS_ERR_OPTION, "backend not recognized" );
-			break;
-	}
-
-	elem->backdat = NULL;
-
+void tidas::intervals_backend_mem::write ( backend_path const & loc, interval_list const & intr ) {
+	store_ = intr;
 	return;
 }
 
 
-void tidas_intervals_vec_copy ( void * dest, void const * src ) {
+tidas::intervals_backend_hdf5::intervals_backend_hdf5 () : intervals_backend () {
 
-	tidas_intervals * elem_dest = (tidas_intervals *)dest;
-
-	tidas_intervals * const * elem_src = (tidas_intervals *)src;
-
-	elem_dest->backend = elem_src->backend;
-
-	strncpy ( elem_dest->name, elem_src->name, TIDAS_NAME_LEN );
-
-	tidas_vector_content
-
-
-
-	elem_dest->start = elem_src->start;
-	elem_dest->stop = elem_src->stop;
-
-	return;
 }
 
 
-int tidas_intervals_vec_comp ( void const * addr1, void const * addr2 ) {
-	int ret;
-	tidas_intrvl const * elem1 = (tidas_intrvl *)addr1;
-	tidas_intrvl const * elem2 = (tidas_intrvl *)addr2;
+tidas::intervals_backend_hdf5::~intervals_backend_hdf5 () {
 
-	if ( fabs ( elem1->start - elem2->start ) < DBL_EPSILON ) {
-		ret = 0;
-	} else if ( elem1->start <= elem2->start ) {
-		ret = -1;
-	} else {
-		ret = 1;
-	}
+}
+
+
+intervals_backend_hdf5 * tidas::intervals_backend_hdf5::clone () {
+	intervals_backend_hdf5 * ret = new intervals_backend_hdf5 ( *this );
 	return ret;
 }
 
 
-tidas_intervals * tidas_intervals_alloc () {
-	tidas_intervals * intervals = (tidas_intervals *) malloc ( sizeof( tidas_intervals ) );
-	if ( ! intervals ) {
-		TIDAS_ERROR_VAL( TIDAS_ERR_ALLOC, "cannot allocate tidas intervals", NULL );
-	}
-
-	tidas_vector_ops ops;
-	ops.size = sizeof( tidas_intrvl );
-	ops.init = tidas_intrvl_init;
-	ops.clear = tidas_intrvl_clear;
-	ops.copy = tidas_intrvl_copy;
-	ops.comp = tidas_intrvl_comp;
-
-	intervals->data = tidas_vector_alloc ( ops );
-
-	return intervals;
-}
-
-
-void tidas_intervals_free ( tidas_intervals * intervals ) {
-	if ( intervals ) {
-		tidas_vector_free ( intervals->data );
-		free ( intervals );
-	}
-	return;
-}
-
-
-void tidas_intervals_clear ( tidas_intervals * intervals ) {
-	TIDAS_PTR_CHECK( intervals );
-	tidas_vector_clear ( intervals->data );
-	return;
-}
-
-
-tidas_intervals * tidas_intervals_copy ( tidas_intervals const * orig ) {
-	tidas_intervals * intervals = (tidas_intervals *) malloc ( sizeof( tidas_intervals ) );
-	if ( ! intervals ) {
-		TIDAS_ERROR_VAL( TIDAS_ERR_ALLOC, "cannot allocate tidas intervals", NULL );
-	}
-	intervals->data = tidas_vector_copy ( orig->data );
-	return intervals;
-}
-
-
-void tidas_intervals_append ( tidas_intervals * intervals, tidas_intrvl const * intrvl ) {
-	size_t cursize;
-	size_t newsize;
-	void * cursor;
-
-	TIDAS_PTR_CHECK( intervals );
-
-	cursize = intervals->data->n;
-	newsize = cursize + 1;
-
-	tidas_vector_resize ( intervals->data, newsize );
-
-	cursor = tidas_vector_set ( intervals->data, cursize );
-
-	tidas_intrvl_copy ( cursor, (void const *) intrvl );
-
-	return;
-}
-
-
-tidas_intrvl const * tidas_intervals_get ( tidas_intervals const * intervals, size_t indx ) {
-	TIDAS_PTR_CHECK( intervals );
-	return (tidas_intrvl const *) tidas_vector_get ( intervals->data, indx );
-}
-
-
-tidas_intrvl const * tidas_intervals_seek ( tidas_intervals const * intervals, TIDAS_DTYPE_TIME time ) {
-	size_t i;
-	tidas_intrvl const * cursor;
-	tidas_intrvl const * found = NULL;
-
-	TIDAS_PTR_CHECK( intervals );
-
-	for ( i = 0; i < intervals->data->n; ++i ) {
-		cursor = (tidas_intrvl const *) tidas_vector_get ( intervals->data, i );
-		if ( ( time >= cursor->start ) && ( time <= cursor->stop ) ) {
-			found = cursor;
-			break;
-		}
-	}
-
-	return found;
-}
-
-
-tidas_intrvl const * tidas_intervals_seek_ceil ( tidas_intervals const * intervals, TIDAS_DTYPE_TIME time ) {
-	size_t i;
-	tidas_intrvl const * cursor;
-	tidas_intrvl const * found = NULL;
-
-	TIDAS_PTR_CHECK( intervals );
-
-	for ( i = 0; i < intervals->data->n; ++i ) {
-		cursor = (tidas_intrvl const *) tidas_vector_get ( intervals->data, i );
-		if ( time < cursor->stop ) {
-			/* we are inside the interval, or after the stop of the previous one */
-			found = cursor;
-			break;
-		}
-	}
-
-	return found;
-}
-
-
-tidas_intrvl const * tidas_intervals_seek_floor ( tidas_intervals const * intervals, TIDAS_DTYPE_TIME time ) {
-	size_t i;
-	tidas_intrvl const * cursor;
-	tidas_intrvl const * found = NULL;
-
-	TIDAS_PTR_CHECK( intervals );
-
-	for ( i = 0; i < intervals->data->n; ++i ) {
-		cursor = (tidas_intrvl const *) tidas_vector_get ( intervals->data, i );
-		if ( time < cursor->start ) {
-			/* we are inside the previous interval or before the start of this one */
-			break;
-		}
-		found = cursor;
-	}
-
-	return found;
-}
-
-
-void tidas_intervals_read ( tidas_intervals * intervals, tidas_backend backend, char const * fspath, char const * metapath, char const * name ) {
-
-	TIDAS_PTR_CHECK( intervals );
-
-	switch ( backend ) {
-		case TIDAS_BACKEND_MEM:
-			/* this is a no-op */
-			break;
-		case TIDAS_BACKEND_HDF5:
-			tidas_intervals_read_hdf5 ( intervals, fspath, metapath, name );
-			break;
-		case TIDAS_BACKEND_GETDATA:
-			TIDAS_ERROR_VOID( TIDAS_ERR_OPTION, "getdata backend not yet implemented" );
-			break;
-		default:
-			TIDAS_ERROR_VOID( TIDAS_ERR_OPTION, "backend not recognized" );
-			break;
-	}
-
-	return;
-}
-
-
-void tidas_intervals_write ( tidas_intervals const * intervals, tidas_backend backend, char const * fspath, char const * metapath, char const * name ) {
-
-	TIDAS_PTR_CHECK( intervals );
-
-	switch ( backend ) {
-		case TIDAS_BACKEND_MEM:
-			/* this is a no-op */
-			break;
-		case TIDAS_BACKEND_HDF5:
-			tidas_intervals_write_hdf5 ( intervals, fspath, metapath, name );
-			break;
-		case TIDAS_BACKEND_GETDATA:
-			TIDAS_ERROR_VOID( TIDAS_ERR_OPTION, "getdata backend not yet implemented" );
-			break;
-		default:
-			TIDAS_ERROR_VOID( TIDAS_ERR_OPTION, "backend not recognized" );
-			break;
-	}
-
-	return;
-}
-
+void tidas::intervals_backend_hdf5::read ( backend_path const & loc, interval_list & intr ) {
 
 #ifdef HAVE_HDF5
 
-void tidas_intervals_hdf5_read ( tidas_intervals * intervals, char const * path, char const * h5path, char const * name ) {
-	hid_t file;
-	herr_t status;
-	int64_t fsize;
-	double * buffer;
-	hid_t dataset;
-	hid_t datatype;
-	hid_t dataspace;
-	int ndims;
-	hsize_t dims;
-	hsize_t maxdims;
-	int ret;
-	size_t n;
-	size_t i;
-	tidas_intrvl intrvl;
-	char metapath[ TIDAS_PATH_LEN ];
+	// check if file exists
 
-	/* check if file exists */
-
-	fsize = tidas_fs_stat ( path );
+	int64_t fsize = fs_stat ( loc.fspath.c_str() );
 	if ( fsize <= 0 ) {
-		TIDAS_ERROR_VOID( TIDAS_ERR_HDF5, "file does not exist" );
+		std::ostringstream o;
+		o << "HDF5 intervals file " << loc.fspath << " does not exist";
+		TIDAS_THROW( o.str().c_str() );
 	}
 
-	/* clear out intervals */
+	// clear out intervals
 
-	tidas_intervals_clear ( intervals );
+	intr.clear();
 
-	/* open file */
+	// open file
 
-	file = H5Fopen ( path, H5F_ACC_RDONLY, H5P_DEFAULT );
+	hid_t file = H5Fopen ( loc.fspath.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
 
 	/* open dataset and get dimensions */
 
-	snprintf ( metapath, TIDAS_PATH_LEN, "%s/%s", h5path, name );
+	string mpath = loc.metapath + "/" + loc.name;
 
-	dataset = H5Dopen ( file, metapath, H5P_DEFAULT);
+	hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
 
-	dataspace = H5Dget_space ( dataset );
-	datatype = H5Dget_type ( dataset );
+	hid_t dataspace = H5Dget_space ( dataset );
+	hid_t datatype = H5Dget_type ( dataset );
 
-	ndims = H5Sget_simple_extent_ndims ( dataspace );
+	int ndims = H5Sget_simple_extent_ndims ( dataspace );
 
 	if ( ndims != 1 ) {
-		TIDAS_ERROR_VOID( TIDAS_ERR_HDF5, "intervals dataset has wrong dimensions" );
+		std::ostringstream o;
+		o << "HDF5 intervals dataset " << loc.fspath << ":" << mpath << " has wrong dimensions (" << ndims << ")";
+		TIDAS_THROW( o.str().c_str() );
 	}
 
-	ret = H5Sget_simple_extent_dims ( dataspace, &dims, &maxdims );
+	hsize_t dims;
+	hsize_t maxdims;
+	int ret = H5Sget_simple_extent_dims ( dataspace, &dims, &maxdims );
 
-	buffer = tidas_double_alloc ( (size_t)dims );
+	double * buffer = double_alloc ( (size_t)dims );
 
-	status = H5Dread ( dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer );
+	herr_t status = H5Dread ( dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer );
 
-	/* clean up */
+	// clean up
 
 	H5Sclose ( dataspace );
 	H5Tclose ( datatype );
 	H5Dclose ( dataset );
 	status = H5Fclose ( file ); 
 
-	/* copy buffer into intervals */
+	// copy buffer into intervals
 
-	n = (size_t)( dims / 2 );
+	size_t n = (size_t)( dims / 2 );
 
-	for ( i = 0; i < n; ++i ) {
-		intrvl.start = buffer[ 2 * i ];
-		intrvl.stop = buffer[ 2 * i + 1];
-		tidas_intervals_append ( intervals, &intrvl );
+	for ( size_t i = 0; i < n; ++i ) {
+		intr.push_back ( make_pair ( buffer[ 2 * i ], buffer[ 2 * i + 1] ) );
 	}
 
-	return;
-}
-
-
-typedef struct {
-	double * buffer;
-} tidas_intervals_hdf5_pack;
-
-
-void tidas_intervals_hdf5_packer ( void const * addr, size_t indx, void * props ) {
-	tidas_intrvl const * elem = (tidas_intrvl const *)addr;
-	tidas_intervals_hdf5_pack * pack = (tidas_intervals_hdf5_pack *)props;
-
-	pack->buffer[ 2 * indx ] = elem->start;
-	pack->buffer[ 2 * indx + 1 ] = elem->stop;
-
-	return;
-}
-
-
-void tidas_intervals_hdf5_write ( tidas_intervals const * intervals, char const * path, char const * h5path, char const * name ) {
-	hid_t file;
-	herr_t status;
-	hid_t dataset;
-	hid_t datatype;
-	hid_t dataspace;
-	hsize_t dims[1];
-	char metapath[ TIDAS_PATH_LEN ];
-
-	tidas_intervals_hdf5_pack pack;
-
-	/* open file in write mode */
-
-	file = H5Fopen ( path, H5F_ACC_RDWR, H5P_DEFAULT );
-
-	/* create dataset */
-
-	dims[0] = 2 * intervals->data->n;
-
-	dataspace = H5Screate_simple ( 1, dims, NULL ); 
-
-	datatype = H5Tcopy ( H5T_NATIVE_DOUBLE );
-
-	status = H5Tset_order ( datatype, H5T_ORDER_LE );
-
-	snprintf ( metapath, TIDAS_PATH_LEN, "%s/%s", h5path, name );
-
-	dataset = H5Dcreate ( file, metapath, datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-
-	/* repack interval data into contiguous buffer */
-
-	pack.buffer = tidas_double_alloc ( 2 * intervals->data->n * sizeof(double) );
-
-	tidas_vector_view ( intervals->data, tidas_intervals_hdf5_packer, (void*)( &pack ) );
-
-	status = H5Dwrite ( dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, pack.buffer );
-
-	free ( pack.buffer );
-
-	/* clean up */
-
-	H5Sclose ( dataspace );
-	H5Tclose ( datatype );
-	H5Dclose ( dataset );
-	status = H5Fclose ( file ); 
-
-	return;
-}
+	free ( buffer );
 
 #else
 
-void tidas_intervals_hdf5_read ( tidas_intervals * intervals, char const * path ) {
-	TIDAS_ERROR_VOID( TIDAS_ERR_HDF5, "TIDAS not compiled with HDF5 support" );
-	return;
-}
-
-
-void tidas_intervals_hdf5_write ( tidas_intervals const * intervals, char const * path ) {
-	TIDAS_ERROR_VOID( TIDAS_ERR_HDF5, "TIDAS not compiled with HDF5 support" );
-	return;
-}
+	TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
 
 #endif
+	
+	return;
+}
 
 
+void tidas::intervals_backend_hdf5::write ( backend_path const & loc, interval_list const & intr ) {
+
+#ifdef HAVE_HDF5
+
+	// open file in write mode
+
+	hid_t file = H5Fopen ( loc.fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
+
+	// create dataset
+
+	hsize_t dims[1];
+	dims[0] = 2 * intr.size();
+
+	hid_t dataspace = H5Screate_simple ( 1, dims, NULL ); 
+
+	hid_t datatype = H5Tcopy ( H5T_NATIVE_DOUBLE );
+
+	herr_t status = H5Tset_order ( datatype, H5T_ORDER_LE );
+
+	string mpath = loc.metapath + "/" + loc.name;
+
+	hid_t dataset = H5Dcreate ( file, mpath.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+
+	// pack interval data into contiguous buffer
+
+	double * buffer = double_alloc ( dims[0] );
+
+	size_t i = 0;
+	for ( interval_list::const_iterator it = intr.begin(); it != intr.end(); ++it ) {
+		buffer[ 2 * i ] = it->first;
+		buffer[ 2 * i + 1 ] = it->second;
+		++i;
+	}
+
+	status = H5Dwrite ( dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer );
+
+	free ( buffer );
+
+	// clean up
+
+	H5Sclose ( dataspace );
+	H5Tclose ( datatype );
+	H5Dclose ( dataset );
+	status = H5Fclose ( file ); 
+
+#else
+
+	TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
+
+#endif
+	
+	return;
+}
 
 
+tidas::intervals_backend_getdata::intervals_backend_getdata () : intervals_backend () {
+
+}
 
 
+tidas::intervals_backend_getdata::~intervals_backend_getdata () {
+
+}
 
 
+intervals_backend_getdata * tidas::intervals_backend_getdata::clone () {
+	intervals_backend_getdata * ret = new intervals_backend_getdata ( *this );
+	return ret;
+}
 
 
+void tidas::intervals_backend_getdata::read ( backend_path const & loc, interval_list & intr ) {
+	TIDAS_THROW( "GetData backend not supported" );
+	return;
+}
 
 
+void tidas::intervals_backend_getdata::write ( backend_path const & loc, interval_list const & intr ) {
+	TIDAS_THROW( "GetData backend not supported" );
+	return;
+}
 
+
+tidas::intervals::intervals ( ) {
+	backend_ = NULL;
+}
+
+
+tidas::intervals::intervals ( backend_path const & loc ) {
+	backend_ = NULL;
+	relocate ( loc );
+}
+
+
+tidas::intervals::intervals ( intervals const & orig ) {
+	data_ = orig.data_;
+	loc_ = orig.loc_;
+	backend_ = orig.backend_->clone();
+}
+
+
+tidas::intervals::~intervals () {
+	if ( backend_ ) {
+		delete backend_;
+	}
+}
+
+
+void tidas::intervals::relocate ( backend_path const & loc ) {
+	loc_ = loc;
+
+	if ( backend_ ) {
+		delete backend_;
+	}
+	backend_ = NULL;
+
+	switch ( loc_.type ) {
+		case BACKEND_MEM:
+			backend_ = new intervals_backend_mem ();
+			break;
+		case BACKEND_HDF5:
+			backend_ = new intervals_backend_hdf5 ();
+			break;
+		case BACKEND_GETDATA:
+			TIDAS_THROW( "GetData backend not yet implemented" );
+			break;
+		default:
+			TIDAS_THROW( "backend not recognized" );
+			break;
+	}
+	return;
+}
+
+
+backend_path tidas::intervals::location () {
+	return loc_;
+}
+
+
+void tidas::intervals::clear () {
+	data_.clear();
+	return;
+}
+
+
+void tidas::intervals::append ( intrvl const & intr ) {
+	data_.push_back ( intr );
+	return;
+}
+
+
+void tidas::intervals::read () {
+	data_.clear();
+	backend_->read ( loc_, data_ );
+	return;
+}
+
+
+void tidas::intervals::write () {
+	backend_->write ( loc_, data_ );
+	return;
+}
+
+
+intrvl const & tidas::intervals::get ( size_t indx ) const {
+	if ( indx >= data_.size() ) {
+		std::ostringstream o;
+		o << "cannot get interval " << indx << " from list with " << data_.size() << " elements";
+		TIDAS_THROW( o.str().c_str() );
+	}
+	return data_[ indx ];
+}
+
+
+intrvl tidas::intervals::seek ( time_type time ) const {
+
+	intrvl ret = make_pair ( -1.0, -1.0 );
+
+	// just do a linear seek, since the number of intervals in a single
+	// block should never be too large...
+
+	for ( interval_list::const_iterator it = data_.begin(); it != data_.end(); ++it ) {
+		if ( ( time >= it->first ) && ( time <= it->second ) ) {
+			ret = (*it);
+		}
+	}
+
+	return ret;
+}
+
+
+intrvl tidas::intervals::seek_ceil ( time_type time ) const {
+
+	intrvl ret = make_pair ( -1.0, -1.0 );
+
+	// just do a linear seek, since the number of intervals in a single
+	// block should never be too large...
+
+	for ( interval_list::const_iterator it = data_.begin(); it != data_.end(); ++it ) {
+		if ( time < it->second ) {
+			// we are inside the interval, or after the stop of the previous one
+			ret = (*it);
+		}
+	}
+
+	return ret;
+}
+
+
+intrvl tidas::intervals::seek_floor ( time_type time ) const {
+
+	intrvl ret = make_pair ( -1.0, -1.0 );
+
+	// just do a linear seek, since the number of intervals in a single
+	// block should never be too large...
+
+	for ( interval_list::const_iterator it = data_.begin(); it != data_.end(); ++it ) {
+		if ( time > it->first ) {
+			// we are inside the interval, or before the start of the next one
+			ret = (*it);
+		}
+	}
+
+	return ret;
+}
 

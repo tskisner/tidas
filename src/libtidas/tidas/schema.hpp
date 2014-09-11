@@ -5,44 +5,51 @@
   level LICENSE file for details.
 */
 
-#ifndef TIDAS_SCHEMA_H
-#define TIDAS_SCHEMA_H
+#ifndef TIDAS_SCHEMA_HPP
+#define TIDAS_SCHEMA_HPP
 
 
-/* one field of the schema */
+namespace tidas {
 
-typedef struct {
-	tidas_type type;
-	char name[ TIDAS_NAME_LEN ];
-	char units[ TIDAS_NAME_LEN ];
-} tidas_field;
+	// one field of the schema
 
-void tidas_field_init ( void * addr );
+	class field {
 
-void tidas_field_clear ( void * addr );
+		public :
 
-void tidas_field_copy ( void * dest, void const * src );
+			field ();
+			~field ();
 
-int tidas_field_comp ( void const * addr1, void const * addr2 );
+			data_type type;
+			std::string name;
+			std::string units;
+
+	};
+
+	typedef std::vector < field > field_list;
 
 
-/* a schema used for a group */
+	// a schema used for a group
 
-typedef struct {
-	tidas_vector * data;
-} tidas_schema;
+	class schema {
 
-tidas_schema * tidas_schema_alloc ();
+		public :
 
-void tidas_schema_clear ( tidas_schema * schema );
+			schema ();
+			schema ( field_list const & fields );
+			schema ( schema const & orig );
+			~schema ();
 
-tidas_schema * tidas_schema_copy ( tidas_schema const * orig );
+			void append ( field const & fld );
+			void remove ( std::string const & name );
+			field seek ( std::string const & name );
 
-void tidas_schema_free ( tidas_schema * schema );
+		private :
+			field_list fields_;
 
-void tidas_schema_append ( tidas_schema * schema, tidas_field const * field );
+	};
 
-tidas_field const * tidas_schema_lookup ( tidas_schema const * schema, char const * name );
+}
 
 
 #endif

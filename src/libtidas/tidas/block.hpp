@@ -6,24 +6,42 @@
 */
 
 
-#ifndef TIDAS_BLOCK_H
-#define TIDAS_BLOCK_H
+#ifndef TIDAS_BLOCK_HPP
+#define TIDAS_BLOCK_HPP
 
 
-typedef struct {
-	char name[ TIDAS_NAME_LEN ];
-	tidas_vector * blocks;
-	tidas_vector * groups;
-	tidas_vector * intervals;
-} tidas_block;
+namespace tidas {
+
+	class block;
+
+	class block {
+
+		public :
+
+			block ();
+			block ( backend_path const & loc );
+			block ( block const & orig );
+			~block ();
+
+			void relocate ( backend_path const & loc );
+			backend_path location ();
+
+			void block_append ( std::string const & name, block const & blk );
+
+			void group_append ( std::string const & name, group const & grp );
+			
+			void intervals_append ( std::string const & name, intervals const & intr );
 
 
-tidas_block * tidas_block_create ( char const * path );
+		private :
 
-tidas_block * tidas_block_open ( char const * path );
+			backend_path loc_;
+			std::vector < block > block_list_;
+			std::vector < group > group_list_;
+			std::vector < intervals > intervals_list_;
 
-void tidas_block_close ( tidas_block * vol );
+	};
 
-
+}
 
 #endif

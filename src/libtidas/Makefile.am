@@ -29,17 +29,17 @@ lib_LTLIBRARIES = libtidas.la
 libtidas_la_includedir = $(includedir)/tidas
 
 libtidas_la_include_HEADERS = \
-	tidas/utils.hpp
-
-#	tidas/intervals.hpp \
-#	tidas/schema.hpp
+	tidas/utils.hpp \
+	tidas/intervals.hpp \
+	tidas/schema.hpp \
+	tidas/group.hpp
 
 libtidas_la_SOURCES = \
 tidas.cpp \
-tidas_utils.cpp
-
-#tidas_intervals.c \
-#tidas_schema.c
+tidas_utils.cpp \
+tidas_intervals.cpp \
+tidas_schema.cpp \
+tidas_group.cpp
 
 libtidas_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@
 

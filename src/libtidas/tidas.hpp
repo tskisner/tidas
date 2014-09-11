@@ -11,42 +11,63 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <vector>
+#include <utility>
+#include <map>
 
 #include <cstdint>
 
 
+namespace tidas {
 
-typedef enum {
-	TIDAS_TYPE_NONE,
-	TIDAS_TYPE_INT8,
-	TIDAS_TYPE_UINT8,
-	TIDAS_TYPE_INT16,
-	TIDAS_TYPE_UINT16,
-	TIDAS_TYPE_INT32,
-	TIDAS_TYPE_UINT32,
-	TIDAS_TYPE_INT64,
-	TIDAS_TYPE_UINT64,
-	TIDAS_TYPE_FLOAT32,
-	TIDAS_TYPE_FLOAT64
-} tidas_type;
+	typedef double time_type;
 
+	typedef int64_t index_type;
 
-typedef enum {
-	TIDAS_BACKEND_MEM,
-	TIDAS_BACKEND_HDF5,
-	TIDAS_BACKEND_GETDATA
-} tidas_backend;
+	typedef enum {
+		TYPE_NONE,
+		TYPE_INT8,
+		TYPE_UINT8,
+		TYPE_INT16,
+		TYPE_UINT16,
+		TYPE_INT32,
+		TYPE_UINT32,
+		TYPE_INT64,
+		TYPE_UINT64,
+		TYPE_FLOAT32,
+		TYPE_FLOAT64
+	} data_type;
 
-
-#define TIDAS_DTYPE_TIME double
+	data_type data_type_get ( std::type_info const & test );
 
 
+	typedef enum {
+		BACKEND_MEM,
+		BACKEND_HDF5,
+		BACKEND_GETDATA
+	} backend_type;
 
+
+	class backend_path {
+		
+		public :
+
+			backend_path ();
+
+			backend_type type;
+			std::string fspath;
+			std::string metapath;
+			std::string name;
+
+	};
+
+
+}
 
 #include <tidas/utils.hpp>
-//#include <tidas/intervals.hpp>
-//#include <tidas/schema.hpp>
-//#include <tidas/group.hpp>
+#include <tidas/intervals.hpp>
+#include <tidas/schema.hpp>
+#include <tidas/group.hpp>
 //#include <tidas/block.hpp>
 //#include <tidas/volume.hpp>
 

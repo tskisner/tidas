@@ -16,15 +16,17 @@ namespace tidas {
 
 	class exception : public std::exception {
 
-	public:
-		exception ( char const * msg, char const * file, int line );
-		~exception ( ) throw ();
-		char const * what() const throw();
+		public:
+			
+			exception ( char const * msg, char const * file, int line );
+			~exception ( ) throw ();
+			char const * what() const throw();
 
-	private:
-		// use C strings here for passing to what()
-		static size_t const msg_len_ = 1024; 
-		char msg_[ msg_len_ ];
+		private:
+			
+			// use C strings here for passing to what()
+			static size_t const msg_len_ = 1024; 
+			char msg_[ msg_len_ ];
 	  
 	};  
 

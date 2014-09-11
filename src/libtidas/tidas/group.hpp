@@ -6,38 +6,177 @@
 */
 
 
-#ifndef TIDAS_GROUP_H
-#define TIDAS_GROUP_H
+#ifndef TIDAS_GROUP_HPP
+#define TIDAS_GROUP_HPP
 
 
-typedef struct {
-	char name[ TIDAS_NAME_LEN ];
-	tidas_backend backend;
-	tidas_schema * schema;
-	void * backdat;
-} tidas_group;
+namespace tidas {
 
-void tidas_group_init ( void * addr );
-
-void tidas_group_clear ( void * addr );
-
-void tidas_group_copy ( void * dest, void const * src );
-
-int tidas_group_comp ( void const * addr1, void const * addr2 );
+	static const std::string time_field = "TIDAS_TIME";
 
 
-tidas_group * tidas_group_alloc ( char const * name, tidas_schema * schema, tidas_backend backend );
+	// base class for group backend interface.  Rather than trying to mix inheritance and 
+	// virtual methods that can read / write data of supported types, we use a more C-like
+	// interface that simply specifies the type, number of samples, and a void* to point
+	// to the data.  These classes are only used internally, so we have complete control
+	// over calls to this interface.
 
-void tidas_group_free ( tidas_group * group );
+	class group_backend {
 
-tidas_group * tidas_group_copy ( tidas_group const * orig );
+		public :
+			
+			group_backend ();
+			virtual ~group_backend ();
+
+			virtual group_backend * clone () = 0;
+
+			virtual void read ( backend_path const & loc, schema & schm, index_type & nsamp ) = 0;
+
+			virtual void write ( backend_path const & loc, schema const & schm, index_type nsamp ) = 0;
+
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data ) = 0;
+
+			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data ) = 0;
+
+	};
 
 
-void tidas_group_mem_free ( tidas_group * group );
+	// memory backend class
 
-void tidas_group_hdf5_free ( tidas_group * group );
+	class group_backend_mem : public group_backend {
 
-void tidas_group_getdata_free ( tidas_group * group );
+		public :
+			
+			group_backend_mem ( index_type nsamp, schema const & schm );
+			~group_backend_mem ();
+
+			group_backend_mem * clone ();
+
+			void read ( backend_path const & loc, schema & schm, index_type & nsamp );
+
+			void write ( backend_path const & loc, schema const & schm, index_type nsamp );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data );
+
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data );
+
+		private :
+
+			schema schm_;
+			index_type nsamp_;
+			std::map < std::string, std::vector < double > > data_float_;
+			std::map < std::string, std::vector < int64_t > > data_int_;
+
+	};
+
+
+	// HDF5 backend class
+
+	class group_backend_hdf5 : public group_backend {
+
+		public :
+			
+			group_backend_hdf5 ();
+			~group_backend_hdf5 ();
+
+			group_backend_hdf5 * clone ();
+
+			void read ( backend_path const & loc, schema & schm, index_type & nsamp );
+
+			void write ( backend_path const & loc, schema const & schm, index_type nsamp );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data );
+
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data );
+
+	};
+
+
+	// GetData backend class
+
+	class group_backend_getdata : public group_backend {
+
+		public :
+			
+			group_backend_getdata ();
+			~group_backend_getdata ();
+
+			group_backend_getdata * clone ();
+
+			void read ( backend_path const & loc, schema & schm, index_type & nsamp );
+
+			void write ( backend_path const & loc, schema const & schm, index_type nsamp );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data );
+
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data );
+
+	};
+
+
+	// group of data streams which are sampled synchronously
+
+	class group {
+
+		public :
+
+			group ();
+			group ( schema const & schm, index_type nsamp );
+			group ( backend_path const & loc );
+			group ( group const & orig );
+			~group ();
+
+			void read ();
+			void write ();
+			void relocate ( backend_path const & loc );
+			backend_path location ();
+
+			schema const & schema_get () const;
+
+			index_type nsamp () const;
+
+			intrvl range ();
+
+			template < class T >
+			void read_field ( std::string const & field_name, index_type offset, std::vector < T > & data ) {
+				index_type n = data.size();
+				if ( offset + n > nsamp_ ) {
+					std::ostringstream o;
+					o << "cannot read field " << field_name << ", samples " << offset << " - " << (offset+n-1) << " from group " << loc_.name << " (" << nsamp_ << " samples)";
+					TIDAS_THROW( o.str().c_str() );
+				}
+				T testval;
+				data_type type = data_type_get ( typeid ( testval ) );
+				backend_->read_field ( loc_, field_name, offset, n, type, static_cast < void* > ( &(data[0]) ) );
+				return;
+			}
+
+			template < class T >
+			void write_field ( std::string const & field_name, index_type offset, std::vector < T > const & data ) {
+				index_type n = data.size();
+				if ( offset + n > nsamp_ ) {
+					std::ostringstream o;
+					o << "cannot write field " << field_name << ", samples " << offset << " - " << (offset+n-1) << " to group " << loc_.name << " (" << nsamp_ << " samples)";
+					TIDAS_THROW( o.str().c_str() );
+				}
+				T testval;
+				data_type type = data_type_get ( typeid ( testval ) );
+				backend_->write_field ( loc_, field_name, offset, n, type, static_cast < void* > ( &(data[0]) ) );
+				return;
+			}
+
+		private :
+
+			schema schm_;
+			index_type nsamp_;
+
+			backend_path loc_;
+			group_backend * backend_;
+
+	};
+
+
+}
 
 
 #endif

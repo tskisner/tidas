@@ -187,7 +187,7 @@ int64_t tidas::fs_stat ( char const * path ) {
 
 	if ( ret == 0 ) {
 		/* we found the file, get props */
-		size = (int64_t)filestat.st_size;
+		size = static_cast < int64_t > ( filestat.st_size );
 	}
 	return size;
 }

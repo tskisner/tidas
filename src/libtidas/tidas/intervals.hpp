@@ -5,78 +5,125 @@
   level LICENSE file for details.
 */
 
-#ifndef TIDAS_INTERVALS_H
-#define TIDAS_INTERVALS_H
+#ifndef TIDAS_INTERVALS_HPP
+#define TIDAS_INTERVALS_HPP
 
 
-/* a single time interval */
+namespace tidas {
 
-typedef struct {
-	TIDAS_DTYPE_TIME start;
-	TIDAS_DTYPE_TIME stop;
-} tidas_intrvl;
+	typedef std::pair < time_type, time_type > intrvl;
 
-void tidas_intrvl_vec_init ( void * addr );
-
-void tidas_intrvl_vec_clear ( void * addr );
-
-void tidas_intrvl_vec_copy ( void * dest, void const * src );
-
-int tidas_intrvl_vec_comp ( void const * addr1, void const * addr2 );
+	typedef std::vector < intrvl > interval_list;
 
 
-/* a collection of intervals */
+	// base class for intervals backend interface
 
-typedef struct {
-	char name[ TIDAS_NAME_LEN ];
-	tidas_backend backend;
-	tidas_vector * data;
-	void * backdat;
-} tidas_intervals;
+	class intervals_backend {
 
-void tidas_intervals_vec_init ( void * addr );
+		public :
+			
+			intervals_backend ();
+			virtual ~intervals_backend ();
 
-void tidas_intervals_vec_clear ( void * addr );
+			virtual intervals_backend * clone () = 0;
 
-void tidas_intervals_vec_copy ( void * dest, void const * src );
+			virtual void read ( backend_path const & loc, interval_list & intr ) = 0;
+			virtual void write ( backend_path const & loc, interval_list const & intr ) = 0;
 
-int tidas_intervals_vec_comp ( void const * addr1, void const * addr2 );
+	};
 
 
-tidas_intervals * tidas_intervals_alloc ( char const * name, tidas_backend backend );
+	// memory backend class
 
-void tidas_intervals_clear ( tidas_intervals * intervals );
+	class intervals_backend_mem : public intervals_backend {
 
-void tidas_intervals_free ( tidas_intervals * intervals );
+		public :
+			
+			intervals_backend_mem ();
+			~intervals_backend_mem ();
 
-tidas_intervals * tidas_intervals_copy ( tidas_intervals const * orig );
+			intervals_backend_mem * clone ();
 
-void tidas_intervals_append ( tidas_intervals * intervals, tidas_intrvl const * intrvl );
+			void read ( backend_path const & loc, interval_list & intr );
+			void write ( backend_path const & loc, interval_list const & intr );
 
-tidas_intrvl const * tidas_intervals_get ( tidas_intervals const * intervals, size_t indx );
+		private :
 
-tidas_intrvl const * tidas_intervals_seek ( tidas_intervals const * intervals, TIDAS_DTYPE_TIME time );
+			interval_list store_;
 
-tidas_intrvl const * tidas_intervals_seek_ceil ( tidas_intervals const * intervals, TIDAS_DTYPE_TIME time );
+	};
 
-tidas_intrvl const * tidas_intervals_seek_floor ( tidas_intervals const * intervals, TIDAS_DTYPE_TIME time );
 
-void tidas_intervals_read ( tidas_intervals * intervals, tidas_backend backend, char const * fspath, char const * metapath, char const * name );
+	// HDF5 backend class
 
-void tidas_intervals_write ( tidas_intervals const * intervals, tidas_backend backend, char const * fspath, char const * metapath, char const * name );
+	class intervals_backend_hdf5 : public intervals_backend {
 
-void tidas_intervals_hdf5_read ( tidas_intervals * intervals, char const * path, char const * h5path, char const * name );
+		public :
+			
+			intervals_backend_hdf5 ();
+			~intervals_backend_hdf5 ();
 
-void tidas_intervals_hdf5_write ( tidas_intervals const * intervals, char const * path, char const * h5path, char const * name );
+			intervals_backend_hdf5 * clone ();
 
-void tidas_intervals_getdata_read ( tidas_intervals * intervals, char const * path, char const * h5path, char const * name );
+			void read ( backend_path const & loc, interval_list & intr );
+			void write ( backend_path const & loc, interval_list const & intr );
 
-void tidas_intervals_getdata_write ( tidas_intervals const * intervals, char const * path, char const * h5path, char const * name );
+	};
 
-void tidas_intervals_mem_read ( tidas_intervals * intervals, char const * path, char const * h5path, char const * name );
 
-void tidas_intervals_mem_write ( tidas_intervals const * intervals, char const * path, char const * h5path, char const * name );
+	// GetData backend class
 
+	class intervals_backend_getdata : public intervals_backend {
+
+		public :
+			
+			intervals_backend_getdata ();
+			~intervals_backend_getdata ();
+
+			intervals_backend_getdata * clone ();
+
+			void read ( backend_path const & loc, interval_list & intr );
+			void write ( backend_path const & loc, interval_list const & intr );
+
+	};
+
+
+	// a collection of intervals
+
+	class intervals {
+
+		public :
+
+			intervals ();
+			intervals ( backend_path const & loc );
+			intervals ( intervals const & orig );
+			~intervals ();
+
+			void clear ();
+			void append ( intrvl const & intr );
+
+			void read ();
+			void write ();
+			void relocate ( backend_path const & loc );
+			backend_path location ();
+
+			intrvl const & get ( size_t indx ) const;
+
+			intrvl seek ( time_type time ) const;
+
+			intrvl seek_ceil ( time_type time ) const;
+			
+			intrvl seek_floor ( time_type time ) const;
+
+		private :
+			interval_list data_;
+
+			backend_path loc_;
+			intervals_backend * backend_;
+
+	};
+
+}
 
 
 #endif

@@ -5,82 +5,363 @@
   level LICENSE file for details.
 */
 
-#include <tidas_internal.h>
+#include <tidas_internal.hpp>
 
 
-typedef struct {
-	char name[ TIDAS_NAME_LEN ];
-	tidas_backend backend;
-	tidas_schema * schema;
-	void * backdat;
-} tidas_group;
+#define TIDAS_MEM_FIELD_N 100
 
 
-void tidas_group_init ( void * addr ) {
+using namespace std;
+using namespace tidas;
 
-	tidas_group * elem = (tidas_group *)addr;
 
-	strcpy ( elem->name, "" );
-	elem->backend = TIDAS_BACKEND_MEM;
-	elem->schema = NULL;
-	elem->backdat = NULL;
-
-	return;
+tidas::group_backend_mem::group_backend_mem ( index_type nsamp, schema const & schm ) {
+	schm_ = schm;
+	nsamp_ = nsamp;
 }
 
 
-void tidas_group_clear ( void * addr ) {
+tidas::group_backend_mem::~group_backend_mem () {
 
-	tidas_group * elem = (tidas_group *)addr;
-
-	strcpy ( elem->name, "" );
-
-	switch ( backend ) {
-		case TIDAS_BACKEND_MEM:
-			/* this is a no-op */
-			break;
-		case TIDAS_BACKEND_HDF5:
-			tidas_intervals_read_hdf5 ( intervals, fspath, metapath, name );
-			break;
-		case TIDAS_BACKEND_GETDATA:
-			TIDAS_ERROR_VOID( TIDAS_ERR_OPTION, "getdata backend not yet implemented" );
-			break;
-		default:
-			TIDAS_ERROR_VOID( TIDAS_ERR_OPTION, "backend not recognized" );
-			break;
-	}
-
-	return;
+	
 }
 
 
-void tidas_group_copy ( void * dest, void const * src ) {
-
-	tidas_group * elem_dest = (tidas_group *)dest;
-
-	tidas_group const * elem_src = (tidas_group *)src;
-
-	elem_dest->start = elem_src->start;
-	elem_dest->stop = elem_src->stop;
-
-	return;
-}
-
-
-int tidas_group_comp ( void const * addr1, void const * addr2 ) {
-	int ret;
-	tidas_group const * elem1 = (tidas_group *)addr1;
-	tidas_group const * elem2 = (tidas_group *)addr2;
-
-	if ( fabs ( elem1->start - elem2->start ) < DBL_EPSILON ) {
-		ret = 0;
-	} else if ( elem1->start <= elem2->start ) {
-		ret = -1;
-	} else {
-		ret = 1;
-	}
+group_backend_mem * tidas::group_backend_mem::clone () {
+	group_backend_mem * ret = new group_backend_mem ( *this );
 	return ret;
 }
+
+
+void tidas::group_backend_mem::read ( backend_path const & loc, schema & schm, index_type & nsamp ) {
+	schm = schm_;
+	nsamp = nsamp_;
+	return;
+}
+
+
+void tidas::group_backend_mem::write ( backend_path const & loc, schema const & schm, index_type nsamp ) {
+	schm_ = schm;
+	nsamp_ = nsamp;
+	return;
+}
+
+
+void tidas::group_backend_mem::read_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data ) {
+
+	switch ( type ) {
+		case TYPE_INT8:
+			if ( data_int_.count ( field_name ) > 0 ) {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < int8_t * > ( data ) )[ i ] = static_cast < int8_t > ( data_int_[ field_name ][ offset + i ] );
+				}
+			} else {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < int8_t * > ( data ) )[ i ] = 0;
+				}
+			}
+			break;
+		case TYPE_UINT8:
+			if ( data_int_.count ( field_name ) > 0 ) {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < uint8_t * > ( data ) )[ i ] = static_cast < uint8_t > ( data_int_[ field_name ][ offset + i ] );
+				}
+			} else {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < uint8_t * > ( data ) )[ i ] = 0;
+				}
+			}
+			break;
+		case TYPE_INT16:
+			if ( data_int_.count ( field_name ) > 0 ) {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < int16_t * > ( data ) )[ i ] = static_cast < int16_t > ( data_int_[ field_name ][ offset + i ] );
+				}
+			} else {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < int16_t * > ( data ) )[ i ] = 0;
+				}
+			}
+			break;
+		case TYPE_UINT16:
+			if ( data_int_.count ( field_name ) > 0 ) {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < uint16_t * > ( data ) )[ i ] = static_cast < uint16_t > ( data_int_[ field_name ][ offset + i ] );
+				}
+			} else {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < uint16_t * > ( data ) )[ i ] = 0;
+				}
+			}
+			break;
+		case TYPE_INT32:
+			if ( data_int_.count ( field_name ) > 0 ) {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < int32_t * > ( data ) )[ i ] = static_cast < int32_t > ( data_int_[ field_name ][ offset + i ] );
+				}
+			} else {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < int32_t * > ( data ) )[ i ] = 0;
+				}
+			}
+			break;
+		case TYPE_UINT32:
+			if ( data_int_.count ( field_name ) > 0 ) {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < uint32_t * > ( data ) )[ i ] = static_cast < uint32_t > ( data_int_[ field_name ][ offset + i ] );
+				}
+			} else {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < uint32_t * > ( data ) )[ i ] = 0;
+				}
+			}
+			break;
+		case TYPE_INT64:
+			if ( data_int_.count ( field_name ) > 0 ) {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < int64_t * > ( data ) )[ i ] = static_cast < int64_t > ( data_int_[ field_name ][ offset + i ] );
+				}
+			} else {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < int64_t * > ( data ) )[ i ] = 0;
+				}
+			}
+			break;
+		case TYPE_UINT64:
+			if ( data_int_.count ( field_name ) > 0 ) {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < uint64_t * > ( data ) )[ i ] = static_cast < uint64_t > ( data_int_[ field_name ][ offset + i ] );
+				}
+			} else {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < uint64_t * > ( data ) )[ i ] = 0;
+				}
+			}
+			break;
+		case TYPE_FLOAT32:
+			if ( data_float_.count ( field_name ) > 0 ) {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < float * > ( data ) )[ i ] = static_cast < float > ( data_int_[ field_name ][ offset + i ] );
+				}
+			} else {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < float * > ( data ) )[ i ] = 0.0;
+				}
+			}
+			break;
+		case TYPE_FLOAT64:
+			if ( data_float_.count ( field_name ) > 0 ) {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < double * > ( data ) )[ i ] = static_cast < double > ( data_int_[ field_name ][ offset + i ] );
+				}
+			} else {
+				for ( index_type i = 0; i < n; ++i ) {
+					( static_cast < double * > ( data ) )[ i ] = 0.0;
+				}
+			}
+			break;
+		default:
+			TIDAS_THROW( "data type not recognized" );
+			break;
+	}
+
+	return;
+}
+
+
+void tidas::group_backend_mem::write_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data ) {
+
+	switch ( type ) {
+		case TYPE_INT8:
+			data_int_[ field_name ].reserve ( nsamp_ );
+			data_int_[ field_name ].resize ( nsamp_ );
+			for ( index_type i = 0; i < n; ++i ) {
+				data_int_[ field_name ][ offset + i ] = static_cast < int64_t > ( ( static_cast < int8_t * > ( data ) )[ i ] );
+			}
+			break;
+		case TYPE_UINT8:
+			data_int_[ field_name ].reserve ( nsamp_ );
+			data_int_[ field_name ].resize ( nsamp_ );
+			for ( index_type i = 0; i < n; ++i ) {
+				data_int_[ field_name ][ offset + i ] = static_cast < int64_t > ( ( static_cast < uint8_t * > ( data ) )[ i ] );
+			}
+			break;
+		case TYPE_INT16:
+			data_int_[ field_name ].reserve ( nsamp_ );
+			data_int_[ field_name ].resize ( nsamp_ );
+			for ( index_type i = 0; i < n; ++i ) {
+				data_int_[ field_name ][ offset + i ] = static_cast < int64_t > ( ( static_cast < int16_t * > ( data ) )[ i ] );
+			}
+			break;
+		case TYPE_UINT16:
+			data_int_[ field_name ].reserve ( nsamp_ );
+			data_int_[ field_name ].resize ( nsamp_ );
+			for ( index_type i = 0; i < n; ++i ) {
+				data_int_[ field_name ][ offset + i ] = static_cast < int64_t > ( ( static_cast < uint16_t * > ( data ) )[ i ] );
+			}
+			break;
+		case TYPE_INT32:
+			data_int_[ field_name ].reserve ( nsamp_ );
+			data_int_[ field_name ].resize ( nsamp_ );
+			for ( index_type i = 0; i < n; ++i ) {
+				data_int_[ field_name ][ offset + i ] = static_cast < int64_t > ( ( static_cast < int32_t * > ( data ) )[ i ] );
+			}
+			break;
+		case TYPE_UINT32:
+			data_int_[ field_name ].reserve ( nsamp_ );
+			data_int_[ field_name ].resize ( nsamp_ );
+			for ( index_type i = 0; i < n; ++i ) {
+				data_int_[ field_name ][ offset + i ] = static_cast < int64_t > ( ( static_cast < uint32_t * > ( data ) )[ i ] );
+			}
+			break;
+		case TYPE_INT64:
+			data_int_[ field_name ].reserve ( nsamp_ );
+			data_int_[ field_name ].resize ( nsamp_ );
+			for ( index_type i = 0; i < n; ++i ) {
+				data_int_[ field_name ][ offset + i ] = static_cast < int64_t > ( ( static_cast < int64_t * > ( data ) )[ i ] );
+			}
+			break;
+		case TYPE_UINT64:
+			data_int_[ field_name ].reserve ( nsamp_ );
+			data_int_[ field_name ].resize ( nsamp_ );
+			for ( index_type i = 0; i < n; ++i ) {
+				data_int_[ field_name ][ offset + i ] = static_cast < int64_t > ( ( static_cast < uint64_t * > ( data ) )[ i ] );
+			}
+			break;
+		case TYPE_FLOAT32:
+			data_float_[ field_name ].reserve ( nsamp_ );
+			data_float_[ field_name ].resize ( nsamp_ );
+			for ( index_type i = 0; i < n; ++i ) {
+				data_float_[ field_name ][ offset + i ] = static_cast < double > ( ( static_cast < float * > ( data ) )[ i ] );
+			}
+			break;
+		case TYPE_FLOAT64:
+			data_float_[ field_name ].reserve ( nsamp_ );
+			data_float_[ field_name ].resize ( nsamp_ );
+			for ( index_type i = 0; i < n; ++i ) {
+				data_float_[ field_name ][ offset + i ] = static_cast < double > ( ( static_cast < double * > ( data ) )[ i ] );
+			}
+			break;
+		default:
+			TIDAS_THROW( "data type not recognized" );
+			break;
+	}
+
+	return;
+}
+
+
+tidas::group::group () {
+	nsamp_ = 0;
+	backend_ = NULL;
+}
+
+
+tidas::group::group ( schema const & schm, index_type nsamp ) {
+	schm_ = schm;
+	nsamp_ = nsamp;
+	backend_ = NULL;
+}
+
+
+tidas::group::group ( backend_path const & loc ) {
+	backend_ = NULL;
+	relocate ( loc );
+	read ();
+}
+
+
+tidas::group::group ( group const & orig ) {
+	schm_ = orig.schm_;
+	nsamp_ = orig.nsamp_;
+	loc_ = orig.loc_;
+	backend_ = orig.backend_->clone();
+}
+
+
+tidas::group::~group () {
+	if ( backend_ ) {
+		delete backend_;
+	} else {
+		TIDAS_THROW( "In destructor, group backend is NULL.  This should never happen..." );
+	}
+}
+
+
+void tidas::group::read () {
+
+	backend_->read ( loc_, schm_, nsamp_ );
+
+	return;
+}
+
+
+void tidas::group::write () {
+
+	backend_->write ( loc_, schm_, nsamp_ );
+
+	return;
+}
+
+
+void tidas::group::relocate ( backend_path const & loc ) {
+
+	loc_ = loc;
+
+	if ( backend_ ) {
+		delete backend_;
+	}	
+
+	switch ( loc_.type ) {
+		case BACKEND_MEM:
+			backend_ = new group_backend_mem ( nsamp_, schm_ );
+			break;
+		case BACKEND_HDF5:
+			backend_ = new group_backend_hdf5 ();
+			break;
+		case BACKEND_GETDATA:
+			TIDAS_THROW( "GetData backend not yet implemented" );
+			break;
+		default:
+			TIDAS_THROW( "backend not recognized" );
+			break;
+	}
+
+	return;
+}
+
+
+backend_path tidas::group::location () {
+	return loc_;
+}
+
+
+schema const & tidas::group::schema_get () const {
+	return schm_;
+}
+
+
+index_type tidas::group::nsamp () const {
+	return nsamp_;
+}
+
+
+intrvl tidas::group::range () {
+	intrvl ret;
+	std::vector < time_type > data ( 1 );
+	
+	read_field ( time_field, 0, data );
+	ret.first = data[0];
+
+	read_field ( time_field, (nsamp_-1), data );
+	ret.second = data[0];
+
+	return ret;
+}
+
+
+
+
 
 
 

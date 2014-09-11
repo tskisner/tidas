@@ -182,6 +182,7 @@ dnl | Set outputs
 dnl +------------------------------------------------
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([src/libtidas/libre2/Makefile])
 AC_CONFIG_FILES([src/libtidas/Makefile])
 dnl AC_CONFIG_FILES([src/tests/Makefile])
 dnl AC_CONFIG_FILES([src/apps/Makefile])

@@ -1,8 +1,11 @@
 
+SUBDIRS = libre2
+
 # Initialize compile and linking flags
 
 AM_CPPFLAGS = \
--I$(top_srcdir)/src/libtidas
+-I$(top_srcdir)/src/libtidas \
+-I$(top_srcdir)/src/libtidas/libre2
 
 AM_CFLAGS =
 AM_CXXFLAGS =
@@ -43,5 +46,5 @@ tidas_group.cpp
 
 libtidas_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@
 
-libtidas_la_LIBADD =
+libtidas_la_LIBADD = $(top_builddir)/src/libtidas/libre2/libre2.la
 

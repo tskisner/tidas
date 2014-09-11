@@ -43,6 +43,7 @@ namespace tidas {
 			void append ( field const & fld );
 			void remove ( std::string const & name );
 			field seek ( std::string const & name );
+			field_list fields ();
 
 		private :
 			field_list fields_;

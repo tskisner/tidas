@@ -11,7 +11,12 @@
 
 namespace tidas {
 
-	typedef std::pair < time_type, time_type > intrvl;
+	typedef struct {
+		time_type start;
+		time_type stop;
+		index_type first;
+		index_type last;
+	} intrvl;
 
 	typedef std::vector < intrvl > interval_list;
 
@@ -27,8 +32,13 @@ namespace tidas {
 
 			virtual intervals_backend * clone () = 0;
 
-			virtual void read ( backend_path const & loc, interval_list & intr ) = 0;
-			virtual void write ( backend_path const & loc, interval_list const & intr ) = 0;
+			virtual void read ( backend_path const & loc ) = 0;
+
+			virtual void write ( backend_path const & loc ) = 0;
+
+			virtual void read_data ( backend_path const & loc, interval_list & intr ) = 0;
+			
+			virtual void write_data ( backend_path const & loc, interval_list const & intr ) = 0;
 
 	};
 
@@ -44,8 +54,13 @@ namespace tidas {
 
 			intervals_backend_mem * clone ();
 
-			void read ( backend_path const & loc, interval_list & intr );
-			void write ( backend_path const & loc, interval_list const & intr );
+			void read ( backend_path const & loc );
+
+			void write ( backend_path const & loc );
+			
+			void read_data ( backend_path const & loc, interval_list & intr );
+			
+			void write_data ( backend_path const & loc, interval_list const & intr );
 
 		private :
 
@@ -65,8 +80,13 @@ namespace tidas {
 
 			intervals_backend_hdf5 * clone ();
 
-			void read ( backend_path const & loc, interval_list & intr );
-			void write ( backend_path const & loc, interval_list const & intr );
+			void read ( backend_path const & loc );
+
+			void write ( backend_path const & loc );
+
+			void read_data ( backend_path const & loc, interval_list & intr );
+			
+			void write_data ( backend_path const & loc, interval_list const & intr );
 
 	};
 
@@ -82,8 +102,13 @@ namespace tidas {
 
 			intervals_backend_getdata * clone ();
 
-			void read ( backend_path const & loc, interval_list & intr );
-			void write ( backend_path const & loc, interval_list const & intr );
+			void read ( backend_path const & loc );
+			
+			void write ( backend_path const & loc );
+
+			void read_data ( backend_path const & loc, interval_list & intr );
+
+			void write_data ( backend_path const & loc, interval_list const & intr );
 
 	};
 
@@ -99,24 +124,27 @@ namespace tidas {
 			intervals ( intervals const & orig );
 			~intervals ();
 
-			void clear ();
-			void append ( intrvl const & intr );
+			void read_meta ();
 
-			void read ();
-			void write ();
+			void write_meta ();
+
 			void relocate ( backend_path const & loc );
+
 			backend_path location ();
 
-			intrvl const & get ( size_t indx ) const;
+			void duplicate ( backend_path const & newloc );
 
-			intrvl seek ( time_type time ) const;
+			void read_data ( interval_list & intr );
 
-			intrvl seek_ceil ( time_type time ) const;
+			void write_data ( interval_list const & intr );
+
+			static intrvl seek ( interval_list const & intr, time_type time );
+
+			static intrvl seek_ceil ( interval_list const & intr, time_type time );
 			
-			intrvl seek_floor ( time_type time ) const;
+			static intrvl seek_floor ( interval_list const & intr, time_type time );
 
 		private :
-			interval_list data_;
 
 			backend_path loc_;
 			intervals_backend * backend_;

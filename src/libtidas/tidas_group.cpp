@@ -336,6 +336,37 @@ backend_path tidas::group::location () {
 }
 
 
+void tidas::group::duplicate ( backend_path const & newloc ) {
+
+	schema schm = schema_get();
+	index_type n = nsamp();
+
+	group newgroup ( schm, n );
+	newgroup.relocate ( newloc );
+
+	newgroup.write();
+	
+	// copy tidas time field
+
+	std::vector < time_type > data_time ( n );
+	read_field ( time_field, 0, data_time );
+	newgroup.write_field ( time_field, 0, data_time );
+	data_time.resize(0);
+
+	// copy all field data
+
+	field_list fields = schm.fields();
+
+	for ( field_list::const_iterator it = fields.begin(); it != fields.end(); ++it ) {
+
+	}
+
+
+
+	return;
+}
+
+
 schema const & tidas::group::schema_get () const {
 	return schm_;
 }
@@ -346,20 +377,128 @@ index_type tidas::group::nsamp () const {
 }
 
 
-intrvl tidas::group::range () {
-	intrvl ret;
-	std::vector < time_type > data ( 1 );
-	
-	read_field ( time_field, 0, data );
-	ret.first = data[0];
+void tidas::group::time_cache () {
+	if ( times_.size() != nsamp_ ) {
+		times_.resize ( nsamp_ );
+		read_field ( time_field, 0, times_ );
+	}
+	return;
+}
 
-	read_field ( time_field, (nsamp_-1), data );
-	ret.second = data[0];
+
+void tidas::group::time_flush () {
+	if ( times_.size() > 0 ) {
+		times_.resize(0);
+	}
+	return;
+}
+
+
+std::vector < time_type > const & tidas::group::times() {
+	time_cache();
+	return times_;
+}
+
+
+intrvl tidas::group::range_time ( span const & spn ) {
+	intrvl ret;
+	bool cached = ( times_.size() > 0 );
+
+	if ( ! cached ) {
+		// read the times for just these samples
+		std::vector < time_type > data ( 1 );
+
+		read_field ( time_field, spn.first, data );
+		ret.first = data[0];
+
+		read_field ( time_field, spn.second, data );
+		ret.second = data[0];
+	} else {
+		// grab values from the cache
+		ret.first = times_[ spn.first ];
+		ret.second = times_[ spn.second ];
+	}
 
 	return ret;
 }
 
 
+span tidas::group::range_index_inner ( intrvl const & intv ) {
+	span ret;
+	bool cached = ( times_.size() > 0 );
+
+	if ( ! cached ) {
+		time_cache();
+	}
+
+	time_type start = times_[0]
+	time_type stop = times_[ nsamp_ - 1 ];
+
+	if ( ( intv.first > stop ) || ( intv.second < start ) ) {
+
+		// no overlap
+		ret.first = -1;
+		ret.second = -1;
+	
+	} else {
+
+		index_type guess_low = 0;
+		if ( intv.first >= start ) {
+			guess_low = (index_type)( (time_type)nsamp_ * ( intv.first - start ) / ( stop - start ) );
+		}
+
+		index_type guess_high = 0;
+		if ( intv.second >= start ) {
+			guess_high = (index_type)( (time_type)nsamp_ * ( intv.second - start ) / ( stop - start ) );
+		}
+
+		// linear search for correct samples
+
+		while ( ( guess_low > 0 ) && ( times_[ guess_low - 1 ] >= intv.first ) ) {
+			--guess_low;
+		}
+
+		while ( ( guess_low < nsamp_ - 1 ) && ( times_[ guess_low + 1 ] <= intv.first ) ) {
+			++guess_low;
+		}
+
+		while ( ( guess_high > 0 ) && ( times_[ guess_high - 1 ] >= intv.second ) ) {
+			--guess_high;
+		}
+
+		while ( ( guess_high < nsamp_ - 1 ) && ( times_[ guess_high + 1 ] <= intv.second ) ) {
+			++guess_high;
+		}
+
+		if ( guess_high < guess_low ) {
+			// the time interval lies fully between two samples
+			ret.first = -1;
+			ret.second = -1;
+		} else {
+			ret.first = guess_low;
+			ret.second = guess_high;
+		}
+
+	}
+
+	if ( ! cached ) {
+		time_flush();
+	}
+
+	return ret;
+}
+
+
+span tidas::group::range_index_outer ( intrvl const & intv ) {
+
+	span ret = rang_index_inner ( intv );
+
+	// enlarge by one sample if needed
+
+
+
+	return ret;
+}
 
 
 

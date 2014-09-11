@@ -75,3 +75,8 @@ field tidas::schema::seek ( std::string const & name ) {
 }
 
 
+field_list tidas::schema::fields () {
+	return fields_;
+}
+
+

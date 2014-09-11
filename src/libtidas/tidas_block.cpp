@@ -37,8 +37,34 @@ tidas::block::~block () {
 
 void tidas::block::relocate ( backend_path const & loc ) {
 	loc_ = loc;
+	backend_path oldloc;
+	backend_path newloc;
 
-	// FIXME:  relocate all blocks, intervals, groups
+	for ( std::vector < intervals > :: iterator it = intervals_list_.begin(); it != intervals_list_.end(); ++it ) {
+		oldloc = it->location();
+		newloc.type = loc_.type;
+		newloc.path = loc_.path + "/" + loc_.name + "/" + interval_fs_name;
+		newloc.name = oldloc.name;
+		it->relocate ( newloc );
+	}
+
+	for ( std::vector < group > :: iterator it = group_list_.begin(); it != group_list_.end(); ++it ) {
+		oldloc = it->location();
+		newloc.type = loc_.type;
+		newloc.path = loc_.path + "/" + loc_.name + "/" + group_fs_name;
+		newloc.name = oldloc.name;
+		it->relocate ( newloc );
+	}
+
+	// recursively descend all child blocks...
+
+	for ( std::vector < block > :: iterator it = block_list_.begin(); it != block_list_.end(); ++it ) {
+		oldloc = it->location();
+		newloc.type = loc_.type;
+		newloc.path = loc_.path + "/" + loc_.name;
+		newloc.name = oldloc.name;
+		it->relocate ( newloc );
+	}
 
 	return;
 }
@@ -46,6 +72,55 @@ void tidas::block::relocate ( backend_path const & loc ) {
 
 backend_path tidas::block::location () {
 	return loc_;
+}
+
+
+void tidas::block::read () {
+
+
+	return;
+}
+
+
+void tidas::block::write () {
+
+	// make our parent directory if it does not exist
+
+	fs_mkdir ( loc_.path.c_str() );
+
+	string fspath = loc_.path + "/" + loc_.name;
+
+	// make our directory if it does not exist
+
+	fs_mkdir ( fspath.c_str() );
+
+	// make group and interval directories
+
+	string dirpath = fspath + "/" + interval_fs_name;
+	fs_mkdir ( dirpath.c_str() );
+
+	dirpath = fspath + "/" + group_fs_name;
+	fs_mkdir ( dirpath.c_str() );
+
+	// write out intervals
+
+	for ( std::vector < intervals > :: iterator it = intervals_list_.begin(); it != intervals_list_.end(); ++it ) {
+		it->write();
+	}
+
+	// write out groups
+
+	for ( std::vector < group > :: iterator it = group_list_.begin(); it != group_list_.end(); ++it ) {
+		it->write();
+	}
+
+	// recursively descend all child blocks...
+
+	for ( std::vector < block > :: iterator it = block_list_.begin(); it != block_list_.end(); ++it ) {
+		it->write();
+	}
+
+	return;
 }
 
 

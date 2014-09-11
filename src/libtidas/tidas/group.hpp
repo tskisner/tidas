@@ -14,6 +14,7 @@ namespace tidas {
 
 	static const std::string time_field = "TIDAS_TIME";
 
+	typedef std::pair < index_type, index_type > span;
 
 	// base class for group backend interface.  Rather than trying to mix inheritance and 
 	// virtual methods that can read / write data of supported types, we use a more C-like
@@ -126,16 +127,31 @@ namespace tidas {
 			group ( group const & orig );
 			~group ();
 
-			void read ();
-			void write ();
+			void read_meta ();
+
+			void write_meta ();
+
 			void relocate ( backend_path const & loc );
+
 			backend_path location ();
+
+			void duplicate ( backend_path const & newloc );
 
 			schema const & schema_get () const;
 
 			index_type nsamp () const;
 
-			intrvl range ();
+			void time_cache ();
+
+			void time_flush ();
+
+			std::vector < time_type > const & times();
+
+			intrvl range_time ( span const & spn );
+
+			span range_index_inner ( intrvl const & intv );
+
+			span range_index_outer ( intrvl const & intv );
 
 			template < class T >
 			void read_field ( std::string const & field_name, index_type offset, std::vector < T > & data ) {
@@ -169,6 +185,7 @@ namespace tidas {
 
 			schema schm_;
 			index_type nsamp_;
+			std::vector < time_type > times_;
 
 			backend_path loc_;
 			group_backend * backend_;

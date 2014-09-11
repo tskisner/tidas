@@ -55,12 +55,10 @@ namespace tidas {
 			backend_path ();
 
 			backend_type type;
-			std::string fspath;
-			std::string metapath;
+			std::string path;
 			std::string name;
 
 	};
-
 
 }
 

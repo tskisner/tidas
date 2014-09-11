@@ -23,7 +23,7 @@ namespace tidas {
 			char const * what() const throw();
 
 		private:
-			
+
 			// use C strings here for passing to what()
 			static size_t const msg_len_ = 1024; 
 			char msg_[ msg_len_ ];
@@ -50,33 +50,19 @@ namespace tidas {
 	}
 
 
-	// simple memory allocation
+	// simple contiguous buffer allocation
 
-	double * double_alloc ( size_t n );
-
-	float * float_alloc ( size_t n );
-
-	int * int_alloc ( size_t n );
-
-	long * long_alloc ( size_t n );
-
-	size_t * sizet_alloc ( size_t n );
-
-	int8_t * int8_alloc ( size_t n );
-
-	uint8_t * uint8_alloc ( size_t n );
-
-	int16_t * int16_alloc ( size_t n );
-
-	uint16_t * uint16_alloc ( size_t n );
-
-	int32_t * int32_alloc ( size_t n );
-
-	uint32_t * uint32_alloc ( size_t n );
-
-	int64_t * int64_alloc ( size_t n );
-
-	uint64_t * uint64_alloc ( size_t n );
+	template < class T >
+	T * mem_alloc ( size_t n ) {
+		size_t size = n * sizeof(T);
+		void * temp = ::malloc ( size );
+		if ( ! temp ) {
+			std::ostringstream o;
+			o << "cannot allocate mem buffer of size " << size;
+			TIDAS_THROW( o.str().c_str() );
+		}
+		return (T*)temp;
+	}
 
 
 	// common file operations

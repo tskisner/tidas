@@ -38,12 +38,13 @@ namespace tidas {
 			schema ();
 			schema ( field_list const & fields );
 			schema ( schema const & orig );
+			schema ( schema const & orig, std::string const & match );
 			~schema ();
 
 			void append ( field const & fld );
 			void remove ( std::string const & name );
-			field seek ( std::string const & name );
-			field_list fields ();
+			field seek ( std::string const & name ) const;
+			field_list fields () const;
 
 		private :
 			field_list fields_;

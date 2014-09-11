@@ -43,6 +43,17 @@ tidas::schema::schema ( schema const & orig ) {
 }
 
 
+tidas::schema::schema ( schema const & orig, std::string const & match ) {
+	RE2 re ( match );
+
+	for ( field_list::const_iterator it = orig.fields_.begin(); it != orig.fields_.end(); ++it ) {
+		if ( RE2::FullMatch ( it->name, re ) ) {
+			fields_.push_back ( *it );
+		}
+	}
+}
+
+
 void tidas::schema::append ( field const & fld ) {
 	fields_.push_back ( fld );
 	return;
@@ -63,7 +74,7 @@ void tidas::schema::remove ( std::string const & name ) {
 }
 
 
-field tidas::schema::seek ( std::string const & name ) {
+field tidas::schema::seek ( std::string const & name ) const {
 
 	for ( field_list::const_iterator it = fields_.begin(); it != fields_.end(); ++it ) {
 		if ( name == it->name ) {
@@ -75,7 +86,7 @@ field tidas::schema::seek ( std::string const & name ) {
 }
 
 
-field_list tidas::schema::fields () {
+field_list tidas::schema::fields () const {
 	return fields_;
 }
 

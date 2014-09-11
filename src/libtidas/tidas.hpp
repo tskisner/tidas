@@ -17,6 +17,8 @@
 
 #include <cstdint>
 
+#include <re2/re2.h>
+
 
 namespace tidas {
 
@@ -39,7 +41,6 @@ namespace tidas {
 	} data_type;
 
 	data_type data_type_get ( std::type_info const & test );
-
 
 	typedef enum {
 		BACKEND_MEM,

@@ -14,8 +14,6 @@ namespace tidas {
 
 	static const std::string time_field = "TIDAS_TIME";
 
-	typedef std::pair < index_type, index_type > span;
-
 	// base class for group backend interface.  Rather than trying to mix inheritance and 
 	// virtual methods that can read / write data of supported types, we use a more C-like
 	// interface that simply specifies the type, number of samples, and a void* to point
@@ -35,10 +33,35 @@ namespace tidas {
 
 			virtual void write ( backend_path const & loc, schema const & schm, index_type nsamp ) = 0;
 
-			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data ) = 0;
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > & data ) = 0;
+			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > const & data ) = 0;
 
-			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data ) = 0;
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint8_t > & data ) = 0;
+			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint8_t > const & data ) = 0;
 
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int16_t > & data ) = 0;
+			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int16_t > const & data ) = 0;
+
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint16_t > & data ) = 0;
+			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint16_t > const & data ) = 0;
+
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int32_t > & data ) = 0;
+			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int32_t > const & data ) = 0;
+
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint32_t > & data ) = 0;
+			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint32_t > const & data ) = 0;
+
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int64_t > & data ) = 0;
+			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int64_t > const & data ) = 0;
+
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint64_t > & data ) = 0;
+			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint64_t > const & data ) = 0;
+
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < float > & data ) = 0;
+			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < float > const & data ) = 0;
+
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < double > & data ) = 0;
+			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < double > const & data ) = 0;
 	};
 
 
@@ -57,9 +80,35 @@ namespace tidas {
 
 			void write ( backend_path const & loc, schema const & schm, index_type nsamp );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data );
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > const & data );
 
-			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data );
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint8_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint8_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int16_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int16_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint16_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint16_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int32_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int32_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint32_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint32_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int64_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int64_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint64_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint64_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < float > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < float > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < double > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < double > const & data );
 
 		private :
 
@@ -86,9 +135,35 @@ namespace tidas {
 
 			void write ( backend_path const & loc, schema const & schm, index_type nsamp );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data );
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > const & data );
 
-			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data );
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint8_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint8_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int16_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int16_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint16_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint16_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int32_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int32_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint32_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint32_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int64_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int64_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint64_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint64_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < float > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < float > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < double > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < double > const & data );
 
 	};
 
@@ -108,11 +183,40 @@ namespace tidas {
 
 			void write ( backend_path const & loc, schema const & schm, index_type nsamp );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data );
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > const & data );
 
-			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, index_type n, data_type type, void * data );
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint8_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint8_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int16_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int16_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint16_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint16_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int32_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int32_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint32_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint32_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int64_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int64_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint64_t > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < uint64_t > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < float > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < float > const & data );
+
+			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < double > & data );
+			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < double > const & data );
 
 	};
+
+
+	// 
 
 
 	// group of data streams which are sampled synchronously
@@ -135,23 +239,13 @@ namespace tidas {
 
 			backend_path location ();
 
-			void duplicate ( backend_path const & newloc );
+			void duplicate ( backend_path const & newloc, schema const & newschm, interval_list const & newintr );
 
 			schema const & schema_get () const;
 
 			index_type nsamp () const;
 
-			void time_cache ();
-
-			void time_flush ();
-
-			std::vector < time_type > const & times();
-
-			intrvl range_time ( span const & spn );
-
-			span range_index_inner ( intrvl const & intv );
-
-			span range_index_outer ( intrvl const & intv );
+			void times ( std::vector < time_type > & data );
 
 			template < class T >
 			void read_field ( std::string const & field_name, index_type offset, std::vector < T > & data ) {
@@ -161,9 +255,7 @@ namespace tidas {
 					o << "cannot read field " << field_name << ", samples " << offset << " - " << (offset+n-1) << " from group " << loc_.name << " (" << nsamp_ << " samples)";
 					TIDAS_THROW( o.str().c_str() );
 				}
-				T testval;
-				data_type type = data_type_get ( typeid ( testval ) );
-				backend_->read_field ( loc_, field_name, offset, n, type, static_cast < void* > ( &(data[0]) ) );
+				backend_->read_field ( loc_, field_name, offset, data );
 				return;
 			}
 
@@ -175,9 +267,7 @@ namespace tidas {
 					o << "cannot write field " << field_name << ", samples " << offset << " - " << (offset+n-1) << " to group " << loc_.name << " (" << nsamp_ << " samples)";
 					TIDAS_THROW( o.str().c_str() );
 				}
-				T testval;
-				data_type type = data_type_get ( typeid ( testval ) );
-				backend_->write_field ( loc_, field_name, offset, n, type, static_cast < void* > ( &(data[0]) ) );
+				backend_->write_field ( loc_, field_name, offset, data );
 				return;
 			}
 

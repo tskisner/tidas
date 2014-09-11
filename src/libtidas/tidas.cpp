@@ -53,8 +53,7 @@ data_type tidas::data_type_get ( std::type_info const & test ) {
 
 
 tidas::backend_path::backend_path () {
-	fspath = "";
-	metapath = "";
+	path = "";
 	name = "";
 	type = BACKEND_MEM;
 }

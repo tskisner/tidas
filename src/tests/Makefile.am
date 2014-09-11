@@ -3,6 +3,7 @@
 
 AM_CPPFLAGS = \
 -I$(top_srcdir)/src/libtidas \
+-I$(top_srcdir)/src/libtidas/libre2 \
 -I$(top_srcdir)/src/tests
 
 AM_CFLAGS =

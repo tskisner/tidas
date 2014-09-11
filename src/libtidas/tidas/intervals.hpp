@@ -11,12 +11,20 @@
 
 namespace tidas {
 
-	typedef struct {
-		time_type start;
-		time_type stop;
-		index_type first;
-		index_type last;
-	} intrvl;
+	class intrvl {
+
+		public :
+
+			intrvl ();
+			intrvl ( time_type new_start, time_type new_stop, index_type new_first, index_type new_last );
+			~intrvl ();
+
+			time_type start;
+			time_type stop;
+			index_type first;
+			index_type last;
+
+	};
 
 	typedef std::vector < intrvl > interval_list;
 
@@ -137,6 +145,10 @@ namespace tidas {
 			void read_data ( interval_list & intr );
 
 			void write_data ( interval_list const & intr );
+
+			static index_type total_samples ( interval_list const & intr );
+
+			static time_type total_time ( interval_list const & intr );
 
 			static intrvl seek ( interval_list const & intr, time_type time );
 

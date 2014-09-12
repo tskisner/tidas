@@ -15,6 +15,21 @@ namespace tidas {
 	static const std::string group_fs_name = "groups";
 	static const std::string interval_fs_name = "intervals";
 
+	class block_select;
+
+	class block_select {
+
+		public :
+
+			std::string intr_match;
+			std::string group_filter;
+			group_select group_sel;
+			std::string block_filter;
+			std::map < std::string, block_select > block_sel;
+
+	};
+
+
 	class block;
 
 	class block {
@@ -34,7 +49,7 @@ namespace tidas {
 			
 			backend_path location ();
 			
-			void duplicate ( backend_path const & newloc );
+			void duplicate ( backend_path const & newloc, block_select const & selection );
 
 			void block_append ( std::string const & name, block const & blk );
 

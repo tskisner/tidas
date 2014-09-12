@@ -393,61 +393,61 @@ void tidas_group_helper_copy ( group & oldgr, group & newgr, string const & fiel
 }
 
 
-void tidas::group::duplicate ( backend_path const & newloc, schema const & newschm, interval_list const & newintr ) {
+void tidas::group::duplicate ( backend_path const & newloc, group_select const & selection ) {
 
 	schema schm = schema_get();
 	index_type n = nsamp();
 
 	index_type newn = n;
-	if ( newintr.size() > 0 ) {
-		newn = intervals::total_samples ( newintr );
+	if ( selection.intr.size() > 0 ) {
+		newn = intervals::total_samples ( selection.intr );
 	}
 
-	group newgroup ( newschm, newn );
+	group newgroup ( selection.schm, newn );
 	newgroup.relocate ( newloc );
 
 	newgroup.write_meta();
 	
 	// copy tidas time field
 
-	tidas_group_helper_copy < time_type > ( (*this), newgroup, time_field, n, newn, newintr );
+	tidas_group_helper_copy < time_type > ( (*this), newgroup, time_field, n, newn, selection.intr );
 
 	// copy all field data included in the new schema
 
-	field_list fields = newschm.fields();
+	field_list fields = selection.schm.fields();
 
 	for ( field_list::const_iterator it = fields.begin(); it != fields.end(); ++it ) {
 
 		switch ( it->type ) {
 			case TYPE_INT8:
-				tidas_group_helper_copy < int8_t > ( (*this), newgroup, it->name, n, newn, newintr );
+				tidas_group_helper_copy < int8_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
 				break;
 			case TYPE_UINT8:
-				tidas_group_helper_copy < uint8_t > ( (*this), newgroup, it->name, n, newn, newintr );
+				tidas_group_helper_copy < uint8_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
 				break;
 			case TYPE_INT16:
-				tidas_group_helper_copy < int16_t > ( (*this), newgroup, it->name, n, newn, newintr );
+				tidas_group_helper_copy < int16_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
 				break;
 			case TYPE_UINT16:
-				tidas_group_helper_copy < uint16_t > ( (*this), newgroup, it->name, n, newn, newintr );
+				tidas_group_helper_copy < uint16_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
 				break;
 			case TYPE_INT32:
-				tidas_group_helper_copy < int32_t > ( (*this), newgroup, it->name, n, newn, newintr );
+				tidas_group_helper_copy < int32_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
 				break;
 			case TYPE_UINT32:
-				tidas_group_helper_copy < uint32_t > ( (*this), newgroup, it->name, n, newn, newintr );
+				tidas_group_helper_copy < uint32_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
 				break;
 			case TYPE_INT64:
-				tidas_group_helper_copy < int64_t > ( (*this), newgroup, it->name, n, newn, newintr );
+				tidas_group_helper_copy < int64_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
 				break;
 			case TYPE_UINT64:
-				tidas_group_helper_copy < uint64_t > ( (*this), newgroup, it->name, n, newn, newintr );
+				tidas_group_helper_copy < uint64_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
 				break;
 			case TYPE_FLOAT32:
-				tidas_group_helper_copy < float > ( (*this), newgroup, it->name, n, newn, newintr );
+				tidas_group_helper_copy < float > ( (*this), newgroup, it->name, n, newn, selection.intr );
 				break;
 			case TYPE_FLOAT64:
-				tidas_group_helper_copy < double > ( (*this), newgroup, it->name, n, newn, newintr );
+				tidas_group_helper_copy < double > ( (*this), newgroup, it->name, n, newn, selection.intr );
 				break;
 			default:
 				TIDAS_THROW( "data type not recognized" );

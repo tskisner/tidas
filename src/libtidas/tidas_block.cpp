@@ -36,6 +36,19 @@ tidas::block::~block () {
 
 
 void tidas::block::relocate ( backend_path const & loc ) {
+
+	if ( loc.name == interval_fs_name ) {
+		std::ostringstream o;
+		o << "cannot give block reserved name \"" << interval_fs_name << "\"";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	if ( loc.name == group_fs_name ) {
+		std::ostringstream o;
+		o << "cannot give block reserved name \"" << group_fs_name << "\"";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
 	loc_ = loc;
 	backend_path oldloc;
 	backend_path newloc;
@@ -75,14 +88,14 @@ backend_path tidas::block::location () {
 }
 
 
-void tidas::block::read () {
+void tidas::block::read_meta () {
 
 
 	return;
 }
 
 
-void tidas::block::write () {
+void tidas::block::write_meta () {
 
 	// make our parent directory if it does not exist
 
@@ -105,20 +118,81 @@ void tidas::block::write () {
 	// write out intervals
 
 	for ( std::vector < intervals > :: iterator it = intervals_list_.begin(); it != intervals_list_.end(); ++it ) {
-		it->write();
+		it->write_meta();
 	}
 
 	// write out groups
 
 	for ( std::vector < group > :: iterator it = group_list_.begin(); it != group_list_.end(); ++it ) {
-		it->write();
+		it->write_meta();
 	}
 
 	// recursively descend all child blocks...
 
 	for ( std::vector < block > :: iterator it = block_list_.begin(); it != block_list_.end(); ++it ) {
-		it->write();
+		it->write_meta();
 	}
+
+	return;
+}
+
+
+void tidas::block::duplicate ( backend_path const & newloc, block_select const & selection ) {
+
+	block newblock();
+
+	// filter out intervals
+
+	RE2 re_intr ( selection.intr_match );
+
+	for ( std::vector < intervals > :: const_iterator it = intervals_list_.begin(); it != intervals_list_.end(); ++it ) {
+		if ( RE2::FullMatch ( it->location().name, re ) ) {
+			newblock.intervals_append ( it->location().name, (*it) );
+		}
+	}
+
+	// filter out groups by name
+
+	RE2 re_group ( selection.group_match );
+
+	for ( std::vector < group > :: const_iterator it = group_list_.begin(); it != group_list_.end(); ++it ) {
+		if ( RE2::FullMatch ( it->location().name, re ) ) {
+			newblock.group_append ( it->location().name, (*it) );
+		}
+	}
+
+	// now go through
+
+
+	schema schm = schema_get();
+	index_type n = nsamp();
+
+	index_type newn = n;
+	if ( selection.intr.size() > 0 ) {
+		newn = intervals::total_samples ( selection.intr );
+	}
+
+	block newblock ( selection.schm, newn );
+	newgroup.relocate ( newloc );
+
+	newgroup.write_meta();
+	
+
+
+
+
+	class block_select {
+
+		public :
+
+			std::string intr_match;
+			std::string group_filter;
+			group_select group_sel;
+			std::string block_filter;
+			std::map < std::string, block_select > block_sel;
+
+	};
+
 
 	return;
 }

@@ -216,7 +216,16 @@ namespace tidas {
 	};
 
 
-	// 
+	// a slice of a group
+
+	class group_select {
+
+		public :
+
+			schema schm;
+			interval_list intr;
+
+	};
 
 
 	// group of data streams which are sampled synchronously
@@ -239,7 +248,7 @@ namespace tidas {
 
 			backend_path location ();
 
-			void duplicate ( backend_path const & newloc, schema const & newschm, interval_list const & newintr );
+			void duplicate ( backend_path const & newloc, group_select const & selection );
 
 			schema const & schema_get () const;
 

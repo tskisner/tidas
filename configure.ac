@@ -43,6 +43,7 @@ dnl +-------------------------
 dnl | C++ support
 dnl +-------------------------
 AC_PROG_CXX
+AX_CXX_COMPILE_STDCXX_11([noext], [mandatory])
 dnl +-------------------------
 dnl | Fortran support
 dnl +-------------------------

@@ -5,8 +5,10 @@
   level LICENSE file for details.
 */
 
-#include <tidas_test.h>
+#include <tidas_test.hpp>
 
+
+/*
 
 #define TEST_LEN 100
 #define VEC_N 3
@@ -288,7 +290,7 @@ START_TEST(utils_vector)
 	test_elem const * cur1;
 	test_elem const * cur2;
 
-	/* test vector ops */
+	// test vector ops
 
 	fprintf ( stderr, "  Testing tidas_vector operations\n" );
 
@@ -351,5 +353,7 @@ Suite * make_suite_utils() {
 
 	return s;
 }
+
+*/
 
 

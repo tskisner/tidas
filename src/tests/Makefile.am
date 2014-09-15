@@ -1,9 +1,13 @@
 
+SUBDIRS = gtest
+
 # Initialize compile and linking flags
 
 AM_CPPFLAGS = \
 -I$(top_srcdir)/src/libtidas \
--I$(top_srcdir)/src/libtidas/libre2 \
+-I$(top_srcdir)/src/libtidas/re2 \
+-I$(top_srcdir)/src/libtidas/sqlite \
+-I$(top_srcdir)/src/tests/gtest \
 -I$(top_srcdir)/src/tests
 
 AM_CFLAGS =
@@ -12,9 +16,12 @@ AM_FCFLAGS =
 
 AM_LDFLAGS = \
 -L$(top_builddir)/src/libtidas \
+-L$(top_builddir)/src/tests/gtest \
 -L$(top_builddir)/src/tests
 
-AM_LIBS = $(top_builddir)/src/libtidas/libtidas.la
+AM_LIBS = \
+$(top_builddir)/src/tests/gtest/libtidas_gtest.la \
+$(top_builddir)/src/libtidas/libtidas.la
 
 # Add check flags
 
@@ -25,15 +32,15 @@ AM_LIBS += $(CHECK_LIBS)
 include $(top_srcdir)/src/build_options.am
 
 
-noinst_HEADERS = tidas_test.h
+noinst_HEADERS = tidas_test.hpp
 
 bin_PROGRAMS = tidas_test
 TESTS = tidas_test
 
 tidas_test_SOURCES = \
-tidas_test.c \
-tidas_test_utils.c \
-tidas_test_intervals.c
+tidas_test.cpp \
+tidas_test_utils.cpp \
+tidas_test_intervals.cpp
 
 tidas_test_LDADD = $(AM_LIBS)
 

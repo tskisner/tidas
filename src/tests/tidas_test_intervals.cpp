@@ -5,8 +5,10 @@
   level LICENSE file for details.
 */
 
-#include <tidas_test.h>
+#include <tidas_test.hpp>
 
+
+/*
 
 #define NINT 10
 #define SPAN 123.4
@@ -54,7 +56,7 @@ START_TEST(intervals_manip)
 		ck_assert_msg ( ( check_dbl_eq( cursor->start, start ) ) && ( check_dbl_eq( cursor->stop, stop ) ), "    failed consistency on interval %d append / get", (int)i );
 	}
 
-	/* test time before first interval */
+	// test time before first interval
 
 	cursor = tidas_intervals_seek ( intervals, 0.0 );
 	ck_assert_msg ( ! cursor, "    failed interval seek before first interval" );
@@ -62,25 +64,18 @@ START_TEST(intervals_manip)
 	for ( i = 0; i < NINT; ++i ) {
 		start = GAP + (double)i * ( SPAN + GAP );
 		stop = (double)(i + 1) * ( SPAN + GAP );
-		/* test time in the middle of the interval */
+		// test time in the middle of the interval
 		time = 0.5 * ( start + stop );
 		cursor = tidas_intervals_seek ( intervals, time );
 		ck_assert_msg ( ( check_dbl_eq( cursor->start, start ) ) && ( check_dbl_eq( cursor->stop, stop ) ), "    failed consistency on interval %d seek", (int)i );
 	}
 
-	/* test time after last interval */
+	// test time after last interval
 
 	stop = (double)(NINT) * ( SPAN + GAP ) + GAP;
 	cursor = tidas_intervals_seek ( intervals, stop );
 	ck_assert_msg ( ! cursor, "    failed interval seek after last interval" );
 
-	/*
-	FIXME: implement tests
-
-	tidas_intrvl const * tidas_intervals_seek_ceil ( tidas_intervals const * intervals, TIDAS_DTYPE_TIME time );
-
-	tidas_intrvl const * tidas_intervals_seek_floor ( tidas_intervals const * intervals, TIDAS_DTYPE_TIME time );
-	*/
 
 	tidas_intervals_free ( intervals );
 
@@ -130,7 +125,7 @@ START_TEST(intervals_hdf5)
 
 	copy = tidas_intervals_copy ( intervals );
 
-	/* delete file if it exists */
+	// delete file if it exists
 
 	tidas_fs_rm ( testfile );
 
@@ -182,6 +177,8 @@ Suite * make_suite_intervals() {
 
 	return s;
 }
+
+*/
 
 
 

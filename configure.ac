@@ -225,8 +225,6 @@ if test $tidas_python = yes; then
 else
   AC_MSG_NOTICE([  Python                    : Disabled])
 fi
-AC_MSG_NOTICE([  SQLite Compile            : $SQLITE3_CFLAGS])
-AC_MSG_NOTICE([  SQLite Link               : $SQLITE3_LDFLAGS])
 if test $tidas_hdf5 = yes; then
   AC_MSG_NOTICE([  HDF5 Compile              : $HDF5_CPPFLAGS])
   AC_MSG_NOTICE([  HDF5 Link                 : $HDF5_LDFLAGS $HDF5_LIBS])

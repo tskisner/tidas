@@ -5,7 +5,8 @@ SUBDIRS = sqlite re2
 
 AM_CPPFLAGS = \
 -I$(top_srcdir)/src/libtidas \
--I$(top_srcdir)/src/libtidas/libre2
+-I$(top_srcdir)/src/libtidas/libre2 \
+-I$(top_srcdir)/src/libtidas/sqlite
 
 AM_CFLAGS =
 AM_CXXFLAGS =

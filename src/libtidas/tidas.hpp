@@ -18,7 +18,8 @@
 
 #include <cstdint>
 
-#include <re2/re2.h>
+#include <tidas/sqlite3.h>
+#include <tidas/re2/re2.h>
 
 
 namespace tidas {

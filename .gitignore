@@ -40,6 +40,8 @@ Makefile.in
 *~
 *.o
 
+/src/libtidas/sqlite/tidas_sqlite
+
 /src/tests/tidas_test
 /src/tests/*.out
 

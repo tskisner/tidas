@@ -20,6 +20,8 @@ AM_LIBS =
 # Append compile and linking flags based on configure variables
 include $(top_srcdir)/src/build_options.am
 
+EXTRA_DIST = cereal
+
 
 include_HEADERS = tidas.hpp
 noinst_HEADERS = tidas_internal.hpp
@@ -50,4 +52,16 @@ libtidas_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@
 libtidas_la_LIBADD = \
 $(top_builddir)/src/libtidas/sqlite/libtidas_sqlite.la \
 $(top_builddir)/src/libtidas/re2/libtidas_re2.la
+
+
+# install / uninstall cereal headers
+
+install-data-local:
+	@$(mkinstalldirs) $(DESTDIR)$(includedir)/cereal; \
+	cp -r $(srcdir)/cereal/* $(DESTDIR)$(includedir)/cereal/; \
+	chmod -R a=rX,u+w $(DESTDIR)$(includedir)/cereal
+
+uninstall-local:
+	@rm -rf $(DESTDIR)$(includedir)/cereal; \
+	rm -rf $(DESTDIR)$(includedir)/tidas
 

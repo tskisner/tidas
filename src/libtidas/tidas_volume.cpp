@@ -7,4 +7,7 @@
 
 #include <tidas_internal.h>
 
+#include <tidas/sqlite3.h>
+#include <tidas/re2/re2.h>
+  
 

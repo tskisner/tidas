@@ -5,7 +5,7 @@ SUBDIRS = sqlite re2
 
 AM_CPPFLAGS = \
 -I$(top_srcdir)/src/libtidas \
--I$(top_srcdir)/src/libtidas/libre2 \
+-I$(top_srcdir)/src/libtidas/re2 \
 -I$(top_srcdir)/src/libtidas/sqlite
 
 AM_CFLAGS =
@@ -20,8 +20,8 @@ AM_LIBS =
 # Append compile and linking flags based on configure variables
 include $(top_srcdir)/src/build_options.am
 
-EXTRA_DIST = cereal
 
+EXTRA_DIST = cereal
 
 include_HEADERS = tidas.hpp
 noinst_HEADERS = tidas_internal.hpp
@@ -44,8 +44,13 @@ libtidas_la_SOURCES = \
 tidas.cpp \
 tidas_utils.cpp \
 tidas_intervals.cpp \
+tidas_intervals_hdf5.cpp \
+tidas_intervals_getdata.cpp \
 tidas_schema.cpp \
-tidas_group.cpp
+tidas_group.cpp \
+tidas_group_hdf5.cpp \
+tidas_group_getdata.cpp
+
 
 libtidas_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@
 

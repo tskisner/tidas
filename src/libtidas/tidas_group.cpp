@@ -7,6 +7,8 @@
 
 #include <tidas_internal.hpp>
 
+#include <tidas/re2/re2.h>
+
 
 #define TIDAS_MEM_FIELD_N 100
 

@@ -36,13 +36,13 @@ group_backend_getdata * tidas::group_backend_getdata::clone () {
 }
 
 
-void tidas::group_backend_getdata::read ( backend_path const & loc, schema & schm, index_type & nsamp ) {
+void tidas::group_backend_getdata::read ( backend_path const & loc, schema & schm, dict & dictionary, index_type & nsamp ) {
 
 	return;
 }
 
 
-void tidas::group_backend_getdata::write ( backend_path const & loc, schema const & schm, index_type nsamp ) {
+void tidas::group_backend_getdata::write ( backend_path const & loc, schema const & schm, dict const & dictionary, index_type nsamp ) {
 
 	return;
 }

@@ -6,23 +6,59 @@
 */
 
 
-#ifndef TIDAS_VOLUME_H
-#define TIDAS_VOLUME_H
+#ifndef TIDAS_VOLUME_HPP
+#define TIDAS_VOLUME_HPP
+
+#include <tidas/sqlite3.h>
 
 
-typedef struct {
-	char path[ TIDAS_PATH_LEN ];
-	tidas_block * root;
-	tidas_index * index;
-} tidas_volume;
+namespace tidas {
+
+	static const std::string block_fs_name = "blocks";
+
+	class select {
+
+		public :
+
+			std::string block_filter;
+			std::map < std::string, block_select > block_sel;
+
+	};
 
 
-tidas_volume * tidas_volume_create ( char const * path );
+	class volume {
 
-tidas_volume * tidas_volume_open ( char const * path );
+		public :
 
-void tidas_volume_close ( tidas_volume * vol );
+			volume ( std::string const & path, backend_type type );
+			volume ( std::string const & path );
+			~volume ();
 
+			void read_meta ();
+
+			void write_meta ();
+
+			void index ();
+
+			select query ( std::string const & match );
+
+			block & root ();
+			
+			void duplicate ( std::string const & newpath, backend_type newtype, select const & selection );
+
+			void block_append ( std::string const & name, block const & blk );
+
+		private :
+			// copy constructor forbidden
+			volume ( volume const & orig ) {}
+
+			backend_path loc_;
+			block root_;
+			sqlite3 * index_;
+
+	};
+
+}
 
 
 #endif

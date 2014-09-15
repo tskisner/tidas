@@ -47,7 +47,7 @@ namespace tidas {
 			
 			void relocate ( backend_path const & loc );
 			
-			backend_path location ();
+			backend_path location () const;
 			
 			void duplicate ( backend_path const & newloc, block_select const & selection );
 

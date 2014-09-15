@@ -36,13 +36,13 @@ group_backend_hdf5 * tidas::group_backend_hdf5::clone () {
 }
 
 
-void tidas::group_backend_hdf5::read ( backend_path const & loc, schema & schm, index_type & nsamp ) {
+void tidas::group_backend_hdf5::read ( backend_path const & loc, schema & schm, dict & dictionary, index_type & nsamp ) {
 
 	return;
 }
 
 
-void tidas::group_backend_hdf5::write ( backend_path const & loc, schema const & schm, index_type nsamp ) {
+void tidas::group_backend_hdf5::write ( backend_path const & loc, schema const & schm, dict const & dictionary, index_type nsamp ) {
 
 	return;
 }

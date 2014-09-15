@@ -123,7 +123,7 @@ void tidas::intervals::relocate ( backend_path const & loc ) {
 }
 
 
-backend_path tidas::intervals::location () {
+backend_path tidas::intervals::location () const {
 	return loc_;
 }
 

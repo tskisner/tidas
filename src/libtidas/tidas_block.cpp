@@ -25,10 +25,10 @@ tidas::block::block ( backend_path const & loc ) {
 
 
 tidas::block::block ( block const & orig ) {
-	loc_ = orig.loc;
+	loc_ = orig.loc_;
 	block_list_ = orig.block_list_;
 	group_list_ = orig.group_list_;
-	intervals_list = orig.intervals_list_;
+	intervals_list_ = orig.intervals_list_;
 }
 
 
@@ -85,7 +85,7 @@ void tidas::block::relocate ( backend_path const & loc ) {
 }
 
 
-backend_path tidas::block::location () {
+backend_path tidas::block::location () const {
 	return loc_;
 }
 
@@ -141,30 +141,31 @@ void tidas::block::write_meta () {
 
 void tidas::block::duplicate ( backend_path const & newloc, block_select const & selection ) {
 
-	block newblock();
+	block newblock;
 
 	// filter out intervals
 
 	RE2 re_intr ( selection.intr_match );
 
 	for ( std::vector < intervals > :: const_iterator it = intervals_list_.begin(); it != intervals_list_.end(); ++it ) {
-		if ( RE2::FullMatch ( it->location().name, re ) ) {
+		if ( RE2::FullMatch ( it->location().name, re_intr ) ) {
 			newblock.intervals_append ( it->location().name, (*it) );
 		}
 	}
 
 	// filter out groups by name
 
-	RE2 re_group ( selection.group_match );
+	RE2 re_group ( selection.group_filter );
 
 	for ( std::vector < group > :: const_iterator it = group_list_.begin(); it != group_list_.end(); ++it ) {
-		if ( RE2::FullMatch ( it->location().name, re ) ) {
+		if ( RE2::FullMatch ( it->location().name, re_group ) ) {
 			newblock.group_append ( it->location().name, (*it) );
 		}
 	}
 
 	// now go through
 
+	/*
 
 	schema schm = schema_get();
 	index_type n = nsamp();
@@ -179,21 +180,7 @@ void tidas::block::duplicate ( backend_path const & newloc, block_select const &
 
 	newgroup.write_meta();
 	
-
-
-
-
-	class block_select {
-
-		public :
-
-			std::string intr_match;
-			std::string group_filter;
-			group_select group_sel;
-			std::string block_filter;
-			std::map < std::string, block_select > block_sel;
-
-	};
+	*/
 
 
 	return;
@@ -204,12 +191,14 @@ void tidas::block::block_append ( std::string const & name, block const & blk ) 
 	backend_path oldloc = blk.location();
 
 	backend_path newloc;
+
+	/*
 	newloc.type = loc_.type;
 	newloc.fspath = loc_.fspath + "/" + name;
-	newloc.metapath = 
+	//newloc.metapath = 
 
-	FIXME:  some kind of "rebase" option?
-
+	//FIXME:  some kind of "rebase" option?
+	*/
 
 	return;
 }

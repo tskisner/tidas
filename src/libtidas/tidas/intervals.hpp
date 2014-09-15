@@ -36,7 +36,7 @@ namespace tidas {
 		public :
 			
 			intervals_backend () {}
-			virtual ~intervals_backend () = 0;
+			virtual ~intervals_backend () {}
 
 			virtual intervals_backend * clone () = 0;
 

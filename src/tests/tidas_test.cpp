@@ -8,34 +8,15 @@
 #include <tidas_test.hpp>
 
 
-/*
-int check_dbl_eq ( double d1, double d2 ) {
-	return ( fabs ( d1 - d2 ) < DBL_EPSILON ) ? 1 : 0;
-}
-*/
+using namespace std;
+using namespace tidas;
 
 
 int main ( int argc, char *argv[] ) {
 
-    int failed;
-    int tot_failed = 0;
-    
-    /*
-    SRunner * sr;
+	::testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 
-    sr = srunner_create ( make_suite_utils() );
-
-    srunner_add_suite ( sr, make_suite_intervals() );
-
-    srunner_run_all ( sr, CK_NORMAL );
-
-    failed = srunner_ntests_failed ( sr );
-    
-    srunner_free ( sr );
-
-    return ( failed == 0 ) ? EXIT_SUCCESS : EXIT_FAILURE;
-    */
-    return 0;
 }
 
 

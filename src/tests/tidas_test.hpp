@@ -10,14 +10,10 @@
 
 #include <tidas_internal.hpp>
 
-
-/*
-int check_dbl_eq ( double d1, double d2 );
+#include <gtest/gtest.h>
 
 
-Suite * make_suite_utils();
 
-Suite * make_suite_intervals();
-*/
+
 
 #endif

@@ -44,4 +44,8 @@ Makefile.in
 
 /src/tests/tidas_test
 /src/tests/*.out
+/src/tests/test-suite.log
+/src/tests/tidas_test.log
+/src/tests/tidas_test.trs
+
 

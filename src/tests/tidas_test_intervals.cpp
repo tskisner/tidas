@@ -8,183 +8,112 @@
 #include <tidas_test.hpp>
 
 
-/*
-
-#define NINT 10
-#define SPAN 123.4
-#define GAP 1.0
-
-#ifdef HAVE_HDF5
-#include <hdf5.h>
-#endif
+using namespace std;
+using namespace tidas;
 
 
-void intervals_manip_setup () {
-	return;
+
+TEST( intervalstest, metadata ) {
+
+	intervals dummy1;
+
+	backend_path loc = dummy1.location();
+	EXPECT_EQ( loc.type, BACKEND_MEM );
+	EXPECT_EQ( loc.path, "" );
+	EXPECT_EQ( loc.name, "" );
+
+	loc.type = BACKEND_HDF5;
+	loc.path = ".";
+	loc.name = "test_intervals_meta.hdf5.out";
+
+	dummy1.relocate ( loc );
+
+	backend_path checkloc = dummy1.location();
+	EXPECT_EQ( loc.type, checkloc.type );
+	EXPECT_EQ( loc.path, checkloc.path );
+	EXPECT_EQ( loc.name, checkloc.name );
+
+	intervals dummy2 ( loc );
+	dummy2.write_meta();
+	dummy2.read_meta();
+
+	checkloc = dummy2.location();
+	EXPECT_EQ( loc.type, checkloc.type );
+	EXPECT_EQ( loc.path, checkloc.path );
+	EXPECT_EQ( loc.name, checkloc.name );
+
 }
 
-void intervals_manip_teardown () {
-	return;
-}
 
-START_TEST(intervals_manip)
-{
-	size_t i;
-	tidas_intervals * intervals;
-	tidas_intrvl const * cursor;
-	tidas_intrvl intrvl;
-	double start;
-	double stop;
-	double time;
+TEST( intervalstest, data ) {
 
-	fprintf ( stderr, "  Testing tidas_intervals manipulation\n" );
+	interval_list intr;
+	size_t nint = 10;
+	time_type gap = 1.0;
+	time_type span = 123.4;
+	index_type gap_samp = 5;
+	index_type span_samp = 617;
 
-	intervals = tidas_intervals_alloc ();
+	intrvl cur;
 
-	for ( i = 0; i < NINT; ++i ) {
-		start = GAP + (double)i * ( SPAN + GAP );
-		stop = (double)(i + 1) * ( SPAN + GAP );
-		intrvl.start = start;
-		intrvl.stop = stop;
-		tidas_intervals_append ( intervals, &intrvl );
+	for ( size_t i = 0; i < nint; ++i ) {
+		cur.start = gap + (double)i * ( span + gap );
+		cur.stop = (double)(i + 1) * ( span + gap );
+		cur.first = gap_samp + i * ( span_samp + gap_samp );
+		cur.last = (i + 1) * ( span_samp + gap_samp );
+		intr.push_back ( cur );
 	}
 
-	for ( i = 0; i < NINT; ++i ) {
-		start = GAP + (double)i * ( SPAN + GAP );
-		stop = (double)(i + 1) * ( SPAN + GAP );
-		cursor = tidas_intervals_get ( intervals, i );
-		ck_assert_msg ( ( check_dbl_eq( cursor->start, start ) ) && ( check_dbl_eq( cursor->stop, stop ) ), "    failed consistency on interval %d append / get", (int)i );
+	backend_path loc;
+	loc.type = BACKEND_HDF5;
+	loc.path = ".";
+	loc.name = "test_intervals_data.hdf5.out";
+
+	intervals dummy1;
+	dummy1.relocate ( loc );
+
+	dummy1.write_meta();
+	dummy1.write_data ( intr );
+
+	intervals dummy2 ( loc );
+
+	interval_list check;
+
+	dummy2.read_data ( check );
+
+	for ( size_t i = 0; i < nint; ++i ) {
+		cur.start = gap + (double)i * ( span + gap );
+		cur.stop = (double)(i + 1) * ( span + gap );
+		cur.first = gap_samp + i * ( span_samp + gap_samp );
+		cur.last = (i + 1) * ( span_samp + gap_samp );
+		EXPECT_EQ( cur.start, check[i].start );
+		EXPECT_EQ( cur.stop, check[i].stop );
+		EXPECT_EQ( cur.first, check[i].first );
+		EXPECT_EQ( cur.last, check[i].last );
 	}
 
-	// test time before first interval
+	loc.type = BACKEND_HDF5;
+	loc.path = ".";
+	loc.name = "test_intervals_data_dup.hdf5.out";
 
-	cursor = tidas_intervals_seek ( intervals, 0.0 );
-	ck_assert_msg ( ! cursor, "    failed interval seek before first interval" );
+	dummy2.duplicate ( loc );
 
-	for ( i = 0; i < NINT; ++i ) {
-		start = GAP + (double)i * ( SPAN + GAP );
-		stop = (double)(i + 1) * ( SPAN + GAP );
-		// test time in the middle of the interval
-		time = 0.5 * ( start + stop );
-		cursor = tidas_intervals_seek ( intervals, time );
-		ck_assert_msg ( ( check_dbl_eq( cursor->start, start ) ) && ( check_dbl_eq( cursor->stop, stop ) ), "    failed consistency on interval %d seek", (int)i );
+	intervals dummy3 ( loc );
+
+	dummy3.read_data ( check );
+
+	for ( size_t i = 0; i < nint; ++i ) {
+		cur.start = gap + (double)i * ( span + gap );
+		cur.stop = (double)(i + 1) * ( span + gap );
+		cur.first = gap_samp + i * ( span_samp + gap_samp );
+		cur.last = (i + 1) * ( span_samp + gap_samp );
+		EXPECT_EQ( cur.start, check[i].start );
+		EXPECT_EQ( cur.stop, check[i].stop );
+		EXPECT_EQ( cur.first, check[i].first );
+		EXPECT_EQ( cur.last, check[i].last );
 	}
 
-	// test time after last interval
-
-	stop = (double)(NINT) * ( SPAN + GAP ) + GAP;
-	cursor = tidas_intervals_seek ( intervals, stop );
-	ck_assert_msg ( ! cursor, "    failed interval seek after last interval" );
-
-
-	tidas_intervals_free ( intervals );
-
 }
-END_TEST
-
-
-void intervals_hdf5_setup () {
-	return;
-}
-
-void intervals_hdf5_teardown () {
-	return;
-}
-
-START_TEST(intervals_hdf5)
-{
-
-#ifdef HAVE_HDF5
-
-	size_t i;
-	tidas_intervals * intervals;
-	tidas_intervals * copy;
-	tidas_intrvl const * cur1;
-	tidas_intrvl const * cur2;
-	tidas_intrvl intrvl;
-	double start;
-	double stop;
-	hid_t file;
-	herr_t status;
-
-	char testfile[ TIDAS_PATH_LEN ];
-
-	fprintf ( stderr, "  Testing tidas_intervals HDF5 I/O\n" );
-
-	intervals = tidas_intervals_alloc ();
-
-	for ( i = 0; i < NINT; ++i ) {
-		start = GAP + (double)i * ( SPAN + GAP );
-		stop = (double)(i + 1) * ( SPAN + GAP );
-		intrvl.start = start;
-		intrvl.stop = stop;
-		tidas_intervals_append ( intervals, &intrvl );
-	}
-
-	strcpy ( testfile, "test_intervals.hdf5.out" );
-
-	copy = tidas_intervals_copy ( intervals );
-
-	// delete file if it exists
-
-	tidas_fs_rm ( testfile );
-
-	file = H5Fcreate ( testfile, H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT );
-	status = H5Fclose ( file );
-
-	tidas_intervals_write ( intervals, TIDAS_BACKEND_HDF5, testfile, "", "intervals1" );
-	tidas_intervals_write ( intervals, TIDAS_BACKEND_HDF5, testfile, "", "intervals2" );
-	tidas_intervals_write ( intervals, TIDAS_BACKEND_HDF5, testfile, "", "intervals3" );
-
-	tidas_intervals_read ( intervals, TIDAS_BACKEND_HDF5, testfile, "", "intervals2" );
-
-	for ( i = 0; i < NINT; ++i ) {
-		cur1 = tidas_intervals_get ( intervals, i );
-		cur2 = tidas_intervals_get ( copy, i );
-		ck_assert_msg ( ( check_dbl_eq( cur1->start, cur2->start ) ) && ( check_dbl_eq( cur1->stop, cur2->stop ) ), "    failed consistency on interval %d HDF5 write / read", (int)i );
-	}
-
-	tidas_intervals_free ( intervals );
-	tidas_intervals_free ( copy );
-
-#else
-
-	fprintf ( stderr, "  Skipping tidas_intervals HDF5 I/O (backend disabled)\n" );
-
-#endif
-
-}
-END_TEST
-
-
-Suite * make_suite_intervals() {
-	Suite * s;
-	TCase * tc_manip;
-	TCase * tc_hdf5;
-	TCase * tc_getdata;
-
-	s = suite_create ( "Intervals" );
-
-	tc_manip = tcase_create ( "Manipulation" );
-	tcase_add_checked_fixture ( tc_manip, intervals_manip_setup, intervals_manip_teardown );
-	tcase_add_test ( tc_manip, intervals_manip );
-	suite_add_tcase ( s, tc_manip );
-
-	tc_hdf5 = tcase_create ( "HDF5" );
-	tcase_add_checked_fixture ( tc_hdf5, intervals_hdf5_setup, intervals_hdf5_teardown );
-	tcase_add_test ( tc_hdf5, intervals_hdf5 );
-	suite_add_tcase ( s, tc_hdf5 );
-
-	return s;
-}
-
-*/
-
-
-
-
-
-
 
 
 

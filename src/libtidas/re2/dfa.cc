@@ -21,8 +21,8 @@
 //
 // See http://swtch.com/~rsc/regexp/ for a very bare-bones equivalent.
 
-#include "re2/prog.h"
-#include "re2/stringpiece.h"
+#include "tidas/re2/prog.h"
+#include "tidas/re2/stringpiece.h"
 #include "util/atomicops.h"
 #include "util/flags.h"
 #include "util/sparse_set.h"

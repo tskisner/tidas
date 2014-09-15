@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "re2/stringpiece.h"
+#include "tidas/re2/stringpiece.h"
 #include "util/util.h"
 
 using re2::StringPiece;

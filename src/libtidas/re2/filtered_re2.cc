@@ -4,9 +4,9 @@
 
 #include <string>
 #include "util/util.h"
-#include "re2/filtered_re2.h"
-#include "re2/prefilter.h"
-#include "re2/prefilter_tree.h"
+#include "tidas/re2/filtered_re2.h"
+#include "tidas/re2/prefilter.h"
+#include "tidas/re2/prefilter_tree.h"
 
 namespace re2 {
 

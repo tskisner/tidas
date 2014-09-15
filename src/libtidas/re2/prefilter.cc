@@ -3,10 +3,10 @@
 // license that can be found in the LICENSE file.
 
 #include "util/util.h"
-#include "re2/prefilter.h"
-#include "re2/re2.h"
-#include "re2/unicode_casefold.h"
-#include "re2/walker-inl.h"
+#include "tidas/re2/prefilter.h"
+#include "tidas/re2/re2.h"
+#include "tidas/re2/unicode_casefold.h"
+#include "tidas/re2/walker-inl.h"
 
 namespace re2 {
 

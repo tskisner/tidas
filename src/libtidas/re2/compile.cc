@@ -8,10 +8,10 @@
 // This file's external interface is just Regexp::CompileToProg.
 // The Compiler class defined in this file is private.
 
-#include "re2/prog.h"
-#include "re2/re2.h"
-#include "re2/regexp.h"
-#include "re2/walker-inl.h"
+#include "tidas/re2/prog.h"
+#include "tidas/re2/re2.h"
+#include "tidas/re2/regexp.h"
+#include "tidas/re2/walker-inl.h"
 
 namespace re2 {
 

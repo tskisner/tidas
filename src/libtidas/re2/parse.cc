@@ -17,10 +17,10 @@
 // See regexp.h for rationale.
 
 #include "util/util.h"
-#include "re2/regexp.h"
-#include "re2/stringpiece.h"
-#include "re2/unicode_casefold.h"
-#include "re2/unicode_groups.h"
+#include "tidas/re2/regexp.h"
+#include "tidas/re2/stringpiece.h"
+#include "tidas/re2/unicode_casefold.h"
+#include "tidas/re2/unicode_groups.h"
 
 namespace re2 {
 

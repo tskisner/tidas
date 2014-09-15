@@ -66,15 +66,6 @@ dnl | This is a C++ project...
 dnl +------------------------------------------------
 AC_LANG([C++])
 dnl +------------------------------------------------
-dnl | Check for SQLite (required)
-dnl +------------------------------------------------
-AC_LANG_PUSH([C])
-AX_LIB_SQLITE3
-if test x"$SQLITE3_LDFLAGS" = x; then
-  AC_MSG_ERROR([Cannot find sqlite3 library])
-fi
-AC_LANG_POP([C])
-dnl +------------------------------------------------
 dnl | Check for MPI
 dnl +------------------------------------------------
 tidas_mpi=yes
@@ -183,7 +174,8 @@ dnl | Set outputs
 dnl +------------------------------------------------
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
-AC_CONFIG_FILES([src/libtidas/libre2/Makefile])
+AC_CONFIG_FILES([src/libtidas/re2/Makefile])
+AC_CONFIG_FILES([src/libtidas/sqlite/Makefile])
 AC_CONFIG_FILES([src/libtidas/Makefile])
 dnl AC_CONFIG_FILES([src/tests/Makefile])
 dnl AC_CONFIG_FILES([src/apps/Makefile])

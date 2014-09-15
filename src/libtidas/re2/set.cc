@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "re2/set.h"
+#include "tidas/re2/set.h"
 
 #include "util/util.h"
-#include "re2/stringpiece.h"
-#include "re2/prog.h"
-#include "re2/re2.h"
-#include "re2/regexp.h"
+#include "tidas/re2/stringpiece.h"
+#include "tidas/re2/prog.h"
+#include "tidas/re2/re2.h"
+#include "tidas/re2/regexp.h"
 
 using namespace re2;
 

@@ -13,7 +13,7 @@
 #ifndef RE2_WALKER_INL_H__
 #define RE2_WALKER_INL_H__
 
-#include "re2/regexp.h"
+#include "tidas/re2/regexp.h"
 
 namespace re2 {
 

@@ -5,7 +5,7 @@
 #include "util/util.h"
 #include "util/flags.h"
 #include "util/benchmark.h"
-#include "re2/re2.h"
+#include "tidas/re2/re2.h"
 
 DEFINE_string(test_tmpdir, "/var/tmp", "temp directory");
 

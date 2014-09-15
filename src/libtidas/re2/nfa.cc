@@ -24,8 +24,8 @@
 // Like Thompson's original machine and like the DFA implementation, this
 // implementation notices a match only once it is one byte past it.
 
-#include "re2/prog.h"
-#include "re2/regexp.h"
+#include "tidas/re2/prog.h"
+#include "tidas/re2/regexp.h"
 #include "util/sparse_array.h"
 #include "util/sparse_set.h"
 

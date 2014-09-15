@@ -7,8 +7,8 @@
 // Also sort and simplify character classes.
 
 #include "util/util.h"
-#include "re2/regexp.h"
-#include "re2/walker-inl.h"
+#include "tidas/re2/regexp.h"
+#include "tidas/re2/walker-inl.h"
 
 namespace re2 {
 

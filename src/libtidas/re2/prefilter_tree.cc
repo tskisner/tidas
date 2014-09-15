@@ -4,9 +4,9 @@
 
 #include "util/util.h"
 #include "util/flags.h"
-#include "re2/prefilter.h"
-#include "re2/prefilter_tree.h"
-#include "re2/re2.h"
+#include "tidas/re2/prefilter.h"
+#include "tidas/re2/prefilter_tree.h"
+#include "tidas/re2/re2.h"
 
 DEFINE_int32(filtered_re2_min_atom_len,
              3,

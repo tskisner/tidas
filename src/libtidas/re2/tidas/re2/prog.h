@@ -10,7 +10,7 @@
 #define RE2_PROG_H__
 
 #include "util/util.h"
-#include "re2/re2.h"
+#include "tidas/re2/re2.h"
 
 namespace re2 {
 

@@ -1,5 +1,5 @@
 
-SUBDIRS = libre2
+SUBDIRS = re2
 
 # Initialize compile and linking flags
 
@@ -46,5 +46,5 @@ tidas_group.cpp
 
 libtidas_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@
 
-libtidas_la_LIBADD = $(top_builddir)/src/libtidas/libre2/libre2.la
+libtidas_la_LIBADD = $(top_builddir)/src/libtidas/re2/libtidas_re2.la
 

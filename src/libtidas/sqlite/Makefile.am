@@ -8,8 +8,7 @@ AM_CFLAGS =
 AM_CXXFLAGS =
 AM_FCFLAGS =
 
-AM_LDFLAGS = \
--L$(top_builddir)/src/libtidas/sqlite
+AM_LDFLAGS = 
 
 AM_LIBS = 
 

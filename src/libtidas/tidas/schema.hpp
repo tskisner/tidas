@@ -20,6 +20,9 @@ namespace tidas {
 			field ();
 			~field ();
 
+			bool operator== ( const field & other ) const;
+			bool operator!= ( const field & other ) const;
+
 			data_type type;
 			std::string name;
 			std::string units;

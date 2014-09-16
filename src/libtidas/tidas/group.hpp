@@ -25,7 +25,7 @@ namespace tidas {
 		public :
 			
 			group_backend () {}
-			virtual ~group_backend () = 0;
+			virtual ~group_backend () {}
 
 			virtual group_backend * clone () = 0;
 

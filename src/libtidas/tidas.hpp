@@ -60,6 +60,8 @@ namespace tidas {
 
 	};
 
+	static const size_t backend_string_size = 64;
+
 }
 
 #include <tidas/utils.hpp>

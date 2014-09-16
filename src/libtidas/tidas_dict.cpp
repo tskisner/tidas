@@ -42,3 +42,8 @@ long long tidas::dict::get_ll ( std::string const & key ) const {
 }
 
 
+void tidas::dict::clear () {
+	data_.clear();
+	return;
+}
+

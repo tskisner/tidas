@@ -14,10 +14,7 @@ AM_CFLAGS =
 AM_CXXFLAGS =
 AM_FCFLAGS =
 
-AM_LDFLAGS = \
--L$(top_builddir)/src/libtidas \
--L$(top_builddir)/src/tests/gtest \
--L$(top_builddir)/src/tests
+AM_LDFLAGS = 
 
 AM_LIBS = \
 $(top_builddir)/src/tests/gtest/libtidas_gtest.la \
@@ -40,7 +37,9 @@ TESTS = tidas_test
 tidas_test_SOURCES = \
 tidas_test.cpp \
 tidas_test_utils.cpp \
-tidas_test_intervals.cpp
+tidas_test_intervals.cpp \
+tidas_test_schema.cpp \
+tidas_test_group.cpp
 
 tidas_test_LDADD = $(AM_LIBS)
 

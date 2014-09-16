@@ -40,6 +40,8 @@ namespace tidas {
 
 			long long get_ll ( std::string const & key ) const;
 
+			void clear();
+
 		private :
 
 			std::map < std::string, std::string > data_;

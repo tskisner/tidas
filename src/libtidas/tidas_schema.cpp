@@ -26,6 +26,25 @@ tidas::field::~field () {
 }
 
 
+bool tidas::field::operator== ( const field & other ) const {
+	if ( type != other.type ) {
+		return false;
+	}
+	if ( name != other.name ) {
+		return false;
+	}
+	if ( units != other.units ) {
+		return false;
+	}
+	return true;
+}
+
+
+bool tidas::field::operator!= ( const field & other ) const {
+	return ! ( *this == other );
+}
+
+
 tidas::schema::schema () {
 
 }

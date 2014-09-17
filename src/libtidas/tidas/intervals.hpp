@@ -142,6 +142,16 @@ namespace tidas {
 
 			void duplicate ( backend_path const & newloc );
 
+			template < class T >
+			void dictionary_put ( std::string const & key, T const & val ) {
+				dict_.put < T > ( key, val );
+				return;
+			}
+
+			dict const & dictionary () const;
+
+			//------------
+
 			void read_data ( interval_list & intr );
 
 			void write_data ( interval_list const & intr );
@@ -157,6 +167,8 @@ namespace tidas {
 			static intrvl seek_floor ( interval_list const & intr, time_type time );
 
 		private :
+
+			dict dict_;
 
 			backend_path loc_;
 			intervals_backend * backend_;

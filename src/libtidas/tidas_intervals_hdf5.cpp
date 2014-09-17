@@ -6,14 +6,7 @@
 */
 
 #include <tidas_internal.hpp>
-
-
-#ifdef HAVE_HDF5
-extern "C" {
-	#include <hdf5.h>
-}
-#endif
-
+  
 
 using namespace std;
 using namespace tidas;

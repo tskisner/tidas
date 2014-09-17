@@ -73,6 +73,11 @@ namespace tidas {
 
 	void fs_mkdir ( char const * path );
 
+
+	// general regular expression filters
+
+	std::string filter_default ( std::string const & filter );
+
 }
 
 

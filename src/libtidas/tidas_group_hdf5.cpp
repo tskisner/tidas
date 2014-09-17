@@ -8,13 +8,6 @@
 #include <tidas_internal.hpp>
 
 
-#ifdef HAVE_HDF5
-extern "C" {
-	#include <hdf5.h>
-}
-#endif
-
-
 using namespace std;
 using namespace tidas;
 
@@ -36,86 +29,6 @@ group_backend_hdf5 * tidas::group_backend_hdf5::clone () {
 }
 
 
-herr_t tidas_group_hdf5_attr_parse ( hid_t location_id, const char * attr_name, const H5A_info_t * ainfo, void * op_data ) {
-
-	(dict *) d = static_cast < dict * > ( op_data );
-
-	string key = attr_name;
-
-	herr_t status = 0;
-
-	hid_t hattr = H5Aopen ( location_id, attr_name, H5P_DEFAULT );
-
-	H5A_info_t info;
-	status = H5Aget_info( hattr, &info );
-
-	char buf[ info.data_size + 2 ];
-
-	status = H5Aread ( hattr, H5T_C_S1, (void *)buf );
-
-	status = H5Aclose ( hattr );
-
-	string val = buf;
-
-	d->put ( key, val );
-
-	return status;
-}
-
-
-hid_t tidas_group_hdf5_dataset_create ( hid_t & file, string const & metapath, data_type type, size_t nfield, size_t nsamp ) {
-
-
-
-	hsize_t dims[2];
-	dims[0] = nfield;
-	dims[1] = nsamp;
-
-	hid_t dataspace = H5Screate_simple ( 1, dims, NULL ); 
-
-	hid_t datatype;
-
-
-	switch ( type ) {
-		case TYPE_INT8:
-			datatype = H5Tcopy ( H5T_NATIVE_INT8 );
-			break;
-		case TYPE_UINT8:
-
-			break;
-		case TYPE_INT16:
-
-			break;
-		case TYPE_UINT16:
-
-			break;
-		case TYPE_INT32:
-
-			break;
-		case TYPE_UINT32:
-
-			break;
-		case TYPE_INT64:
-
-			break;
-		case TYPE_UINT64:
-
-			break;
-		case TYPE_FLOAT32:
-
-			break;
-		case TYPE_FLOAT64:
-
-			break;
-		default:
-			TIDAS_THROW( "data type not recognized" );
-			break;
-	}
-
-	hid_t dataset = H5Dcreate ( file, metapath.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
-
-	return dataset;
-}
 
 
 void tidas_group_hdf5_lookup ( schema const & schm, string const & name, string & metapath, size_t & row ) {

@@ -29,9 +29,9 @@ namespace tidas {
 
 			virtual group_backend * clone () = 0;
 
-			virtual void read ( backend_path const & loc, schema & schm, dict & dictionary, index_type & nsamp ) = 0;
+			virtual void read_meta ( backend_path const & loc, std::string const & filter, schema & schm, dict & dictionary, index_type & nsamp ) = 0;
 
-			virtual void write ( backend_path const & loc, schema const & schm, dict const & dictionary, index_type nsamp ) = 0;
+			virtual void write_meta ( backend_path const & loc, std::string const & filter, schema const & schm, dict const & dictionary, index_type nsamp ) = 0;
 
 			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > & data ) = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > const & data ) = 0;
@@ -76,9 +76,9 @@ namespace tidas {
 
 			group_backend_mem * clone ();
 
-			void read ( backend_path const & loc, schema & schm, dict & dictionary, index_type & nsamp );
+			void read_meta ( backend_path const & loc, std::string const & filter, schema & schm, dict & dictionary, index_type & nsamp );
 
-			void write ( backend_path const & loc, schema const & schm, dict const & dictionary, index_type nsamp );
+			void write_meta ( backend_path const & loc, std::string const & filter, schema const & schm, dict const & dictionary, index_type nsamp );
 
 			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > & data );
 			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > const & data );
@@ -132,9 +132,9 @@ namespace tidas {
 
 			group_backend_hdf5 * clone ();
 
-			void read ( backend_path const & loc, schema & schm, dict & dictionary, index_type & nsamp );
+			void read_meta ( backend_path const & loc, std::string const & filter, schema & schm, dict & dictionary, index_type & nsamp );
 
-			void write ( backend_path const & loc, schema const & schm, dict const & dictionary, index_type nsamp );
+			void write_meta ( backend_path const & loc, std::string const & filter, schema const & schm, dict const & dictionary, index_type nsamp );
 
 			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > & data );
 			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > const & data );
@@ -180,9 +180,9 @@ namespace tidas {
 
 			group_backend_getdata * clone ();
 
-			void read ( backend_path const & loc, schema & schm, dict & dictionary, index_type & nsamp );
+			void read_meta ( backend_path const & loc, std::string const & filter, schema & schm, dict & dictionary, index_type & nsamp );
 
-			void write ( backend_path const & loc, schema const & schm, dict const & dictionary, index_type nsamp );
+			void write_meta ( backend_path const & loc, std::string const & filter, schema const & schm, dict const & dictionary, index_type nsamp );
 
 			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > & data );
 			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > const & data );
@@ -217,18 +217,6 @@ namespace tidas {
 	};
 
 
-	// a slice of a group
-
-	class group_select {
-
-		public :
-
-			schema schm;
-			interval_list intr;
-
-	};
-
-
 	// group of data streams which are sampled synchronously
 
 	class group {
@@ -236,23 +224,25 @@ namespace tidas {
 		public :
 
 			group ();
-			group ( schema const & schm, index_type nsamp );
-			group ( schema const & schm, dict const & dictionary, index_type nsamp );
-			group ( backend_path const & loc );
-			group ( group const & orig );
 			~group ();
 
-			void read_meta ();
+			group ( group const & orig );
+			group ( backend_path const & loc, std::string const & filter );
 
-			void write_meta ();
+			group ( schema const & schm, index_type nsamp );
+			group ( schema const & schm, dict const & dictionary, index_type nsamp );
+
+			void read_meta ( std::string const & filter );
+
+			void write_meta ( std::string const & filter );
 
 			void relocate ( backend_path const & loc );
 
 			backend_path location () const;
 
-			void duplicate ( backend_path const & newloc, group_select const & selection );
+			group duplicate ( std::string const & filter, backend_path const & newloc );
 
-			schema const & schema_get () const;
+			//------------
 
 			template < class T >
 			void dictionary_put ( std::string const & key, T const & val ) {
@@ -262,12 +252,26 @@ namespace tidas {
 
 			dict const & dictionary () const;
 
+			schema const & schema_get () const;
+
 			index_type nsamp () const;
 
-			void times ( std::vector < time_type > & data );
+			time_type start ();
+
+			time_type stop ();
+
+			void read_times ( std::vector < time_type > & data );
+
+			void write_times ( std::vector < time_type > & data );
 
 			template < class T >
 			void read_field ( std::string const & field_name, index_type offset, std::vector < T > & data ) {
+				field check = schm_.seek ( field_name );
+				if ( check.name != field_name ) {
+					std::ostringstream o;
+					o << "cannot read non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
+					TIDAS_THROW( o.str().c_str() );
+				}
 				index_type n = data.size();
 				if ( offset + n > nsamp_ ) {
 					std::ostringstream o;
@@ -280,6 +284,12 @@ namespace tidas {
 
 			template < class T >
 			void write_field ( std::string const & field_name, index_type offset, std::vector < T > const & data ) {
+				field check = schm_.seek ( field_name );
+				if ( check.name != field_name ) {
+					std::ostringstream o;
+					o << "cannot write non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
+					TIDAS_THROW( o.str().c_str() );
+				}
 				index_type n = data.size();
 				if ( offset + n > nsamp_ ) {
 					std::ostringstream o;
@@ -296,7 +306,6 @@ namespace tidas {
 			dict dict_;
 
 			index_type nsamp_;
-			std::vector < time_type > times_;
 
 			backend_path loc_;
 			group_backend * backend_;

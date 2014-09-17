@@ -45,7 +45,11 @@ libtidas_la_include_HEADERS = \
 libtidas_la_SOURCES = \
 tidas.cpp \
 tidas_utils.cpp \
+tidas_backend_hdf5.cpp \
+tidas_backend_getdata.cpp \
 tidas_dict.cpp \
+tidas_dict_hdf5.cpp \
+tidas_dict_getdata.cpp \
 tidas_intervals.cpp \
 tidas_intervals_hdf5.cpp \
 tidas_intervals_getdata.cpp \

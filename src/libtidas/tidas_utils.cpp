@@ -77,4 +77,83 @@ void tidas::fs_mkdir ( char const * path ) {
 }
 
 
+string tidas::filter_default ( string const & filter ) {
+	string ret = filter;
+	if ( ret == "" ) {
+		ret = ".*";
+	}
+	return ret;
+}
+
+
+
+// format = "blahblah@one=foo:two=bar:three=blat@"
+// returned as:
+//   root == "blahblah"
+//   one == "foo"
+//   two == "bar"
+//   three == "blat"
+
+map < string, string > tidas::filter_split ( string const & filter ) {
+	map < string, string > ret;
+
+	if ( filter == "" ) {
+		ret[ "root" ] = ".*";
+	} else {
+
+		// split root and sub object filters
+
+		string match = "^(.+?)@(.+)@$";
+
+		RE2 re ( match );
+
+		string root;
+		string subselect;
+
+		if ( RE2::FullMatch ( filter, re, &root, &subselect ) ) {
+			ret[ "root" ] = root;
+
+			// search through string and build up sub filters
+
+			size_t pos = 0;
+			size_t next = 0;
+			size_t len;
+
+			while ( next != string::npos ) {
+
+				size_t eq = subselect.find ( '=', pos );
+				if ( eq == string::npos ) {
+					TIDAS_THROW( "filter string sub-match must include an \"=\" character" );
+				}
+
+				len = eq - pos;
+				string key = subselect.substr ( pos, len );
+
+				pos = eq + 1;
+				next = subselect.find ( ':', pos );
+
+				string val;
+
+				if ( next == string::npos ) {
+					len = subselect.size() - pos;
+					val = subselect.substr ( pos, len );
+				} else {
+					len = next - pos;
+					val = subselect.substr ( pos, len );
+					pos = next + 1;
+				}
+
+				ret[ key ] = val;
+
+			}
+
+		} else {
+			ret[ "root" ] = filter;
+		}
+
+	}
+	return ret;
+}
+
+
 

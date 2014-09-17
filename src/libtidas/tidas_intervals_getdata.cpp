@@ -8,13 +8,6 @@
 #include <tidas_internal.hpp>
 
 
-#ifdef HAVE_GETDATA
-extern "C" {
-	#include <getdata.h>
-}
-#endif
-
-
 using namespace std;
 using namespace tidas;
 

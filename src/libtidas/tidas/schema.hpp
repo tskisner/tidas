@@ -32,6 +32,80 @@ namespace tidas {
 	typedef std::vector < field > field_list;
 
 
+	// base class for schema backend interface
+
+	class schema_backend {
+
+		public :
+			
+			schema_backend () {}
+			virtual ~schema_backend () {}
+
+			virtual schema_backend * clone () = 0;
+
+			virtual void read_meta ( backend_path const & loc, std::string const & filter, field_list & fields ) = 0;
+
+			virtual void write_meta ( backend_path const & loc, std::string const & filter, field_list const & fields ) = 0;
+
+	};
+
+	// memory backend class
+
+	class schema_backend_mem : public schema_backend {
+
+		public :
+			
+			schema_backend_mem ();
+			~schema_backend_mem ();
+
+			schema_backend_mem * clone ();
+
+			void read_meta ( backend_path const & loc, std::string const & filter, field_list & fields );
+
+			void write_meta ( backend_path const & loc, std::string const & filter, field_list const & fields );
+
+		private :
+
+			field_list fields_;
+
+	};
+
+	// HDF5 backend class
+
+	class schema_backend_hdf5 : public schema_backend {
+
+		public :
+			
+			schema_backend_hdf5 ();
+			~schema_backend_hdf5 ();
+
+			schema_backend_hdf5 * clone ();
+
+			void read_meta ( backend_path const & loc, std::string const & filter, field_list & fields );
+
+			void write_meta ( backend_path const & loc, std::string const & filter, field_list const & fields );
+
+	};
+
+
+	// GetData backend class
+
+	class schema_backend_getdata : public schema_backend {
+
+		public :
+			
+			schema_backend_getdata ();
+			~schema_backend_getdata ();
+
+			schema_backend_getdata * clone ();
+
+			void read_meta ( backend_path const & loc, std::string const & filter, field_list & fields );
+
+			void write_meta ( backend_path const & loc, std::string const & filter, field_list const & fields );
+
+	};
+
+
 	// a schema used for a group
 
 	class schema {
@@ -39,18 +113,39 @@ namespace tidas {
 		public :
 
 			schema ();
-			schema ( field_list const & fields );
-			schema ( schema const & orig );
-			schema ( schema const & orig, std::string const & match );
 			~schema ();
 
+			schema ( schema const & orig );
+			schema ( backend_path const & loc, std::string const & filter );
+
+			schema ( field_list const & fields );
+
+			void read_meta ( std::string const & filter );
+
+			void write_meta ( std::string const & filter );
+
+			void relocate ( backend_path const & loc );
+
+			backend_path location () const;
+
+			schema duplicate ( std::string const & filter, backend_path const & newloc );
+
+			//------------
+			
 			void append ( field const & fld );
+			
 			void remove ( std::string const & name );
+			
 			field seek ( std::string const & name ) const;
+			
 			field_list fields () const;
 
 		private :
+
 			field_list fields_;
+
+			backend_path loc_;
+			dict_backend * backend_;
 
 	};
 

@@ -36,16 +36,27 @@ namespace tidas {
 		TYPE_INT64,
 		TYPE_UINT64,
 		TYPE_FLOAT32,
-		TYPE_FLOAT64
+		TYPE_FLOAT64,
+		TYPE_STRING
 	} data_type;
 
 	data_type data_type_get ( std::type_info const & test );
+
+	std::string data_type_to_string ( data_type type );
+
+	data_type data_type_from_string ( std::string const & name );
 
 	typedef enum {
 		BACKEND_MEM,
 		BACKEND_HDF5,
 		BACKEND_GETDATA
 	} backend_type;
+
+	typedef enum {
+		COMPRESS_NONE,
+		COMPRESS_GZIP,
+		COMPRESS_BZIP2
+	} compression_type;
 
 
 	class backend_path {
@@ -55,12 +66,12 @@ namespace tidas {
 			backend_path ();
 
 			backend_type type;
+			compression_type comp;
 			std::string path;
 			std::string name;
+			std::string meta;
 
 	};
-
-	static const size_t backend_string_size = 64;
 
 }
 

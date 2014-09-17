@@ -12,4 +12,38 @@
 #include <tidas.hpp>
 
 
+#ifdef HAVE_HDF5
+extern "C" {
+	#include <hdf5.h>
+}
+#endif
+
+#ifdef HAVE_GETDATA
+extern "C" {
+	#include <getdata.h>
+}
+#endif
+
+
+namespace tidas {
+
+
+	static const size_t backend_string_size = 64;
+
+
+
+#ifdef HAVE_HDF5
+
+	hid_t tidas::hdf5_data_type ( data_type type );
+
+	hid_t tidas::hdf5_dataset_create ( hid_t & file, string const & metapath, data_type type, size_t nfield, size_t nsamp );
+
+#endif
+
+
+
+
+}
+
+
 #endif

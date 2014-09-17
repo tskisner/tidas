@@ -17,6 +17,114 @@ using namespace std;
 using namespace tidas;
 
 
+tidas::group::group () {
+	nsamp_ = 0;
+	start_ = -1.0;
+	stop_ = -1.0;
+	backend_ = NULL;
+}
+
+
+tidas::group::~group () {
+	if ( backend_ ) {
+		delete backend_;
+	}
+}
+
+
+tidas::group::group ( group const & orig ) {
+	schm_ = orig.schm_;
+	dict_ = orig.dict_;
+	nsamp_ = orig.nsamp_;
+	start_ = orig.start_;
+	stop_ = orig.stop_;
+	loc_ = orig.loc_;
+	backend_ = NULL;
+	if ( orig.backend_ ) {
+		backend_ = orig.backend_->clone();
+	}
+}
+
+
+tidas::group::group ( backend_path const & loc, string const & filter ) {
+	nsamp_ = 0;
+	start_ = -1.0;
+	stop_ = -1.0;
+	backend_ = NULL;
+	relocate ( loc );
+	read_meta ( filter );
+}
+
+
+void tidas::group::read_meta ( string const & filter ) {
+
+	map < string, string > filt = filter_split ( filter );
+
+	if ( backend_ ) {
+
+		backend_->read_meta ( loc_, filt, fields_ );
+	} else {
+		TIDAS_THROW( "backend not assigned" );
+	}
+
+	return;
+}
+
+
+void tidas::group::write_meta ( string const & filter ) {
+
+	string filt = filter_default ( filter );
+
+	if ( backend_ ) {
+		backend_->write_meta ( loc_, filt, fields_ );
+	} else {
+		TIDAS_THROW( "backend not assigned" );
+	}
+
+	return;
+}
+
+
+void tidas::group::relocate ( backend_path const & loc ) {
+	loc_ = loc;
+
+	if ( backend_ ) {
+		delete backend_;
+	}
+	backend_ = NULL;
+
+	switch ( loc_.type ) {
+		case BACKEND_MEM:
+			backend_ = new group_backend_mem ();
+			break;
+		case BACKEND_HDF5:
+			backend_ = new group_backend_hdf5 ();
+			break;
+		case BACKEND_GETDATA:
+			TIDAS_THROW( "GetData backend not yet implemented" );
+			break;
+		default:
+			TIDAS_THROW( "backend not recognized" );
+			break;
+	}
+	return;
+}
+
+
+backend_path tidas::group::location () const {
+	return loc_;
+}
+
+
+group tidas::group::duplicate ( std::string const & filter, backend_path const & newloc ) {
+	group newgroup;
+	newgroup.fields_ = fields_;
+	newgroup.relocate ( newloc );
+	newgroup.write_meta ( filter );
+	return newgroup;
+}
+
+
 
 tidas::group::group () {
 	nsamp_ = 0;

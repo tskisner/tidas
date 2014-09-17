@@ -11,6 +11,80 @@
 
 namespace tidas {
 
+	// base class for dictionary backend interface
+
+	class dict_backend {
+
+		public :
+			
+			dict_backend () {}
+			virtual ~dict_backend () {}
+
+			virtual dict_backend * clone () = 0;
+
+			virtual void read_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) = 0;
+
+			virtual void write_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) = 0;
+
+	};
+
+	// memory backend class
+
+	class dict_backend_mem : public dict_backend {
+
+		public :
+			
+			dict_backend_mem ();
+			~dict_backend_mem ();
+
+			dict_backend_mem * clone ();
+
+			void read_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
+
+			void write_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
+
+		private :
+
+			std::map < std::string, std::string > & data_;
+			std::map < std::string, data_type > & types_;
+
+	};
+
+	// HDF5 backend class
+
+	class dict_backend_hdf5 : public dict_backend {
+
+		public :
+			
+			dict_backend_hdf5 ();
+			~dict_backend_hdf5 ();
+
+			dict_backend_hdf5 * clone ();
+
+			void read_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
+
+			void write_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
+
+	};
+
+
+	// GetData backend class
+
+	class dict_backend_getdata : public dict_backend {
+
+		public :
+			
+			dict_backend_getdata ();
+			~dict_backend_getdata ();
+
+			dict_backend_getdata * clone ();
+
+			void read_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
+
+			void write_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
+
+	};
+
 	// dictionary class
 
 	class dict {
@@ -19,6 +93,21 @@ namespace tidas {
 
 			dict ();
 			~dict ();
+
+			dict ( dict const & orig );
+			dict ( backend_path const & loc, std::string const & filter );
+
+			void read_meta ( std::string const & filter );
+
+			void write_meta ( std::string const & filter );
+
+			void relocate ( backend_path const & loc );
+
+			backend_path location () const;
+
+			dict duplicate ( std::string const & filter, backend_path const & newloc );
+
+			//------------
 
 			template < class T >
 			void put ( std::string const & key, T const & val ) {
@@ -29,6 +118,7 @@ namespace tidas {
 					TIDAS_THROW( "cannot convert type to string for dict storage" );
 				}
 				data_[ key ] = o.str();
+				types_[ key ] = data_type_get ( typeid ( val ) );
 				return;
 			}
 
@@ -42,9 +132,17 @@ namespace tidas {
 
 			void clear();
 
+			std::map < std::string, std::string > const & data();
+
+			std::map < std::string, data_type > const & types();
+
 		private :
 
 			std::map < std::string, std::string > data_;
+			std::map < std::string, data_type > types_;
+
+			backend_path loc_;
+			dict_backend * backend_;
 
 	};
 

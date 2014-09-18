@@ -59,6 +59,8 @@ namespace tidas {
 	} compression_type;
 
 
+	class volume;
+
 	class backend_path {
 		
 		public :
@@ -70,6 +72,7 @@ namespace tidas {
 			std::string path;
 			std::string name;
 			std::string meta;
+			//volume * vol;
 
 	};
 
@@ -77,11 +80,11 @@ namespace tidas {
 
 #include <tidas/utils.hpp>
 #include <tidas/dict.hpp>
-#include <tidas/intervals.hpp>
-#include <tidas/schema.hpp>
-#include <tidas/group.hpp>
-#include <tidas/block.hpp>
-#include <tidas/volume.hpp>
+//#include <tidas/intervals.hpp>
+//#include <tidas/schema.hpp>
+//#include <tidas/group.hpp>
+//#include <tidas/block.hpp>
+//#include <tidas/volume.hpp>
 
 
 #endif

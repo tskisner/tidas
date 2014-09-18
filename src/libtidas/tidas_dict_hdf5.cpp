@@ -42,7 +42,7 @@ typedef struct {
 
 herr_t tidas_dict_backend_hdf5_attr_parse ( hid_t location_id, const char * attr_name, const H5A_info_t * ainfo, void * op_data ) {
 
-	(tidas_dict_backend_hdf5_attr_data *) d = static_cast < tidas_dict_backend_hdf5_attr_data * > ( op_data );
+	tidas_dict_backend_hdf5_attr_data * d = static_cast < tidas_dict_backend_hdf5_attr_data * > ( op_data );
 
 	string key = attr_name;
 
@@ -61,13 +61,12 @@ herr_t tidas_dict_backend_hdf5_attr_parse ( hid_t location_id, const char * attr
 
 	string val = buf;
 
-	string match = "(.*)" + tidas_dict_hdf5_type_suffix + "$";
+	string match = string ( "(.*)" ) + tidas_dict_hdf5_type_suffix + string ( "$" );
 	RE2 re ( match );
 
 	string name;
 	if ( RE2::FullMatch ( key, re, &name ) ) {
 		d->types[ name ] = data_type_from_string ( val );
-		fields_.push_back ( *it );
 	} else {
 		d->data[ key ] = val;
 	}
@@ -158,7 +157,7 @@ void tidas::dict_backend_hdf5::write_meta ( backend_path const & loc, string con
 		if ( RE2::FullMatch ( key, re ) ) {
 
 			string key_type = it->first + tidas_dict_hdf5_type_suffix;
-			string val_type = data_type_to_string ( types[ it->first ] );
+			string val_type = data_type_to_string ( types.at( it->first ) );
 
 			status = H5Tset_size ( datatype, val.size() );
 			hid_t attr = H5Acreate ( dataset, key.c_str(), datatype, H5S_SCALAR, H5P_DEFAULT, H5P_DEFAULT );
@@ -166,7 +165,7 @@ void tidas::dict_backend_hdf5::write_meta ( backend_path const & loc, string con
 			status = H5Aclose ( attr );
 
 			status = H5Tset_size ( datatype, val_type.size() );
-			hid_t attr = H5Acreate ( dataset, key_type.c_str(), datatype, H5S_SCALAR, H5P_DEFAULT, H5P_DEFAULT );
+			attr = H5Acreate ( dataset, key_type.c_str(), datatype, H5S_SCALAR, H5P_DEFAULT, H5P_DEFAULT );
 			status = H5Awrite ( attr, datatype, (void *) val_type.c_str() );
 			status = H5Aclose ( attr );
 
@@ -178,7 +177,14 @@ void tidas::dict_backend_hdf5::write_meta ( backend_path const & loc, string con
 
 	status = H5Tclose ( datatype );
 	status = H5Dclose ( dataset );
-	status = H5Fclose ( file ); 
+	status = H5Fclose ( file );
+
+	// mark volume as dirty
+
+	//if ( loc.vol == NULL ) {
+	//	TIDAS_THROW( "volume handle is NULL, this should never happen!" );
+	//}
+	//loc.vol->set_dirty();
 
 	return;
 }

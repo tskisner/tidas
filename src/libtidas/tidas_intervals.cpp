@@ -28,72 +28,96 @@ tidas::intrvl::intrvl ( time_type new_start, time_type new_stop, index_type new_
 }
 
 
-tidas::intrvl::~intrvl () {
-
-}
-
-
-tidas::intervals_backend_mem::intervals_backend_mem () : intervals_backend () {
-
-}
-
-
-tidas::intervals_backend_mem::~intervals_backend_mem () {
-
-}
-
-
-intervals_backend_mem * tidas::intervals_backend_mem::clone () {
-	intervals_backend_mem * ret = new intervals_backend_mem ( *this );
-	return ret;
-}
-
-
-void tidas::intervals_backend_mem::read ( backend_path const & loc ) {
-
-	return;
-}
-
-
-void tidas::intervals_backend_mem::write ( backend_path const & loc ) {
-
-	return;
-}
-
-
-void tidas::intervals_backend_mem::read_data ( backend_path const & loc, interval_list & intr ) {
-	intr = store_;
-	return;
-}
-
-
-void tidas::intervals_backend_mem::write_data ( backend_path const & loc, interval_list const & intr ) {
-	store_ = intr;
-	return;
-}
-
-
-tidas::intervals::intervals ( ) {
-	backend_ = NULL;
-}
-
-
-tidas::intervals::intervals ( backend_path const & loc ) {
-	backend_ = NULL;
-	relocate ( loc );
-}
-
-
-tidas::intervals::intervals ( intervals const & orig ) {
-	loc_ = orig.loc_;
-	backend_ = orig.backend_->clone();
+tidas::intervals::intervals () {
+	init();
 }
 
 
 tidas::intervals::~intervals () {
+	clear();
+}
+
+
+tidas::intervals::intervals ( intervals const & other ) {
+	init();
+	clear();
+	copy ( other );
+}
+
+
+intervals & tidas::intervals::operator= ( intervals const & other ) {
+	if ( this != &other ) {
+		clear();
+		copy ( other );
+	}
+	return *this;
+}
+
+
+void tidas::intervals::init () {
+	backend_ = NULL;
+	return;
+}
+
+
+void tidas::intervals::clear () {
 	if ( backend_ ) {
 		delete backend_;
+		backend_ = NULL;
 	}
+	return;
+}
+
+
+void tidas::intervals::copy ( intervals const & other ) {
+	dict_ = other.dict_;
+	loc_ = other.loc_;
+	if ( other.backend_ ) {
+		backend_ = other.backend_->clone();
+	}
+}
+
+
+tidas::intervals::intervals ( backend_path const & loc, string const & filter ) {
+	init();
+	relocate ( loc );
+	read_meta ( filter );
+}
+
+
+void tidas::intervals::read_meta ( string const & filter ) {
+
+	string filt = filter_default ( filter );
+
+	// extract dictionary filter and process
+	string dict_filter;
+	dict_.read_meta ( dict_filter );
+	
+	if ( backend_ ) {
+		backend_->read_meta ( loc_ );
+	} else {
+		TIDAS_THROW( "backend not assigned" );
+	}
+
+	return;
+}
+
+
+void tidas::intervals::write_meta ( string const & filter ) {
+
+	string filt = filter_default ( filter );
+
+	if ( backend_ ) {
+		backend_->write_meta ( loc_ );
+	} else {
+		TIDAS_THROW( "backend not assigned" );
+	}
+
+	// extract dictionary filter and process
+	string dict_filter;
+	dict_.write_meta ( dict_filter );
+
+	return;
 }
 
 
@@ -119,6 +143,12 @@ void tidas::intervals::relocate ( backend_path const & loc ) {
 			TIDAS_THROW( "backend not recognized" );
 			break;
 	}
+
+	backend_path dict_loc = loc_;
+	dict_loc.meta = intervals_meta_time;
+
+	dict_.relocate ( dict_loc );
+
 	return;
 }
 
@@ -128,28 +158,16 @@ backend_path tidas::intervals::location () const {
 }
 
 
-void tidas::intervals::duplicate ( backend_path const & newloc ) {
+intervals tidas::intervals::duplicate ( std::string const & filter, backend_path const & newloc ) {
+	intervals newintervals;
+	newintervals.dict_ = dict_;
+	newintervals.relocate ( newloc );
+	newintervals.write_meta ( filter );
 
-	intervals newintervals ( newloc );
-	newintervals.write_meta();
+	// reload to pick up filtered metadata
+	newintervals.read_meta ( "" );
 
-	interval_list data;
-	read_data ( data );
-	newintervals.write_data ( data );
-
-	return;
-}
-
-
-void tidas::intervals::read_meta () {
-	backend_->read ( loc_ );
-	return;
-}
-
-
-void tidas::intervals::write_meta () {
-	backend_->write ( loc_ );
-	return;
+	return newintervals;
 }
 
 
@@ -162,6 +180,11 @@ void tidas::intervals::read_data ( interval_list & intr ) {
 void tidas::intervals::write_data ( interval_list const & intr ) {
 	backend_->write_data ( loc_, intr );
 	return;
+}
+
+
+dict const & tidas::intervals::dictionary () const {
+	return dict_;
 }
 
 
@@ -234,4 +257,49 @@ intrvl tidas::intervals::seek_floor ( interval_list const & intr, time_type time
 
 	return ret;
 }
+
+
+
+tidas::intervals_backend_mem::intervals_backend_mem () : intervals_backend () {
+
+}
+
+
+tidas::intervals_backend_mem::~intervals_backend_mem () {
+
+}
+
+
+intervals_backend_mem * tidas::intervals_backend_mem::clone () {
+	intervals_backend_mem * ret = new intervals_backend_mem ( *this );
+	ret->store_ = store_;
+	return ret;
+}
+
+
+void tidas::intervals_backend_mem::read_meta ( backend_path const & loc ) {
+
+	return;
+}
+
+
+void tidas::intervals_backend_mem::write_meta ( backend_path const & loc ) {
+
+	return;
+}
+
+
+void tidas::intervals_backend_mem::read_data ( backend_path const & loc, interval_list & intr ) {
+	intr = store_;
+	return;
+}
+
+
+void tidas::intervals_backend_mem::write_data ( backend_path const & loc, interval_list const & intr ) {
+	store_ = intr;
+	return;
+}
+
+
+
 

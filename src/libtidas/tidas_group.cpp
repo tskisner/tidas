@@ -17,40 +17,62 @@ using namespace std;
 using namespace tidas;
 
 
+
 tidas::group::group () {
-	nsamp_ = 0;
-	start_ = -1.0;
-	stop_ = -1.0;
-	backend_ = NULL;
+	init();
 }
 
 
 tidas::group::~group () {
-	if ( backend_ ) {
-		delete backend_;
-	}
+	clear();
 }
 
 
-tidas::group::group ( group const & orig ) {
-	schm_ = orig.schm_;
-	dict_ = orig.dict_;
-	nsamp_ = orig.nsamp_;
-	start_ = orig.start_;
-	stop_ = orig.stop_;
-	loc_ = orig.loc_;
+tidas::group::group ( group const & other ) {
+	init();
+	clear();
+	copy ( other );
+}
+
+
+group & tidas::group::operator= ( group const & other ) {
+	if ( this != &other ) {
+		clear();
+		copy ( other );
+	}
+	return *this;
+}
+
+
+void tidas::group::init () {
+	nsamp_ = 0;
 	backend_ = NULL;
-	if ( orig.backend_ ) {
-		backend_ = orig.backend_->clone();
+	return;
+}
+
+
+void tidas::group::clear () {
+	if ( backend_ ) {
+		delete backend_;
+		backend_ = NULL;
+	}
+	return;
+}
+
+
+void tidas::group::copy ( group const & other ) {
+	schm_ = other.schm_;
+	dict_ = other.dict_;
+	nsamp_ = other.nsamp_;
+	loc_ = other.loc_;
+	if ( other.backend_ ) {
+		backend_ = other.backend_->clone();
 	}
 }
 
 
 tidas::group::group ( backend_path const & loc, string const & filter ) {
-	nsamp_ = 0;
-	start_ = -1.0;
-	stop_ = -1.0;
-	backend_ = NULL;
+	init();
 	relocate ( loc );
 	read_meta ( filter );
 }
@@ -58,11 +80,18 @@ tidas::group::group ( backend_path const & loc, string const & filter ) {
 
 void tidas::group::read_meta ( string const & filter ) {
 
-	map < string, string > filt = filter_split ( filter );
+	string filt = filter_default ( filter );
 
+	// extract schema filter and process
+	string schm_filter;
+	schm_.read_meta ( schm_filter );
+
+	// extract dictionary filter and process
+	string dict_filter;
+	dict_.read_meta ( dict_filter );
+	
 	if ( backend_ ) {
-
-		backend_->read_meta ( loc_, filt, fields_ );
+		backend_->read_meta ( loc_ );
 	} else {
 		TIDAS_THROW( "backend not assigned" );
 	}
@@ -76,10 +105,18 @@ void tidas::group::write_meta ( string const & filter ) {
 	string filt = filter_default ( filter );
 
 	if ( backend_ ) {
-		backend_->write_meta ( loc_, filt, fields_ );
+		backend_->write_meta ( loc_ );
 	} else {
 		TIDAS_THROW( "backend not assigned" );
 	}
+
+	// extract dictionary filter and process
+	string dict_filter;
+	dict_.write_meta ( dict_filter );
+
+	// extract schema filter and process
+	string schm_filter;
+	schm_.write_meta ( schm_filter );
 
 	return;
 }
@@ -107,114 +144,16 @@ void tidas::group::relocate ( backend_path const & loc ) {
 			TIDAS_THROW( "backend not recognized" );
 			break;
 	}
-	return;
-}
 
+	backend_path dict_loc = loc_;
+	dict_loc.meta = group_meta;
 
-backend_path tidas::group::location () const {
-	return loc_;
-}
+	dict_.relocate ( dict_loc );
 
+	backend_path schm_loc = loc_;
+	schm_loc.meta = schema_meta;
 
-group tidas::group::duplicate ( std::string const & filter, backend_path const & newloc ) {
-	group newgroup;
-	newgroup.fields_ = fields_;
-	newgroup.relocate ( newloc );
-	newgroup.write_meta ( filter );
-	return newgroup;
-}
-
-
-
-tidas::group::group () {
-	nsamp_ = 0;
-	backend_ = NULL;
-}
-
-
-tidas::group::group ( schema const & schm, index_type nsamp ) {
-	schm_ = schm;
-	nsamp_ = nsamp;
-	backend_ = NULL;
-}
-
-
-tidas::group::group ( schema const & schm, dict const & dictionary, index_type nsamp ) {
-	schm_ = schm;
-	dict_ = dictionary;
-	nsamp_ = nsamp;
-	backend_ = NULL;
-}
-
-
-tidas::group::group ( backend_path const & loc ) {
-	backend_ = NULL;
-	relocate ( loc );
-	read_meta ();
-}
-
-
-tidas::group::group ( group const & orig ) {
-	schm_ = orig.schm_;
-	dict_ = orig.dict_;
-	nsamp_ = orig.nsamp_;
-	loc_ = orig.loc_;
-	backend_ = orig.backend_->clone();
-}
-
-
-tidas::group::~group () {
-	if ( backend_ ) {
-		delete backend_;
-	} else {
-		TIDAS_THROW( "In destructor, group backend is NULL.  This should never happen..." );
-	}
-}
-
-
-void tidas::group::read_meta () {
-
-	backend_->read ( loc_, schm_, dict_, nsamp_ );
-
-	return;
-}
-
-
-void tidas::group::write_meta () {
-
-	backend_->write ( loc_, schm_, dict_, nsamp_ );
-
-	return;
-}
-
-
-dict const & tidas::group::dictionary () const {
-	return dict_;
-}
-
-
-void tidas::group::relocate ( backend_path const & loc ) {
-
-	loc_ = loc;
-
-	if ( backend_ ) {
-		delete backend_;
-	}	
-
-	switch ( loc_.type ) {
-		case BACKEND_MEM:
-			backend_ = new group_backend_mem ( nsamp_, schm_, dict_ );
-			break;
-		case BACKEND_HDF5:
-			backend_ = new group_backend_hdf5 ();
-			break;
-		case BACKEND_GETDATA:
-			TIDAS_THROW( "GetData backend not yet implemented" );
-			break;
-		default:
-			TIDAS_THROW( "backend not recognized" );
-			break;
-	}
+	schm_.relocate ( schema_loc );
 
 	return;
 }
@@ -256,61 +195,63 @@ void tidas_group_helper_copy ( group & oldgr, group & newgr, string const & fiel
 }
 
 
-void tidas::group::duplicate ( backend_path const & newloc, group_select const & selection ) {
-
-	schema schm = schema_get();
-	index_type n = nsamp();
+group tidas::group::duplicate ( std::string const & filter, backend_path const & newloc, interval_list const & intr ) {
 
 	index_type newn = n;
 	if ( selection.intr.size() > 0 ) {
 		newn = intervals::total_samples ( selection.intr );
 	}
 
-	group newgroup ( selection.schm, newn );
+	group newgroup;
+	newgroup.schm_ = schm_;
+	newgroup.dict_ = dict_;
+	newgroup.nsamp_ = nsamp_;
 	newgroup.relocate ( newloc );
+	newgroup.write_meta ( filter );
 
-	newgroup.write_meta();
-	
+	// reload to pick up filtered metadata
+	newgroup.read_meta ( "" );
+
 	// copy tidas time field
 
-	tidas_group_helper_copy < time_type > ( (*this), newgroup, time_field, n, newn, selection.intr );
+	tidas_group_helper_copy < time_type > ( (*this), newgroup, time_field, nsamp_, newn, intr );
 
 	// copy all field data included in the new schema
 
-	field_list fields = selection.schm.fields();
+	field_list fields = newgroup.schema_get().fields();
 
 	for ( field_list::const_iterator it = fields.begin(); it != fields.end(); ++it ) {
 
 		switch ( it->type ) {
 			case TYPE_INT8:
-				tidas_group_helper_copy < int8_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
+				tidas_group_helper_copy < int8_t > ( (*this), newgroup, it->name, n, newn, intr );
 				break;
 			case TYPE_UINT8:
-				tidas_group_helper_copy < uint8_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
+				tidas_group_helper_copy < uint8_t > ( (*this), newgroup, it->name, n, newn, intr );
 				break;
 			case TYPE_INT16:
-				tidas_group_helper_copy < int16_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
+				tidas_group_helper_copy < int16_t > ( (*this), newgroup, it->name, n, newn, intr );
 				break;
 			case TYPE_UINT16:
-				tidas_group_helper_copy < uint16_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
+				tidas_group_helper_copy < uint16_t > ( (*this), newgroup, it->name, n, newn, intr );
 				break;
 			case TYPE_INT32:
-				tidas_group_helper_copy < int32_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
+				tidas_group_helper_copy < int32_t > ( (*this), newgroup, it->name, n, newn, intr );
 				break;
 			case TYPE_UINT32:
-				tidas_group_helper_copy < uint32_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
+				tidas_group_helper_copy < uint32_t > ( (*this), newgroup, it->name, n, newn, intr );
 				break;
 			case TYPE_INT64:
-				tidas_group_helper_copy < int64_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
+				tidas_group_helper_copy < int64_t > ( (*this), newgroup, it->name, n, newn, intr );
 				break;
 			case TYPE_UINT64:
-				tidas_group_helper_copy < uint64_t > ( (*this), newgroup, it->name, n, newn, selection.intr );
+				tidas_group_helper_copy < uint64_t > ( (*this), newgroup, it->name, n, newn, intr );
 				break;
 			case TYPE_FLOAT32:
-				tidas_group_helper_copy < float > ( (*this), newgroup, it->name, n, newn, selection.intr );
+				tidas_group_helper_copy < float > ( (*this), newgroup, it->name, n, newn, intr );
 				break;
 			case TYPE_FLOAT64:
-				tidas_group_helper_copy < double > ( (*this), newgroup, it->name, n, newn, selection.intr );
+				tidas_group_helper_copy < double > ( (*this), newgroup, it->name, n, newn, intr );
 				break;
 			default:
 				TIDAS_THROW( "data type not recognized" );
@@ -319,7 +260,12 @@ void tidas::group::duplicate ( backend_path const & newloc, group_select const &
 
 	}
 
-	return;
+	return newgroup;
+}
+
+
+dict const & tidas::group::dictionary () const {
+	return dict_;
 }
 
 
@@ -355,6 +301,9 @@ tidas::group_backend_mem::~group_backend_mem () {
 
 group_backend_mem * tidas::group_backend_mem::clone () {
 	group_backend_mem * ret = new group_backend_mem ( *this );
+	ret->schm_ = schm_;
+	ret->dict_ = dict_;
+	ret->nsamp_ = nsamp_;
 	return ret;
 }
 

@@ -11,6 +11,8 @@
 #include <config.h>
 #include <tidas.hpp>
 
+#include <tidas/re2/re2.h>
+
 
 #ifdef HAVE_HDF5
 extern "C" {
@@ -34,9 +36,9 @@ namespace tidas {
 
 #ifdef HAVE_HDF5
 
-	hid_t tidas::hdf5_data_type ( data_type type );
+	hid_t hdf5_data_type ( data_type type );
 
-	hid_t tidas::hdf5_dataset_create ( hid_t & file, string const & metapath, data_type type, size_t nfield, size_t nsamp );
+	hid_t hdf5_dataset_create ( hid_t & file, std::string const & metapath, data_type type, size_t nfield, size_t nsamp );
 
 #endif
 

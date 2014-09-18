@@ -14,46 +14,36 @@
 
 namespace tidas {
 
-	static const std::string block_fs_name = "blocks";
-
-	class select {
-
-		public :
-
-			std::string block_filter;
-			std::map < std::string, block_select > block_sel;
-
-	};
-
-
 	class volume {
 
 		public :
 
-			volume ( std::string const & path, backend_type type );
-			volume ( std::string const & path );
+			volume ();
+			volume ( std::string const & path, std::string const & filter );
 			~volume ();
 
-			void read_meta ();
+			void write ( std::string const & path, std::string const & filter, backend_type type, compression_type comp );
 
-			void write_meta ();
+			void duplicate ( std::string const & path, std::string const & filter, backend_type type, compression_type comp );
 
 			void index ();
 
-			select query ( std::string const & match );
+			void set_dirty ();
 
-			block & root ();
-			
-			void duplicate ( std::string const & newpath, backend_type newtype, select const & selection );
+			std::vector < block > & blocks ();
 
-			void block_append ( std::string const & name, block const & blk );
+			block & block_append ( std::string const & name, block const & blk );
 
 		private :
 			// copy constructor forbidden
 			volume ( volume const & orig ) {}
 
+			bool dirty_;
+
 			backend_path loc_;
+
 			block root_;
+
 			sqlite3 * index_;
 
 	};

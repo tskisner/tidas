@@ -45,8 +45,8 @@ namespace tidas {
 
 		private :
 
-			std::map < std::string, std::string > & data_;
-			std::map < std::string, data_type > & types_;
+			std::map < std::string, std::string > data_;
+			std::map < std::string, data_type > types_;
 
 	};
 
@@ -93,8 +93,12 @@ namespace tidas {
 
 			dict ();
 			~dict ();
+			dict ( dict const & other );
+			dict & operator= ( dict const & other );
+			void init ();
+			void copy ( dict const & other );
+			void clear ();
 
-			dict ( dict const & orig );
 			dict ( backend_path const & loc, std::string const & filter );
 
 			void read_meta ( std::string const & filter );
@@ -130,7 +134,7 @@ namespace tidas {
 
 			long long get_ll ( std::string const & key ) const;
 
-			void clear();
+			void clear_data();
 
 			std::map < std::string, std::string > const & data();
 

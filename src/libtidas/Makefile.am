@@ -35,12 +35,14 @@ libtidas_la_includedir = $(includedir)/tidas
 
 libtidas_la_include_HEADERS = \
 	tidas/utils.hpp \
-	tidas/dict.hpp \
-	tidas/intervals.hpp \
-	tidas/schema.hpp \
-	tidas/group.hpp \
-	tidas/block.hpp \
-	tidas/volume.hpp
+	tidas/dict.hpp
+
+#	tidas/intervals.hpp \
+#	tidas/schema.hpp \
+#	tidas/group.hpp \
+#	tidas/block.hpp \
+#   tidas/volume.hpp
+	
 
 libtidas_la_SOURCES = \
 tidas.cpp \
@@ -49,16 +51,18 @@ tidas_backend_hdf5.cpp \
 tidas_backend_getdata.cpp \
 tidas_dict.cpp \
 tidas_dict_hdf5.cpp \
-tidas_dict_getdata.cpp \
-tidas_intervals.cpp \
-tidas_intervals_hdf5.cpp \
-tidas_intervals_getdata.cpp \
-tidas_schema.cpp \
-tidas_group.cpp \
-tidas_group_hdf5.cpp \
-tidas_group_getdata.cpp \
-tidas_block.cpp \
-tidas_volume.cpp
+tidas_dict_getdata.cpp
+
+#tidas_intervals.cpp \
+#tidas_intervals_hdf5.cpp \
+#tidas_intervals_getdata.cpp \
+#tidas_schema.cpp \
+#tidas_group.cpp \
+#tidas_group_hdf5.cpp \
+#tidas_group_getdata.cpp \
+#tidas_block.cpp \
+#tidas_volume.cpp
+
 
 
 libtidas_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@

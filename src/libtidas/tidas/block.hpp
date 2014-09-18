@@ -12,23 +12,10 @@
 
 namespace tidas {
 
-	static const std::string group_fs_name = "groups";
-	static const std::string interval_fs_name = "intervals";
-
-	class block_select;
-
-	class block_select {
-
-		public :
-
-			std::string intr_match;
-			std::string group_filter;
-			group_select group_sel;
-			std::string block_filter;
-			std::map < std::string, block_select > block_sel;
-
-	};
-
+	static const std::string group_fs_name = "grp.tidas";
+	static const std::string intervals_fs_name = "int.tidas";
+	static const std::string ext_fs_name = "ext.tidas";
+	static const std::string block_fs_name = "blk.tidas";
 
 	class block;
 

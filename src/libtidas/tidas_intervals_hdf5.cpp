@@ -81,7 +81,14 @@ void tidas::intervals_backend_hdf5::write ( backend_path const & loc ) {
 
 	// clean up
 
-	herr_t status = H5Fclose ( file ); 
+	herr_t status = H5Fclose ( file );
+
+	// mark volume as dirty
+
+	if ( loc.vol == NULL ) {
+		TIDAS_THROW( "volume handle is NULL, this should never happen!" );
+	}
+	loc.vol->set_dirty();
 
 #else
 
@@ -277,7 +284,14 @@ void tidas::intervals_backend_hdf5::write_data ( backend_path const & loc, inter
 
 	// close file
 
-	status = H5Fclose ( file ); 
+	status = H5Fclose ( file );
+
+	// mark volume as dirty
+
+	if ( loc.vol == NULL ) {
+		TIDAS_THROW( "volume handle is NULL, this should never happen!" );
+	}
+	loc.vol->set_dirty();
 
 #else
 

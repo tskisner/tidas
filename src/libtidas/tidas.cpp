@@ -57,7 +57,7 @@ data_type tidas::data_type_get ( type_info const & test ) {
 
 string data_type_to_string ( data_type type ) {
 	string ret;
-	switch ( it->type ) {
+	switch ( type ) {
 		case TYPE_INT8:
 			ret = "TYPE_INT8";
 			break;
@@ -103,25 +103,25 @@ data_type data_type_from_string ( string const & name ) {
 	data_type ret;
 	if ( name == "TYPE_INT8" ) {
 		ret = TYPE_INT8;
-	} else ( name == "TYPE_UINT8" ) {
+	} else if ( name == "TYPE_UINT8" ) {
 		ret = TYPE_UINT8;
-	} else ( name == "TYPE_INT16" ) {
+	} else if ( name == "TYPE_INT16" ) {
 		ret = TYPE_INT16;
-	} else ( name == "TYPE_UINT16" ) {
+	} else if ( name == "TYPE_UINT16" ) {
 		ret = TYPE_UINT16;
-	} else ( name == "TYPE_INT32" ) {
+	} else if ( name == "TYPE_INT32" ) {
 		ret = TYPE_INT32;
-	} else ( name == "TYPE_UINT32" ) {
+	} else if ( name == "TYPE_UINT32" ) {
 		ret = TYPE_UINT32;
-	} else ( name == "TYPE_INT64" ) {
+	} else if ( name == "TYPE_INT64" ) {
 		ret = TYPE_INT64;
-	} else ( name == "TYPE_UINT64" ) {
+	} else if ( name == "TYPE_UINT64" ) {
 		ret = TYPE_UINT64;
-	} else ( name == "TYPE_FLOAT32" ) {
+	} else if ( name == "TYPE_FLOAT32" ) {
 		ret = TYPE_FLOAT32;
-	} else ( name == "TYPE_FLOAT64" ) {
+	} else if ( name == "TYPE_FLOAT64" ) {
 		ret = TYPE_FLOAT64;
-	} else ( name == "TYPE_STRING" ) {
+	} else if ( name == "TYPE_STRING" ) {
 		ret = TYPE_STRING;
 	} else {
 		TIDAS_THROW( "data type not recognized" );
@@ -136,6 +136,7 @@ tidas::backend_path::backend_path () {
 	meta = "";
 	type = BACKEND_MEM;
 	comp = COMPRESS_NONE;
+	//vol = NULL;
 }
 
 

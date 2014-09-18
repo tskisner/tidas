@@ -14,30 +14,58 @@ using namespace tidas;
 
 
 tidas::dict::dict () {
-	backend_ = NULL;
+	init();
 }
 
 
 tidas::dict::~dict () {
-	if ( backend_ ) {
-		delete backend_;
-	}
+	clear();
 }
 
 
-tidas::dict::dict ( dict const & orig ) {
-	data_ = orig.data_;
-	types_ = orig.types_;
-	loc_ = orig.loc_;
+tidas::dict::dict ( dict const & other ) {
+	init();
+	clear();
+	copy ( other );
+}
+
+
+dict & tidas::dict::operator= ( dict const & other ) {
+	if ( this != &other ) {
+		clear();
+		copy ( other );
+	}
+	return *this;
+}
+
+
+void tidas::dict::init () {
 	backend_ = NULL;
-	if ( orig.backend_ ) {
-		backend_ = orig.backend_->clone();
+	return;
+}
+
+
+void tidas::dict::clear () {
+	if ( backend_ ) {
+		delete backend_;
+		backend_ = NULL;
+	}
+	return;
+}
+
+
+void tidas::dict::copy ( dict const & other ) {
+	data_ = other.data_;
+	types_ = other.types_;
+	loc_ = other.loc_;
+	if ( other.backend_ ) {
+		backend_ = other.backend_->clone();
 	}
 }
 
 
 tidas::dict::dict ( backend_path const & loc, string const & filter ) {
-	backend_ = NULL;
+	init();
 	relocate ( loc );
 	read_meta ( filter );
 }
@@ -132,8 +160,9 @@ long long tidas::dict::get_ll ( string const & key ) const {
 }
 
 
-void tidas::dict::clear () {
+void tidas::dict::clear_data () {
 	data_.clear();
+	types_.clear();
 	return;
 }
 
@@ -168,7 +197,7 @@ void tidas::dict_backend_mem::read_meta ( backend_path const & loc, string const
 	for ( map < string, string > :: const_iterator it = data_.begin(); it != data_.end(); ++it ) {
 		if ( RE2::FullMatch ( it->first, re ) ) {
 			data[ it->first ] = it->second;
-			types[ it->first ] = types_[ it->first ];
+			types[ it->first ] = types_.at( it->first );
 		}
 	}
 
@@ -186,7 +215,7 @@ void tidas::dict_backend_mem::write_meta ( backend_path const & loc, string cons
 	for ( map < string, string > :: const_iterator it = data.begin(); it != data.end(); ++it ) {
 		if ( RE2::FullMatch ( it->first, re ) ) {
 			data_[ it->first ] = it->second;
-			types_[ it->first ] = types[ it->first ];
+			types_[ it->first ] = types.at( it->first );
 		}
 	}
 

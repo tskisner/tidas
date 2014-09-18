@@ -14,73 +14,74 @@ using namespace std;
 using namespace tidas;
 
 
+class volume {
 
-tidas::volume::volume ( std::string const & path, backend_type type ) {
+		public :
+
+tidas::volume::volume () {
+
 
 }
 
 
-tidas::volume::volume ( std::string const & path ) {
+volume ( std::string const & path, std::string const & filter ) {
+
 
 }
 
 
+~volume () {
 
-tidas::volume::~volume () {
+
+	// free index if needed
 
 }
 
 
-void tidas::volume::read_meta () {
-
+void write ( std::string const & path, std::string const & filter, backend_type type, compression_type comp ) {
 
 	return;
 }
 
 
-
-void tidas::volume::write_meta () {
-
+void duplicate ( std::string const & path, std::string const & filter, backend_type type, compression_type comp ) {
 
 	return;
 }
 
 
+void index () {
 
-void tidas::volume::index () {
-
-
-	return;
+	dirty_ = false;
 }
 
 
-
-select tidas::volume::query ( std::string const & match ) {
-	select ret;
-	return ret;
+void set_dirty () {
+	dirty_ = true;
 }
 
 
-
-block & tidas::volume::root () {
-	return root_;
+std::vector < block > & blocks () {
+	return root_.blocks();
 }
 
 
+block & block_append ( std::string const & name, block const & blk ) {
+	backend_path blockloc;
+	blockloc.type = loc_.type;
+	blockloc.comp = loc_.comp;
+	blockloc.path = loc_.path;
+	blockloc.meta = "";
+	blockloc.name = name;
+	blockloc.vol = this;
 
-void tidas::volume::duplicate ( std::string const & newpath, backend_type newtype, select const & selection ) {
+	root_.blocks().push_back( block( blk ) );
 
+	std::vector < block > iterator final = root_.blocks().rbegin();
 
-	return;
+	final->relocate ( blockloc );
+
+	return (*final);
 }
-
-
-
-void tidas::volume::block_append ( std::string const & name, block const & blk ) {
-
-
-	return;
-}
-
 
 

@@ -11,13 +11,15 @@
 
 namespace tidas {
 
+	static const std::string intervals_meta_time = "times";
+	static const std::string intervals_meta_index = "indices";
+
 	class intrvl {
 
 		public :
 
 			intrvl ();
 			intrvl ( time_type new_start, time_type new_stop, index_type new_first, index_type new_last );
-			~intrvl ();
 
 			time_type start;
 			time_type stop;
@@ -40,9 +42,9 @@ namespace tidas {
 
 			virtual intervals_backend * clone () = 0;
 
-			virtual void read ( backend_path const & loc ) = 0;
+			virtual void read_meta ( backend_path const & loc ) = 0;
 
-			virtual void write ( backend_path const & loc ) = 0;
+			virtual void write_meta ( backend_path const & loc ) = 0;
 
 			virtual void read_data ( backend_path const & loc, interval_list & intr ) = 0;
 			
@@ -62,9 +64,9 @@ namespace tidas {
 
 			intervals_backend_mem * clone ();
 
-			void read ( backend_path const & loc );
+			void read_meta ( backend_path const & loc );
 
-			void write ( backend_path const & loc );
+			void write_meta ( backend_path const & loc );
 			
 			void read_data ( backend_path const & loc, interval_list & intr );
 			
@@ -88,9 +90,9 @@ namespace tidas {
 
 			intervals_backend_hdf5 * clone ();
 
-			void read ( backend_path const & loc );
+			void read_meta ( backend_path const & loc );
 
-			void write ( backend_path const & loc );
+			void write_meta ( backend_path const & loc );
 
 			void read_data ( backend_path const & loc, interval_list & intr );
 			
@@ -110,9 +112,9 @@ namespace tidas {
 
 			intervals_backend_getdata * clone ();
 
-			void read ( backend_path const & loc );
+			void read_meta ( backend_path const & loc );
 			
-			void write ( backend_path const & loc );
+			void write_meta ( backend_path const & loc );
 
 			void read_data ( backend_path const & loc, interval_list & intr );
 
@@ -128,19 +130,26 @@ namespace tidas {
 		public :
 
 			intervals ();
-			intervals ( backend_path const & loc );
-			intervals ( intervals const & orig );
 			~intervals ();
+			intervals ( intervals const & other );
+			intervals & operator= ( intervals const & other );
+			void init ();
+			void copy ( intervals const & other );
+			void clear ();
 
-			void read_meta ();
+			intervals ( backend_path const & loc, std::string const & filter );
 
-			void write_meta ();
+			void read_meta ( std::string const & filter );
+
+			void write_meta ( std::string const & filter );
 
 			void relocate ( backend_path const & loc );
 
 			backend_path location () const;
 
-			void duplicate ( backend_path const & newloc );
+			schema duplicate ( std::string const & filter, backend_path const & newloc );
+
+			//------------
 
 			template < class T >
 			void dictionary_put ( std::string const & key, T const & val ) {
@@ -149,8 +158,6 @@ namespace tidas {
 			}
 
 			dict const & dictionary () const;
-
-			//------------
 
 			void read_data ( interval_list & intr );
 

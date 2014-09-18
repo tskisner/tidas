@@ -7,8 +7,6 @@
 
 #include <tidas_internal.hpp>
 
-#include <tidas/re2/re2.h>
-
 
 using namespace std;
 using namespace tidas;
@@ -175,6 +173,13 @@ void tidas::schema_backend_hdf5::write_meta ( backend_path const & loc, string c
 	status = H5Sclose ( dataspace );
 	status = H5Dclose ( dataset );
 	status = H5Fclose ( file );
+
+	// mark volume as dirty
+
+	if ( loc.vol == NULL ) {
+		TIDAS_THROW( "volume handle is NULL, this should never happen!" );
+	}
+	loc.vol->set_dirty();
 
 #else
 

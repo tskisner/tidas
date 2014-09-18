@@ -11,6 +11,8 @@
 
 namespace tidas {
 
+	static const std::string schema_meta = "schema";
+
 	// one field of the schema
 
 	class field {
@@ -18,7 +20,6 @@ namespace tidas {
 		public :
 
 			field ();
-			~field ();
 
 			bool operator== ( const field & other ) const;
 			bool operator!= ( const field & other ) const;
@@ -114,8 +115,12 @@ namespace tidas {
 
 			schema ();
 			~schema ();
+			schema ( schema const & other );
+			schema & operator= ( schema const & other );
+			void init ();
+			void copy ( schema const & other );
+			void clear ();
 
-			schema ( schema const & orig );
 			schema ( backend_path const & loc, std::string const & filter );
 
 			schema ( field_list const & fields );

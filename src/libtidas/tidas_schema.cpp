@@ -21,11 +21,6 @@ tidas::field::field () {
 }
 
 
-tidas::field::~field () {
-
-}
-
-
 bool tidas::field::operator== ( const field & other ) const {
 	if ( type != other.type ) {
 		return false;
@@ -46,37 +41,65 @@ bool tidas::field::operator!= ( const field & other ) const {
 
 
 tidas::schema::schema () {
-	backend_ = NULL;
+	init();
 }
 
 
 tidas::schema::~schema () {
+	clear();
+}
+
+
+tidas::schema::schema ( schema const & other ) {
+	init();
+	clear();
+	copy ( other );
+}
+
+
+schema & tidas::schema::operator= ( schema const & other ) {
+	if ( this != &other ) {
+		clear();
+		copy ( other );
+	}
+	return *this;
+}
+
+
+void tidas::schema::init () {
+	backend_ = NULL;
+	return;
+}
+
+
+void tidas::schema::clear () {
 	if ( backend_ ) {
 		delete backend_;
+		backend_ = NULL;
 	}
+	return;
 }
 
 
-tidas::schema::schema ( schema const & orig ) {
-	fields_ = orig.fields_;
-	loc_ = orig.loc_;
-	backend_ = NULL;
-	if ( orig.backend_ ) {
-		backend_ = orig.backend_->clone();
+void tidas::schema::copy ( schema const & other ) {
+	fields_ = other.fields_;
+	loc_ = other.loc_;
+	if ( other.backend_ ) {
+		backend_ = other.backend_->clone();
 	}
-}
-
-
-tidas::schema::schema ( field_list const & fields ) {
-	fields_ = fields;
-	backend_ = NULL;
 }
 
 
 tidas::schema::schema ( backend_path const & loc, string const & filter ) {
-	backend_ = NULL;
+	init();
 	relocate ( loc );
 	read_meta ( filter );
+}
+
+
+tidas::schema::schema ( field_list const & fields ) {
+	init();
+	fields_ = fields;
 }
 
 
@@ -144,6 +167,10 @@ schema tidas::schema::duplicate ( std::string const & filter, backend_path const
 	newschema.fields_ = fields_;
 	newschema.relocate ( newloc );
 	newschema.write_meta ( filter );
+
+	// reload to pick up filtered metadata
+	newschema.read_meta ( "" );
+
 	return newschema;
 }
 

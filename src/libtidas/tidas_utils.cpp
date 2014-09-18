@@ -94,6 +94,7 @@ string tidas::filter_default ( string const & filter ) {
 //   two == "bar"
 //   three == "blat"
 
+/*
 map < string, string > tidas::filter_split ( string const & filter ) {
 	map < string, string > ret;
 
@@ -154,6 +155,8 @@ map < string, string > tidas::filter_split ( string const & filter ) {
 	}
 	return ret;
 }
+
+*/
 
 
 

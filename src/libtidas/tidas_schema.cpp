@@ -40,44 +40,37 @@ bool tidas::field::operator!= ( const field & other ) const {
 }
 
 
+field_list tidas::field_filter_type ( field_list const & fields, data_type type ) {
+	field_list ret;
+	for ( field_list::const_iterator it = fields.begin(); it != fields.end(); ++it ) {
+		if ( it->type == type ) {
+			ret.push_back ( *it );
+		}
+	}
+	return ret;
+}
+
+
 tidas::schema::schema () {
-	init();
+
 }
 
 
 tidas::schema::~schema () {
-	clear();
+
 }
 
 
 tidas::schema::schema ( schema const & other ) {
-	init();
-	clear();
 	copy ( other );
 }
 
 
 schema & tidas::schema::operator= ( schema const & other ) {
 	if ( this != &other ) {
-		clear();
 		copy ( other );
 	}
 	return *this;
-}
-
-
-void tidas::schema::init () {
-	backend_ = NULL;
-	return;
-}
-
-
-void tidas::schema::clear () {
-	if ( backend_ ) {
-		delete backend_;
-		backend_ = NULL;
-	}
-	return;
 }
 
 
@@ -85,20 +78,18 @@ void tidas::schema::copy ( schema const & other ) {
 	fields_ = other.fields_;
 	loc_ = other.loc_;
 	if ( other.backend_ ) {
-		backend_ = other.backend_->clone();
+		backend_.reset( other.backend_->clone() );
 	}
 }
 
 
 tidas::schema::schema ( backend_path const & loc, string const & filter ) {
-	init();
 	relocate ( loc );
 	read_meta ( filter );
 }
 
 
 tidas::schema::schema ( field_list const & fields ) {
-	init();
 	fields_ = fields;
 }
 
@@ -134,17 +125,12 @@ void tidas::schema::write_meta ( string const & filter ) {
 void tidas::schema::relocate ( backend_path const & loc ) {
 	loc_ = loc;
 
-	if ( backend_ ) {
-		delete backend_;
-	}
-	backend_ = NULL;
-
 	switch ( loc_.type ) {
 		case BACKEND_MEM:
-			backend_ = new schema_backend_mem ();
+			backend_.reset( new schema_backend_mem () );
 			break;
 		case BACKEND_HDF5:
-			backend_ = new schema_backend_hdf5 ();
+			backend_.reset( new schema_backend_hdf5 () );
 			break;
 		case BACKEND_GETDATA:
 			TIDAS_THROW( "GetData backend not yet implemented" );
@@ -162,9 +148,8 @@ backend_path tidas::schema::location () const {
 }
 
 
-schema tidas::schema::duplicate ( std::string const & filter, backend_path const & newloc ) {
-	schema newschema;
-	newschema.fields_ = fields_;
+schema tidas::schema::duplicate ( string const & filter, backend_path const & newloc ) {
+	schema newschema ( fields_ );
 	newschema.relocate ( newloc );
 	newschema.write_meta ( filter );
 
@@ -175,13 +160,19 @@ schema tidas::schema::duplicate ( std::string const & filter, backend_path const
 }
 
 
+void tidas::schema::clear () {
+	fields_.clear();
+	return;
+}
+
+
 void tidas::schema::append ( field const & fld ) {
 	fields_.push_back ( fld );
 	return;
 }
 
 
-void tidas::schema::remove ( std::string const & name ) {
+void tidas::schema::remove ( string const & name ) {
 	field_list::iterator it;
 
 	for ( it = fields_.begin(); it != fields_.end(); ++it ) {
@@ -195,7 +186,7 @@ void tidas::schema::remove ( std::string const & name ) {
 }
 
 
-field tidas::schema::seek ( std::string const & name ) const {
+field tidas::schema::seek ( string const & name ) const {
 
 	for ( field_list::const_iterator it = fields_.begin(); it != fields_.end(); ++it ) {
 		if ( name == it->name ) {
@@ -223,7 +214,20 @@ tidas::schema_backend_mem::~schema_backend_mem () {
 }
 
 
-schema_backend_mem * tidas::schema_backend_mem::clone () {
+tidas::schema_backend_mem::schema_backend_mem ( schema_backend_mem const & other ) {
+	fields_ = other.fields_;
+}
+
+
+schema_backend_mem & tidas::schema_backend_mem::operator= ( schema_backend_mem const & other ) {
+	if ( this != &other ) {
+		fields_ = other.fields_;
+	}
+	return *this;
+}
+
+
+schema_backend * tidas::schema_backend_mem::clone () {
 	schema_backend_mem * ret = new schema_backend_mem ( *this );
 	ret->fields_ = fields_;
 	return ret;

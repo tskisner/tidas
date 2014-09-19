@@ -24,8 +24,22 @@ tidas::dict_backend_getdata::~dict_backend_getdata () {
 }
 
 
-dict_backend_getdata * tidas::dict_backend_getdata::clone () {
+tidas::dict_backend_getdata::dict_backend_getdata ( dict_backend_getdata const & other ) {
+
+}
+
+
+dict_backend_getdata & tidas::dict_backend_getdata::operator= ( dict_backend_getdata const & other ) {
+	if ( this != &other ) {
+
+	}
+	return *this;
+}
+
+
+dict_backend * tidas::dict_backend_getdata::clone () {
 	dict_backend_getdata * ret = new dict_backend_getdata ( *this );
+
 	return ret;
 }
 

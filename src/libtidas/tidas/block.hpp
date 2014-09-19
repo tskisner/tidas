@@ -12,10 +12,92 @@
 
 namespace tidas {
 
-	static const std::string group_fs_name = "grp.tidas";
-	static const std::string intervals_fs_name = "int.tidas";
-	static const std::string ext_fs_name = "ext.tidas";
-	static const std::string block_fs_name = "blk.tidas";
+	static const std::string block_fs_dict_name = "tidas_info";
+	static const std::string block_dict_name = "dictionary";
+	static const std::string block_fs_group_name = "tidas_grp";
+	static const std::string block_fs_intervals_name = "tidas_int";
+	static const std::string block_fs_ext_name = "tidas_ext";
+
+	// base class for intervals backend interface
+
+	class block_backend {
+
+		public :
+			
+			block_backend () {}
+			virtual ~block_backend () {}
+
+			virtual block_backend * clone () = 0;
+
+			virtual void read_meta ( backend_path const & loc ) = 0;
+
+			virtual void write_meta ( backend_path const & loc ) = 0;
+
+	};
+
+
+	// memory backend class
+
+	class block_backend_mem : public block_backend {
+
+		public :
+			
+			block_backend_mem ();
+			~block_backend_mem ();
+			block_backend_mem ( block_backend_mem const & other );
+			block_backend_mem & operator= ( block_backend_mem const & other );
+
+			block_backend * clone ();
+
+			void read_meta ( backend_path const & loc );
+
+			void write_meta ( backend_path const & loc );
+
+		private :
+
+			interval_list store_;
+
+	};
+
+
+	// HDF5 backend class
+
+	class block_backend_hdf5 : public block_backend {
+
+		public :
+			
+			block_backend_hdf5 ();
+			~block_backend_hdf5 ();
+			block_backend_hdf5 ( block_backend_hdf5 const & other );
+			block_backend_hdf5 & operator= ( block_backend_hdf5 const & other );
+
+			block_backend * clone ();
+
+			void read_meta ( backend_path const & loc );
+
+			void write_meta ( backend_path const & loc );
+
+	};
+
+
+	// GetData backend class
+
+	class block_backend_getdata : public block_backend {
+
+		public :
+			
+			block_backend_getdata ();
+			~block_backend_getdata ();
+			block_backend_getdata ( block_backend_getdata const & other );
+			block_backend_getdata & operator= ( block_backend_getdata const & other );
+
+			block_backend * clone ();
+
+			void read_meta ( backend_path const & loc );
+			
+			void write_meta ( backend_path const & loc );
+
+	};
 
 	class block;
 
@@ -24,33 +106,43 @@ namespace tidas {
 		public :
 
 			block ();
-			block ( backend_path const & loc );
-			block ( block const & orig );
 			~block ();
+			block ( block const & other );
+			block & operator= ( block const & other );
+			void copy ( block const & other );
 
-			void read_meta ();
+			block ( backend_path const & loc, std::string const & filter );
 
-			void write_meta ();
-			
+			void read_meta ( std::string const & filter );
+
+			void write_meta ( std::string const & filter );
+
 			void relocate ( backend_path const & loc );
-			
+
 			backend_path location () const;
-			
-			void duplicate ( backend_path const & newloc, block_select const & selection );
 
-			void block_append ( std::string const & name, block const & blk );
+			block duplicate ( std::string const & filter, backend_path const & newloc );
 
-			void group_append ( std::string const & name, group const & grp );
+			//------------
+
+			dict & dictionary () const;
+
+			std::vector < block > & blocks ();
+
+			std::vector < group > & groups ();
 			
-			void intervals_append ( std::string const & name, intervals const & intr );
+			std::vector < intervals > & intervals ();
 
 
 		private :
 
-			backend_path loc_;
+			dict dict_;
 			std::vector < block > block_list_;
 			std::vector < group > group_list_;
 			std::vector < intervals > intervals_list_;
+
+			backend_path loc_;
+			std::unique_ptr < block_backend > backend_;
 
 	};
 

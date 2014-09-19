@@ -33,7 +33,7 @@ namespace tidas {
 
 			virtual void read_meta ( backend_path const & loc, std::string const & filter, index_type & nsamp ) = 0;
 
-			virtual void write_meta ( backend_path const & loc, std::string const & filter, index_type nsamp ) = 0;
+			virtual void write_meta ( backend_path const & loc, std::string const & filter, schema const & schm, index_type nsamp ) = 0;
 
 			virtual void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > & data ) = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > const & data ) = 0;
@@ -73,14 +73,17 @@ namespace tidas {
 
 		public :
 			
-			group_backend_mem ( index_type nsamp, schema const & schm, dict const & dictionary );
+			group_backend_mem ( index_type nsamp );
 			~group_backend_mem ();
+			group_backend_mem ( group_backend_mem const & other );
+			group_backend_mem & operator= ( group_backend_mem const & other );
+			void copy ( group_backend_mem const & other );
 
-			group_backend_mem * clone ();
+			group_backend * clone ();
 
 			void read_meta ( backend_path const & loc, std::string const & filter, index_type & nsamp );
 
-			void write_meta ( backend_path const & loc, std::string const & filter, index_type nsamp );
+			void write_meta ( backend_path const & loc, std::string const & filter, schema const & schm, index_type nsamp );
 
 			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > & data );
 			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > const & data );
@@ -114,11 +117,17 @@ namespace tidas {
 
 		private :
 
-			schema schm_;
-			dict dict_;
 			index_type nsamp_;
-			std::map < std::string, std::vector < double > > data_float_;
-			std::map < std::string, std::vector < int64_t > > data_int_;
+			std::map < std::string, std::vector < int8_t > > data_int8_;
+			std::map < std::string, std::vector < uint8_t > > data_uint8_;
+			std::map < std::string, std::vector < int16_t > > data_int16_;
+			std::map < std::string, std::vector < uint16_t > > data_uint16_;
+			std::map < std::string, std::vector < int32_t > > data_int32_;
+			std::map < std::string, std::vector < uint32_t > > data_uint32_;
+			std::map < std::string, std::vector < int64_t > > data_int64_;
+			std::map < std::string, std::vector < uint64_t > > data_uint64_;
+			std::map < std::string, std::vector < float > > data_float_;
+			std::map < std::string, std::vector < double > > data_double_;
 
 	};
 
@@ -131,12 +140,14 @@ namespace tidas {
 			
 			group_backend_hdf5 ();
 			~group_backend_hdf5 ();
+			group_backend_hdf5 ( group_backend_hdf5 const & other );
+			group_backend_hdf5 & operator= ( group_backend_hdf5 const & other );
 
-			group_backend_hdf5 * clone ();
+			group_backend * clone ();
 
 			void read_meta ( backend_path const & loc, std::string const & filter, index_type & nsamp );
 
-			void write_meta ( backend_path const & loc, std::string const & filter, index_type nsamp );
+			void write_meta ( backend_path const & loc, std::string const & filter, schema const & schm, index_type nsamp );
 
 			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > & data );
 			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > const & data );
@@ -179,12 +190,14 @@ namespace tidas {
 			
 			group_backend_getdata ();
 			~group_backend_getdata ();
+			group_backend_getdata ( group_backend_getdata const & other );
+			group_backend_getdata & operator= ( group_backend_getdata const & other );
 
-			group_backend_getdata * clone ();
+			group_backend * clone ();
 
 			void read_meta ( backend_path const & loc, std::string const & filter, index_type & nsamp );
 
-			void write_meta ( backend_path const & loc, std::string const & filter, index_type nsamp );
+			void write_meta ( backend_path const & loc, std::string const & filter, schema const & schm, index_type nsamp );
 
 			void read_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > & data );
 			void write_field ( backend_path const & loc, std::string const & field_name, index_type offset, std::vector < int8_t > const & data );
@@ -229,9 +242,7 @@ namespace tidas {
 			~group ();
 			group ( group const & other );
 			group & operator= ( group const & other );
-			void init ();
 			void copy ( group const & other );
-			void clear ();
 
 			group ( backend_path const & loc, std::string const & filter );
 
@@ -250,13 +261,7 @@ namespace tidas {
 
 			//------------
 
-			template < class T >
-			void dictionary_put ( std::string const & key, T const & val ) {
-				dict_.put < T > ( key, val );
-				return;
-			}
-
-			dict const & dictionary () const;
+			dict & dictionary () const;
 
 			schema const & schema_get () const;
 
@@ -268,12 +273,12 @@ namespace tidas {
 
 			void read_times ( std::vector < time_type > & data );
 
-			void write_times ( std::vector < time_type > & data );
+			void write_times ( std::vector < time_type > const & data );
 
 			template < class T >
 			void read_field ( std::string const & field_name, index_type offset, std::vector < T > & data ) {
 				field check = schm_.seek ( field_name );
-				if ( ( check.name != field_name ) && ( field_name != time_field ) ) {
+				if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
 					std::ostringstream o;
 					o << "cannot read non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
 					TIDAS_THROW( o.str().c_str() );
@@ -291,7 +296,7 @@ namespace tidas {
 			template < class T >
 			void write_field ( std::string const & field_name, index_type offset, std::vector < T > const & data ) {
 				field check = schm_.seek ( field_name );
-				if ( ( check.name != field_name ) && ( field_name != time_field ) ) {
+				if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
 					std::ostringstream o;
 					o << "cannot write non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
 					TIDAS_THROW( o.str().c_str() );
@@ -313,7 +318,7 @@ namespace tidas {
 			index_type nsamp_;
 
 			backend_path loc_;
-			group_backend * backend_;
+			std::unique_ptr < group_backend > backend_;
 
 	};
 

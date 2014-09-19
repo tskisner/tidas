@@ -23,7 +23,20 @@ tidas::schema_backend_hdf5::~schema_backend_hdf5 () {
 }
 
 
-schema_backend_hdf5 * tidas::schema_backend_hdf5::clone () {
+tidas::schema_backend_hdf5::schema_backend_hdf5 ( schema_backend_hdf5 const & other ) {
+
+}
+
+
+schema_backend_hdf5 & tidas::schema_backend_hdf5::operator= ( schema_backend_hdf5 const & other ) {
+	if ( this != &other ) {
+
+	}
+	return *this;
+}
+
+
+schema_backend * tidas::schema_backend_hdf5::clone () {
 	schema_backend_hdf5 * ret = new schema_backend_hdf5 ( *this );
 	return ret;
 }
@@ -52,7 +65,7 @@ void tidas::schema_backend_hdf5::read_meta ( backend_path const & loc, string co
 	int ndims = H5Sget_simple_extent_ndims ( dataspace );
 
 	if ( ndims != 2 ) {
-		std::ostringstream o;
+		ostringstream o;
 		o << "HDF5 schema dataset " << fspath << ":" << loc.meta << " has wrong dimensions (" << ndims << ")";
 		TIDAS_THROW( o.str().c_str() );
 	}
@@ -64,7 +77,7 @@ void tidas::schema_backend_hdf5::read_meta ( backend_path const & loc, string co
 	int ret = H5Sget_simple_extent_dims ( dataspace, dims, maxdims );
 
 	if ( dims[1] != 3 ) {
-		std::ostringstream o;
+		ostringstream o;
 		o << "HDF5 schema dataset " << fspath << ":" << loc.meta << " has wrong second dimension (" << dims[1] << " != " << 3 << ")";
 		TIDAS_THROW( o.str().c_str() );
 	}
@@ -142,11 +155,15 @@ void tidas::schema_backend_hdf5::write_meta ( backend_path const & loc, string c
 
 	// create schema dataset and write
 
+	hsize_t dims[2];
+	dims[0] = sel.size();
+	dims[1] = 3;
+
 	hid_t dataspace = H5Screate_simple ( 1, dims, NULL ); 
 
 	hid_t datatype = hdf5_data_type ( TYPE_STRING );
 
-	hid_t dataset = hdf5_dataset_create ( file, loc.meta, datatype, sel.size(), 3 );
+	hid_t dataset = H5Dcreate ( file, loc.meta.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
 
 	char * buffer = mem_alloc < char > ( 3 * sel.size() * backend_string_size );
 
@@ -176,10 +193,10 @@ void tidas::schema_backend_hdf5::write_meta ( backend_path const & loc, string c
 
 	// mark volume as dirty
 
-	if ( loc.vol == NULL ) {
-		TIDAS_THROW( "volume handle is NULL, this should never happen!" );
-	}
-	loc.vol->set_dirty();
+	//if ( loc.vol == NULL ) {
+	//	TIDAS_THROW( "volume handle is NULL, this should never happen!" );
+	//}
+	//loc.vol->set_dirty();
 
 #else
 

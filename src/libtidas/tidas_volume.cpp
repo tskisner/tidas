@@ -24,7 +24,7 @@ tidas::volume::volume () {
 }
 
 
-volume ( std::string const & path, std::string const & filter ) {
+volume ( string const & path, string const & filter ) {
 
 
 }
@@ -38,13 +38,13 @@ volume ( std::string const & path, std::string const & filter ) {
 }
 
 
-void write ( std::string const & path, std::string const & filter, backend_type type, compression_type comp ) {
+void write ( string const & path, string const & filter, backend_type type, compression_type comp ) {
 
 	return;
 }
 
 
-void duplicate ( std::string const & path, std::string const & filter, backend_type type, compression_type comp ) {
+void duplicate ( string const & path, string const & filter, backend_type type, compression_type comp ) {
 
 	return;
 }
@@ -61,12 +61,12 @@ void set_dirty () {
 }
 
 
-std::vector < block > & blocks () {
+vector < block > & blocks () {
 	return root_.blocks();
 }
 
 
-block & block_append ( std::string const & name, block const & blk ) {
+block & block_append ( string const & name, block const & blk ) {
 	backend_path blockloc;
 	blockloc.type = loc_.type;
 	blockloc.comp = loc_.comp;
@@ -77,7 +77,7 @@ block & block_append ( std::string const & name, block const & blk ) {
 
 	root_.blocks().push_back( block( blk ) );
 
-	std::vector < block > iterator final = root_.blocks().rbegin();
+	vector < block > iterator final = root_.blocks().rbegin();
 
 	final->relocate ( blockloc );
 

@@ -23,13 +23,26 @@ tidas::intervals_backend_hdf5::~intervals_backend_hdf5 () {
 }
 
 
-intervals_backend_hdf5 * tidas::intervals_backend_hdf5::clone () {
+tidas::intervals_backend_hdf5::intervals_backend_hdf5 ( intervals_backend_hdf5 const & other ) {
+
+}
+
+
+intervals_backend_hdf5 & tidas::intervals_backend_hdf5::operator= ( intervals_backend_hdf5 const & other ) {
+	if ( this != &other ) {
+
+	}
+	return *this;
+}
+
+
+intervals_backend * tidas::intervals_backend_hdf5::clone () {
 	intervals_backend_hdf5 * ret = new intervals_backend_hdf5 ( *this );
 	return ret;
 }
 
 
-void tidas::intervals_backend_hdf5::read ( backend_path const & loc ) {
+void tidas::intervals_backend_hdf5::read_meta ( backend_path const & loc ) {
 
 #ifdef HAVE_HDF5
 
@@ -39,7 +52,7 @@ void tidas::intervals_backend_hdf5::read ( backend_path const & loc ) {
 
 	int64_t fsize = fs_stat ( fspath.c_str() );
 	if ( fsize <= 0 ) {
-		std::ostringstream o;
+		ostringstream o;
 		o << "HDF5 intervals file " << fspath << " does not exist";
 		TIDAS_THROW( o.str().c_str() );
 	}
@@ -62,7 +75,7 @@ void tidas::intervals_backend_hdf5::read ( backend_path const & loc ) {
 }
 
 
-void tidas::intervals_backend_hdf5::write ( backend_path const & loc ) {
+void tidas::intervals_backend_hdf5::write_meta ( backend_path const & loc ) {
 
 #ifdef HAVE_HDF5
 
@@ -85,10 +98,10 @@ void tidas::intervals_backend_hdf5::write ( backend_path const & loc ) {
 
 	// mark volume as dirty
 
-	if ( loc.vol == NULL ) {
-		TIDAS_THROW( "volume handle is NULL, this should never happen!" );
-	}
-	loc.vol->set_dirty();
+	//if ( loc.vol == NULL ) {
+	//	TIDAS_THROW( "volume handle is NULL, this should never happen!" );
+	//}
+	//loc.vol->set_dirty();
 
 #else
 
@@ -110,7 +123,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
 
 	int64_t fsize = fs_stat ( fspath.c_str() );
 	if ( fsize <= 0 ) {
-		std::ostringstream o;
+		ostringstream o;
 		o << "HDF5 intervals file " << fspath << " does not exist";
 		TIDAS_THROW( o.str().c_str() );
 	}
@@ -135,7 +148,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
 	int ndims = H5Sget_simple_extent_ndims ( dataspace );
 
 	if ( ndims != 1 ) {
-		std::ostringstream o;
+		ostringstream o;
 		o << "HDF5 intervals dataset " << fspath << ":" << mpath << " has wrong dimensions (" << ndims << ")";
 		TIDAS_THROW( o.str().c_str() );
 	}
@@ -164,7 +177,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
 	ndims = H5Sget_simple_extent_ndims ( dataspace );
 
 	if ( ndims != 1 ) {
-		std::ostringstream o;
+		ostringstream o;
 		o << "HDF5 intervals dataset " << fspath << ":" << mpath << " has wrong dimensions (" << ndims << ")";
 		TIDAS_THROW( o.str().c_str() );
 	}
@@ -173,7 +186,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
 	ret = H5Sget_simple_extent_dims ( dataspace, &ind_dims, &maxdims );
 
 	if ( ind_dims != time_dims ) {
-		std::ostringstream o;
+		ostringstream o;
 		o << "HDF5 intervals dataset " << fspath << ": index length (" << ind_dims << ") is different than time length (" << time_dims << ")";
 		TIDAS_THROW( o.str().c_str() );
 	}
@@ -288,10 +301,10 @@ void tidas::intervals_backend_hdf5::write_data ( backend_path const & loc, inter
 
 	// mark volume as dirty
 
-	if ( loc.vol == NULL ) {
-		TIDAS_THROW( "volume handle is NULL, this should never happen!" );
-	}
-	loc.vol->set_dirty();
+	//if ( loc.vol == NULL ) {
+	//	TIDAS_THROW( "volume handle is NULL, this should never happen!" );
+	//}
+	//loc.vol->set_dirty();
 
 #else
 

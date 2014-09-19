@@ -23,7 +23,20 @@ tidas::intervals_backend_getdata::~intervals_backend_getdata () {
 }
 
 
-intervals_backend_getdata * tidas::intervals_backend_getdata::clone () {
+tidas::intervals_backend_getdata::intervals_backend_getdata ( intervals_backend_getdata const & other ) {
+
+}
+
+
+intervals_backend_getdata & tidas::intervals_backend_getdata::operator= ( intervals_backend_getdata const & other ) {
+	if ( this != &other ) {
+
+	}
+	return *this;
+}
+
+
+intervals_backend * tidas::intervals_backend_getdata::clone () {
 	intervals_backend_getdata * ret = new intervals_backend_getdata ( *this );
 	return ret;
 }

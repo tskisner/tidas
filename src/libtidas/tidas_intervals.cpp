@@ -29,43 +29,25 @@ tidas::intrvl::intrvl ( time_type new_start, time_type new_stop, index_type new_
 
 
 tidas::intervals::intervals () {
-	init();
+
 }
 
 
 tidas::intervals::~intervals () {
-	clear();
+
 }
 
 
 tidas::intervals::intervals ( intervals const & other ) {
-	init();
-	clear();
 	copy ( other );
 }
 
 
 intervals & tidas::intervals::operator= ( intervals const & other ) {
 	if ( this != &other ) {
-		clear();
 		copy ( other );
 	}
 	return *this;
-}
-
-
-void tidas::intervals::init () {
-	backend_ = NULL;
-	return;
-}
-
-
-void tidas::intervals::clear () {
-	if ( backend_ ) {
-		delete backend_;
-		backend_ = NULL;
-	}
-	return;
 }
 
 
@@ -73,13 +55,12 @@ void tidas::intervals::copy ( intervals const & other ) {
 	dict_ = other.dict_;
 	loc_ = other.loc_;
 	if ( other.backend_ ) {
-		backend_ = other.backend_->clone();
+		backend_.reset( other.backend_->clone() );
 	}
 }
 
 
 tidas::intervals::intervals ( backend_path const & loc, string const & filter ) {
-	init();
 	relocate ( loc );
 	read_meta ( filter );
 }
@@ -124,17 +105,12 @@ void tidas::intervals::write_meta ( string const & filter ) {
 void tidas::intervals::relocate ( backend_path const & loc ) {
 	loc_ = loc;
 
-	if ( backend_ ) {
-		delete backend_;
-	}
-	backend_ = NULL;
-
 	switch ( loc_.type ) {
 		case BACKEND_MEM:
-			backend_ = new intervals_backend_mem ();
+			backend_.reset( new intervals_backend_mem () );
 			break;
 		case BACKEND_HDF5:
-			backend_ = new intervals_backend_hdf5 ();
+			backend_.reset( new intervals_backend_hdf5 () );
 			break;
 		case BACKEND_GETDATA:
 			TIDAS_THROW( "GetData backend not yet implemented" );
@@ -158,7 +134,7 @@ backend_path tidas::intervals::location () const {
 }
 
 
-intervals tidas::intervals::duplicate ( std::string const & filter, backend_path const & newloc ) {
+intervals tidas::intervals::duplicate ( string const & filter, backend_path const & newloc ) {
 	intervals newintervals;
 	newintervals.dict_ = dict_;
 	newintervals.relocate ( newloc );
@@ -183,7 +159,7 @@ void tidas::intervals::write_data ( interval_list const & intr ) {
 }
 
 
-dict const & tidas::intervals::dictionary () const {
+dict & tidas::intervals::dictionary () const {
 	return dict_;
 }
 
@@ -270,7 +246,20 @@ tidas::intervals_backend_mem::~intervals_backend_mem () {
 }
 
 
-intervals_backend_mem * tidas::intervals_backend_mem::clone () {
+tidas::intervals_backend_mem::intervals_backend_mem ( intervals_backend_mem const & other ) {
+	store_ = other.store_;
+}
+
+
+intervals_backend_mem & tidas::intervals_backend_mem::operator= ( intervals_backend_mem const & other ) {
+	if ( this != &other ) {
+		store_ = other.store_;
+	}
+	return *this;
+}
+
+
+intervals_backend * tidas::intervals_backend_mem::clone () {
 	intervals_backend_mem * ret = new intervals_backend_mem ( *this );
 	ret->store_ = store_;
 	return ret;

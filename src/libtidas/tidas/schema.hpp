@@ -32,6 +32,8 @@ namespace tidas {
 
 	typedef std::vector < field > field_list;
 
+	field_list field_filter_type ( field_list const & fields, data_type type );
+
 
 	// base class for schema backend interface
 
@@ -58,8 +60,10 @@ namespace tidas {
 			
 			schema_backend_mem ();
 			~schema_backend_mem ();
+			schema_backend_mem ( schema_backend_mem const & other );
+			schema_backend_mem & operator= ( schema_backend_mem const & other );
 
-			schema_backend_mem * clone ();
+			schema_backend * clone ();
 
 			void read_meta ( backend_path const & loc, std::string const & filter, field_list & fields );
 
@@ -79,8 +83,10 @@ namespace tidas {
 			
 			schema_backend_hdf5 ();
 			~schema_backend_hdf5 ();
+			schema_backend_hdf5 ( schema_backend_hdf5 const & other );
+			schema_backend_hdf5 & operator= ( schema_backend_hdf5 const & other );
 
-			schema_backend_hdf5 * clone ();
+			schema_backend * clone ();
 
 			void read_meta ( backend_path const & loc, std::string const & filter, field_list & fields );
 
@@ -97,8 +103,10 @@ namespace tidas {
 			
 			schema_backend_getdata ();
 			~schema_backend_getdata ();
+			schema_backend_getdata ( schema_backend_getdata const & other );
+			schema_backend_getdata & operator= ( schema_backend_getdata const & other );
 
-			schema_backend_getdata * clone ();
+			schema_backend * clone ();
 
 			void read_meta ( backend_path const & loc, std::string const & filter, field_list & fields );
 
@@ -117,9 +125,7 @@ namespace tidas {
 			~schema ();
 			schema ( schema const & other );
 			schema & operator= ( schema const & other );
-			void init ();
 			void copy ( schema const & other );
-			void clear ();
 
 			schema ( backend_path const & loc, std::string const & filter );
 
@@ -136,6 +142,8 @@ namespace tidas {
 			schema duplicate ( std::string const & filter, backend_path const & newloc );
 
 			//------------
+
+			void clear ();
 			
 			void append ( field const & fld );
 			
@@ -150,7 +158,7 @@ namespace tidas {
 			field_list fields_;
 
 			backend_path loc_;
-			dict_backend * backend_;
+			std::unique_ptr < schema_backend > backend_;
 
 	};
 

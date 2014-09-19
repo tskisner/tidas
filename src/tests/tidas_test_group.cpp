@@ -32,7 +32,7 @@ group ();
 			schema const & schema_get () const;
 
 			template < class T >
-			void dictionary_put ( std::string const & key, T const & val ) {
+			void dictionary_put ( string const & key, T const & val ) {
 				dict_.put < T > ( key, val );
 				return;
 			}
@@ -41,7 +41,7 @@ group ();
 
 			index_type nsamp () const;
 
-			void times ( std::vector < time_type > & data );
+			void times ( vector < time_type > & data );
 */
 
 

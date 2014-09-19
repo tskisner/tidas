@@ -38,7 +38,6 @@ namespace tidas {
 
 	hid_t hdf5_data_type ( data_type type );
 
-	hid_t hdf5_dataset_create ( hid_t & file, std::string const & metapath, data_type type, size_t nfield, size_t nsamp );
 
 #endif
 

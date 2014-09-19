@@ -36,8 +36,10 @@ namespace tidas {
 			
 			dict_backend_mem ();
 			~dict_backend_mem ();
+			dict_backend_mem ( dict_backend_mem const & other );
+			dict_backend_mem & operator= ( dict_backend_mem const & other );
 
-			dict_backend_mem * clone ();
+			dict_backend * clone ();
 
 			void read_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
 
@@ -58,8 +60,10 @@ namespace tidas {
 			
 			dict_backend_hdf5 ();
 			~dict_backend_hdf5 ();
+			dict_backend_hdf5 ( dict_backend_hdf5 const & other );
+			dict_backend_hdf5 & operator= ( dict_backend_hdf5 const & other );
 
-			dict_backend_hdf5 * clone ();
+			dict_backend * clone ();
 
 			void read_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
 
@@ -76,8 +80,10 @@ namespace tidas {
 			
 			dict_backend_getdata ();
 			~dict_backend_getdata ();
+			dict_backend_getdata ( dict_backend_getdata const & other );
+			dict_backend_getdata & operator= ( dict_backend_getdata const & other );
 
-			dict_backend_getdata * clone ();
+			dict_backend * clone ();
 
 			void read_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
 
@@ -95,9 +101,7 @@ namespace tidas {
 			~dict ();
 			dict ( dict const & other );
 			dict & operator= ( dict const & other );
-			void init ();
 			void copy ( dict const & other );
-			void clear ();
 
 			dict ( backend_path const & loc, std::string const & filter );
 
@@ -134,7 +138,7 @@ namespace tidas {
 
 			long long get_ll ( std::string const & key ) const;
 
-			void clear_data();
+			void clear();
 
 			std::map < std::string, std::string > const & data();
 
@@ -146,7 +150,7 @@ namespace tidas {
 			std::map < std::string, data_type > types_;
 
 			backend_path loc_;
-			dict_backend * backend_;
+			std::unique_ptr < dict_backend > backend_;
 
 	};
 

@@ -26,8 +26,22 @@ tidas::dict_backend_hdf5::~dict_backend_hdf5 () {
 }
 
 
-dict_backend_hdf5 * tidas::dict_backend_hdf5::clone () {
+tidas::dict_backend_hdf5::dict_backend_hdf5 ( dict_backend_hdf5 const & other ) {
+
+}
+
+
+dict_backend_hdf5 & tidas::dict_backend_hdf5::operator= ( dict_backend_hdf5 const & other ) {
+	if ( this != &other ) {
+
+	}
+	return *this;
+}
+
+
+dict_backend * tidas::dict_backend_hdf5::clone () {
 	dict_backend_hdf5 * ret = new dict_backend_hdf5 ( *this );
+
 	return ret;
 }
 

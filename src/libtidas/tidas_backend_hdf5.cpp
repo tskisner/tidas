@@ -75,23 +75,6 @@ hid_t tidas::hdf5_data_type ( data_type type ) {
 }
 
 
-hid_t tidas::hdf5_dataset_create ( hid_t & file, string const & metapath, data_type type, size_t nfield, size_t nsamp ) {
-
-	hsize_t dims[2];
-	dims[0] = nfield;
-	dims[1] = nsamp;
-
-	hid_t dataspace = H5Screate_simple ( 1, dims, NULL ); 
-
-	hid_t datatype = hdf5_data_type ( type );
-
-	hid_t dataset = H5Dcreate ( file, metapath.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
-
-	H5Sclose ( dataspace );
-	H5Tclose ( datatype );
-
-	return dataset;
-}
 
 
 #endif

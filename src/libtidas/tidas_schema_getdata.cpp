@@ -26,7 +26,20 @@ tidas::schema_backend_getdata::~schema_backend_getdata () {
 }
 
 
-schema_backend_getdata * tidas::schema_backend_getdata::clone () {
+tidas::schema_backend_getdata::schema_backend_getdata ( schema_backend_getdata const & other ) {
+
+}
+
+
+schema_backend_getdata & tidas::schema_backend_getdata::operator= ( schema_backend_getdata const & other ) {
+	if ( this != &other ) {
+
+	}
+	return *this;
+}
+
+
+schema_backend * tidas::schema_backend_getdata::clone () {
 	schema_backend_getdata * ret = new schema_backend_getdata ( *this );
 	return ret;
 }

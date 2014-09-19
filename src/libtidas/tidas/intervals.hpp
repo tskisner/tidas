@@ -61,8 +61,10 @@ namespace tidas {
 			
 			intervals_backend_mem ();
 			~intervals_backend_mem ();
+			intervals_backend_mem ( intervals_backend_mem const & other );
+			intervals_backend_mem & operator= ( intervals_backend_mem const & other );
 
-			intervals_backend_mem * clone ();
+			intervals_backend * clone ();
 
 			void read_meta ( backend_path const & loc );
 
@@ -87,8 +89,10 @@ namespace tidas {
 			
 			intervals_backend_hdf5 ();
 			~intervals_backend_hdf5 ();
+			intervals_backend_hdf5 ( intervals_backend_hdf5 const & other );
+			intervals_backend_hdf5 & operator= ( intervals_backend_hdf5 const & other );
 
-			intervals_backend_hdf5 * clone ();
+			intervals_backend * clone ();
 
 			void read_meta ( backend_path const & loc );
 
@@ -109,8 +113,10 @@ namespace tidas {
 			
 			intervals_backend_getdata ();
 			~intervals_backend_getdata ();
+			intervals_backend_getdata ( intervals_backend_getdata const & other );
+			intervals_backend_getdata & operator= ( intervals_backend_getdata const & other );
 
-			intervals_backend_getdata * clone ();
+			intervals_backend * clone ();
 
 			void read_meta ( backend_path const & loc );
 			
@@ -133,9 +139,7 @@ namespace tidas {
 			~intervals ();
 			intervals ( intervals const & other );
 			intervals & operator= ( intervals const & other );
-			void init ();
 			void copy ( intervals const & other );
-			void clear ();
 
 			intervals ( backend_path const & loc, std::string const & filter );
 
@@ -147,17 +151,11 @@ namespace tidas {
 
 			backend_path location () const;
 
-			schema duplicate ( std::string const & filter, backend_path const & newloc );
+			intervals duplicate ( std::string const & filter, backend_path const & newloc );
 
 			//------------
 
-			template < class T >
-			void dictionary_put ( std::string const & key, T const & val ) {
-				dict_.put < T > ( key, val );
-				return;
-			}
-
-			dict const & dictionary () const;
+			dict & dictionary () const;
 
 			void read_data ( interval_list & intr );
 
@@ -178,7 +176,7 @@ namespace tidas {
 			dict dict_;
 
 			backend_path loc_;
-			intervals_backend * backend_;
+			std::unique_ptr < intervals_backend > backend_;
 
 	};
 

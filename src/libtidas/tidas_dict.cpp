@@ -14,43 +14,25 @@ using namespace tidas;
 
 
 tidas::dict::dict () {
-	init();
+
 }
 
 
 tidas::dict::~dict () {
-	clear();
+
 }
 
 
 tidas::dict::dict ( dict const & other ) {
-	init();
-	clear();
 	copy ( other );
 }
 
 
 dict & tidas::dict::operator= ( dict const & other ) {
 	if ( this != &other ) {
-		clear();
 		copy ( other );
 	}
 	return *this;
-}
-
-
-void tidas::dict::init () {
-	backend_ = NULL;
-	return;
-}
-
-
-void tidas::dict::clear () {
-	if ( backend_ ) {
-		delete backend_;
-		backend_ = NULL;
-	}
-	return;
 }
 
 
@@ -59,13 +41,12 @@ void tidas::dict::copy ( dict const & other ) {
 	types_ = other.types_;
 	loc_ = other.loc_;
 	if ( other.backend_ ) {
-		backend_ = other.backend_->clone();
+		backend_.reset( other.backend_->clone() );
 	}
 }
 
 
 tidas::dict::dict ( backend_path const & loc, string const & filter ) {
-	init();
 	relocate ( loc );
 	read_meta ( filter );
 }
@@ -102,17 +83,12 @@ void tidas::dict::write_meta ( string const & filter ) {
 void tidas::dict::relocate ( backend_path const & loc ) {
 	loc_ = loc;
 
-	if ( backend_ ) {
-		delete backend_;
-	}
-	backend_ = NULL;
-
 	switch ( loc_.type ) {
 		case BACKEND_MEM:
-			backend_ = new dict_backend_mem ();
+			backend_.reset( new dict_backend_mem () );
 			break;
 		case BACKEND_HDF5:
-			backend_ = new dict_backend_hdf5 ();
+			backend_.reset( new dict_backend_hdf5 () );
 			break;
 		case BACKEND_GETDATA:
 			TIDAS_THROW( "GetData backend not yet implemented" );
@@ -130,7 +106,7 @@ backend_path tidas::dict::location () const {
 }
 
 
-dict tidas::dict::duplicate ( std::string const & filter, backend_path const & newloc ) {
+dict tidas::dict::duplicate ( string const & filter, backend_path const & newloc ) {
 	dict newdict;
 	newdict.data_ = data_;
 	newdict.types_ = types_;
@@ -160,7 +136,7 @@ long long tidas::dict::get_ll ( string const & key ) const {
 }
 
 
-void tidas::dict::clear_data () {
+void tidas::dict::clear () {
 	data_.clear();
 	types_.clear();
 	return;
@@ -179,7 +155,22 @@ tidas::dict_backend_mem::~dict_backend_mem () {
 }
 
 
-dict_backend_mem * tidas::dict_backend_mem::clone () {
+tidas::dict_backend_mem::dict_backend_mem ( dict_backend_mem const & other ) {
+	data_ = other.data_;
+	types_ = other.types_;
+}
+
+
+dict_backend_mem & tidas::dict_backend_mem::operator= ( dict_backend_mem const & other ) {
+	if ( this != &other ) {
+		data_ = other.data_;
+		types_ = other.types_;
+	}
+	return *this;
+}
+
+
+dict_backend * tidas::dict_backend_mem::clone () {
 	dict_backend_mem * ret = new dict_backend_mem ( *this );
 	ret->data_ = data_;
 	ret->types_ = types_;

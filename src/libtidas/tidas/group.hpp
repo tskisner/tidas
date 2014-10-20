@@ -261,7 +261,7 @@ namespace tidas {
 
 			//------------
 
-			dict & dictionary () const;
+			dict & dictionary ();
 
 			schema const & schema_get () const;
 

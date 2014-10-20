@@ -56,19 +56,35 @@ void tidas::block::read_meta ( string const & filter ) {
 
 	string filt = filter_default ( filter );
 
+	// read block-specific metadata
+
+	if ( backend_ ) {
+		backend_->read_meta ( loc_, filt );
+	} else {
+		TIDAS_THROW( "backend not assigned" );
+	}
+
 	// extract dictionary filter and process
 	string dict_filter;
 	dict_.read_meta ( dict_filter );
 	
 	// read meta data from groups
-
+	string group_filter;
+	for ( std::vector < group > :: iterator it = group_list_.begin(); it != group_list_.end(); +it ) {
+		it->read_meta ( group_filter );
+	}
 
 	// read meta data from intervals
-
+	string intervals_filter;
+	for ( std::vector < intervals > :: iterator it = intervals_list_.begin(); it != intervals_list_.end(); +it ) {
+		it->read_meta ( intervals_filter );
+	}
 
 	// read meta data from child blocks
-
-
+	string block_filter;
+	for ( std::vector < block > :: iterator it = block_list_.begin(); it != block_list_.end(); +it ) {
+		it->read_meta ( block_filter );
+	}
 
 	return;
 }
@@ -78,17 +94,35 @@ void tidas::block::write_meta ( string const & filter ) {
 
 	string filt = filter_default ( filter );
 
+	// write block-specific metadata
+
+	if ( backend_ ) {
+		backend_->write_meta ( loc_, filt );
+	} else {
+		TIDAS_THROW( "backend not assigned" );
+	}
+
 	// extract dictionary filter and process
 	string dict_filter;
 	dict_.write_meta ( dict_filter );
 
-	// read meta data to groups
+	// write meta data to groups
+	string group_filter;
+	for ( std::vector < group > :: iterator it = group_list_.begin(); it != group_list_.end(); +it ) {
+		it->write_meta ( group_filter );
+	}
 
+	// write meta data to intervals
+	string intervals_filter;
+	for ( std::vector < intervals > :: iterator it = intervals_list_.begin(); it != intervals_list_.end(); +it ) {
+		it->write_meta ( intervals_filter );
+	}
 
-	// read meta data to intervals
-
-
-	// read meta data to child blocks
+	// write meta data to child blocks
+	string block_filter;
+	for ( std::vector < block > :: iterator it = block_list_.begin(); it != block_list_.end(); +it ) {
+		it->write_meta ( block_filter );
+	}
 
 	return;
 }
@@ -119,6 +153,36 @@ void tidas::block::relocate ( backend_path const & loc ) {
 
 	dict_.relocate ( loc_ );
 
+	// relocate groups
+
+	for ( std::vector < group > :: iterator it = group_list_.begin(); it != group_list_.end(); +it ) {
+		backend_path group_loc ( loc_ );
+		group_loc.path = loc_.path + "/" + loc_.name + "/" + block_fs_group_name;
+		group_loc.name = it->location().name;
+		group_loc.meta = "";
+		it->relocate ( group_loc );
+	}
+
+	// relocate intervals
+
+	for ( std::vector < intervals > :: iterator it = intervals_list_.begin(); it != intervals_list_.end(); +it ) {
+		backend_path intervals_loc ( loc_ );
+		intervals_loc.path = loc_.path + "/" + loc_.name + "/" + block_fs_intervals_name;
+		intervals_loc.name = it->location().name;
+		intervals_loc.meta = "";
+		it->relocate ( intervals_loc );
+	}
+
+	// relocate sub-blocks
+
+	for ( std::vector < block > :: iterator it = block_list_.begin(); it != block_list_.end(); +it ) {
+		backend_path block_loc ( loc_ );
+		block_loc.path = loc_.path + "/" + loc_.name;
+		block_loc.name = it->location().name;
+		block_loc.meta = "";
+		it->relocate ( block_loc );
+	}
+
 	return;
 }
 
@@ -128,7 +192,8 @@ backend_path tidas::block::location () const {
 }
 
 
-// FIXME:  duplication should be done recursively!!!
+// FIXME:  duplicate should not touch metadata?  calling duplicate recursively will do the 
+// metadata copy twice...
 
 
 
@@ -147,53 +212,15 @@ block tidas::block::duplicate ( string const & filter, backend_path const & newl
 	// reload to pick up filtered metadata
 	newblock.read_meta ( "" );
 
-	// copy tidas time field
+	// duplicate groups
+	for ( std::vector < group > :: iterator it = group_list_.begin(); it != group_list_.end(); +it ) {
 
-	tidas_group_helper_copy < time_type > ( (*this), newgroup, group_time_field, nsamp_, newn, intr );
+	// duplicate intervals
 
-	// copy all field data included in the new schema
 
-	field_list fields = newgroup.schema_get().fields();
+	// duplicate sub-blocks
 
-	for ( field_list::const_iterator it = fields.begin(); it != fields.end(); ++it ) {
 
-		switch ( it->type ) {
-			case TYPE_INT8:
-				tidas_group_helper_copy < int8_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_UINT8:
-				tidas_group_helper_copy < uint8_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_INT16:
-				tidas_group_helper_copy < int16_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_UINT16:
-				tidas_group_helper_copy < uint16_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_INT32:
-				tidas_group_helper_copy < int32_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_UINT32:
-				tidas_group_helper_copy < uint32_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_INT64:
-				tidas_group_helper_copy < int64_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_UINT64:
-				tidas_group_helper_copy < uint64_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_FLOAT32:
-				tidas_group_helper_copy < float > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_FLOAT64:
-				tidas_group_helper_copy < double > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			default:
-				TIDAS_THROW( "data type not recognized" );
-				break;
-		}
-
-	}
 
 	return newgroup;
 }

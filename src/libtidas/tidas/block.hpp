@@ -125,7 +125,7 @@ namespace tidas {
 
 			//------------
 
-			dict & dictionary () const;
+			dict & dictionary ();
 
 			std::vector < block > & blocks ();
 

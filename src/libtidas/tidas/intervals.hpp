@@ -155,7 +155,7 @@ namespace tidas {
 
 			//------------
 
-			dict & dictionary () const;
+			dict & dictionary ();
 
 			void read_data ( interval_list & intr );
 

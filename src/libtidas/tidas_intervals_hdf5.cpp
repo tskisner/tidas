@@ -138,7 +138,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
 
 	// read times
 
-	string mpath = "/times";
+	string mpath = "/" + intervals_meta_time;
 
 	hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
 
@@ -167,7 +167,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
 
 	// read indices
 
-	mpath = "/indices";
+	mpath = "/" + intervals_meta_index;
 
 	dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
 

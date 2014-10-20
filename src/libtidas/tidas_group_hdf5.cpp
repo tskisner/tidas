@@ -62,7 +62,9 @@ void tidas::group_backend_hdf5::read_meta ( backend_path const & loc, string con
 
 	// open fake dataset to get nsamp dimensions
 
-	hid_t dataset = H5Dopen ( file, loc.meta.c_str(), H5P_DEFAULT );
+	string mpath = "/" + group_meta;
+
+	hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
 	
 	hid_t dataspace = H5Dget_space ( dataset );
 
@@ -120,7 +122,9 @@ void tidas::group_backend_hdf5::write_meta ( backend_path const & loc, string co
 
 	hid_t datatype = hdf5_data_type ( TYPE_INT8 );
 
-	hid_t dataset = H5Dcreate ( file, loc.meta.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+	string mpath = "/" + group_meta;
+
+	hid_t dataset = H5Dcreate ( file, mpath.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
 
 	herr_t status = H5Sclose ( dataspace );
 	status = H5Tclose ( datatype );
@@ -132,7 +136,7 @@ void tidas::group_backend_hdf5::write_meta ( backend_path const & loc, string co
 
 	for ( size_t i = 0; i < 10; ++i ) {
 
-		string metastring = loc.meta + "_" + data_type_to_string ( numtypes[i] );
+		mpath = "/" + group_meta + "_" + data_type_to_string ( numtypes[i] );
 
 		field_list cur = field_filter_type ( schm.fields(), numtypes[i] );
 
@@ -147,7 +151,7 @@ void tidas::group_backend_hdf5::write_meta ( backend_path const & loc, string co
 
 			datatype = hdf5_data_type ( numtypes[i] );
 
-			dataset = H5Dcreate ( file, metastring.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+			dataset = H5Dcreate ( file, mpath.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
 
 			status = H5Sclose ( dataspace );
 			status = H5Tclose ( datatype );

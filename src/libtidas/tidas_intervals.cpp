@@ -143,6 +143,14 @@ intervals tidas::intervals::duplicate ( string const & filter, backend_path cons
 	// reload to pick up filtered metadata
 	newintervals.read_meta ( "" );
 
+	// read old data
+	interval_list intr;
+	read_data ( intr );
+
+	// FIXME:  apply filter to intervals...
+
+	newintervals.write_data ( intr );
+
 	return newintervals;
 }
 
@@ -159,7 +167,7 @@ void tidas::intervals::write_data ( interval_list const & intr ) {
 }
 
 
-dict & tidas::intervals::dictionary () const {
+dict & tidas::intervals::dictionary () {
 	return dict_;
 }
 

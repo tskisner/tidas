@@ -236,7 +236,7 @@ group tidas::group::duplicate ( string const & filter, backend_path const & newl
 }
 
 
-dict & tidas::group::dictionary () const {
+dict & tidas::group::dictionary () {
 	return dict_;
 }
 

@@ -91,7 +91,9 @@ namespace tidas {
 
 	};
 
-	// dictionary class
+
+	/// Dictionary class.  This class stores elements by name, and explicitly 
+	/// tracks the type of the assigned value. 
 
 	class dict {
 
@@ -117,6 +119,7 @@ namespace tidas {
 
 			//------------
 
+			/// Insert a value into the dictionary. 
 			template < class T >
 			void put ( std::string const & key, T const & val ) {
 				std::ostringstream o;
@@ -130,19 +133,26 @@ namespace tidas {
 				return;
 			}
 
+			/// Return the raw string value stored in the specified key.
 			std::string get_string ( std::string const & key ) const;
 
+			/// Return the value of the specified key as a double precision float.
 			double get_double ( std::string const & key ) const;
 
+			/// Return the value of the specified key as a native integer.
 			int get_int ( std::string const & key ) const;
 
+			/// Return the value of the specified key as a long long integer.
 			long long get_ll ( std::string const & key ) const;
 
+			/// Clear all elements of the dictionary
 			void clear();
 
-			std::map < std::string, std::string > const & data();
+			/// Return a const reference to the underlying data map.
+			std::map < std::string, std::string > const & data() const;
 
-			std::map < std::string, data_type > const & types();
+			/// Return a const reference to the underlying data type map.
+			std::map < std::string, data_type > const & types() const;
 
 		private :
 

@@ -34,6 +34,7 @@ namespace tidas {
 
 
 
+
 #ifdef HAVE_HDF5
 
 	hid_t hdf5_data_type ( data_type type );

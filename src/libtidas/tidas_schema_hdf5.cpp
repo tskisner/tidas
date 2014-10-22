@@ -147,11 +147,26 @@ void tidas::schema_backend_hdf5::write_meta ( backend_path const & loc, string c
 		}
 	}
 
-	// open file in write mode
+	// open file in write mode or create if it does not exist
 
 	string fspath = loc.path + "/" + loc.name;
 
-	hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
+	int64_t fsize = fs_stat ( fspath.c_str() );
+
+	hid_t file;
+	if ( fsize > 0 ) {
+		file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
+
+		// check if dataset exists and delete it
+
+		htri_t check = H5Lexists ( file, loc.meta.c_str(), H5P_DEFAULT );
+		if ( check ) {
+			herr_t ulink = H5Ldelete ( file, loc.meta.c_str(), H5P_DEFAULT );
+		}
+
+	} else {
+		file = H5Fcreate ( fspath.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT );
+	}
 
 	// create schema dataset and write
 
@@ -159,7 +174,7 @@ void tidas::schema_backend_hdf5::write_meta ( backend_path const & loc, string c
 	dims[0] = sel.size();
 	dims[1] = 3;
 
-	hid_t dataspace = H5Screate_simple ( 1, dims, NULL ); 
+	hid_t dataspace = H5Screate_simple ( 2, dims, NULL ); 
 
 	hid_t datatype = hdf5_data_type ( TYPE_STRING );
 
@@ -179,6 +194,7 @@ void tidas::schema_backend_hdf5::write_meta ( backend_path const & loc, string c
 
 		string datastring = data_type_to_string ( it->type );
 		strncpy ( &(buffer[ off ]), datastring.c_str(), backend_string_size );
+		off += backend_string_size;
 
 	}
 

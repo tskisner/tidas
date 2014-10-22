@@ -80,6 +80,114 @@ TEST( utilstest, mem ) {
 }
 
 
+TEST( utilstest, datatype ) {
+
+	data_type type;
+
+	int8_t vint8;
+	uint8_t vuint8;
+	int16_t vint16;
+	uint16_t vuint16;
+	int32_t vint32;
+	uint32_t vuint32;
+	int64_t vint64;
+	uint64_t vuint64;
+	float vfloat32;
+	double vfloat64;
+	string vstring;
+
+	std::vector < int > bad;
+
+	string typestr;
+	data_type check;
+
+	type = data_type_get ( typeid ( vint8 ) );
+	EXPECT_EQ( type, TYPE_INT8 );
+	typestr = data_type_to_string ( type );
+	EXPECT_EQ( typestr, "TYPE_INT8" );
+	check = data_type_from_string ( typestr );
+	EXPECT_EQ( check, type );
+
+	type = data_type_get ( typeid ( vuint8 ) );
+	EXPECT_EQ( type, TYPE_UINT8 );
+	typestr = data_type_to_string ( type );
+	EXPECT_EQ( typestr, "TYPE_UINT8" );
+	check = data_type_from_string ( typestr );
+	EXPECT_EQ( check, type );
+
+	type = data_type_get ( typeid ( vint16 ) );
+	EXPECT_EQ( type, TYPE_INT16 );
+	typestr = data_type_to_string ( type );
+	EXPECT_EQ( typestr, "TYPE_INT16" );
+	check = data_type_from_string ( typestr );
+	EXPECT_EQ( check, type );
+
+	type = data_type_get ( typeid ( vuint16 ) );
+	EXPECT_EQ( type, TYPE_UINT16 );
+	typestr = data_type_to_string ( type );
+	EXPECT_EQ( typestr, "TYPE_UINT16" );
+	check = data_type_from_string ( typestr );
+	EXPECT_EQ( check, type );
+
+	type = data_type_get ( typeid ( vint32 ) );
+	EXPECT_EQ( type, TYPE_INT32 );
+	typestr = data_type_to_string ( type );
+	EXPECT_EQ( typestr, "TYPE_INT32" );
+	check = data_type_from_string ( typestr );
+	EXPECT_EQ( check, type );
+
+	type = data_type_get ( typeid ( vuint32 ) );
+	EXPECT_EQ( type, TYPE_UINT32 );
+	typestr = data_type_to_string ( type );
+	EXPECT_EQ( typestr, "TYPE_UINT32" );
+	check = data_type_from_string ( typestr );
+	EXPECT_EQ( check, type );
+
+	type = data_type_get ( typeid ( vint64 ) );
+	EXPECT_EQ( type, TYPE_INT64 );
+	typestr = data_type_to_string ( type );
+	EXPECT_EQ( typestr, "TYPE_INT64" );
+	check = data_type_from_string ( typestr );
+	EXPECT_EQ( check, type );
+
+	type = data_type_get ( typeid ( vuint64 ) );
+	EXPECT_EQ( type, TYPE_UINT64 );
+	typestr = data_type_to_string ( type );
+	EXPECT_EQ( typestr, "TYPE_UINT64" );
+	check = data_type_from_string ( typestr );
+	EXPECT_EQ( check, type );
+
+	type = data_type_get ( typeid ( vfloat32 ) );
+	EXPECT_EQ( type, TYPE_FLOAT32 );
+	typestr = data_type_to_string ( type );
+	EXPECT_EQ( typestr, "TYPE_FLOAT32" );
+	check = data_type_from_string ( typestr );
+	EXPECT_EQ( check, type );
+
+	type = data_type_get ( typeid ( vfloat64 ) );
+	EXPECT_EQ( type, TYPE_FLOAT64 );
+	typestr = data_type_to_string ( type );
+	EXPECT_EQ( typestr, "TYPE_FLOAT64" );
+	check = data_type_from_string ( typestr );
+	EXPECT_EQ( check, type );
+
+	type = data_type_get ( typeid ( vstring ) );
+	EXPECT_EQ( type, TYPE_STRING );
+	typestr = data_type_to_string ( type );
+	EXPECT_EQ( typestr, "TYPE_STRING" );
+	check = data_type_from_string ( typestr );
+	EXPECT_EQ( check, type );
+
+	type = data_type_get ( typeid ( bad ) );
+	EXPECT_EQ( type, TYPE_NONE );
+	typestr = data_type_to_string ( type );
+	EXPECT_EQ( typestr, "TYPE_NONE" );
+	check = data_type_from_string ( typestr );
+	EXPECT_EQ( check, type );
+
+}
+
+
 TEST( utilstest, filesystem ) {
 
 	string dir = "test_fs.out";
@@ -104,37 +212,6 @@ TEST( utilstest, filesystem ) {
 	fs_rm ( path.c_str() );
 
 }
-
-
-TEST( utilstest, dictionary ) {
-
-	string sval = "blahblahblah";
-	double dval = 12345.6;
-	int ival = 12345;
-	long long lval = 1234567890123456L;
-
-	dict test;
-
-	test.put ( "string", sval );
-	test.put ( "double", dval );
-	test.put ( "int", ival );
-	test.put ( "longlong", lval );
-
-	string scheck = test.get_string ( "string" );
-	EXPECT_EQ( sval, scheck );
-
-	double dcheck = test.get_double ( "double" );
-	EXPECT_EQ( dval, dcheck );
-
-	int icheck = test.get_int ( "int" );
-	EXPECT_EQ( ival, icheck );
-
-	long long lcheck = test.get_ll ( "longlong" );
-	EXPECT_EQ( lval, lcheck );
-
-}
-
-
 
 
 

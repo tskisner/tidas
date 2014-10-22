@@ -11,8 +11,6 @@
 
 namespace tidas {
 
-	static const std::string schema_meta = "schema";
-
 	// one field of the schema
 
 	class field {

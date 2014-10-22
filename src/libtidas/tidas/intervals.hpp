@@ -11,9 +11,6 @@
 
 namespace tidas {
 
-	static const std::string intervals_meta_time = "times";
-	static const std::string intervals_meta_index = "indices";
-
 	class intrvl {
 
 		public :

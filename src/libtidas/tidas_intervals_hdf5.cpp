@@ -92,6 +92,8 @@ void tidas::intervals_backend_hdf5::write_meta ( backend_path const & loc ) {
 
 	hid_t file = H5Fcreate ( fspath.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT );
 
+	// create group
+
 	// clean up
 
 	herr_t status = H5Fclose ( file );

@@ -12,11 +12,6 @@
 
 namespace tidas {
 
-	static const std::string block_fs_dict_name = "tidas_info";
-	static const std::string block_dict_name = "dictionary";
-	static const std::string block_fs_group_name = "tidas_grp";
-	static const std::string block_fs_intervals_name = "tidas_int";
-	static const std::string block_fs_ext_name = "tidas_ext";
 
 	// base class for intervals backend interface
 

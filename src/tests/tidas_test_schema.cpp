@@ -102,13 +102,27 @@ TEST( schematest, all ) {
 		EXPECT_EQ( flist[i], check[i] );	
 	}
 
-	schema ischm ( schm3, "int.*" );
+	backend_path loc;
 
-	EXPECT_EQ( ischm.fields().size(), 4 );
+#ifdef HAVE_HDF5
 
-	schema aischm ( schm3, ".*int.*" );
+	loc.type = BACKEND_HDF5;
+	loc.path = ".";
+	loc.name = "test_schema.hdf5.out";
+	loc.meta = string("/") + schema_meta;
 
-	EXPECT_EQ( aischm.fields().size(), 8 );
+	schm3.relocate ( loc );
+	schm3.write_meta ( "" );
+
+	schema h5_ischm ( loc, "int.*" );
+	EXPECT_EQ( h5_ischm.fields().size(), 4 );
+
+	schema h5_aischm ( loc, ".*int.*" );
+	EXPECT_EQ( h5_aischm.fields().size(), 8 );
+
+#endif
+
+	// FIXME:  add getdata backend test
 
 	schm3.remove ( "int8" );
 	schm3.remove ( "uint8" );

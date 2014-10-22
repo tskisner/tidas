@@ -12,9 +12,6 @@ using namespace std;
 using namespace tidas;
 
 
-static const char * tidas_dict_hdf5_type_suffix = "_TIDASTYPE";
-
-
 
 tidas::dict_backend_hdf5::dict_backend_hdf5 () {
 
@@ -67,15 +64,20 @@ herr_t tidas_dict_backend_hdf5_attr_parse ( hid_t location_id, const char * attr
 	H5A_info_t info;
 	status = H5Aget_info( hattr, &info );
 
-	char buf[ info.data_size + 2 ];
+	char buf[ info.data_size + 1 ];
 
-	status = H5Aread ( hattr, H5T_C_S1, (void *)buf );
+	hid_t datatype = H5Tcopy ( H5T_C_S1 );
+	status = H5Tset_size ( datatype, info.data_size );
+
+	status = H5Aread ( hattr, datatype, (void *)buf );
+	buf[ info.data_size ] = '\0';
 
 	status = H5Aclose ( hattr );
+	status = H5Tclose ( datatype );
 
 	string val = buf;
 
-	string match = string ( "(.*)" ) + tidas_dict_hdf5_type_suffix + string ( "$" );
+	string match = string ( "^(.*)" ) + tidas_dict_hdf5_type_suffix + string ( "$" );
 	RE2 re ( match );
 
 	string name;
@@ -84,6 +86,20 @@ herr_t tidas_dict_backend_hdf5_attr_parse ( hid_t location_id, const char * attr
 	} else {
 		d->data[ key ] = val;
 	}
+
+	return status;
+}
+
+
+herr_t tidas_dict_backend_hdf5_attr_list ( hid_t location_id, const char * attr_name, const H5A_info_t * ainfo, void * op_data ) {
+
+	vector < string > * d = static_cast < vector < string > * > ( op_data );
+
+	string key = attr_name;
+
+	herr_t status = 0;
+
+	d->push_back ( key );
 
 	return status;
 }
@@ -146,15 +162,17 @@ void tidas::dict_backend_hdf5::write_meta ( backend_path const & loc, string con
 
 	hid_t dataset = H5Dopen ( file, loc.meta.c_str(), H5P_DEFAULT );
 
-	// get number of existing attributes
+	// get names of existing attributes
 
-	H5O_info_t dataset_info;
-	herr_t status = H5Oget_info ( dataset, &dataset_info );
+	vector < string > names;
 
-	// clear all attributes.  we just repeatedly delete the first object.
+	hsize_t aoff = 0;
+	herr_t status = H5Aiterate ( dataset, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, &aoff, tidas_dict_backend_hdf5_attr_list, (void *)&names );
 
-	for ( size_t i = 0; i < dataset_info.num_attrs; ++i ) {
-		status = H5Adelete_by_idx ( dataset, ".", H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, 0, H5P_DEFAULT );
+	// clear all attributes.  we just delete each one by name
+
+	for ( size_t i = 0; i < names.size(); ++i ) {
+		status = H5Adelete ( dataset, names[i].c_str() );
 	}
 
 	// create attributes for each dictionary item
@@ -163,6 +181,8 @@ void tidas::dict_backend_hdf5::write_meta ( backend_path const & loc, string con
 
 	RE2 re ( filter );
 
+	hid_t dataspace = H5Screate ( H5S_SCALAR );
+
 	for ( map < string, string > :: const_iterator it = data.begin(); it != data.end(); ++it ) {
 
 		string key = it->first;
@@ -170,16 +190,16 @@ void tidas::dict_backend_hdf5::write_meta ( backend_path const & loc, string con
 
 		if ( RE2::FullMatch ( key, re ) ) {
 
-			string key_type = it->first + tidas_dict_hdf5_type_suffix;
+			string key_type = it->first + string(tidas_dict_hdf5_type_suffix);
 			string val_type = data_type_to_string ( types.at( it->first ) );
 
 			status = H5Tset_size ( datatype, val.size() );
-			hid_t attr = H5Acreate ( dataset, key.c_str(), datatype, H5S_SCALAR, H5P_DEFAULT, H5P_DEFAULT );
+			hid_t attr = H5Acreate ( dataset, key.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT );
 			status = H5Awrite ( attr, datatype, (void *) val.c_str() );
 			status = H5Aclose ( attr );
 
 			status = H5Tset_size ( datatype, val_type.size() );
-			attr = H5Acreate ( dataset, key_type.c_str(), datatype, H5S_SCALAR, H5P_DEFAULT, H5P_DEFAULT );
+			attr = H5Acreate ( dataset, key_type.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT );
 			status = H5Awrite ( attr, datatype, (void *) val_type.c_str() );
 			status = H5Aclose ( attr );
 
@@ -189,6 +209,7 @@ void tidas::dict_backend_hdf5::write_meta ( backend_path const & loc, string con
 
 	// cleanup
 
+	status = H5Sclose ( dataspace );
 	status = H5Tclose ( datatype );
 	status = H5Dclose ( dataset );
 	status = H5Fclose ( file );

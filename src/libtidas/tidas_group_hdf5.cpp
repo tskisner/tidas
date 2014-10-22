@@ -52,7 +52,7 @@ void tidas::group_backend_hdf5::read_meta ( backend_path const & loc, string con
 	int64_t fsize = fs_stat ( fspath.c_str() );
 	if ( fsize <= 0 ) {
 		ostringstream o;
-		o << "HDF5 intervals file " << fspath << " does not exist";
+		o << "HDF5 group file " << fspath << " does not exist";
 		TIDAS_THROW( o.str().c_str() );
 	}
 

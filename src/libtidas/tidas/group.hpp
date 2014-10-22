@@ -12,10 +12,6 @@
 
 namespace tidas {
 
-	static const std::string group_time_field = "TIDAS_TIME";
-
-	static const std::string group_meta = "data";
-
 	// base class for group backend interface.  Rather than trying to mix inheritance and 
 	// virtual methods that can read / write data of supported types, we use a more C-like
 	// interface that simply specifies the type, number of samples, and a void* to point

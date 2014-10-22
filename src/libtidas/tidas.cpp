@@ -25,7 +25,7 @@ data_type tidas::data_type_get ( type_info const & test ) {
 	uint64_t type_uint64;
 	float type_float;
 	double type_double;
-	char * type_string;
+	string type_string;
 
 	if ( test == typeid ( type_int8 ) ) {
 		ret = TYPE_INT8;
@@ -49,13 +49,15 @@ data_type tidas::data_type_get ( type_info const & test ) {
 		ret = TYPE_FLOAT64;
 	} else if ( test == typeid ( type_string ) ) {
 		ret = TYPE_STRING;
+	} else {
+		ret = TYPE_NONE;
 	}
 
 	return ret;
 }
 
 
-string data_type_to_string ( data_type type ) {
+string tidas::data_type_to_string ( data_type type ) {
 	string ret;
 	switch ( type ) {
 		case TYPE_INT8:
@@ -91,6 +93,9 @@ string data_type_to_string ( data_type type ) {
 		case TYPE_STRING:
 			ret = "TYPE_STRING";
 			break;
+		case TYPE_NONE:
+			ret = "TYPE_NONE";
+			break;
 		default:
 			TIDAS_THROW( "data type not recognized" );
 			break;
@@ -99,32 +104,38 @@ string data_type_to_string ( data_type type ) {
 }
 
 
-data_type data_type_from_string ( string const & name ) {
+data_type tidas::data_type_from_string ( string const & name ) {
+
 	data_type ret;
-	if ( name == "TYPE_INT8" ) {
+	
+	if ( name.compare( "TYPE_INT8" ) == 0 ) {
 		ret = TYPE_INT8;
-	} else if ( name == "TYPE_UINT8" ) {
+	} else if ( name.compare( "TYPE_UINT8" ) == 0 ) {
 		ret = TYPE_UINT8;
-	} else if ( name == "TYPE_INT16" ) {
+	} else if ( name.compare( "TYPE_INT16" ) == 0 ) {
 		ret = TYPE_INT16;
-	} else if ( name == "TYPE_UINT16" ) {
+	} else if ( name.compare( "TYPE_UINT16" ) == 0 ) {
 		ret = TYPE_UINT16;
-	} else if ( name == "TYPE_INT32" ) {
+	} else if ( name.compare( "TYPE_INT32" ) == 0 ) {
 		ret = TYPE_INT32;
-	} else if ( name == "TYPE_UINT32" ) {
+	} else if ( name.compare( "TYPE_UINT32" ) == 0 ) {
 		ret = TYPE_UINT32;
-	} else if ( name == "TYPE_INT64" ) {
+	} else if ( name.compare( "TYPE_INT64" ) == 0 ) {
 		ret = TYPE_INT64;
-	} else if ( name == "TYPE_UINT64" ) {
+	} else if ( name.compare( "TYPE_UINT64" ) == 0 ) {
 		ret = TYPE_UINT64;
-	} else if ( name == "TYPE_FLOAT32" ) {
+	} else if ( name.compare( "TYPE_FLOAT32" ) == 0 ) {
 		ret = TYPE_FLOAT32;
-	} else if ( name == "TYPE_FLOAT64" ) {
+	} else if ( name.compare( "TYPE_FLOAT64" ) == 0 ) {
 		ret = TYPE_FLOAT64;
-	} else if ( name == "TYPE_STRING" ) {
+	} else if ( name.compare( "TYPE_STRING" ) == 0 ) {
 		ret = TYPE_STRING;
+	} else if ( name.compare( "TYPE_NONE" ) == 0 ) {
+		ret = TYPE_NONE;
 	} else {
-		TIDAS_THROW( "data type not recognized" );
+		ostringstream o;
+		o << "data type \"" << name << "\" not recognized";
+		TIDAS_THROW( o.str().c_str() );
 	}
 	return ret;
 }

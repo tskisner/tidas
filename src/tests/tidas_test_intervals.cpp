@@ -95,6 +95,10 @@ TEST( intervalstest, data ) {
 		EXPECT_EQ( cur.last, check[i].last );
 	}
 
+	// HDF5 backend
+
+#ifdef HAVE_HDF5
+
 	loc.type = BACKEND_HDF5;
 	loc.path = ".";
 	loc.name = "test_intervals_data_dup.hdf5.out";
@@ -115,6 +119,8 @@ TEST( intervalstest, data ) {
 		EXPECT_EQ( cur.first, check[i].first );
 		EXPECT_EQ( cur.last, check[i].last );
 	}
+
+#endif
 
 }
 

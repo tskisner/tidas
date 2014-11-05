@@ -11,41 +11,8 @@
 using namespace std;
 using namespace tidas;
 
-/*
-group ();
-			group ( schema const & schm, index_type nsamp );
-			group ( schema const & schm, dict const & dictionary, index_type nsamp );
-			group ( backend_path const & loc );
-			group ( group const & orig );
-			~group ();
 
-			void read_meta ();
-
-			void write_meta ();
-
-			void relocate ( backend_path const & loc );
-
-			backend_path location () const;
-
-			void duplicate ( backend_path const & newloc, group_select const & selection );
-
-			schema const & schema_get () const;
-
-			template < class T >
-			void dictionary_put ( string const & key, T const & val ) {
-				dict_.put < T > ( key, val );
-				return;
-			}
-
-			dict const & dictionary () const;
-
-			index_type nsamp () const;
-
-			void times ( vector < time_type > & data );
-*/
-
-
-TEST( grouptest, hdf5meta ) {
+TEST( grouptest, all ) {
 
 	field f_int8;
 	field f_uint8;
@@ -115,43 +82,39 @@ TEST( grouptest, hdf5meta ) {
 
 	schema schm ( flist );
 
-	dict d;
 	string sval = "blahblahblah";
 	double dval = 12345.6;
 	int ival = 12345;
 	long long lval = 1234567890123456L;
 
-	dict test;
+	dict d;
 
-	test.put ( "string", sval );
-	test.put ( "double", dval );
-	test.put ( "int", ival );
-	test.put ( "longlong", lval );
+	d.put ( "string", sval );
+	d.put ( "double", dval );
+	d.put ( "int", ival );
+	d.put ( "longlong", lval );
 
 	index_type nsamp = 100;
 
 	// instantiate group
 
-	group grp1 ( schm, d, nsamp );
+	group grp ( schm, d, nsamp );
+
+	// HDF5 backend
+
+#ifdef HAVE_HDF5
 
 	backend_path loc;
 	loc.type = BACKEND_HDF5;
 	loc.path = ".";
-	loc.name = "test_group_meta.hdf5.out";
+	loc.name = "test_group.hdf5.out";
+	loc.mode = MODE_RW;
 
-	grp1.relocate ( loc );
-	grp1.write_meta();
-
-	loc.name = "test_group_data.hdf5.out";
-
-	grp1.relocate ( loc );
-	grp1.write_meta();
-
-	// write all fields
+	grp.write ( loc );
 
 
 
-
+#endif
 
 }
 

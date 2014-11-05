@@ -261,7 +261,6 @@ field_list const & tidas::schema::fields () const {
 }
 
 
-
 tidas::schema_backend_mem::schema_backend_mem () {
 
 }

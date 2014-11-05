@@ -41,137 +41,157 @@ group_backend * tidas::group_backend_getdata::clone () {
 }
 
 
-void tidas::group_backend_getdata::read_meta ( backend_path const & loc, string const & filter, index_type & nsamp ) {
+string tidas::group_backend_getdata::dict_meta () {
+	return string("");
+}
+
+
+string tidas::group_backend_getdata::schema_meta () {
+	return string("");
+}
+
+
+void tidas::group_backend_getdata::read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::write_meta ( backend_path const & loc, string const & filter, schema const & schm, index_type nsamp ) {
+void tidas::group_backend_getdata::write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int8_t > & data ) {
+void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int8_t > & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int8_t > const & data ) {
+void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int8_t > const & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint8_t > & data ) {
+void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint8_t > & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint8_t > const & data ) {
+void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint8_t > const & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int16_t > & data ) {
+void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int16_t > & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int16_t > const & data ) {
+void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int16_t > const & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint16_t > & data ) {
+void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint16_t > & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint16_t > const & data ) {
+void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint16_t > const & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int32_t > & data ) {
+void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int32_t > & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int32_t > const & data ) {
+void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int32_t > const & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint32_t > & data ) {
+void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint32_t > & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint32_t > const & data ) {
+void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint32_t > const & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int64_t > & data ) {
+void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int64_t > & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int64_t > const & data ) {
+void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int64_t > const & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint64_t > & data ) {
+void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint64_t > & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint64_t > const & data ) {
+void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint64_t > const & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < float > & data ) {
+void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < float > & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < float > const & data ) {
+void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < float > const & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < double > & data ) {
+void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < double > & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < double > const & data ) {
+void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < double > const & data ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
+void tidas::group_backend_getdata::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < string > & data ) {
+	TIDAS_THROW( "GetData backend not supported" );
+	return;
+}
+
+
+void tidas::group_backend_getdata::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < string > const & data ) {
+	TIDAS_THROW( "GetData backend not supported" );
+	return;
+}
 
 

@@ -116,9 +116,7 @@ void tidas::intervals::read ( backend_path const & loc ) {
 
 	// read dict
 
-	backend_path dictloc;
-	dictloc.path = loc_.path;
-	dictloc.name = loc_.name;
+	backend_path dictloc = loc_;
 	dictloc.meta = backend_->dict_meta();
 
 	dict_.read ( dictloc );
@@ -186,6 +184,9 @@ void tidas::intervals::copy ( intervals const & other, string const & filter, ba
 		} else {
 			TIDAS_THROW( "cannot copy to new read-only location" );
 		}
+	} else {
+		// just copy in memory
+		dict_ = other.dict_;
 	}
 
 	return;
@@ -371,7 +372,7 @@ intervals_backend * tidas::intervals_backend_mem::clone () {
 
 
 string tidas::intervals_backend_mem::dict_meta () {
-	return dict_mem_name;
+	return string("");
 }
 
 

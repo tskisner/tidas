@@ -19,7 +19,15 @@ using namespace tidas;
 
 
 tidas::group::group () {
+	size_ = 0;
+}
 
+
+tidas::group::group ( schema const & schm, dict const & d, size_t const & size ) {
+	size_ = size;
+	dict_ = d;
+	schm_ = schm;
+	compute_counts();
 }
 
 
@@ -28,86 +36,38 @@ tidas::group::~group () {
 }
 
 
-tidas::group::group ( group const & other ) {
-	copy ( other );
-}
-
-
 group & tidas::group::operator= ( group const & other ) {
 	if ( this != &other ) {
-		copy ( other );
+		copy ( other, "", other.loc_ );
 	}
 	return *this;
 }
 
 
-void tidas::group::copy ( group const & other ) {
-	schm_ = other.schm_;
-	dict_ = other.dict_;
-	nsamp_ = other.nsamp_;
-	loc_ = other.loc_;
-	if ( other.backend_ ) {
-		backend_.reset( other.backend_->clone() );
-	}
+tidas::group::group ( group const & other ) {
+	copy ( other, "", other.loc_ );
 }
 
 
-tidas::group::group ( backend_path const & loc, string const & filter ) {
-	relocate ( loc );
-	read_meta ( filter );
+tidas::group::group ( backend_path const & loc ) {
+	read ( loc );
 }
 
 
-void tidas::group::read_meta ( string const & filter ) {
-
-	string filt = filter_default ( filter );
-
-	// extract schema filter and process
-	string schm_filter;
-	schm_.read_meta ( schm_filter );
-
-	// extract dictionary filter and process
-	string dict_filter;
-	dict_.read_meta ( dict_filter );
-	
-	if ( backend_ ) {
-		backend_->read_meta ( loc_, filt, nsamp_ );
-	} else {
-		TIDAS_THROW( "backend not assigned" );
-	}
-
-	return;
+tidas::group::group ( group const & other, std::string const & filter, backend_path const & loc ) {
+	copy ( other, filter, loc );
 }
 
 
-void tidas::group::write_meta ( string const & filter ) {
+void tidas::group::read ( backend_path const & loc ) {
 
-	string filt = filter_default ( filter );
+	// set backend
 
-	if ( backend_ ) {
-		backend_->write_meta ( loc_, filt, schm_, nsamp_ );
-	} else {
-		TIDAS_THROW( "backend not assigned" );
-	}
-
-	// extract dictionary filter and process
-	string dict_filter;
-	dict_.write_meta ( dict_filter );
-
-	// extract schema filter and process
-	string schm_filter;
-	schm_.write_meta ( schm_filter );
-
-	return;
-}
-
-
-void tidas::group::relocate ( backend_path const & loc ) {
 	loc_ = loc;
 
 	switch ( loc_.type ) {
 		case BACKEND_MEM:
-			backend_.reset( new group_backend_mem ( nsamp_ ) );
+			backend_.reset( new group_backend_mem () );
 			break;
 		case BACKEND_HDF5:
 			backend_.reset( new group_backend_hdf5 () );
@@ -120,12 +80,155 @@ void tidas::group::relocate ( backend_path const & loc ) {
 			break;
 	}
 
-	dict_.relocate ( loc_ );
+	// read dict
 
-	backend_path schm_loc = loc_;
-	schm_loc.meta = schema_meta;
+	backend_path dictloc = loc_;
+	dictloc.meta = backend_->dict_meta();
 
-	schm_.relocate ( schm_loc );
+	dict_.read ( dictloc );
+
+	// read schema
+
+	backend_path schmloc = loc_;
+	schmloc.meta = backend_->schema_meta();
+
+	schm_.read ( schmloc );
+
+	compute_counts();
+
+	// read our own metadata
+
+	map < data_type, size_t > check;
+	backend_->read ( loc_, size_, check );
+
+	// verify that schema counts match data file
+
+	if ( check != counts_ ) {
+		TIDAS_THROW( "number of fields of each type in group schema does not match data!" );
+	}
+
+	return;
+}
+
+
+void tidas::group::copy ( group const & other, string const & filter, backend_path const & loc ) {	
+
+	// extract filters
+
+	map < string, string > filts = filter_split ( filter );
+
+	string fil = filter_default ( filts[ "root" ] );
+
+	if ( ( loc == other.loc_ ) && ( fil != ".*" ) ) {
+		TIDAS_THROW( "copy of group with a filter requires a new location" );
+	}
+
+	// set backend
+
+	loc_ = loc;
+
+	switch ( loc_.type ) {
+		case BACKEND_MEM:
+			backend_.reset( new group_backend_mem () );
+			break;
+		case BACKEND_HDF5:
+			backend_.reset( new group_backend_hdf5 () );
+			break;
+		case BACKEND_GETDATA:
+			TIDAS_THROW( "GetData backend not yet implemented" );
+			break;
+		default:
+			TIDAS_THROW( "backend not recognized" );
+			break;
+	}
+
+	// filtered copy of our metadata
+
+	if ( fil != ".*" ) {
+		TIDAS_THROW( "group class does not accept filters- apply to schema instead" );
+	}
+	size_ = other.size_;
+
+	if ( loc_ != other.loc_ ) {
+		if ( loc_.mode == MODE_RW ) {
+
+			// copy schema first, in order to filter fields
+
+			backend_path schmloc = loc_;
+			schmloc.meta = backend_->schema_meta();
+
+			schm_.copy ( other.schm_, filts[ schema_submatch_key ], schmloc );
+
+			// compute counts
+
+			compute_counts();
+
+			// write our metadata
+
+			backend_->write ( loc_, size_, counts_ );
+
+			// copy dict
+
+			backend_path dictloc = loc_;
+			dictloc.meta = backend_->dict_meta();
+
+			dict_.copy ( other.dict_, filts[ dict_submatch_key ], dictloc );
+
+		} else {
+			TIDAS_THROW( "cannot copy to new read-only location" );
+		}
+	} else {
+		// just copy in memory
+		dict_ = other.dict_;
+		schm_ = other.schm_;
+		counts_ = other.counts_;
+		type_indx_ = other.type_indx_;
+	}
+
+	return;
+}
+
+
+void tidas::group::write ( backend_path const & loc ) {
+
+	if ( loc.mode != MODE_RW ) {
+		TIDAS_THROW( "cannot write to read-only location" );
+	}
+
+	// write our metadata
+
+	unique_ptr < group_backend > backend;
+
+	switch ( loc.type ) {
+		case BACKEND_MEM:
+			backend.reset( new group_backend_mem () );
+			break;
+		case BACKEND_HDF5:
+			backend.reset( new group_backend_hdf5 () );
+			break;
+		case BACKEND_GETDATA:
+			TIDAS_THROW( "GetData backend not yet implemented" );
+			break;
+		default:
+			TIDAS_THROW( "backend not recognized" );
+			break;
+	}
+
+	backend->write ( loc, size_, counts_ );
+
+	// write schema
+
+	backend_path schmloc = loc;
+	schmloc.meta = backend->schema_meta();
+
+	schm_.write ( schmloc );
+
+	// write dict
+
+	backend_path dictloc = loc;
+	dictloc.meta = backend->dict_meta();
+
+	dict_.write ( dictloc );
 
 	return;
 }
@@ -136,107 +239,51 @@ backend_path tidas::group::location () const {
 }
 
 
-template < class T >
-void tidas_group_helper_copy ( group & oldgr, group & newgr, string const & field, index_type old_n, index_type new_n, interval_list const & newintr ) {
+void tidas::group::compute_counts() {
 
-	vector < T > data ( old_n );
-	oldgr.read_field ( field, 0, data );
+	// clear counts
+	counts_.clear();
+	counts_[ TYPE_INT8 ] = 0;
+	counts_[ TYPE_UINT8 ] = 0;
+	counts_[ TYPE_INT16 ] = 0;
+	counts_[ TYPE_UINT16 ] = 0;
+	counts_[ TYPE_INT32 ] = 0;
+	counts_[ TYPE_UINT32 ] = 0;
+	counts_[ TYPE_INT64 ] = 0;
+	counts_[ TYPE_UINT64 ] = 0;
+	counts_[ TYPE_FLOAT32 ] = 0;
+	counts_[ TYPE_FLOAT64 ] = 0;
+	counts_[ TYPE_STRING ] = 0;
 
-	if ( new_n == old_n ) {
+	// clear type_indx
+	type_indx_.clear();
 
-		// just copy the full data
-		newgr.write_field ( field, 0, data );
-	
-	} else {
-		
-		// we need to copy out only the desired intervals
-		vector < T > new_data ( new_n );
-		index_type offset = 0;
-		for ( interval_list::const_iterator it = newintr.begin(); it != newintr.end(); ++it ) {
-			index_type nint = it->last - it->first + 1;
-			for ( index_type i = 0; i < nint; ++i ) {
-				new_data[ offset + i ] = data[ it->first + i ];
+	// we always have a time field
+	type_indx_[ group_time_field ] = counts_[ TYPE_FLOAT64 ];
+	++counts_[ TYPE_FLOAT64 ];
+
+	field_list fields = schm_.fields();
+
+	for ( field_list::const_iterator it = fields.begin(); it != fields.end(); ++it ) {
+		if ( it->name == group_time_field ) {
+			// ignore time field, if it exists, since we already counted it 
+		} else {
+			if ( it->type == TYPE_NONE ) {
+				ostringstream o;
+				o << "group schema field \"" << it->name << "\" has type == TYPE_NONE";
+				TIDAS_THROW( o.str().c_str() );
 			}
-			offset += nint;
+			type_indx_[ it->name ] = counts_[ it->type ];
+			++counts_[ it->type ];
 		}
-		newgr.write_field ( field, 0, new_data );
-
 	}
 
 	return;
 }
 
 
-group tidas::group::duplicate ( string const & filter, backend_path const & newloc, interval_list const & intr ) {
 
-	index_type newn = nsamp_;
-	if ( intr.size() > 0 ) {
-		newn = intervals::total_samples ( intr );
-	}
-
-	group newgroup;
-	newgroup.schm_ = schm_;
-	newgroup.dict_ = dict_;
-	newgroup.nsamp_ = nsamp_;
-	newgroup.relocate ( newloc );
-	newgroup.write_meta ( filter );
-
-	// reload to pick up filtered metadata
-	newgroup.read_meta ( "" );
-
-	// copy tidas time field
-
-	tidas_group_helper_copy < time_type > ( (*this), newgroup, group_time_field, nsamp_, newn, intr );
-
-	// copy all field data included in the new schema
-
-	field_list fields = newgroup.schema_get().fields();
-
-	for ( field_list::const_iterator it = fields.begin(); it != fields.end(); ++it ) {
-
-		switch ( it->type ) {
-			case TYPE_INT8:
-				tidas_group_helper_copy < int8_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_UINT8:
-				tidas_group_helper_copy < uint8_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_INT16:
-				tidas_group_helper_copy < int16_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_UINT16:
-				tidas_group_helper_copy < uint16_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_INT32:
-				tidas_group_helper_copy < int32_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_UINT32:
-				tidas_group_helper_copy < uint32_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_INT64:
-				tidas_group_helper_copy < int64_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_UINT64:
-				tidas_group_helper_copy < uint64_t > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_FLOAT32:
-				tidas_group_helper_copy < float > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			case TYPE_FLOAT64:
-				tidas_group_helper_copy < double > ( (*this), newgroup, it->name, nsamp_, newn, intr );
-				break;
-			default:
-				TIDAS_THROW( "data type not recognized" );
-				break;
-		}
-
-	}
-
-	return newgroup;
-}
-
-
-dict & tidas::group::dictionary () {
+dict const & tidas::group::dictionary () const {
 	return dict_;
 }
 
@@ -246,13 +293,13 @@ schema const & tidas::group::schema_get () const {
 }
 
 
-index_type tidas::group::nsamp () const {
-	return nsamp_;
+index_type tidas::group::size () const {
+	return size_;
 }
 
 
 void tidas::group::read_times ( vector < time_type > & data ) {
-	data.resize ( nsamp_ );
+	data.resize ( size_ );
 	read_field ( group_time_field, 0, data );
 	return;
 }
@@ -264,8 +311,8 @@ void tidas::group::write_times ( vector < time_type > const & data ) {
 }
 
 
-tidas::group_backend_mem::group_backend_mem ( index_type nsamp ) {
-	nsamp_ = nsamp;
+tidas::group_backend_mem::group_backend_mem () {
+
 }
 
 
@@ -296,6 +343,7 @@ group_backend * tidas::group_backend_mem::clone () {
 
 void tidas::group_backend_mem::copy ( group_backend_mem const & other ) {
 	nsamp_ = other.nsamp_;
+	counts_ = other.counts_;
 	data_int8_ = other.data_int8_;
 	data_uint8_ = other.data_uint8_;
 	data_int16_ = other.data_int16_;
@@ -306,237 +354,206 @@ void tidas::group_backend_mem::copy ( group_backend_mem const & other ) {
 	data_uint64_ = other.data_uint64_;
 	data_float_ = other.data_float_;
 	data_double_ = other.data_double_;
+	data_string_ = other.data_string_;
 	return;
 }
 
 
-void tidas::group_backend_mem::read_meta ( backend_path const & loc, string const & filter, index_type & nsamp ) {
+void tidas::group_backend_mem::read ( backend_path const & loc, index_type & nsamp, map < data_type, size_t > & counts ) {
 	nsamp = nsamp_;
+	counts = counts_;
 	return;
 }
 
 
-void tidas::group_backend_mem::write_meta ( backend_path const & loc, string const & filter, schema const & schm, index_type nsamp ) {
+void tidas::group_backend_mem::write ( backend_path const & loc, index_type const & nsamp, map < data_type, size_t > const & counts ) {
 	nsamp_ = nsamp;
+	counts_ = counts;
+	reset_data ( data_int8_, counts_[ TYPE_INT8 ], nsamp_ );
+	reset_data ( data_uint8_, counts_[ TYPE_UINT8 ], nsamp_ );
+	reset_data ( data_int16_, counts_[ TYPE_INT16 ], nsamp_ );
+	reset_data ( data_uint16_, counts_[ TYPE_UINT16 ], nsamp_ );
+	reset_data ( data_int32_, counts_[ TYPE_INT32 ], nsamp_ );
+	reset_data ( data_uint32_, counts_[ TYPE_UINT32 ], nsamp_ );
+	reset_data ( data_int64_, counts_[ TYPE_INT64 ], nsamp_ );
+	reset_data ( data_uint64_, counts_[ TYPE_UINT64 ], nsamp_ );
+	reset_data ( data_float_, counts_[ TYPE_FLOAT32 ], nsamp_ );
+	reset_data ( data_double_, counts_[ TYPE_FLOAT64 ], nsamp_ );
+	reset_data ( data_string_, counts_[ TYPE_STRING ], nsamp_ );
 	return;
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int8_t > & data ) {
-	if ( data_int8_.count ( field_name ) > 0 ) {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = data_int8_[ field_name ][ offset + i ];
-		}
-	} else {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = 0;
-		}
-	}
-	return;
+string tidas::group_backend_mem::dict_meta () {
+	return string("");
 }
 
-void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int8_t > const & data ) {
-	data_int8_[ field_name ].resize ( nsamp_ );
+
+string tidas::group_backend_mem::schema_meta () {
+	return string("");
+}
+
+
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int8_t > & data ) {
 	for ( index_type i = 0; i < data.size(); ++i ) {
-		data_int8_[ field_name ][ offset + i ] = data[ i ];
+		data[ i ] = data_int8_[ type_indx ][ offset + i ];
 	}
 	return;
 }
 
-
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint8_t > & data ) {
-	if ( data_uint8_.count ( field_name ) > 0 ) {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = data_uint8_[ field_name ][ offset + i ];
-		}
-	} else {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = 0;
-		}
-	}
-	return;
-}
-
-void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint8_t > const & data ) {
-	data_uint8_[ field_name ].resize ( nsamp_ );
+void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int8_t > const & data ) {
 	for ( index_type i = 0; i < data.size(); ++i ) {
-		data_uint8_[ field_name ][ offset + i ] = data[ i ];
+		data_int8_[ type_indx ][ offset + i ] = data[ i ];
 	}
 	return;
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int16_t > & data ) {
-	if ( data_int16_.count ( field_name ) > 0 ) {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = data_int16_[ field_name ][ offset + i ];
-		}
-	} else {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = 0;
-		}
-	}
-	return;
-}
-
-void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int16_t > const & data ) {
-	data_int16_[ field_name ].resize ( nsamp_ );
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint8_t > & data ) {
 	for ( index_type i = 0; i < data.size(); ++i ) {
-		data_int16_[ field_name ][ offset + i ] = data[ i ];
+		data[ i ] = data_uint8_[ type_indx ][ offset + i ];
 	}
 	return;
 }
 
-
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint16_t > & data ) {
-	if ( data_uint16_.count ( field_name ) > 0 ) {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = data_uint16_[ field_name ][ offset + i ];
-		}
-	} else {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = 0;
-		}
-	}
-	return;
-}
-
-void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint16_t > const & data ) {
-	data_uint16_[ field_name ].resize ( nsamp_ );
+void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint8_t > const & data ) {
 	for ( index_type i = 0; i < data.size(); ++i ) {
-		data_uint16_[ field_name ][ offset + i ] = data[ i ];
+		data_uint8_[ type_indx ][ offset + i ] = data[ i ];
 	}
 	return;
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int32_t > & data ) {
-	if ( data_int32_.count ( field_name ) > 0 ) {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = data_int32_[ field_name ][ offset + i ];
-		}
-	} else {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = 0;
-		}
-	}
-	return;
-}
-
-void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int32_t > const & data ) {
-	data_int32_[ field_name ].resize ( nsamp_ );
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int16_t > & data ) {
 	for ( index_type i = 0; i < data.size(); ++i ) {
-		data_int32_[ field_name ][ offset + i ] = data[ i ];
+		data[ i ] = data_int16_[ type_indx ][ offset + i ];
 	}
 	return;
 }
 
-
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint32_t > & data ) {
-	if ( data_uint32_.count ( field_name ) > 0 ) {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = data_uint32_[ field_name ][ offset + i ];
-		}
-	} else {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = 0;
-		}
-	}
-	return;
-}
-
-void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint32_t > const & data ) {
-	data_uint32_[ field_name ].resize ( nsamp_ );
+void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int16_t > const & data ) {
 	for ( index_type i = 0; i < data.size(); ++i ) {
-		data_uint32_[ field_name ][ offset + i ] = data[ i ];
+		data_int16_[ type_indx ][ offset + i ] = data[ i ];
 	}
 	return;
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int64_t > & data ) {
-	if ( data_int64_.count ( field_name ) > 0 ) {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = data_int64_[ field_name ][ offset + i ];
-		}
-	} else {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = 0;
-		}
-	}
-	return;
-}
-
-void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < int64_t > const & data ) {
-	data_int64_[ field_name ].resize ( nsamp_ );
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint16_t > & data ) {
 	for ( index_type i = 0; i < data.size(); ++i ) {
-		data_int64_[ field_name ][ offset + i ] = data[ i ];
+		data[ i ] = data_uint16_[ type_indx ][ offset + i ];
 	}
 	return;
 }
 
-
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint64_t > & data ) {
-	if ( data_uint64_.count ( field_name ) > 0 ) {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = data_uint64_[ field_name ][ offset + i ];
-		}
-	} else {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = 0;
-		}
-	}
-	return;
-}
-
-void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < uint64_t > const & data ) {
-	data_uint64_[ field_name ].resize ( nsamp_ );
+void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint16_t > const & data ) {
 	for ( index_type i = 0; i < data.size(); ++i ) {
-		data_uint64_[ field_name ][ offset + i ] = data[ i ];
+		data_uint16_[ type_indx ][ offset + i ] = data[ i ];
 	}
 	return;
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < float > & data ) {
-	if ( data_float_.count ( field_name ) > 0 ) {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = data_float_[ field_name ][ offset + i ];
-		}
-	} else {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = 0;
-		}
-	}
-	return;
-}
-
-void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < float > const & data ) {
-	data_float_[ field_name ].resize ( nsamp_ );
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int32_t > & data ) {
 	for ( index_type i = 0; i < data.size(); ++i ) {
-		data_float_[ field_name ][ offset + i ] = data[ i ];
+		data[ i ] = data_int32_[ type_indx ][ offset + i ];
 	}
 	return;
 }
 
-
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, index_type offset, vector < double > & data ) {
-	if ( data_double_.count ( field_name ) > 0 ) {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = data_double_[ field_name ][ offset + i ];
-		}
-	} else {
-		for ( index_type i = 0; i < data.size(); ++i ) {
-			data[ i ] = 0;
-		}
-	}
-	return;
-}
-
-void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, index_type offset, vector < double > const & data ) {
-	data_double_[ field_name ].resize ( nsamp_ );
+void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int32_t > const & data ) {
 	for ( index_type i = 0; i < data.size(); ++i ) {
-		data_double_[ field_name ][ offset + i ] = data[ i ];
+		data_int32_[ type_indx ][ offset + i ] = data[ i ];
+	}
+	return;
+}
+
+
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint32_t > & data ) {
+	for ( index_type i = 0; i < data.size(); ++i ) {
+		data[ i ] = data_uint32_[ type_indx ][ offset + i ];
+	}
+	return;
+}
+
+void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint32_t > const & data ) {
+	for ( index_type i = 0; i < data.size(); ++i ) {
+		data_uint32_[ type_indx ][ offset + i ] = data[ i ];
+	}
+	return;
+}
+
+
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int64_t > & data ) {
+	for ( index_type i = 0; i < data.size(); ++i ) {
+		data[ i ] = data_int64_[ type_indx ][ offset + i ];
+	}
+	return;
+}
+
+void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int64_t > const & data ) {
+	for ( index_type i = 0; i < data.size(); ++i ) {
+		data_int64_[ type_indx ][ offset + i ] = data[ i ];
+	}
+	return;
+}
+
+
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint64_t > & data ) {
+	for ( index_type i = 0; i < data.size(); ++i ) {
+		data[ i ] = data_uint64_[ type_indx ][ offset + i ];
+	}
+	return;
+}
+
+void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint64_t > const & data ) {
+	for ( index_type i = 0; i < data.size(); ++i ) {
+		data_uint64_[ type_indx ][ offset + i ] = data[ i ];
+	}
+	return;
+}
+
+
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < float > & data ) {
+	for ( index_type i = 0; i < data.size(); ++i ) {
+		data[ i ] = data_float_[ type_indx ][ offset + i ];
+	}
+	return;
+}
+
+void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < float > const & data ) {
+	for ( index_type i = 0; i < data.size(); ++i ) {
+		data_float_[ type_indx ][ offset + i ] = data[ i ];
+	}
+	return;
+}
+
+
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < double > & data ) {
+	for ( index_type i = 0; i < data.size(); ++i ) {
+		data[ i ] = data_double_[ type_indx ][ offset + i ];
+	}
+	return;
+}
+
+void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < double > const & data ) {
+	for ( index_type i = 0; i < data.size(); ++i ) {
+		data_double_[ type_indx ][ offset + i ] = data[ i ];
+	}
+	return;
+}
+
+
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < string > & data ) {
+	for ( index_type i = 0; i < data.size(); ++i ) {
+		data[ i ] = data_string_[ type_indx ][ offset + i ];
+	}
+	return;
+}
+
+void tidas::group_backend_mem::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < string > const & data ) {
+	for ( index_type i = 0; i < data.size(); ++i ) {
+		data_string_[ type_indx ][ offset + i ] = data[ i ];
 	}
 	return;
 }

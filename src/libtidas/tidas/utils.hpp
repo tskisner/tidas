@@ -78,6 +78,9 @@ namespace tidas {
 
 	std::string filter_default ( std::string const & filter );
 
+	std::map < std::string, std::string > filter_split ( std::string const & filter );
+
+
 }
 
 

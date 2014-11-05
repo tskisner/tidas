@@ -42,13 +42,18 @@ intervals_backend * tidas::intervals_backend_getdata::clone () {
 }
 
 
-void tidas::intervals_backend_getdata::read_meta ( backend_path const & loc ) {
+string tidas::intervals_backend_getdata::dict_meta () {
+	return "";
+}
+
+
+void tidas::intervals_backend_getdata::read ( backend_path const & loc, size_t & size ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::intervals_backend_getdata::write_meta ( backend_path const & loc ) {
+void tidas::intervals_backend_getdata::write ( backend_path const & loc, size_t const & size ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }

@@ -18,6 +18,9 @@ namespace tidas {
 			intrvl ();
 			intrvl ( time_type new_start, time_type new_stop, index_type new_first, index_type new_last );
 
+			bool operator== ( const intrvl & other ) const;
+			bool operator!= ( const intrvl & other ) const;
+
 			time_type start;
 			time_type stop;
 			index_type first;
@@ -39,13 +42,15 @@ namespace tidas {
 
 			virtual intervals_backend * clone () = 0;
 
-			virtual void read_meta ( backend_path const & loc ) = 0;
+			virtual void read ( backend_path const & loc, size_t & size ) = 0;
 
-			virtual void write_meta ( backend_path const & loc ) = 0;
+			virtual void write ( backend_path const & loc, size_t const & size ) = 0;
 
 			virtual void read_data ( backend_path const & loc, interval_list & intr ) = 0;
 			
 			virtual void write_data ( backend_path const & loc, interval_list const & intr ) = 0;
+
+			virtual std::string dict_meta () = 0;
 
 	};
 
@@ -63,16 +68,19 @@ namespace tidas {
 
 			intervals_backend * clone ();
 
-			void read_meta ( backend_path const & loc );
+			void read ( backend_path const & loc, size_t & size );
 
-			void write_meta ( backend_path const & loc );
+			void write ( backend_path const & loc, size_t const & size );
 			
 			void read_data ( backend_path const & loc, interval_list & intr );
 			
 			void write_data ( backend_path const & loc, interval_list const & intr );
 
+			std::string dict_meta ();
+
 		private :
 
+			size_t size_;
 			interval_list store_;
 
 	};
@@ -91,13 +99,15 @@ namespace tidas {
 
 			intervals_backend * clone ();
 
-			void read_meta ( backend_path const & loc );
+			void read ( backend_path const & loc, size_t & size );
 
-			void write_meta ( backend_path const & loc );
+			void write ( backend_path const & loc, size_t const & size );
 
 			void read_data ( backend_path const & loc, interval_list & intr );
 			
 			void write_data ( backend_path const & loc, interval_list const & intr );
+
+			std::string dict_meta ();
 
 	};
 
@@ -115,13 +125,15 @@ namespace tidas {
 
 			intervals_backend * clone ();
 
-			void read_meta ( backend_path const & loc );
+			void read ( backend_path const & loc, size_t & size );
 			
-			void write_meta ( backend_path const & loc );
+			void write ( backend_path const & loc, size_t const & size );
 
 			void read_data ( backend_path const & loc, interval_list & intr );
 
 			void write_data ( backend_path const & loc, interval_list const & intr );
+
+			std::string dict_meta ();
 
 	};
 
@@ -133,26 +145,30 @@ namespace tidas {
 		public :
 
 			intervals ();
+			intervals ( dict const & d, size_t const & size );
+
 			~intervals ();
-			intervals ( intervals const & other );
 			intervals & operator= ( intervals const & other );
-			void copy ( intervals const & other );
 
-			intervals ( backend_path const & loc, std::string const & filter );
+			intervals ( intervals const & other );
+			intervals ( backend_path const & loc );
+			intervals ( intervals const & other, std::string const & filter, backend_path const & loc );
 
-			void read_meta ( std::string const & filter );
+			// metadata ops
 
-			void write_meta ( std::string const & filter );
+			void read ( backend_path const & loc );
 
-			void relocate ( backend_path const & loc );
+			void copy ( intervals const & other, std::string const & filter, backend_path const & loc );
+
+			void write ( backend_path const & loc );
 
 			backend_path location () const;
 
-			intervals duplicate ( std::string const & filter, backend_path const & newloc );
+			// data ops
 
-			//------------
+			size_t size () const;
 
-			dict & dictionary ();
+			dict const & dictionary () const;
 
 			void read_data ( interval_list & intr );
 
@@ -171,6 +187,8 @@ namespace tidas {
 		private :
 
 			dict dict_;
+
+			size_t size_;
 
 			backend_path loc_;
 			std::unique_ptr < intervals_backend > backend_;

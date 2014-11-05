@@ -38,7 +38,6 @@ dict_backend_hdf5 & tidas::dict_backend_hdf5::operator= ( dict_backend_hdf5 cons
 
 dict_backend * tidas::dict_backend_hdf5::clone () {
 	dict_backend_hdf5 * ret = new dict_backend_hdf5 ( *this );
-
 	return ret;
 }
 
@@ -77,7 +76,7 @@ herr_t tidas_dict_backend_hdf5_attr_parse ( hid_t location_id, const char * attr
 
 	string val = buf;
 
-	string match = string ( "^(.*)" ) + tidas_dict_hdf5_type_suffix + string ( "$" );
+	string match = string ( "^(.*)" ) + dict_hdf5_type_suffix + string ( "$" );
 	RE2 re ( match );
 
 	string name;
@@ -105,7 +104,7 @@ herr_t tidas_dict_backend_hdf5_attr_list ( hid_t location_id, const char * attr_
 }
 
 
-void tidas::dict_backend_hdf5::read_meta ( backend_path const & loc, string const & filter, map < string, string > & data, map < string, data_type > & types ) {
+void tidas::dict_backend_hdf5::read ( backend_path const & loc, map < string, string > & data, map < string, data_type > & types ) {
 
 	// open file in write mode
 
@@ -124,22 +123,8 @@ void tidas::dict_backend_hdf5::read_meta ( backend_path const & loc, string cons
 	hsize_t aoff = 0;
 	herr_t status = H5Aiterate ( dataset, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, &aoff, tidas_dict_backend_hdf5_attr_parse, (void *)&iterdata );
 
-	// filter out only selected keys
-
-	data.clear();
-	types.clear();
-
-	RE2 re ( filter );
-
-	for ( map < string, string > :: const_iterator it = iterdata.data.begin(); it != iterdata.data.end(); ++it ) {
-
-		if ( RE2::FullMatch ( it->first, re ) ) {
-
-			data[ it->first ] = it->second;
-			types[ it->first ] = iterdata.types[ it->first ];
-
-		}
-	}
+	data = iterdata.data;
+	types = iterdata.types;
 
 	// cleanup
 
@@ -150,7 +135,7 @@ void tidas::dict_backend_hdf5::read_meta ( backend_path const & loc, string cons
 }
 
 
-void tidas::dict_backend_hdf5::write_meta ( backend_path const & loc, string const & filter, map < string, string > const & data, map < string, data_type > const & types ) {
+void tidas::dict_backend_hdf5::write ( backend_path const & loc, map < string, string > const & data, map < string, data_type > const & types ) {
 
 	// open file in write mode
 
@@ -179,8 +164,6 @@ void tidas::dict_backend_hdf5::write_meta ( backend_path const & loc, string con
 
 	hid_t datatype = H5Tcopy ( H5T_C_S1 );
 
-	RE2 re ( filter );
-
 	hid_t dataspace = H5Screate ( H5S_SCALAR );
 
 	for ( map < string, string > :: const_iterator it = data.begin(); it != data.end(); ++it ) {
@@ -188,22 +171,18 @@ void tidas::dict_backend_hdf5::write_meta ( backend_path const & loc, string con
 		string key = it->first;
 		string val = it->second;
 
-		if ( RE2::FullMatch ( key, re ) ) {
+		string key_type = it->first + dict_hdf5_type_suffix;
+		string val_type = data_type_to_string ( types.at( it->first ) );
 
-			string key_type = it->first + string(tidas_dict_hdf5_type_suffix);
-			string val_type = data_type_to_string ( types.at( it->first ) );
+		status = H5Tset_size ( datatype, val.size() );
+		hid_t attr = H5Acreate ( dataset, key.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT );
+		status = H5Awrite ( attr, datatype, (void *) val.c_str() );
+		status = H5Aclose ( attr );
 
-			status = H5Tset_size ( datatype, val.size() );
-			hid_t attr = H5Acreate ( dataset, key.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT );
-			status = H5Awrite ( attr, datatype, (void *) val.c_str() );
-			status = H5Aclose ( attr );
-
-			status = H5Tset_size ( datatype, val_type.size() );
-			attr = H5Acreate ( dataset, key_type.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT );
-			status = H5Awrite ( attr, datatype, (void *) val_type.c_str() );
-			status = H5Aclose ( attr );
-
-		}
+		status = H5Tset_size ( datatype, val_type.size() );
+		attr = H5Acreate ( dataset, key_type.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT );
+		status = H5Awrite ( attr, datatype, (void *) val_type.c_str() );
+		status = H5Aclose ( attr );
 
 	}
 
@@ -227,13 +206,13 @@ void tidas::dict_backend_hdf5::write_meta ( backend_path const & loc, string con
 #else
 
 
-void tidas::dict_backend_hdf5::read_meta ( backend_path const & loc, string const & filter, map < string, string > & data, map < string, data_type > & types ) {
+void tidas::dict_backend_hdf5::read ( backend_path const & loc, map < string, string > & data, map < string, data_type > & types ) {
 	TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
 	return;
 }
 
 
-void tidas::dict_backend_hdf5::write_meta ( backend_path const & loc, string const & filter, map < string, string > const & data, map < string, data_type > const & types ) {
+void tidas::dict_backend_hdf5::write ( backend_path const & loc, map < string, string > const & data, map < string, data_type > const & types ) {
 	TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
 	return;
 }

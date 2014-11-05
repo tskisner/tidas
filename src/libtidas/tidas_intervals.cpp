@@ -7,6 +7,9 @@
 
 #include <tidas_internal.hpp>
 
+#include <cmath>
+#include <limits>
+
 
 using namespace std;
 using namespace tidas;
@@ -28,8 +31,37 @@ tidas::intrvl::intrvl ( time_type new_start, time_type new_stop, index_type new_
 }
 
 
-tidas::intervals::intervals () {
+bool tidas::intrvl::operator== ( const intrvl & other ) const {
+	if ( first != other.first ) {
+		return false;
+	}
+	if ( last != other.last ) {
+		return false;
+	}
+	if ( fabs ( start - other.start ) > numeric_limits < time_type > :: epsilon() ) {
+		return false;
+	}
+	if ( fabs ( stop - other.stop ) > numeric_limits < time_type > :: epsilon() ) {
+		return false;
+	}
+	return true;
+}
 
+
+bool tidas::intrvl::operator!= ( const intrvl & other ) const {
+	return ! ( *this == other );
+}
+
+
+
+tidas::intervals::intervals () {
+	size_ = 0;
+}
+
+
+tidas::intervals::intervals ( dict const & d, size_t const & size ) {
+	size_ = size;
+	dict_ = d;
 }
 
 
@@ -38,71 +70,33 @@ tidas::intervals::~intervals () {
 }
 
 
-tidas::intervals::intervals ( intervals const & other ) {
-	copy ( other );
-}
-
-
 intervals & tidas::intervals::operator= ( intervals const & other ) {
 	if ( this != &other ) {
-		copy ( other );
+		copy ( other, "", other.loc_ );
 	}
 	return *this;
 }
 
 
-void tidas::intervals::copy ( intervals const & other ) {
-	dict_ = other.dict_;
-	loc_ = other.loc_;
-	if ( other.backend_ ) {
-		backend_.reset( other.backend_->clone() );
-	}
+tidas::intervals::intervals ( intervals const & other ) {
+	copy ( other, "", other.loc_ );
 }
 
 
-tidas::intervals::intervals ( backend_path const & loc, string const & filter ) {
-	relocate ( loc );
-	read_meta ( filter );
+tidas::intervals::intervals ( backend_path const & loc ) {
+	read ( loc );
 }
 
 
-void tidas::intervals::read_meta ( string const & filter ) {
-
-	string filt = filter_default ( filter );
-
-	// extract dictionary filter and process
-	string dict_filter;
-	dict_.read_meta ( dict_filter );
-	
-	if ( backend_ ) {
-		backend_->read_meta ( loc_ );
-	} else {
-		TIDAS_THROW( "backend not assigned" );
-	}
-
-	return;
+tidas::intervals::intervals ( intervals const & other, std::string const & filter, backend_path const & loc ) {
+	copy ( other, filter, loc );
 }
 
 
-void tidas::intervals::write_meta ( string const & filter ) {
+void tidas::intervals::read ( backend_path const & loc ) {
 
-	string filt = filter_default ( filter );
+	// set backend
 
-	if ( backend_ ) {
-		backend_->write_meta ( loc_ );
-	} else {
-		TIDAS_THROW( "backend not assigned" );
-	}
-
-	// extract dictionary filter and process
-	string dict_filter;
-	dict_.write_meta ( dict_filter );
-
-	return;
-}
-
-
-void tidas::intervals::relocate ( backend_path const & loc ) {
 	loc_ = loc;
 
 	switch ( loc_.type ) {
@@ -120,10 +114,117 @@ void tidas::intervals::relocate ( backend_path const & loc ) {
 			break;
 	}
 
-	backend_path dict_loc = loc_;
-	dict_loc.meta = intervals_meta_time;
+	// read dict
 
-	dict_.relocate ( dict_loc );
+	backend_path dictloc;
+	dictloc.path = loc_.path;
+	dictloc.name = loc_.name;
+	dictloc.meta = backend_->dict_meta();
+
+	dict_.read ( dictloc );
+
+	// read our own metadata
+
+	backend_->read ( loc_, size_ );
+
+	return;
+}
+
+
+void tidas::intervals::copy ( intervals const & other, string const & filter, backend_path const & loc ) {	
+
+	// extract filters
+
+	map < string, string > filts = filter_split ( filter );
+
+	string fil = filter_default ( filts[ "root" ] );
+
+	if ( ( loc == other.loc_ ) && ( fil != ".*" ) ) {
+		TIDAS_THROW( "copy of intervals with a filter requires a new location" );
+	}
+
+	// set backend
+
+	loc_ = loc;
+
+	switch ( loc_.type ) {
+		case BACKEND_MEM:
+			backend_.reset( new intervals_backend_mem () );
+			break;
+		case BACKEND_HDF5:
+			backend_.reset( new intervals_backend_hdf5 () );
+			break;
+		case BACKEND_GETDATA:
+			TIDAS_THROW( "GetData backend not yet implemented" );
+			break;
+		default:
+			TIDAS_THROW( "backend not recognized" );
+			break;
+	}
+
+	// filtered copy of our metadata
+
+	if ( fil != ".*" ) {
+		TIDAS_THROW( "intervals class does not accept filters" );
+	}
+	size_ = other.size_;
+
+	if ( loc_ != other.loc_ ) {
+		if ( loc_.mode == MODE_RW ) {
+
+			// write our metadata
+
+			backend_->write ( loc_, size_ );
+
+			// copy dict
+
+			backend_path dictloc = loc_;
+			dictloc.meta = backend_->dict_meta();
+
+			dict_.copy ( other.dict_, filts[ dict_submatch_key ], dictloc );
+
+		} else {
+			TIDAS_THROW( "cannot copy to new read-only location" );
+		}
+	}
+
+	return;
+}
+
+
+void tidas::intervals::write ( backend_path const & loc ) {
+
+	if ( loc.mode != MODE_RW ) {
+		TIDAS_THROW( "cannot write to read-only location" );
+	}
+
+	// write our metadata
+
+	unique_ptr < intervals_backend > backend;
+
+	switch ( loc.type ) {
+		case BACKEND_MEM:
+			backend.reset( new intervals_backend_mem () );
+			break;
+		case BACKEND_HDF5:
+			backend.reset( new intervals_backend_hdf5 () );
+			break;
+		case BACKEND_GETDATA:
+			TIDAS_THROW( "GetData backend not yet implemented" );
+			break;
+		default:
+			TIDAS_THROW( "backend not recognized" );
+			break;
+	}
+
+	backend->write ( loc, size_ );
+
+	// write dict
+
+	backend_path dictloc = loc;
+	dictloc.meta = backend->dict_meta();
+
+	dict_.write ( dictloc );
 
 	return;
 }
@@ -134,40 +235,30 @@ backend_path tidas::intervals::location () const {
 }
 
 
-intervals tidas::intervals::duplicate ( string const & filter, backend_path const & newloc ) {
-	intervals newintervals;
-	newintervals.dict_ = dict_;
-	newintervals.relocate ( newloc );
-	newintervals.write_meta ( filter );
-
-	// reload to pick up filtered metadata
-	newintervals.read_meta ( "" );
-
-	// read old data
-	interval_list intr;
-	read_data ( intr );
-
-	// FIXME:  apply filter to intervals...
-
-	newintervals.write_data ( intr );
-
-	return newintervals;
+size_t tidas::intervals::size () const {
+	return size_;
 }
 
 
 void tidas::intervals::read_data ( interval_list & intr ) {
+	if ( ! backend_ ) {
+		TIDAS_THROW( "intervals read_data:  backend not assigned" );
+	}
 	backend_->read_data ( loc_, intr );
 	return;
 }
 
 
 void tidas::intervals::write_data ( interval_list const & intr ) {
+	if ( ! backend_ ) {
+		TIDAS_THROW( "intervals read_data:  backend not assigned" );
+	}
 	backend_->write_data ( loc_, intr );
 	return;
 }
 
 
-dict & tidas::intervals::dictionary () {
+dict const & tidas::intervals::dictionary () const {
 	return dict_;
 }
 
@@ -244,6 +335,8 @@ intrvl tidas::intervals::seek_floor ( interval_list const & intr, time_type time
 
 
 
+
+
 tidas::intervals_backend_mem::intervals_backend_mem () : intervals_backend () {
 
 }
@@ -256,12 +349,14 @@ tidas::intervals_backend_mem::~intervals_backend_mem () {
 
 tidas::intervals_backend_mem::intervals_backend_mem ( intervals_backend_mem const & other ) {
 	store_ = other.store_;
+	size_ = other.size_;
 }
 
 
 intervals_backend_mem & tidas::intervals_backend_mem::operator= ( intervals_backend_mem const & other ) {
 	if ( this != &other ) {
 		store_ = other.store_;
+		size_ = other.size_;
 	}
 	return *this;
 }
@@ -270,18 +365,24 @@ intervals_backend_mem & tidas::intervals_backend_mem::operator= ( intervals_back
 intervals_backend * tidas::intervals_backend_mem::clone () {
 	intervals_backend_mem * ret = new intervals_backend_mem ( *this );
 	ret->store_ = store_;
+	ret->size_ = size_;
 	return ret;
 }
 
 
-void tidas::intervals_backend_mem::read_meta ( backend_path const & loc ) {
+string tidas::intervals_backend_mem::dict_meta () {
+	return dict_mem_name;
+}
 
+
+void tidas::intervals_backend_mem::read ( backend_path const & loc, size_t & size ) {
+	size = size_;
 	return;
 }
 
 
-void tidas::intervals_backend_mem::write_meta ( backend_path const & loc ) {
-
+void tidas::intervals_backend_mem::write ( backend_path const & loc, size_t const & size ) {
+	size_ = size;
 	return;
 }
 

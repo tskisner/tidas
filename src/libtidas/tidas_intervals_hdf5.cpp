@@ -42,7 +42,12 @@ intervals_backend * tidas::intervals_backend_hdf5::clone () {
 }
 
 
-void tidas::intervals_backend_hdf5::read_meta ( backend_path const & loc ) {
+string tidas::intervals_backend_hdf5::dict_meta () {
+	return intervals_hdf5_dataset_time;
+}
+
+
+void tidas::intervals_backend_hdf5::read ( backend_path const & loc, size_t & size ) {
 
 #ifdef HAVE_HDF5
 
@@ -57,9 +62,36 @@ void tidas::intervals_backend_hdf5::read_meta ( backend_path const & loc ) {
 		TIDAS_THROW( o.str().c_str() );
 	}
 
-	// can we open file?
+	// open file
 
 	hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+
+	// read number of intervals
+
+	string mpath = "/" + intervals_hdf5_dataset_time;
+
+	hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
+
+	hid_t dataspace = H5Dget_space ( dataset );
+	hid_t datatype = H5Dget_type ( dataset );
+
+	int ndims = H5Sget_simple_extent_ndims ( dataspace );
+
+	if ( ndims != 1 ) {
+		ostringstream o;
+		o << "HDF5 intervals dataset " << fspath << ":" << mpath << " has wrong dimensions (" << ndims << ")";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	hsize_t time_dims;
+	hsize_t maxdims;
+	int ret = H5Sget_simple_extent_dims ( dataspace, &time_dims, &maxdims );
+
+	size = (size_t)( time_dims / 2 );
+
+	H5Sclose ( dataspace );
+	H5Tclose ( datatype );
+	H5Dclose ( dataset );
 
 	// clean up
 
@@ -75,7 +107,7 @@ void tidas::intervals_backend_hdf5::read_meta ( backend_path const & loc ) {
 }
 
 
-void tidas::intervals_backend_hdf5::write_meta ( backend_path const & loc ) {
+void tidas::intervals_backend_hdf5::write ( backend_path const & loc, size_t const & size ) {
 
 #ifdef HAVE_HDF5
 
@@ -92,11 +124,44 @@ void tidas::intervals_backend_hdf5::write_meta ( backend_path const & loc ) {
 
 	hid_t file = H5Fcreate ( fspath.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT );
 
-	// create group
+	// create time dataset
+
+	hsize_t dims[1];
+	dims[0] = 2 * size;
+
+	hid_t dataspace = H5Screate_simple ( 1, dims, NULL ); 
+
+	hid_t datatype = H5Tcopy ( H5T_NATIVE_DOUBLE );
+
+	herr_t status = H5Tset_order ( datatype, H5T_ORDER_LE );
+
+	string mpath = "/" + intervals_hdf5_dataset_time;
+
+	hid_t dataset = H5Dcreate ( file, mpath.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+
+	H5Sclose ( dataspace );
+	H5Tclose ( datatype );
+	H5Dclose ( dataset );
+
+	// create index dataset
+
+	dataspace = H5Screate_simple ( 1, dims, NULL ); 
+
+	datatype = H5Tcopy ( H5T_NATIVE_INT64 );
+
+	status = H5Tset_order ( datatype, H5T_ORDER_LE );
+
+	mpath = "/" + intervals_hdf5_dataset_index;
+
+	dataset = H5Dcreate ( file, mpath.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+
+	H5Sclose ( dataspace );
+	H5Tclose ( datatype );
+	H5Dclose ( dataset );
 
 	// clean up
 
-	herr_t status = H5Fclose ( file );
+	status = H5Fclose ( file );
 
 	// mark volume as dirty
 
@@ -140,7 +205,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
 
 	// read times
 
-	string mpath = "/" + intervals_meta_time;
+	string mpath = "/" + intervals_hdf5_dataset_time;
 
 	hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
 
@@ -169,7 +234,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
 
 	// read indices
 
-	mpath = "/" + intervals_meta_index;
+	mpath = "/" + intervals_hdf5_dataset_index;
 
 	dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
 
@@ -236,22 +301,13 @@ void tidas::intervals_backend_hdf5::write_data ( backend_path const & loc, inter
 
 	hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
 
-	// write time dataset
+	// write time data
 
-	hsize_t dims[1];
-	dims[0] = 2 * intr.size();
+	string mpath = "/" + intervals_hdf5_dataset_time;
 
-	hid_t dataspace = H5Screate_simple ( 1, dims, NULL ); 
+	hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
 
-	hid_t datatype = H5Tcopy ( H5T_NATIVE_DOUBLE );
-
-	herr_t status = H5Tset_order ( datatype, H5T_ORDER_LE );
-
-	string mpath = "/times";
-
-	hid_t dataset = H5Dcreate ( file, mpath.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
-
-	double * time_buffer = mem_alloc < double > ( dims[0] );
+	double * time_buffer = mem_alloc < double > ( 2 * intr.size() );
 
 	size_t i = 0;
 	for ( interval_list::const_iterator it = intr.begin(); it != intr.end(); ++it ) {
@@ -260,27 +316,19 @@ void tidas::intervals_backend_hdf5::write_data ( backend_path const & loc, inter
 		++i;
 	}
 
-	status = H5Dwrite ( dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, time_buffer );
+	herr_t status = H5Dwrite ( dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, time_buffer );
 
 	free ( time_buffer );
 
-	H5Sclose ( dataspace );
-	H5Tclose ( datatype );
 	H5Dclose ( dataset );
 
-	// write index dataset
+	// write index data
 
-	dataspace = H5Screate_simple ( 1, dims, NULL ); 
+	mpath = "/" + intervals_hdf5_dataset_index;
 
-	datatype = H5Tcopy ( H5T_NATIVE_INT64 );
+	dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
 
-	status = H5Tset_order ( datatype, H5T_ORDER_LE );
-
-	mpath = "/indices";
-
-	dataset = H5Dcreate ( file, mpath.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
-
-	int64_t * ind_buffer = mem_alloc < int64_t > ( dims[0] );
+	int64_t * ind_buffer = mem_alloc < int64_t > ( 2 * intr.size() );
 
 	i = 0;
 	for ( interval_list::const_iterator it = intr.begin(); it != intr.end(); ++it ) {
@@ -293,8 +341,6 @@ void tidas::intervals_backend_hdf5::write_data ( backend_path const & loc, inter
 
 	free ( ind_buffer );
 
-	H5Sclose ( dataspace );
-	H5Tclose ( datatype );
 	H5Dclose ( dataset );
 
 	// close file

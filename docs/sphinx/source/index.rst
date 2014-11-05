@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    utils
+   backend_hdf5
 
 .. todolist::
 

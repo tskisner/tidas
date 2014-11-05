@@ -42,7 +42,7 @@ schema_backend * tidas::schema_backend_hdf5::clone () {
 }
 
 
-void tidas::schema_backend_hdf5::read_meta ( backend_path const & loc, string const & filter, field_list & fields ) {
+void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & fields ) {
 
 #ifdef HAVE_HDF5
 
@@ -88,8 +88,6 @@ void tidas::schema_backend_hdf5::read_meta ( backend_path const & loc, string co
 
 	herr_t status = H5Dread ( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer );
 
-	RE2 re ( filter );
-
 	size_t off = 0;
 
 	field cur;
@@ -109,9 +107,7 @@ void tidas::schema_backend_hdf5::read_meta ( backend_path const & loc, string co
 		off += backend_string_size;
 		cur.type = data_type_from_string ( string(temp) );
 
-		if ( RE2::FullMatch ( cur.name, re ) ) {
-			fields.push_back ( cur );
-		}
+		fields.push_back ( cur );
 	}
 
 	free ( buffer );
@@ -131,21 +127,9 @@ void tidas::schema_backend_hdf5::read_meta ( backend_path const & loc, string co
 }
 
 
-void tidas::schema_backend_hdf5::write_meta ( backend_path const & loc, string const & filter, field_list const & fields ) {
+void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list const & fields ) {
 
 #ifdef HAVE_HDF5
-
-	// first construct filtered copy
-
-	field_list sel;
-
-	RE2 re ( filter );
-
-	for ( field_list :: const_iterator it = fields.begin(); it != fields.end(); ++it ) {
-		if ( RE2::FullMatch ( it->name, re ) ) {
-			sel.push_back( *it );
-		}
-	}
 
 	// open file in write mode or create if it does not exist
 
@@ -171,7 +155,7 @@ void tidas::schema_backend_hdf5::write_meta ( backend_path const & loc, string c
 	// create schema dataset and write
 
 	hsize_t dims[2];
-	dims[0] = sel.size();
+	dims[0] = fields.size();
 	dims[1] = 3;
 
 	hid_t dataspace = H5Screate_simple ( 2, dims, NULL ); 
@@ -180,11 +164,11 @@ void tidas::schema_backend_hdf5::write_meta ( backend_path const & loc, string c
 
 	hid_t dataset = H5Dcreate ( file, loc.meta.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
 
-	char * buffer = mem_alloc < char > ( 3 * sel.size() * backend_string_size );
+	char * buffer = mem_alloc < char > ( 3 * fields.size() * backend_string_size );
 
 	size_t off = 0;	
 
-	for ( field_list :: const_iterator it = sel.begin(); it != sel.end(); ++it ) {
+	for ( field_list :: const_iterator it = fields.begin(); it != fields.end(); ++it ) {
 
 		strncpy ( &(buffer[ off ]), it->name.c_str(), backend_string_size );
 		off += backend_string_size;

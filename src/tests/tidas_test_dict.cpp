@@ -43,21 +43,22 @@ TEST( dictionarytest, all ) {
 	// memory backend
 
 	backend_path loc;
+	loc.mode = MODE_RW;
 
-	test.relocate ( loc );
-	test.write_meta ( "" );
-	test.read_meta ( "" );
+	test.write ( loc );
 
-	scheck = test.get_string ( "string" );
+	dict test2 ( test );
+
+	scheck = test2.get_string ( "string" );
 	EXPECT_EQ( sval, scheck );
 
-	dcheck = test.get_double ( "double" );
+	dcheck = test2.get_double ( "double" );
 	EXPECT_EQ( dval, dcheck );
 
-	icheck = test.get_int ( "int" );
+	icheck = test2.get_int ( "int" );
 	EXPECT_EQ( ival, icheck );
 
-	lcheck = test.get_ll ( "longlong" );
+	lcheck = test2.get_ll ( "longlong" );
 	EXPECT_EQ( lval, lcheck );
 
 	// HDF5 backend
@@ -105,20 +106,20 @@ TEST( dictionarytest, all ) {
 
 	// write / read dictionary	
 
-	test.relocate ( loc );
-	test.write_meta ( "" );
-	test.read_meta ( "" );
+	test.write ( loc );
 
-	scheck = test.get_string ( "string" );
+	dict test3 ( test );
+
+	scheck = test3.get_string ( "string" );
 	EXPECT_EQ( sval, scheck );
 
-	dcheck = test.get_double ( "double" );
+	dcheck = test3.get_double ( "double" );
 	EXPECT_EQ( dval, dcheck );
 
-	icheck = test.get_int ( "int" );
+	icheck = test3.get_int ( "int" );
 	EXPECT_EQ( ival, icheck );
 
-	lcheck = test.get_ll ( "longlong" );
+	lcheck = test3.get_ll ( "longlong" );
 	EXPECT_EQ( lval, lcheck );
 
 #endif

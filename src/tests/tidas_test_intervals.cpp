@@ -21,31 +21,33 @@ TEST( intervalstest, metadata ) {
 	EXPECT_EQ( loc.type, BACKEND_MEM );
 	EXPECT_EQ( loc.path, "" );
 	EXPECT_EQ( loc.name, "" );
+	EXPECT_EQ( loc.meta, "" );
+	EXPECT_EQ( loc.mode, MODE_RW );
 
-	loc.type = BACKEND_HDF5;
-	loc.path = ".";
-	loc.name = "test_intervals_meta.hdf5.out";
+	intervals dummy2 ( dummy1 );
 
-	dummy1.relocate ( loc );
-
-	backend_path checkloc = dummy1.location();
+	backend_path checkloc = dummy2.location();
 	EXPECT_EQ( loc.type, checkloc.type );
 	EXPECT_EQ( loc.path, checkloc.path );
 	EXPECT_EQ( loc.name, checkloc.name );
-
-	intervals dummy2 ( loc );
-	dummy2.write_meta();
-	dummy2.read_meta();
-
-	checkloc = dummy2.location();
-	EXPECT_EQ( loc.type, checkloc.type );
-	EXPECT_EQ( loc.path, checkloc.path );
-	EXPECT_EQ( loc.name, checkloc.name );
+	EXPECT_EQ( loc.mode, checkloc.mode );
 
 }
 
 
 TEST( intervalstest, data ) {
+
+	dict dt;
+
+	string sval = "blahblahblah";
+	double dval = 12345.6;
+	int ival = 12345;
+	long long lval = 1234567890123456L;
+
+	dt.put ( "string", sval );
+	dt.put ( "double", dval );
+	dt.put ( "int", ival );
+	dt.put ( "longlong", lval );
 
 	interval_list intr;
 	size_t nint = 10;
@@ -66,13 +68,14 @@ TEST( intervalstest, data ) {
 
 	backend_path loc;
 	loc.type = BACKEND_HDF5;
+	loc.mode = MODE_RW;
 	loc.path = ".";
 	loc.name = "test_intervals_data.hdf5.out";
 
-	intervals dummy1;
-	dummy1.relocate ( loc );
+	intervals dummy1 ( dt, nint );
+	dummy1.write ( loc );
+	dummy1.read ( loc );
 
-	dummy1.write_meta();
 	dummy1.write_data ( intr );
 
 	intervals dummy2 ( loc );
@@ -96,9 +99,9 @@ TEST( intervalstest, data ) {
 	loc.path = ".";
 	loc.name = "test_intervals_data_dup.hdf5.out";
 
-	dummy2.duplicate ( loc );
+	intervals dummy3 ( dummy2, ".*", loc );
 
-	intervals dummy3 ( loc );
+	data_copy ( dummy2, dummy3 );
 
 	dummy3.read_data ( check );
 
@@ -114,8 +117,5 @@ TEST( intervalstest, data ) {
 	}
 
 }
-
-
-
 
 

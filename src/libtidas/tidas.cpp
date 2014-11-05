@@ -147,7 +147,36 @@ tidas::backend_path::backend_path () {
 	meta = "";
 	type = BACKEND_MEM;
 	comp = COMPRESS_NONE;
+	mode = MODE_RW;
 	//vol = NULL;
+}
+
+
+bool tidas::backend_path::operator== ( const backend_path & other ) const {
+	if ( path != other.path ) {
+		return false;
+	}
+	if ( name != other.name ) {
+		return false;
+	}
+	if ( meta != other.meta ) {
+		return false;
+	}
+	if ( type != other.type ) {
+		return false;
+	}
+	if ( comp != other.comp ) {
+		return false;
+	}
+	if ( mode != other.mode ) {
+		return false;
+	}
+	return true;
+}
+
+
+bool tidas::backend_path::operator!= ( const backend_path & other ) const {
+	return ! ( *this == other );
 }
 
 

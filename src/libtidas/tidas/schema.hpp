@@ -18,6 +18,7 @@ namespace tidas {
 		public :
 
 			field ();
+			field ( std::string const & name, data_type type, std::string const & units );
 
 			bool operator== ( const field & other ) const;
 			bool operator!= ( const field & other ) const;
@@ -44,9 +45,9 @@ namespace tidas {
 
 			virtual schema_backend * clone () = 0;
 
-			virtual void read_meta ( backend_path const & loc, std::string const & filter, field_list & fields ) = 0;
+			virtual void read ( backend_path const & loc, field_list & fields ) = 0;
 
-			virtual void write_meta ( backend_path const & loc, std::string const & filter, field_list const & fields ) = 0;
+			virtual void write ( backend_path const & loc, field_list const & fields ) = 0;
 
 	};
 
@@ -63,9 +64,9 @@ namespace tidas {
 
 			schema_backend * clone ();
 
-			void read_meta ( backend_path const & loc, std::string const & filter, field_list & fields );
+			void read ( backend_path const & loc, field_list & fields );
 
-			void write_meta ( backend_path const & loc, std::string const & filter, field_list const & fields );
+			void write ( backend_path const & loc, field_list const & fields );
 
 		private :
 
@@ -86,9 +87,9 @@ namespace tidas {
 
 			schema_backend * clone ();
 
-			void read_meta ( backend_path const & loc, std::string const & filter, field_list & fields );
+			void read ( backend_path const & loc, field_list & fields );
 
-			void write_meta ( backend_path const & loc, std::string const & filter, field_list const & fields );
+			void write ( backend_path const & loc, field_list const & fields );
 
 	};
 
@@ -106,9 +107,9 @@ namespace tidas {
 
 			schema_backend * clone ();
 
-			void read_meta ( backend_path const & loc, std::string const & filter, field_list & fields );
+			void read ( backend_path const & loc, field_list & fields );
 
-			void write_meta ( backend_path const & loc, std::string const & filter, field_list const & fields );
+			void write ( backend_path const & loc, field_list const & fields );
 
 	};
 
@@ -120,26 +121,26 @@ namespace tidas {
 		public :
 
 			schema ();
-			~schema ();
-			schema ( schema const & other );
-			schema & operator= ( schema const & other );
-			void copy ( schema const & other );
-
-			schema ( backend_path const & loc, std::string const & filter );
-
 			schema ( field_list const & fields );
 
-			void read_meta ( std::string const & filter );
+			~schema ();
+			schema & operator= ( schema const & other );
 
-			void write_meta ( std::string const & filter );
+			schema ( schema const & other );
+			schema ( backend_path const & loc );
+			schema ( schema const & other, std::string const & filter, backend_path const & loc );
 
-			void relocate ( backend_path const & loc );
+			// metadata ops
+
+			void read ( backend_path const & loc );
+
+			void copy ( schema const & other, std::string const & filter, backend_path const & loc );
+
+			void write ( backend_path const & loc );
 
 			backend_path location () const;
 
-			schema duplicate ( std::string const & filter, backend_path const & newloc );
-
-			//------------
+			// data ops
 
 			void clear ();
 			
@@ -149,7 +150,7 @@ namespace tidas {
 			
 			field seek ( std::string const & name ) const;
 			
-			field_list fields () const;
+			field_list const & fields () const;
 
 		private :
 

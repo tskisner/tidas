@@ -22,9 +22,9 @@ namespace tidas {
 
 			virtual dict_backend * clone () = 0;
 
-			virtual void read_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) = 0;
+			virtual void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) = 0;
 
-			virtual void write_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) = 0;
+			virtual void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) = 0;
 
 	};
 
@@ -41,9 +41,9 @@ namespace tidas {
 
 			dict_backend * clone ();
 
-			void read_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
+			void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
 
-			void write_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
+			void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
 
 		private :
 
@@ -65,9 +65,9 @@ namespace tidas {
 
 			dict_backend * clone ();
 
-			void read_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
+			void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
 
-			void write_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
+			void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
 
 	};
 
@@ -85,9 +85,9 @@ namespace tidas {
 
 			dict_backend * clone ();
 
-			void read_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
+			void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
 
-			void write_meta ( backend_path const & loc, std::string const & filter, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
+			void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
 
 	};
 
@@ -101,23 +101,23 @@ namespace tidas {
 
 			dict ();
 			~dict ();
-			dict ( dict const & other );
 			dict & operator= ( dict const & other );
-			void copy ( dict const & other );
 
-			dict ( backend_path const & loc, std::string const & filter );
+			dict ( dict const & other );
+			dict ( backend_path const & loc );
+			dict ( dict const & other, std::string const & filter, backend_path const & loc );
 
-			void read_meta ( std::string const & filter );
+			// metadata ops
 
-			void write_meta ( std::string const & filter );
+			void read ( backend_path const & loc );
 
-			void relocate ( backend_path const & loc );
+			void copy ( dict const & other, std::string const & filter, backend_path const & loc );
+
+			void write ( backend_path const & loc );
 
 			backend_path location () const;
 
-			dict duplicate ( std::string const & filter, backend_path const & newloc );
-
-			//------------
+			// data ops
 
 			/// Insert a value into the dictionary. 
 			template < class T >

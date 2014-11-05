@@ -106,18 +106,31 @@ TEST( schematest, all ) {
 
 #ifdef HAVE_HDF5
 
+	// test write / read
+
 	loc.type = BACKEND_HDF5;
 	loc.path = ".";
 	loc.name = "test_schema.hdf5.out";
-	loc.meta = string("/") + schema_meta;
+	loc.meta = string("/") + schema_hdf5_dataset;
+	loc.mode = MODE_RW;
 
-	schm3.relocate ( loc );
-	schm3.write_meta ( "" );
+	schm3.write ( loc );
 
-	schema h5_ischm ( loc, "int.*" );
+	schema schm4 ( loc );
+
+	check = schm4.fields();
+	for ( size_t i = 0; i < nf; ++i ) {
+		EXPECT_EQ( flist[i], check[i] );	
+	}
+
+	// test filtered copy
+
+	backend_path memloc;
+
+	schema h5_ischm ( schm4, "int.*", memloc );
 	EXPECT_EQ( h5_ischm.fields().size(), 4 );
 
-	schema h5_aischm ( loc, ".*int.*" );
+	schema h5_aischm ( schm4, ".*int.*", memloc );
 	EXPECT_EQ( h5_aischm.fields().size(), 8 );
 
 #endif

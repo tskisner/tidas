@@ -7,8 +7,6 @@
 
 #include <tidas_internal.hpp>
 
-#include <tidas/re2/re2.h>
-
 
 using namespace std;
 using namespace tidas;
@@ -45,13 +43,13 @@ schema_backend * tidas::schema_backend_getdata::clone () {
 }
 
 
-void tidas::schema_backend_getdata::read_meta ( backend_path const & loc, string const & filter, field_list & fields ) {
+void tidas::schema_backend_getdata::read ( backend_path const & loc, field_list & fields ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::schema_backend_getdata::write_meta ( backend_path const & loc, string const & filter, field_list const & fields ) {
+void tidas::schema_backend_getdata::write ( backend_path const & loc, field_list const & fields ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }

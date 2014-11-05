@@ -21,6 +21,13 @@ tidas::field::field () {
 }
 
 
+tidas::field::field ( std::string const & fname, data_type ftype, std::string const & funits ) {
+	type = ftype;
+	name = fname;
+	units = funits;
+}
+
+
 bool tidas::field::operator== ( const field & other ) const {
 	if ( type != other.type ) {
 		return false;
@@ -56,73 +63,43 @@ tidas::schema::schema () {
 }
 
 
-tidas::schema::~schema () {
-
-}
-
-
-tidas::schema::schema ( schema const & other ) {
-	copy ( other );
-}
-
-
-schema & tidas::schema::operator= ( schema const & other ) {
-	if ( this != &other ) {
-		copy ( other );
-	}
-	return *this;
-}
-
-
-void tidas::schema::copy ( schema const & other ) {
-	fields_ = other.fields_;
-	loc_ = other.loc_;
-	if ( other.backend_ ) {
-		backend_.reset( other.backend_->clone() );
-	}
-}
-
-
-tidas::schema::schema ( backend_path const & loc, string const & filter ) {
-	relocate ( loc );
-	read_meta ( filter );
-}
-
-
 tidas::schema::schema ( field_list const & fields ) {
 	fields_ = fields;
 }
 
 
-void tidas::schema::read_meta ( string const & filter ) {
+tidas::schema::~schema () {
 
-	string filt = filter_default ( filter );
-	
-	if ( backend_ ) {
-		backend_->read_meta ( loc_, filt, fields_ );
-	} else {
-		TIDAS_THROW( "backend not assigned" );
-	}
-
-	return;
 }
 
 
-void tidas::schema::write_meta ( string const & filter ) {
-
-	string filt = filter_default ( filter );
-
-	if ( backend_ ) {
-		backend_->write_meta ( loc_, filt, fields_ );
-	} else {
-		TIDAS_THROW( "backend not assigned" );
+schema & tidas::schema::operator= ( schema const & other ) {
+	if ( this != &other ) {
+		copy ( other, "", other.loc_ );
 	}
-
-	return;
+	return *this;
 }
 
 
-void tidas::schema::relocate ( backend_path const & loc ) {
+tidas::schema::schema ( schema const & other ) {
+	copy ( other, "", other.loc_ );
+}
+
+
+tidas::schema::schema ( backend_path const & loc ) {
+	read ( loc );
+}
+
+
+tidas::schema::schema ( schema const & other, std::string const & filter, backend_path const & loc ) {
+	copy ( other, filter, loc );
+}
+
+
+void tidas::schema::read ( backend_path const & loc ) {
+
+	// set backend
+
 	loc_ = loc;
 
 	switch ( loc_.type ) {
@@ -139,24 +116,105 @@ void tidas::schema::relocate ( backend_path const & loc ) {
 			TIDAS_THROW( "backend not recognized" );
 			break;
 	}
+
+	// read our own metadata
+
+	backend_->read ( loc_, fields_ );
+
+	return;
+}
+
+
+void tidas::schema::copy ( schema const & other, string const & filter, backend_path const & loc ) {	
+
+	// extract filters
+
+	string filt = filter_default ( filter );
+
+	if ( ( loc == other.loc_ ) && ( filt != ".*" ) ) {
+		TIDAS_THROW( "copy of schema with a filter requires a new location" );
+	}
+
+	// set backend
+
+	loc_ = loc;
+
+	switch ( loc_.type ) {
+		case BACKEND_MEM:
+			backend_.reset( new schema_backend_mem () );
+			break;
+		case BACKEND_HDF5:
+			backend_.reset( new schema_backend_hdf5 () );
+			break;
+		case BACKEND_GETDATA:
+			TIDAS_THROW( "GetData backend not yet implemented" );
+			break;
+		default:
+			TIDAS_THROW( "backend not recognized" );
+			break;
+	}
+
+	// filtered copy of our metadata
+
+	fields_.clear();
+
+	RE2 re ( filt );
+
+	for ( field_list :: const_iterator it = other.fields().begin(); it != other.fields().end(); ++it ) {
+		if ( RE2::FullMatch ( it->name, re ) ) {
+			fields_.push_back ( field( it->name, it->type, it->units ) );
+		}
+	}
+
+	if ( loc_ != other.loc_ ) {
+		if ( loc_.mode == MODE_RW ) {
+
+			// write our metadata
+
+			backend_->write ( loc_, fields_ );
+
+		} else {
+			TIDAS_THROW( "cannot copy to new read-only location" );
+		}
+	}
+
+	return;
+}
+
+
+void tidas::schema::write ( backend_path const & loc ) {
+
+	if ( loc.mode != MODE_RW ) {
+		TIDAS_THROW( "cannot write to read-only location" );
+	}
+
+	// write our metadata
+
+	unique_ptr < schema_backend > backend;
+
+	switch ( loc.type ) {
+		case BACKEND_MEM:
+			backend.reset( new schema_backend_mem () );
+			break;
+		case BACKEND_HDF5:
+			backend.reset( new schema_backend_hdf5 () );
+			break;
+		case BACKEND_GETDATA:
+			TIDAS_THROW( "GetData backend not yet implemented" );
+			break;
+		default:
+			TIDAS_THROW( "backend not recognized" );
+			break;
+	}
+
+	backend->write ( loc, fields_ );
+
 	return;
 }
 
 
 backend_path tidas::schema::location () const {
 	return loc_;
-}
-
-
-schema tidas::schema::duplicate ( string const & filter, backend_path const & newloc ) {
-	schema newschema ( fields_ );
-	newschema.relocate ( newloc );
-	newschema.write_meta ( filter );
-
-	// reload to pick up filtered metadata
-	newschema.read_meta ( "" );
-
-	return newschema;
 }
 
 
@@ -198,7 +256,7 @@ field tidas::schema::seek ( string const & name ) const {
 }
 
 
-field_list tidas::schema::fields () const {
+field_list const & tidas::schema::fields () const {
 	return fields_;
 }
 
@@ -234,34 +292,14 @@ schema_backend * tidas::schema_backend_mem::clone () {
 }
 
 
-void tidas::schema_backend_mem::read_meta ( backend_path const & loc, string const & filter, field_list & fields ) {
-
-	fields.clear();
-
-	RE2 re ( filter );
-
-	for ( field_list :: const_iterator it = fields_.begin(); it != fields_.end(); ++it ) {
-		if ( RE2::FullMatch ( it->name, re ) ) {
-			fields.push_back( *it );
-		}
-	}
-
+void tidas::schema_backend_mem::read ( backend_path const & loc, field_list & fields ) {
+	fields = fields_;
 	return;
 }
 
 
-void tidas::schema_backend_mem::write_meta ( backend_path const & loc, string const & filter, field_list const & fields ) {
-
-	fields_.clear();
-
-	RE2 re ( filter );
-
-	for ( field_list :: const_iterator it = fields.begin(); it != fields.end(); ++it ) {
-		if ( RE2::FullMatch ( it->name, re ) ) {
-			fields_.push_back( *it );
-		}
-	}
-
+void tidas::schema_backend_mem::write ( backend_path const & loc, field_list const & fields ) {
+	fields_ = fields;
 	return;
 }
 

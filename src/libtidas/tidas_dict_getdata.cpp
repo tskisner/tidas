@@ -39,18 +39,17 @@ dict_backend_getdata & tidas::dict_backend_getdata::operator= ( dict_backend_get
 
 dict_backend * tidas::dict_backend_getdata::clone () {
 	dict_backend_getdata * ret = new dict_backend_getdata ( *this );
-
 	return ret;
 }
 
 
-void tidas::dict_backend_getdata::read_meta ( backend_path const & loc, string const & filter, map < string, string > & data, map < string, data_type > & types ) {
+void tidas::dict_backend_getdata::read ( backend_path const & loc, map < string, string > & data, map < string, data_type > & types ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::dict_backend_getdata::write_meta ( backend_path const & loc, string const & filter, map < string, string > const & data, map < string, data_type > const & types ) {
+void tidas::dict_backend_getdata::write ( backend_path const & loc, map < string, string > const & data, map < string, data_type > const & types ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }

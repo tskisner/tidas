@@ -86,25 +86,35 @@ string tidas::filter_default ( string const & filter ) {
 }
 
 
-
-// format = "blahblah@one=foo:two=bar:three=blat@"
+// format = "blahblah(one=foo,two=bar,three=blat)"
 // returned as:
 //   root == "blahblah"
 //   one == "foo"
 //   two == "bar"
 //   three == "blat"
 
-/*
 map < string, string > tidas::filter_split ( string const & filter ) {
 	map < string, string > ret;
 
 	if ( filter == "" ) {
-		ret[ "root" ] = ".*";
+
+		ret[ "root" ] = "";
+	
 	} else {
+
+		// ensure we have a single path element
+
+		string match_sep = "^.*" + path_sep + ".*$";
+		RE2 re_sep ( match_sep );
+		if ( RE2::FullMatch ( filter, re_sep ) ) {
+			ostringstream o;
+			o << "filter string sub path cannot contain the \"" << path_sep << "\" character";
+			TIDAS_THROW( o.str().c_str() );
+		}
 
 		// split root and sub object filters
 
-		string match = "^(.+?)@(.+)@$";
+		string match = "^(.+?)" + submatch_begin + "(.+)" + submatch_end + "$";
 
 		RE2 re ( match );
 
@@ -116,47 +126,63 @@ map < string, string > tidas::filter_split ( string const & filter ) {
 
 			// search through string and build up sub filters
 
-			size_t pos = 0;
-			size_t next = 0;
-			size_t len;
+			size_t off = 0;
 
-			while ( next != string::npos ) {
+			size_t pos;
 
-				size_t eq = subselect.find ( '=', pos );
-				if ( eq == string::npos ) {
-					TIDAS_THROW( "filter string sub-match must include an \"=\" character" );
+			string keyval;
+			string key;
+			string val;
+
+			size_t assign;
+
+			while ( ( pos = subselect.find ( submatch_sep, off ) ) != string::npos ) {
+
+				keyval = subselect.substr ( off, (pos-off) );
+
+				assign = keyval.find ( submatch_assign );
+
+				if ( assign == string::npos ) {
+					ostringstream o;
+					o << "filter string sub-match must include the \"" << submatch_assign << "\" character";
+					TIDAS_THROW( o.str().c_str() );
 				}
 
-				len = eq - pos;
-				string key = subselect.substr ( pos, len );
-
-				pos = eq + 1;
-				next = subselect.find ( ':', pos );
-
-				string val;
-
-				if ( next == string::npos ) {
-					len = subselect.size() - pos;
-					val = subselect.substr ( pos, len );
-				} else {
-					len = next - pos;
-					val = subselect.substr ( pos, len );
-					pos = next + 1;
-				}
+				key = keyval.substr ( 0, assign );
+				val = keyval.substr ( (assign+1), (keyval.size() - assign) );
 
 				ret[ key ] = val;
 
+				off = pos + 1;
+
 			}
 
+			// last entry
+
+			keyval = subselect.substr ( off, (subselect.size() - off) );
+
+			assign = keyval.find ( submatch_assign );
+
+			if ( assign == string::npos ) {
+				ostringstream o;
+				o << "filter string sub-match must include the \"" << submatch_assign << "\" character";
+				TIDAS_THROW( o.str().c_str() );
+			}
+
+			key = keyval.substr ( 0, assign );
+			val = keyval.substr ( (assign+1), (keyval.size() - assign) );
+
+			ret[ key ] = val;
+
 		} else {
+
 			ret[ "root" ] = filter;
+		
 		}
 
 	}
 	return ret;
 }
-
-*/
 
 
 

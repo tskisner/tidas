@@ -19,7 +19,18 @@ namespace tidas {
 
 	// group copy
 
-	//void data_copy ( group & in, group & out );
+	template < class T >
+	void group_helper_copy ( group & in, group & out, std::string const & field, index_type n ) {
+
+		std::vector < T > data ( n );
+		in.read_field ( field, 0, data );
+		out.write_field ( field, 0, data );
+
+		return;
+	}
+
+
+	void data_copy ( group & in, group & out );
 
 
 	// block copy

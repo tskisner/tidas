@@ -94,10 +94,18 @@ TEST( schematest, all ) {
 
 	schema schm2 ( flist );
 
+	field_list check = schm2.fields();
+
+	EXPECT_EQ( check.size(), nf );
+	for ( size_t i = 0; i < nf; ++i ) {
+		EXPECT_EQ( flist[i], check[i] );	
+	}
+
 	schema schm3 ( schm2 );
 
-	field_list check = schm3.fields();
+	check = schm3.fields();
 
+	EXPECT_EQ( check.size(), nf );
 	for ( size_t i = 0; i < nf; ++i ) {
 		EXPECT_EQ( flist[i], check[i] );	
 	}
@@ -114,7 +122,7 @@ TEST( schematest, all ) {
 	loc.meta = string("/") + schema_hdf5_dataset;
 	loc.mode = MODE_RW;
 
-	schm3.write ( loc );
+	schm3.duplicate ( loc );
 
 	schema schm4 ( loc );
 

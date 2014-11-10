@@ -14,7 +14,8 @@ using namespace tidas;
 
 
 tidas::dict::dict () {
-
+	relocate ( loc_ );
+	flush();
 }
 
 
@@ -37,7 +38,8 @@ tidas::dict::dict ( dict const & other ) {
 
 
 tidas::dict::dict ( backend_path const & loc ) {
-	read ( loc );
+	relocate ( loc );
+	sync();
 }
 
 
@@ -46,18 +48,14 @@ tidas::dict::dict ( dict const & other, string const & filter, backend_path cons
 }
 
 
-void tidas::dict::read ( backend_path const & loc ) {
+void tidas::dict::set_backend ( backend_path const & loc, std::unique_ptr < dict_backend > & backend ) {
 
-	// set backend
-
-	loc_ = loc;
-
-	switch ( loc_.type ) {
+	switch ( loc.type ) {
 		case BACKEND_MEM:
-			backend_.reset( new dict_backend_mem () );
+			backend.reset( new dict_backend_mem () );
 			break;
 		case BACKEND_HDF5:
-			backend_.reset( new dict_backend_hdf5 () );
+			backend.reset( new dict_backend_hdf5 () );
 			break;
 		case BACKEND_GETDATA:
 			TIDAS_THROW( "GetData backend not yet implemented" );
@@ -67,9 +65,41 @@ void tidas::dict::read ( backend_path const & loc ) {
 			break;
 	}
 
+	return;
+}
+
+
+void tidas::dict::relocate ( backend_path const & loc ) {
+
+	loc_ = loc;
+
+	// set backend
+
+	set_backend ( loc_, backend_ );
+
+	return;
+}
+
+
+void tidas::dict::sync () {
+
 	// read our own metadata
 
 	backend_->read ( loc_, data_, types_ );
+
+	return;
+}
+
+
+void tidas::dict::flush () {
+
+	if ( loc_.mode == MODE_R ) {
+		TIDAS_THROW( "cannot flush to read-only location" );
+	}
+
+	// write our own metadata
+
+	backend_->write ( loc_, data_, types_ );
 
 	return;
 }
@@ -86,21 +116,7 @@ void tidas::dict::copy ( dict const & other, string const & filter, backend_path
 	// set backend
 
 	loc_ = loc;
-
-	switch ( loc_.type ) {
-		case BACKEND_MEM:
-			backend_.reset( new dict_backend_mem () );
-			break;
-		case BACKEND_HDF5:
-			backend_.reset( new dict_backend_hdf5 () );
-			break;
-		case BACKEND_GETDATA:
-			TIDAS_THROW( "GetData backend not yet implemented" );
-			break;
-		default:
-			TIDAS_THROW( "backend not recognized" );
-			break;
-	}
+	set_backend ( loc_, backend_ );
 
 	// filtered copy of our metadata
 
@@ -132,30 +148,20 @@ void tidas::dict::copy ( dict const & other, string const & filter, backend_path
 }
 
 
-void tidas::dict::write ( backend_path const & loc ) {
+void tidas::dict::duplicate ( backend_path const & loc ) {
+
+	if ( loc.type == BACKEND_MEM ) {
+		TIDAS_THROW( "calling duplicate() with memory backend makes no sense" );
+	}
 
 	if ( loc.mode != MODE_RW ) {
-		TIDAS_THROW( "cannot write to read-only location" );
+		TIDAS_THROW( "cannot duplicate to read-only location" );
 	}
 
 	// write our metadata
 
 	unique_ptr < dict_backend > backend;
-
-	switch ( loc.type ) {
-		case BACKEND_MEM:
-			backend.reset( new dict_backend_mem () );
-			break;
-		case BACKEND_HDF5:
-			backend.reset( new dict_backend_hdf5 () );
-			break;
-		case BACKEND_GETDATA:
-			TIDAS_THROW( "GetData backend not yet implemented" );
-			break;
-		default:
-			TIDAS_THROW( "backend not recognized" );
-			break;
-	}
+	set_backend ( loc, backend );
 
 	backend->write ( loc, data_, types_ );
 

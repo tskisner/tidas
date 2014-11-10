@@ -59,12 +59,15 @@ field_list tidas::field_filter_type ( field_list const & fields, data_type type 
 
 
 tidas::schema::schema () {
-
+	relocate ( loc_ );
+	flush();
 }
 
 
 tidas::schema::schema ( field_list const & fields ) {
 	fields_ = fields;
+	relocate ( loc_ );
+	flush();
 }
 
 
@@ -87,7 +90,8 @@ tidas::schema::schema ( schema const & other ) {
 
 
 tidas::schema::schema ( backend_path const & loc ) {
-	read ( loc );
+	relocate ( loc );
+	sync ();
 }
 
 
@@ -96,18 +100,14 @@ tidas::schema::schema ( schema const & other, std::string const & filter, backen
 }
 
 
-void tidas::schema::read ( backend_path const & loc ) {
+void tidas::schema::set_backend ( backend_path const & loc, std::unique_ptr < schema_backend > & backend ) {
 
-	// set backend
-
-	loc_ = loc;
-
-	switch ( loc_.type ) {
+	switch ( loc.type ) {
 		case BACKEND_MEM:
-			backend_.reset( new schema_backend_mem () );
+			backend.reset( new schema_backend_mem () );
 			break;
 		case BACKEND_HDF5:
-			backend_.reset( new schema_backend_hdf5 () );
+			backend.reset( new schema_backend_hdf5 () );
 			break;
 		case BACKEND_GETDATA:
 			TIDAS_THROW( "GetData backend not yet implemented" );
@@ -117,9 +117,41 @@ void tidas::schema::read ( backend_path const & loc ) {
 			break;
 	}
 
+	return;
+}
+
+
+void tidas::schema::relocate ( backend_path const & loc ) {
+
+	loc_ = loc;
+
+	// set backend
+
+	set_backend ( loc_, backend_ );
+
+	return;
+}
+
+
+void tidas::schema::sync () {
+
 	// read our own metadata
 
 	backend_->read ( loc_, fields_ );
+
+	return;
+}
+
+
+void tidas::schema::flush () {
+
+	if ( loc_.mode == MODE_R ) {
+		TIDAS_THROW( "cannot flush to read-only location" );
+	}
+
+	// write our own metadata
+
+	backend_->write ( loc_, fields_ );
 
 	return;
 }
@@ -138,21 +170,7 @@ void tidas::schema::copy ( schema const & other, string const & filter, backend_
 	// set backend
 
 	loc_ = loc;
-
-	switch ( loc_.type ) {
-		case BACKEND_MEM:
-			backend_.reset( new schema_backend_mem () );
-			break;
-		case BACKEND_HDF5:
-			backend_.reset( new schema_backend_hdf5 () );
-			break;
-		case BACKEND_GETDATA:
-			TIDAS_THROW( "GetData backend not yet implemented" );
-			break;
-		default:
-			TIDAS_THROW( "backend not recognized" );
-			break;
-	}
+	set_backend ( loc_, backend_ );
 
 	// filtered copy of our metadata
 
@@ -182,30 +200,20 @@ void tidas::schema::copy ( schema const & other, string const & filter, backend_
 }
 
 
-void tidas::schema::write ( backend_path const & loc ) {
+void tidas::schema::duplicate ( backend_path const & loc ) {
+
+	if ( loc.type == BACKEND_MEM ) {
+		TIDAS_THROW( "calling duplicate() with memory backend makes no sense" );
+	}
 
 	if ( loc.mode != MODE_RW ) {
-		TIDAS_THROW( "cannot write to read-only location" );
+		TIDAS_THROW( "cannot duplicate to read-only location" );
 	}
 
 	// write our metadata
 
 	unique_ptr < schema_backend > backend;
-
-	switch ( loc.type ) {
-		case BACKEND_MEM:
-			backend.reset( new schema_backend_mem () );
-			break;
-		case BACKEND_HDF5:
-			backend.reset( new schema_backend_hdf5 () );
-			break;
-		case BACKEND_GETDATA:
-			TIDAS_THROW( "GetData backend not yet implemented" );
-			break;
-		default:
-			TIDAS_THROW( "backend not recognized" );
-			break;
-	}
+	set_backend ( loc, backend );
 
 	backend->write ( loc, fields_ );
 

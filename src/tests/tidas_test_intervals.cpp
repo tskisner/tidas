@@ -66,23 +66,12 @@ TEST( intervalstest, data ) {
 		intr.push_back ( cur );
 	}
 
-	backend_path loc;
-	loc.type = BACKEND_HDF5;
-	loc.mode = MODE_RW;
-	loc.path = ".";
-	loc.name = "test_intervals_data.hdf5.out";
-
 	intervals dummy1 ( dt, nint );
-	dummy1.write ( loc );
-	dummy1.read ( loc );
-
-	dummy1.write_data ( intr );
-
-	intervals dummy2 ( loc );
 
 	interval_list check;
 
-	dummy2.read_data ( check );
+	dummy1.write_data ( intr );
+	dummy1.read_data ( check );
 
 	for ( size_t i = 0; i < nint; ++i ) {
 		cur.start = gap + (double)i * ( span + gap );
@@ -99,12 +88,33 @@ TEST( intervalstest, data ) {
 
 #ifdef HAVE_HDF5
 
+	backend_path loc;
 	loc.type = BACKEND_HDF5;
+	loc.mode = MODE_RW;
 	loc.path = ".";
+	loc.name = "test_intervals_data.hdf5.out";
+
+	dummy1.duplicate ( loc );
+
+	intervals dummy2 ( loc );
+	data_copy ( dummy1, dummy2 );
+
+	dummy2.read_data ( check );
+
+	for ( size_t i = 0; i < nint; ++i ) {
+		cur.start = gap + (double)i * ( span + gap );
+		cur.stop = (double)(i + 1) * ( span + gap );
+		cur.first = gap_samp + i * ( span_samp + gap_samp );
+		cur.last = (i + 1) * ( span_samp + gap_samp );
+		EXPECT_EQ( cur.start, check[i].start );
+		EXPECT_EQ( cur.stop, check[i].stop );
+		EXPECT_EQ( cur.first, check[i].first );
+		EXPECT_EQ( cur.last, check[i].last );
+	}
+
 	loc.name = "test_intervals_data_dup.hdf5.out";
 
-	intervals dummy3 ( dummy2, ".*", loc );
-
+	intervals dummy3 ( dummy2, "[dict=.*]", loc );
 	data_copy ( dummy2, dummy3 );
 
 	dummy3.read_data ( check );

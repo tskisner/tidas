@@ -42,11 +42,6 @@ TEST( dictionarytest, all ) {
 
 	// memory backend
 
-	backend_path loc;
-	loc.mode = MODE_RW;
-
-	test.write ( loc );
-
 	dict test2 ( test );
 
 	scheck = test2.get_string ( "string" );
@@ -65,6 +60,7 @@ TEST( dictionarytest, all ) {
 
 #ifdef HAVE_HDF5
 
+	backend_path loc;
 	loc.type = BACKEND_HDF5;
 	loc.path = ".";
 	loc.name = "test_dict.hdf5.out";
@@ -106,9 +102,9 @@ TEST( dictionarytest, all ) {
 
 	// write / read dictionary	
 
-	test.write ( loc );
+	test.duplicate ( loc );
 
-	dict test3 ( test );
+	dict test3 ( loc );
 
 	scheck = test3.get_string ( "string" );
 	EXPECT_EQ( sval, scheck );

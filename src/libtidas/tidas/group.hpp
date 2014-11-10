@@ -122,7 +122,7 @@ namespace tidas {
 			std::string schema_meta ();
 
 			template < typename T >
-			void reset_data ( std::vector < std::vector < T > > data, size_t count, size_t nsamp ) {
+			void reset_data ( std::vector < std::vector < T > > & data, size_t count, size_t nsamp ) {
 				data.resize ( count );
 				for ( size_t i = 0; i < count; ++i ) {
 					data[i].resize ( nsamp );
@@ -279,11 +279,17 @@ namespace tidas {
 
 			// metadata ops
 
-			void read ( backend_path const & loc );
+			void set_backend ( backend_path const & loc, std::unique_ptr < group_backend > & backend );
+
+			void relocate ( backend_path const & loc );
+
+			void sync ();
+
+			void flush ();
 
 			void copy ( group const & other, std::string const & filter, backend_path const & loc );
 
-			void write ( backend_path const & loc );
+			void duplicate ( backend_path const & loc );
 
 			backend_path location () const;
 

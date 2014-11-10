@@ -56,12 +56,16 @@ bool tidas::intrvl::operator!= ( const intrvl & other ) const {
 
 tidas::intervals::intervals () {
 	size_ = 0;
+	relocate ( loc_ );
+	flush();
 }
 
 
 tidas::intervals::intervals ( dict const & d, size_t const & size ) {
 	size_ = size;
 	dict_ = d;
+	relocate ( loc_ );
+	flush();
 }
 
 
@@ -84,7 +88,8 @@ tidas::intervals::intervals ( intervals const & other ) {
 
 
 tidas::intervals::intervals ( backend_path const & loc ) {
-	read ( loc );
+	relocate ( loc );
+	sync ();
 }
 
 
@@ -93,115 +98,7 @@ tidas::intervals::intervals ( intervals const & other, std::string const & filte
 }
 
 
-void tidas::intervals::read ( backend_path const & loc ) {
-
-	// set backend
-
-	loc_ = loc;
-
-	switch ( loc_.type ) {
-		case BACKEND_MEM:
-			backend_.reset( new intervals_backend_mem () );
-			break;
-		case BACKEND_HDF5:
-			backend_.reset( new intervals_backend_hdf5 () );
-			break;
-		case BACKEND_GETDATA:
-			TIDAS_THROW( "GetData backend not yet implemented" );
-			break;
-		default:
-			TIDAS_THROW( "backend not recognized" );
-			break;
-	}
-
-	// read dict
-
-	backend_path dictloc = loc_;
-	dictloc.meta = backend_->dict_meta();
-
-	dict_.read ( dictloc );
-
-	// read our own metadata
-
-	backend_->read ( loc_, size_ );
-
-	return;
-}
-
-
-void tidas::intervals::copy ( intervals const & other, string const & filter, backend_path const & loc ) {	
-
-	// extract filters
-
-	map < string, string > filts = filter_split ( filter );
-
-	string fil = filter_default ( filts[ "root" ] );
-
-	if ( ( loc == other.loc_ ) && ( fil != ".*" ) ) {
-		TIDAS_THROW( "copy of intervals with a filter requires a new location" );
-	}
-
-	// set backend
-
-	loc_ = loc;
-
-	switch ( loc_.type ) {
-		case BACKEND_MEM:
-			backend_.reset( new intervals_backend_mem () );
-			break;
-		case BACKEND_HDF5:
-			backend_.reset( new intervals_backend_hdf5 () );
-			break;
-		case BACKEND_GETDATA:
-			TIDAS_THROW( "GetData backend not yet implemented" );
-			break;
-		default:
-			TIDAS_THROW( "backend not recognized" );
-			break;
-	}
-
-	// filtered copy of our metadata
-
-	if ( fil != ".*" ) {
-		TIDAS_THROW( "intervals class does not accept filters" );
-	}
-	size_ = other.size_;
-
-	if ( loc_ != other.loc_ ) {
-		if ( loc_.mode == MODE_RW ) {
-
-			// write our metadata
-
-			backend_->write ( loc_, size_ );
-
-			// copy dict
-
-			backend_path dictloc = loc_;
-			dictloc.meta = backend_->dict_meta();
-
-			dict_.copy ( other.dict_, filts[ dict_submatch_key ], dictloc );
-
-		} else {
-			TIDAS_THROW( "cannot copy to new read-only location" );
-		}
-	} else {
-		// just copy in memory
-		dict_ = other.dict_;
-	}
-
-	return;
-}
-
-
-void tidas::intervals::write ( backend_path const & loc ) {
-
-	if ( loc.mode != MODE_RW ) {
-		TIDAS_THROW( "cannot write to read-only location" );
-	}
-
-	// write our metadata
-
-	unique_ptr < intervals_backend > backend;
+void tidas::intervals::set_backend ( backend_path const & loc, std::unique_ptr < intervals_backend > & backend ) {
 
 	switch ( loc.type ) {
 		case BACKEND_MEM:
@@ -218,14 +115,119 @@ void tidas::intervals::write ( backend_path const & loc ) {
 			break;
 	}
 
-	backend->write ( loc, size_ );
+	return;
+}
+
+
+void tidas::intervals::relocate ( backend_path const & loc ) {
+
+	loc_ = loc;
+
+	// set backend
+
+	set_backend ( loc_, backend_ );
+
+	// relocate dict
+
+	backend_path dictloc = loc_;
+	dictloc.meta = backend_->dict_meta();
+	dict_.relocate ( dictloc );
+
+	return;
+}
+
+
+void tidas::intervals::sync () {
+
+	// read dict
+
+	dict_.sync();
+
+	// read our own metadata
+
+	backend_->read ( loc_, size_ );
+
+	return;
+}
+
+
+void tidas::intervals::flush () {
+
+	if ( loc_.mode == MODE_R ) {
+		TIDAS_THROW( "cannot flush to read-only location" );
+	}
+
+	// write our own metadata
+
+	backend_->write ( loc_, size_ );
 
 	// write dict
 
+	dict_.flush();
+
+	return;
+}
+
+
+void tidas::intervals::copy ( intervals const & other, string const & filter, backend_path const & loc ) {	
+
+	// extract filters
+
+	map < string, string > filts = filter_split ( filter );
+
+	// set backend
+
+	loc_ = loc;
+	set_backend ( loc_, backend_ );
+
+	// copy of our metadata
+
+	size_ = other.size_;
+
+	if ( loc_ != other.loc_ ) {
+		if ( loc_.mode == MODE_RW ) {
+
+			// write our metadata
+
+			backend_->write ( loc_, size_ );
+
+		} else {
+			TIDAS_THROW( "cannot copy to new read-only location" );
+		}
+	}
+
+	// copy dict
+
+	backend_path dictloc = loc_;
+	dictloc.meta = backend_->dict_meta();
+	dict_.copy ( other.dict_, filts[ dict_submatch_key ], dictloc );
+
+	return;
+}
+
+
+void tidas::intervals::duplicate ( backend_path const & loc ) {
+
+	if ( loc.type == BACKEND_MEM ) {
+		TIDAS_THROW( "calling duplicate() with memory backend makes no sense" );
+	}
+
+	if ( loc.mode != MODE_RW ) {
+		TIDAS_THROW( "cannot duplicate to read-only location" );
+	}
+
+	// write our metadata
+
+	unique_ptr < intervals_backend > backend;
+	set_backend ( loc, backend );
+
+	backend->write ( loc, size_ );
+
+	// duplicate dict
+
 	backend_path dictloc = loc;
 	dictloc.meta = backend->dict_meta();
-
-	dict_.write ( dictloc );
+	dict_.duplicate ( dictloc );
 
 	return;
 }

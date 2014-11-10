@@ -10,8 +10,6 @@
 #include <tidas/re2/re2.h>
 
 
-#define TIDAS_MEM_FIELD_N 100
-
 
 using namespace std;
 using namespace tidas;
@@ -19,7 +17,9 @@ using namespace tidas;
 
 
 tidas::group::group () {
-	size_ = 0;
+	compute_counts();
+	relocate ( loc_ );
+	flush();
 }
 
 
@@ -28,6 +28,8 @@ tidas::group::group ( schema const & schm, dict const & d, size_t const & size )
 	dict_ = d;
 	schm_ = schm;
 	compute_counts();
+	relocate ( loc_ );
+	flush();
 }
 
 
@@ -50,7 +52,9 @@ tidas::group::group ( group const & other ) {
 
 
 tidas::group::group ( backend_path const & loc ) {
-	read ( loc );
+	relocate ( loc );
+	sync ();
+	compute_counts();
 }
 
 
@@ -59,145 +63,7 @@ tidas::group::group ( group const & other, std::string const & filter, backend_p
 }
 
 
-void tidas::group::read ( backend_path const & loc ) {
-
-	// set backend
-
-	loc_ = loc;
-
-	switch ( loc_.type ) {
-		case BACKEND_MEM:
-			backend_.reset( new group_backend_mem () );
-			break;
-		case BACKEND_HDF5:
-			backend_.reset( new group_backend_hdf5 () );
-			break;
-		case BACKEND_GETDATA:
-			TIDAS_THROW( "GetData backend not yet implemented" );
-			break;
-		default:
-			TIDAS_THROW( "backend not recognized" );
-			break;
-	}
-
-	// read dict
-
-	backend_path dictloc = loc_;
-	dictloc.meta = backend_->dict_meta();
-
-	dict_.read ( dictloc );
-
-	// read schema
-
-	backend_path schmloc = loc_;
-	schmloc.meta = backend_->schema_meta();
-
-	schm_.read ( schmloc );
-
-	compute_counts();
-
-	// read our own metadata
-
-	map < data_type, size_t > check;
-	backend_->read ( loc_, size_, check );
-
-	// verify that schema counts match data file
-
-	if ( check != counts_ ) {
-		TIDAS_THROW( "number of fields of each type in group schema does not match data!" );
-	}
-
-	return;
-}
-
-
-void tidas::group::copy ( group const & other, string const & filter, backend_path const & loc ) {	
-
-	// extract filters
-
-	map < string, string > filts = filter_split ( filter );
-
-	string fil = filter_default ( filts[ "root" ] );
-
-	if ( ( loc == other.loc_ ) && ( fil != ".*" ) ) {
-		TIDAS_THROW( "copy of group with a filter requires a new location" );
-	}
-
-	// set backend
-
-	loc_ = loc;
-
-	switch ( loc_.type ) {
-		case BACKEND_MEM:
-			backend_.reset( new group_backend_mem () );
-			break;
-		case BACKEND_HDF5:
-			backend_.reset( new group_backend_hdf5 () );
-			break;
-		case BACKEND_GETDATA:
-			TIDAS_THROW( "GetData backend not yet implemented" );
-			break;
-		default:
-			TIDAS_THROW( "backend not recognized" );
-			break;
-	}
-
-	// filtered copy of our metadata
-
-	if ( fil != ".*" ) {
-		TIDAS_THROW( "group class does not accept filters- apply to schema instead" );
-	}
-	size_ = other.size_;
-
-	if ( loc_ != other.loc_ ) {
-		if ( loc_.mode == MODE_RW ) {
-
-			// copy schema first, in order to filter fields
-
-			backend_path schmloc = loc_;
-			schmloc.meta = backend_->schema_meta();
-
-			schm_.copy ( other.schm_, filts[ schema_submatch_key ], schmloc );
-
-			// compute counts
-
-			compute_counts();
-
-			// write our metadata
-
-			backend_->write ( loc_, size_, counts_ );
-
-			// copy dict
-
-			backend_path dictloc = loc_;
-			dictloc.meta = backend_->dict_meta();
-
-			dict_.copy ( other.dict_, filts[ dict_submatch_key ], dictloc );
-
-		} else {
-			TIDAS_THROW( "cannot copy to new read-only location" );
-		}
-	} else {
-		// just copy in memory
-		dict_ = other.dict_;
-		schm_ = other.schm_;
-		counts_ = other.counts_;
-		type_indx_ = other.type_indx_;
-	}
-
-	return;
-}
-
-
-void tidas::group::write ( backend_path const & loc ) {
-
-	if ( loc.mode != MODE_RW ) {
-		TIDAS_THROW( "cannot write to read-only location" );
-	}
-
-	// write our metadata
-
-	unique_ptr < group_backend > backend;
+void tidas::group::set_backend ( backend_path const & loc, std::unique_ptr < group_backend > & backend ) {
 
 	switch ( loc.type ) {
 		case BACKEND_MEM:
@@ -214,21 +80,149 @@ void tidas::group::write ( backend_path const & loc ) {
 			break;
 	}
 
+	return;
+}
+
+
+void tidas::group::relocate ( backend_path const & loc ) {
+
+	loc_ = loc;
+
+	// set backend
+
+	set_backend ( loc_, backend_ );
+
+	// relocate dict
+
+	backend_path dictloc = loc_;
+	dictloc.meta = backend_->dict_meta();
+	dict_.relocate ( dictloc );
+
+	// relocate schema
+
+	backend_path schmloc = loc_;
+	schmloc.meta = backend_->schema_meta();
+	schm_.relocate ( schmloc );
+
+	return;
+}
+
+
+void tidas::group::sync () {
+
+	// sync dict
+
+	dict_.sync();
+
+	// sync schema
+
+	schm_.sync();
+
+	// read our own metadata
+
+	backend_->read ( loc_, size_, counts_ );
+
+	return;
+}
+
+
+void tidas::group::flush () {
+
+	if ( loc_.mode == MODE_R ) {
+		TIDAS_THROW( "cannot flush to read-only location" );
+	}
+
+	// write our own metadata
+
+	backend_->write ( loc_, size_, counts_ );
+
+	// flush schema
+
+	schm_.flush();
+
+	// flush dict
+
+	dict_.flush();
+
+	return;
+}
+
+
+void tidas::group::copy ( group const & other, string const & filter, backend_path const & loc ) {	
+
+	// extract filters
+
+	map < string, string > filts = filter_split ( filter );
+
+	// set backend
+
+	loc_ = loc;
+	set_backend ( loc_, backend_ );
+
+	// copy of our metadata
+
+	size_ = other.size_;
+
+	// copy schema first, in order to filter fields
+
+	backend_path schmloc = loc_;
+	schmloc.meta = backend_->schema_meta();
+	schm_.copy ( other.schm_, filts[ schema_submatch_key ], schmloc );
+
+	if ( loc_ != other.loc_ ) {
+		if ( loc_.mode == MODE_RW ) {
+
+			// compute counts
+
+			compute_counts();
+
+			// write our metadata
+
+			backend_->write ( loc_, size_, counts_ );
+
+		} else {
+			TIDAS_THROW( "cannot copy to new read-only location" );
+		}
+	}
+
+	// copy dict
+
+	backend_path dictloc = loc_;
+	dictloc.meta = backend_->dict_meta();
+	dict_.copy ( other.dict_, filts[ dict_submatch_key ], dictloc );
+
+	return;
+}
+
+
+void tidas::group::duplicate ( backend_path const & loc ) {
+
+	if ( loc.type == BACKEND_MEM ) {
+		TIDAS_THROW( "calling duplicate() with memory backend makes no sense" );
+	}
+
+	if ( loc.mode != MODE_RW ) {
+		TIDAS_THROW( "cannot duplicate to read-only location" );
+	}
+
+	// write our metadata
+
+	unique_ptr < group_backend > backend;
+	set_backend ( loc, backend );
+
 	backend->write ( loc, size_, counts_ );
 
-	// write schema
+	// duplicate schema
 
 	backend_path schmloc = loc;
 	schmloc.meta = backend->schema_meta();
+	schm_.duplicate ( schmloc );
 
-	schm_.write ( schmloc );
-
-	// write dict
+	// duplicate dict
 
 	backend_path dictloc = loc;
 	dictloc.meta = backend->dict_meta();
-
-	dict_.write ( dictloc );
+	dict_.duplicate ( dictloc );
 
 	return;
 }
@@ -312,7 +306,7 @@ void tidas::group::write_times ( vector < time_type > const & data ) {
 
 
 tidas::group_backend_mem::group_backend_mem () {
-
+	nsamp_ = 0;
 }
 
 
@@ -380,6 +374,7 @@ void tidas::group_backend_mem::write ( backend_path const & loc, index_type cons
 	reset_data ( data_float_, counts_[ TYPE_FLOAT32 ], nsamp_ );
 	reset_data ( data_double_, counts_[ TYPE_FLOAT64 ], nsamp_ );
 	reset_data ( data_string_, counts_[ TYPE_STRING ], nsamp_ );
+
 	return;
 }
 

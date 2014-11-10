@@ -103,8 +103,8 @@ namespace tidas {
 	// writing to filesystem and backend formats.
 
 	static const std::string path_sep = "/";
-	static const std::string submatch_begin = "\\(";
-	static const std::string submatch_end = "\\)";
+	static const std::string submatch_begin = "[";
+	static const std::string submatch_end = "]";
 	static const std::string submatch_sep = ",";
 	static const std::string submatch_assign = "=";
 
@@ -133,9 +133,6 @@ namespace tidas {
 	static const std::string block_fs_group_dir = "_groups";
 	static const std::string block_fs_intervals_dir = "_intervals";
 	static const std::string block_fs_ext_dir = "_extensions";
-	static const std::string block_hdf5_dict_file = "_info.hdf5";
-	static const std::string block_hdf5_dict_dataset = "dictionary";
-	static const std::string block_getdata_dict_dir = "_info";
 
 
 }

@@ -109,11 +109,17 @@ namespace tidas {
 
 			// metadata ops
 
-			void read ( backend_path const & loc );
+			void set_backend ( backend_path const & loc, std::unique_ptr < dict_backend > & backend );
+
+			void relocate ( backend_path const & loc );
+
+			void sync ();
+
+			void flush ();
 
 			void copy ( dict const & other, std::string const & filter, backend_path const & loc );
 
-			void write ( backend_path const & loc );
+			void duplicate ( backend_path const & loc );
 
 			backend_path location () const;
 

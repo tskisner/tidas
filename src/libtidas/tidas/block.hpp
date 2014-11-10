@@ -12,88 +12,6 @@
 
 namespace tidas {
 
-
-	// base class for intervals backend interface
-
-	class block_backend {
-
-		public :
-			
-			block_backend () {}
-			virtual ~block_backend () {}
-
-			virtual block_backend * clone () = 0;
-
-			virtual void read_meta ( backend_path const & loc ) = 0;
-
-			virtual void write_meta ( backend_path const & loc ) = 0;
-
-	};
-
-
-	// memory backend class
-
-	class block_backend_mem : public block_backend {
-
-		public :
-			
-			block_backend_mem ();
-			~block_backend_mem ();
-			block_backend_mem ( block_backend_mem const & other );
-			block_backend_mem & operator= ( block_backend_mem const & other );
-
-			block_backend * clone ();
-
-			void read_meta ( backend_path const & loc );
-
-			void write_meta ( backend_path const & loc );
-
-		private :
-
-			interval_list store_;
-
-	};
-
-
-	// HDF5 backend class
-
-	class block_backend_hdf5 : public block_backend {
-
-		public :
-			
-			block_backend_hdf5 ();
-			~block_backend_hdf5 ();
-			block_backend_hdf5 ( block_backend_hdf5 const & other );
-			block_backend_hdf5 & operator= ( block_backend_hdf5 const & other );
-
-			block_backend * clone ();
-
-			void read_meta ( backend_path const & loc );
-
-			void write_meta ( backend_path const & loc );
-
-	};
-
-
-	// GetData backend class
-
-	class block_backend_getdata : public block_backend {
-
-		public :
-			
-			block_backend_getdata ();
-			~block_backend_getdata ();
-			block_backend_getdata ( block_backend_getdata const & other );
-			block_backend_getdata & operator= ( block_backend_getdata const & other );
-
-			block_backend * clone ();
-
-			void read_meta ( backend_path const & loc );
-			
-			void write_meta ( backend_path const & loc );
-
-	};
-
 	class block;
 
 	class block {
@@ -102,42 +20,52 @@ namespace tidas {
 
 			block ();
 			~block ();
-			block ( block const & other );
 			block & operator= ( block const & other );
-			void copy ( block const & other );
 
-			block ( backend_path const & loc, std::string const & filter );
+			block ( block const & other );
+			block ( backend_path const & loc );
+			block ( block const & other, std::string const & filter, backend_path const & loc );
 
-			void read_meta ( std::string const & filter );
-
-			void write_meta ( std::string const & filter );
+			// metadata ops
 
 			void relocate ( backend_path const & loc );
 
+			void sync ();
+
+			void flush ();
+
+			void copy ( block const & other, std::string const & filter, backend_path const & loc );
+
+			void duplicate ( backend_path const & loc );
+
 			backend_path location () const;
 
-			block duplicate ( std::string const & filter, backend_path const & newloc );
+			// data ops
 
-			//------------
+			group & group_add ( std::string const & name, group & grp );
+			group & group_get ( std::string const & name );
+			void group_del ( std::string const & name );
 
-			dict & dictionary ();
+			intervals & intervals_add ( std::string const & name, intervals & intr );
+			intervals & intervals_get ( std::string const & name );
+			void intervals_del ( std::string const & name );
 
-			std::vector < block > & blocks ();
-
-			std::vector < group > & groups ();
-			
-			std::vector < intervals > & intervals ();
+			block & block_add ( std::string const & name, block & blk );
+			block & block_get ( std::string const & name );
+			void block_del ( std::string const & name );
 
 
 		private :
 
-			dict dict_;
-			std::vector < block > block_list_;
-			std::vector < group > group_list_;
-			std::vector < intervals > intervals_list_;
+			backend_path group_loc ( backend_path const & loc, std::string const & name );
+			backend_path intervals_loc ( backend_path const & loc, std::string const & name );
+			backend_path block_loc ( backend_path const & loc, std::string const & name );
+
+			std::map < std::string, block > block_data_;
+			std::map < std::string, group > group_data_;
+			std::map < std::string, intervals > intervals_data_;
 
 			backend_path loc_;
-			std::unique_ptr < block_backend > backend_;
 
 	};
 

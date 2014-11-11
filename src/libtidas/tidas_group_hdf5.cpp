@@ -7,6 +7,10 @@
 
 #include <tidas_internal.hpp>
 
+#ifdef HAVE_HDF5
+#include <tidas_group_hdf5.hpp>
+#endif
+
 
 using namespace std;
 using namespace tidas;
@@ -153,7 +157,7 @@ void tidas::group_backend_hdf5::read ( backend_path const & loc, index_type & ns
 
 	}
 
-	status = H5Fclose ( file ); 
+	status = H5Fclose ( file );
 
 #else
 
@@ -220,133 +224,133 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
 
 
 void tidas::group_backend_hdf5::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int8_t > & data ) {
-
+	hdf5_helper_field_read ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int8_t > const & data ) {
-
+	hdf5_helper_field_write ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint8_t > & data ) {
-
+	hdf5_helper_field_read ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint8_t > const & data ) {
-
+	hdf5_helper_field_write ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int16_t > & data ) {
-
+	hdf5_helper_field_read ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int16_t > const & data ) {
-
+	hdf5_helper_field_write ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint16_t > & data ) {
-
+	hdf5_helper_field_read ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint16_t > const & data ) {
-
+	hdf5_helper_field_write ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int32_t > & data ) {
-
+	hdf5_helper_field_read ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int32_t > const & data ) {
-
+	hdf5_helper_field_write ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint32_t > & data ) {
-
+	hdf5_helper_field_read ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint32_t > const & data ) {
-
+	hdf5_helper_field_write ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int64_t > & data ) {
-
+	hdf5_helper_field_read ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int64_t > const & data ) {
-
+	hdf5_helper_field_write ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint64_t > & data ) {
-
+	hdf5_helper_field_read ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint64_t > const & data ) {
-
+	hdf5_helper_field_write ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < float > & data ) {
-
+	hdf5_helper_field_read ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < float > const & data ) {
-
+	hdf5_helper_field_write ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < double > & data ) {
-
+	hdf5_helper_field_read ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < double > const & data ) {
-
+	hdf5_helper_field_write ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < string > & data ) {
-
+	hdf5_helper_field_read ( loc, type_indx, offset, data );
 	return;
 }
 
 
 void tidas::group_backend_hdf5::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < string > const & data ) {
-
+	hdf5_helper_field_write ( loc, type_indx, offset, data );
 	return;
 }
 

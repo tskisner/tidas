@@ -144,16 +144,17 @@ TEST( grouptest, all ) {
 		double_data[i] = (double)i / 10.0;
 	}
 
-	int8_check.clear();
-	uint8_check.clear();
-	int16_check.clear();
-	uint16_check.clear();
-	int32_check.clear();
-	uint32_check.clear();
-	int64_check.clear();
-	uint64_check.clear();
-	float_check.clear();
-	double_check.clear();
+	check.assign ( nsamp, 0 );
+	int8_check.assign ( nsamp, 0 );
+	uint8_check.assign ( nsamp, 0 );
+	int16_check.assign ( nsamp, 0 );
+	uint16_check.assign ( nsamp, 0 );
+	int32_check.assign ( nsamp, 0 );
+	uint32_check.assign ( nsamp, 0 );
+	int64_check.assign ( nsamp, 0 );
+	uint64_check.assign ( nsamp, 0 );
+	float_check.assign ( nsamp, 0 );
+	double_check.assign ( nsamp, 0 );
 
 	grp.write_times ( time );
 	grp.write_field ( "int8", 0, int8_data );
@@ -193,16 +194,17 @@ TEST( grouptest, all ) {
 		EXPECT_EQ( double_data[i], double_check[i] );
 	}
 
-	int8_check.clear();
-	uint8_check.clear();
-	int16_check.clear();
-	uint16_check.clear();
-	int32_check.clear();
-	uint32_check.clear();
-	int64_check.clear();
-	uint64_check.clear();
-	float_check.clear();
-	double_check.clear();
+	check.assign ( nsamp, 0 );
+	int8_check.assign ( nsamp, 0 );
+	uint8_check.assign ( nsamp, 0 );
+	int16_check.assign ( nsamp, 0 );
+	uint16_check.assign ( nsamp, 0 );
+	int32_check.assign ( nsamp, 0 );
+	uint32_check.assign ( nsamp, 0 );
+	int64_check.assign ( nsamp, 0 );
+	uint64_check.assign ( nsamp, 0 );
+	float_check.assign ( nsamp, 0 );
+	double_check.assign ( nsamp, 0 );
 
 	// HDF5 backend
 
@@ -245,16 +247,17 @@ TEST( grouptest, all ) {
 		EXPECT_EQ( double_data[i], double_check[i] );
 	}
 
-	int8_check.clear();
-	uint8_check.clear();
-	int16_check.clear();
-	uint16_check.clear();
-	int32_check.clear();
-	uint32_check.clear();
-	int64_check.clear();
-	uint64_check.clear();
-	float_check.clear();
-	double_check.clear();
+	check.assign ( nsamp, 0 );
+	int8_check.assign ( nsamp, 0 );
+	uint8_check.assign ( nsamp, 0 );
+	int16_check.assign ( nsamp, 0 );
+	uint16_check.assign ( nsamp, 0 );
+	int32_check.assign ( nsamp, 0 );
+	uint32_check.assign ( nsamp, 0 );
+	int64_check.assign ( nsamp, 0 );
+	uint64_check.assign ( nsamp, 0 );
+	float_check.assign ( nsamp, 0 );
+	double_check.assign ( nsamp, 0 );
 
 	loc.name = "test_group_filt.hdf5.out";
 
@@ -277,16 +280,17 @@ TEST( grouptest, all ) {
 		EXPECT_EQ( int64_data[i], int64_check[i] );
 	}
 
-	int8_check.clear();
-	uint8_check.clear();
-	int16_check.clear();
-	uint16_check.clear();
-	int32_check.clear();
-	uint32_check.clear();
-	int64_check.clear();
-	uint64_check.clear();
-	float_check.clear();
-	double_check.clear();
+	check.assign ( nsamp, 0 );
+	int8_check.assign ( nsamp, 0 );
+	uint8_check.assign ( nsamp, 0 );
+	int16_check.assign ( nsamp, 0 );
+	uint16_check.assign ( nsamp, 0 );
+	int32_check.assign ( nsamp, 0 );
+	uint32_check.assign ( nsamp, 0 );
+	int64_check.assign ( nsamp, 0 );
+	uint64_check.assign ( nsamp, 0 );
+	float_check.assign ( nsamp, 0 );
+	double_check.assign ( nsamp, 0 );
 
 	loc.name = "test_group_dup.hdf5.out";
 

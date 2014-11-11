@@ -23,7 +23,7 @@ include $(top_srcdir)/src/build_options.am
 EXTRA_DIST = cereal
 
 include_HEADERS = tidas.hpp
-noinst_HEADERS = tidas_internal.hpp
+noinst_HEADERS = tidas_internal.hpp tidas_group_hdf5.hpp
 
 noinst_SCRIPTS = gen_pkgconfig.sh
 

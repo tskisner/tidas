@@ -19,6 +19,28 @@ namespace tidas {
 		public :
 
 			volume ();
+			~volume ();
+			volume & operator= ( volume const & other );
+
+			volume ( volume const & other );
+			volume ( backend_path const & loc );
+			volume ( volume const & other, std::string const & filter, backend_path const & loc );
+
+			// metadata ops
+
+			void relocate ( backend_path const & loc );
+
+			void sync ();
+
+			void flush ();
+
+			void copy ( volume const & other, std::string const & filter, backend_path const & loc );
+
+			void duplicate ( backend_path const & loc );
+
+			backend_path location () const;
+
+			volume ();
 			volume ( std::string const & path, std::string const & filter );
 			~volume ();
 
@@ -44,7 +66,7 @@ namespace tidas {
 
 			block root_;
 
-			sqlite3 * index_;
+			std::unique_ptr < sqlite3 > index_;
 
 	};
 

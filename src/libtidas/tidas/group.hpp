@@ -126,7 +126,7 @@ namespace tidas {
 				data.resize ( count );
 				for ( size_t i = 0; i < count; ++i ) {
 					data[i].resize ( nsamp );
-					data[i].clear();
+					data[i].assign ( nsamp, 0 );
 				}
 				return;
 			}

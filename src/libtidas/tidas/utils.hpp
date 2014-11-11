@@ -74,6 +74,59 @@ namespace tidas {
 	void fs_mkdir ( char const * path );
 
 
+	// data types
+
+	data_type data_type_get ( std::type_info const & test );
+
+	std::string data_type_to_string ( data_type type );
+
+	data_type data_type_from_string ( std::string const & name );
+
+	template < typename T >
+	T data_convert ( std::string const & str ) {
+		T ret;
+
+		int8_t int8;
+		uint8_t uint8;
+		int16_t int16;
+		uint16_t uint16;
+		int32_t int32;
+		uint32_t uint32;
+		int64_t int64;
+		uint64_t uint64;
+		float f32;
+		double f64;
+
+		if ( typeid ( ret ) == typeid ( int8 ) ) {
+			ret = static_cast < T > ( str[0] );
+		} else if ( typeid ( ret ) == typeid ( uint8 ) ) {
+			ret = static_cast < T > ( str[0] );
+		} else if ( typeid ( ret ) == typeid ( int16 ) ) {
+			ret = static_cast < T > ( stol ( str ) );
+		} else if ( typeid ( ret ) == typeid ( uint16 ) ) {
+			ret = static_cast < T > ( stoul ( str ) );
+		} else if ( typeid ( ret ) == typeid ( int32 ) ) {
+			ret = static_cast < T > ( stol ( str ) );
+		} else if ( typeid ( ret ) == typeid ( uint32 ) ) {
+			ret = static_cast < T > ( stoul ( str ) );
+		} else if ( typeid ( ret ) == typeid ( int64 ) ) {
+			ret = static_cast < T > ( stoll ( str ) );
+		} else if ( typeid ( ret ) == typeid ( uint64 ) ) {
+			ret = static_cast < T > ( stoull ( str ) );
+		} else if ( typeid ( ret ) == typeid ( f32 ) ) {
+			ret = stof ( str );
+		} else if ( typeid ( ret ) == typeid ( f64 ) ) {
+			ret = stod ( str );
+		} else {
+			TIDAS_THROW( "Unknown data type" );
+		}
+		return ret;
+	}
+
+	template <>
+	std::string data_convert < std::string > ( std::string const & str );
+
+
 	// general regular expression filters
 
 	std::string filter_default ( std::string const & filter );

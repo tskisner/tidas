@@ -13,6 +13,23 @@
 #include <gtest/gtest.h>
 
 
+class dictTest : public ::testing::Test {
+
+	public :
+
+		dictTest ();
+		~dictTest () { }
+		virtual void SetUp() { }
+		virtual void TearDown() { }
+
+		tidas::dict dct;
+
+};
+
+
+void dict_setup ( tidas::dict & dct );
+
+void dict_verify ( tidas::dict const & dct );
 
 
 

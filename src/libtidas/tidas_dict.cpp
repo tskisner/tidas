@@ -174,26 +174,6 @@ backend_path tidas::dict::location () const {
 }
 
 
-string tidas::dict::get_string ( string const & key ) const {
-	return data_.at( key );
-}
-
-
-double tidas::dict::get_double ( string const & key ) const {
-	return stod ( data_.at( key ) );
-}
-
-
-int tidas::dict::get_int ( string const & key ) const {
-	return stoi ( data_.at( key ) );
-}
-
-
-long long tidas::dict::get_ll ( string const & key ) const {
-	return stoll ( data_.at( key ) );
-}
-
-
 void tidas::dict::clear () {
 	data_.clear();
 	types_.clear();

@@ -12,8 +12,6 @@
 
 namespace tidas {
 
-	class block;
-
 	class block {
 
 		public :

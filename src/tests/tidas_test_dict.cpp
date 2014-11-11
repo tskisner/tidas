@@ -8,53 +8,96 @@
 #include <tidas_test.hpp>
 
 #include <cstdlib>
+#include <limits>
 
 
 using namespace std;
 using namespace tidas;
 
 
-TEST( dictionarytest, all ) {
+void dict_setup ( dict & dct ) {
+
+	dct.clear();
 
 	string sval = "blahblahblah";
-	double dval = 12345.6;
-	int ival = 12345;
-	long long lval = 1234567890123456L;
+	double dval = numeric_limits < double > :: max();
+	float fval = numeric_limits < float > :: max();
+	int8_t i8val = numeric_limits < int8_t > :: min();
+	uint8_t u8val = numeric_limits < uint8_t > :: max();
+	int16_t i16val = numeric_limits < int16_t > :: min();
+	uint16_t u16val = numeric_limits < uint16_t > :: max();
+	int32_t i32val = numeric_limits < int32_t > :: min();
+	uint32_t u32val = numeric_limits < uint32_t > :: max();
+	int64_t i64val = numeric_limits < int64_t > :: min();
+	uint64_t u64val = numeric_limits < uint64_t > :: max();
 
-	dict test;
+	dct.put ( "string", sval );
+	dct.put ( "double", dval );
+	dct.put ( "float", fval );
+	dct.put ( "int8", i8val );
+	dct.put ( "uint8", u8val );
+	dct.put ( "int16", i16val );
+	dct.put ( "uint16", u16val );
+	dct.put ( "int32", i32val );
+	dct.put ( "uint32", u32val );
+	dct.put ( "int64", i64val );
+	dct.put ( "uint64", u64val );
 
-	test.put ( "string", sval );
-	test.put ( "double", dval );
-	test.put ( "int", ival );
-	test.put ( "longlong", lval );
+}
 
-	string scheck = test.get_string ( "string" );
-	EXPECT_EQ( sval, scheck );
 
-	double dcheck = test.get_double ( "double" );
-	EXPECT_EQ( dval, dcheck );
+void dict_verify ( dict const & d ) {
 
-	int icheck = test.get_int ( "int" );
-	EXPECT_EQ( ival, icheck );
+	string sval = "blahblahblah";
+	double dval = numeric_limits < double > :: max();
+	float fval = numeric_limits < float > :: max();
+	int8_t i8val = numeric_limits < int8_t > :: min();
+	uint8_t u8val = numeric_limits < uint8_t > :: max();
+	int16_t i16val = numeric_limits < int16_t > :: min();
+	uint16_t u16val = numeric_limits < uint16_t > :: max();
+	int32_t i32val = numeric_limits < int32_t > :: min();
+	uint32_t u32val = numeric_limits < uint32_t > :: max();
+	int64_t i64val = numeric_limits < int64_t > :: min();
+	uint64_t u64val = numeric_limits < uint64_t > :: max();
+	
+	EXPECT_EQ( sval, d.get < string > ( "string" ) );
+	EXPECT_EQ( dval, d.get < double > ( "double" ) );
+	EXPECT_EQ( fval, d.get < float > ( "float" ) );
+	EXPECT_EQ( i8val, d.get < int8_t > ( "int8" ) );
+	EXPECT_EQ( u8val, d.get < uint8_t > ( "uint8" ) );
+	EXPECT_EQ( i16val, d.get < int16_t > ( "int16" ) );
+	EXPECT_EQ( u16val, d.get < uint16_t > ( "uint16" ) );
+	EXPECT_EQ( i32val, d.get < int32_t > ( "int32" ) );
+	EXPECT_EQ( u32val, d.get < uint32_t > ( "uint32" ) );
+	EXPECT_EQ( i64val, d.get < int64_t > ( "int64" ) );
+	EXPECT_EQ( u64val, d.get < uint64_t > ( "uint64" ) );
 
-	long long lcheck = test.get_ll ( "longlong" );
-	EXPECT_EQ( lval, lcheck );
+	return;
+}
 
-	// memory backend
 
-	dict test2 ( test );
+dictTest::dictTest () {
+	dict_setup ( dct );
+}
 
-	scheck = test2.get_string ( "string" );
-	EXPECT_EQ( sval, scheck );
 
-	dcheck = test2.get_double ( "double" );
-	EXPECT_EQ( dval, dcheck );
+TEST_F( dictTest, PutGet ) {
 
-	icheck = test2.get_int ( "int" );
-	EXPECT_EQ( ival, icheck );
+	dict_verify ( dct );
 
-	lcheck = test2.get_ll ( "longlong" );
-	EXPECT_EQ( lval, lcheck );
+}
+
+
+TEST_F( dictTest, MemBackend ) {
+
+	dict test ( dct );
+
+	dict_verify ( test );
+
+}
+
+
+TEST_F( dictTest, HDF5Backend ) {
 
 	// HDF5 backend
 
@@ -102,28 +145,17 @@ TEST( dictionarytest, all ) {
 
 	// write / read dictionary	
 
-	test.duplicate ( loc );
+	dct.duplicate ( loc );
 
-	dict test3 ( loc );
+	dict test ( loc );
 
-	scheck = test3.get_string ( "string" );
-	EXPECT_EQ( sval, scheck );
+	dict_verify ( test );
 
-	dcheck = test3.get_double ( "double" );
-	EXPECT_EQ( dval, dcheck );
+#else
 
-	icheck = test3.get_int ( "int" );
-	EXPECT_EQ( ival, icheck );
-
-	lcheck = test3.get_ll ( "longlong" );
-	EXPECT_EQ( lval, lcheck );
+	cout << "  skipping (not compiled with HDF5 support)" << endl;
 
 #endif
-
-	// getdata backend
-
-	// FIXME:  implement
-
 
 }
 

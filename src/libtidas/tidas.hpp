@@ -41,12 +41,6 @@ namespace tidas {
 		TYPE_STRING
 	} data_type;
 
-	data_type data_type_get ( std::type_info const & test );
-
-	std::string data_type_to_string ( data_type type );
-
-	data_type data_type_from_string ( std::string const & name );
-
 	typedef enum {
 		BACKEND_MEM,
 		BACKEND_HDF5,

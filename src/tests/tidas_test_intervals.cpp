@@ -12,44 +12,10 @@ using namespace std;
 using namespace tidas;
 
 
+void intervals_setup ( interval_list & inv ) {
 
-TEST( intervalstest, metadata ) {
+	inv.clear();
 
-	intervals dummy1;
-
-	backend_path loc = dummy1.location();
-	EXPECT_EQ( loc.type, BACKEND_MEM );
-	EXPECT_EQ( loc.path, "" );
-	EXPECT_EQ( loc.name, "" );
-	EXPECT_EQ( loc.meta, "" );
-	EXPECT_EQ( loc.mode, MODE_RW );
-
-	intervals dummy2 ( dummy1 );
-
-	backend_path checkloc = dummy2.location();
-	EXPECT_EQ( loc.type, checkloc.type );
-	EXPECT_EQ( loc.path, checkloc.path );
-	EXPECT_EQ( loc.name, checkloc.name );
-	EXPECT_EQ( loc.mode, checkloc.mode );
-
-}
-
-
-TEST( intervalstest, data ) {
-
-	dict dt;
-
-	string sval = "blahblahblah";
-	double dval = 12345.6;
-	int ival = 12345;
-	long long lval = 1234567890123456L;
-
-	dt.put ( "string", sval );
-	dt.put ( "double", dval );
-	dt.put ( "int", ival );
-	dt.put ( "longlong", lval );
-
-	interval_list intr;
 	size_t nint = 10;
 	time_type gap = 1.0;
 	time_type span = 123.4;
@@ -63,30 +29,105 @@ TEST( intervalstest, data ) {
 		cur.stop = (double)(i + 1) * ( span + gap );
 		cur.first = gap_samp + i * ( span_samp + gap_samp );
 		cur.last = (i + 1) * ( span_samp + gap_samp );
-		intr.push_back ( cur );
+		inv.push_back ( cur );
 	}
 
-	intervals dummy1 ( dt, nint );
+	return;
+}
 
-	interval_list check;
 
-	dummy1.write_data ( intr );
-	dummy1.read_data ( check );
+void intervals_verify ( interval_list const & inv ) {
+
+	size_t nint = 10;
+	time_type gap = 1.0;
+	time_type span = 123.4;
+	index_type gap_samp = 5;
+	index_type span_samp = 617;
+
+	intrvl cur;
 
 	for ( size_t i = 0; i < nint; ++i ) {
 		cur.start = gap + (double)i * ( span + gap );
 		cur.stop = (double)(i + 1) * ( span + gap );
 		cur.first = gap_samp + i * ( span_samp + gap_samp );
 		cur.last = (i + 1) * ( span_samp + gap_samp );
-		EXPECT_EQ( cur.start, check[i].start );
-		EXPECT_EQ( cur.stop, check[i].stop );
-		EXPECT_EQ( cur.first, check[i].first );
-		EXPECT_EQ( cur.last, check[i].last );
+
+		EXPECT_EQ( cur.start, inv[i].start );
+		EXPECT_EQ( cur.stop, inv[i].stop );
+		EXPECT_EQ( cur.first, inv[i].first );
+		EXPECT_EQ( cur.last, inv[i].last );
 	}
 
-	// HDF5 backend
+	return;
+}
+
+
+intervalsTest::intervalsTest () {
+
+}
+
+
+TEST_F( intervalsTest, Loc ) {
+
+	intervals intr;
+
+	backend_path loc = intr.location();
+	EXPECT_EQ( loc.type, BACKEND_MEM );
+	EXPECT_EQ( loc.path, "" );
+	EXPECT_EQ( loc.name, "" );
+	EXPECT_EQ( loc.meta, "" );
+	EXPECT_EQ( loc.mode, MODE_RW );
+
+	intervals dummy ( intr );
+
+	backend_path checkloc = dummy.location();
+	EXPECT_EQ( loc.type, checkloc.type );
+	EXPECT_EQ( loc.path, checkloc.path );
+	EXPECT_EQ( loc.name, checkloc.name );
+	EXPECT_EQ( loc.mode, checkloc.mode );
+
+}
+
+
+TEST_F( intervalsTest, MemBackend ) {
+
+	dict dt;
+
+	dict_setup ( dt );
+
+	interval_list intrvls;
+
+	intervals_setup ( intrvls );
+
+	intervals test ( dt, intrvls.size() );
+
+	// write to mem backend
+	test.write_data ( intrvls );
+
+	// read and verify
+	interval_list check;
+	test.read_data ( check );
+
+	intervals_verify ( check );
+
+}
+
+
+TEST_F( intervalsTest, HDF5Backend ) {
 
 #ifdef HAVE_HDF5
+
+	dict dt;
+
+	dict_setup ( dt );
+
+	interval_list intrvls;
+
+	intervals_setup ( intrvls );
+
+	intervals test ( dt, intrvls.size() );
+
+	// duplicate metadata to hdf5 location
 
 	backend_path loc;
 	loc.type = BACKEND_HDF5;
@@ -94,41 +135,22 @@ TEST( intervalstest, data ) {
 	loc.path = ".";
 	loc.name = "test_intervals_data.hdf5.out";
 
-	dummy1.duplicate ( loc );
+	test.duplicate ( loc );
 
-	intervals dummy2 ( loc );
-	data_copy ( dummy1, dummy2 );
+	// copy data
 
-	dummy2.read_data ( check );
+	intervals test2 ( loc );
+	data_copy ( test, test2 );
 
-	for ( size_t i = 0; i < nint; ++i ) {
-		cur.start = gap + (double)i * ( span + gap );
-		cur.stop = (double)(i + 1) * ( span + gap );
-		cur.first = gap_samp + i * ( span_samp + gap_samp );
-		cur.last = (i + 1) * ( span_samp + gap_samp );
-		EXPECT_EQ( cur.start, check[i].start );
-		EXPECT_EQ( cur.stop, check[i].stop );
-		EXPECT_EQ( cur.first, check[i].first );
-		EXPECT_EQ( cur.last, check[i].last );
-	}
+	// read and verify
+	interval_list check;
+	test2.read_data ( check );
 
-	loc.name = "test_intervals_data_dup.hdf5.out";
+	intervals_verify ( check );
 
-	intervals dummy3 ( dummy2, "[dict=.*]", loc );
-	data_copy ( dummy2, dummy3 );
+#else
 
-	dummy3.read_data ( check );
-
-	for ( size_t i = 0; i < nint; ++i ) {
-		cur.start = gap + (double)i * ( span + gap );
-		cur.stop = (double)(i + 1) * ( span + gap );
-		cur.first = gap_samp + i * ( span_samp + gap_samp );
-		cur.last = (i + 1) * ( span_samp + gap_samp );
-		EXPECT_EQ( cur.start, check[i].start );
-		EXPECT_EQ( cur.stop, check[i].stop );
-		EXPECT_EQ( cur.first, check[i].first );
-		EXPECT_EQ( cur.last, check[i].last );
-	}
+	cout << "  skipping (not compiled with HDF5 support)" << endl;
 
 #endif
 

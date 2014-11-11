@@ -26,10 +26,27 @@ class dictTest : public ::testing::Test {
 
 };
 
-
 void dict_setup ( tidas::dict & dct );
 
 void dict_verify ( tidas::dict const & dct );
+
+
+class intervalsTest : public ::testing::Test {
+
+	public :
+
+		intervalsTest ();
+		~intervalsTest () { }
+		virtual void SetUp() { }
+		virtual void TearDown() { }
+
+
+};
+
+void intervals_setup ( tidas::interval_list & inv );
+
+void intervals_verify ( tidas::interval_list const & inv );
+
 
 
 

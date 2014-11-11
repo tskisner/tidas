@@ -226,7 +226,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
 
 	double * time_buffer = mem_alloc < double > ( (size_t)time_dims );
 
-	herr_t status = H5Dread ( dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, time_buffer );
+	herr_t status = H5Dread ( dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)time_buffer );
 
 	H5Sclose ( dataspace );
 	H5Tclose ( datatype );
@@ -260,7 +260,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
 
 	int64_t * ind_buffer = mem_alloc < int64_t > ( (size_t)ind_dims );
 
-	status = H5Dread ( dataset, H5T_NATIVE_INT64, H5S_ALL, H5S_ALL, H5P_DEFAULT, ind_buffer );
+	status = H5Dread ( dataset, H5T_NATIVE_INT64, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)ind_buffer );
 
 	H5Sclose ( dataspace );
 	H5Tclose ( datatype );
@@ -316,7 +316,7 @@ void tidas::intervals_backend_hdf5::write_data ( backend_path const & loc, inter
 		++i;
 	}
 
-	herr_t status = H5Dwrite ( dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, time_buffer );
+	herr_t status = H5Dwrite ( dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)time_buffer );
 
 	free ( time_buffer );
 
@@ -337,7 +337,7 @@ void tidas::intervals_backend_hdf5::write_data ( backend_path const & loc, inter
 		++i;
 	}
 
-	status = H5Dwrite ( dataset, H5T_NATIVE_INT64, H5S_ALL, H5S_ALL, H5P_DEFAULT, ind_buffer );
+	status = H5Dwrite ( dataset, H5T_NATIVE_INT64, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)ind_buffer );
 
 	free ( ind_buffer );
 

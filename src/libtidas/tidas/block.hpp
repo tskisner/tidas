@@ -42,15 +42,15 @@ namespace tidas {
 
 			// data ops
 
-			group & group_add ( std::string const & name, group & grp );
+			group & group_add ( std::string const & name, group const & grp );
 			group & group_get ( std::string const & name );
 			void group_del ( std::string const & name );
 
-			intervals & intervals_add ( std::string const & name, intervals & intr );
+			intervals & intervals_add ( std::string const & name, intervals const & intr );
 			intervals & intervals_get ( std::string const & name );
 			void intervals_del ( std::string const & name );
 
-			block & block_add ( std::string const & name, block & blk );
+			block & block_add ( std::string const & name, block const & blk );
 			block & block_get ( std::string const & name );
 			void block_del ( std::string const & name );
 

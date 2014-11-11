@@ -197,7 +197,7 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	group_data_.clear();
 
-	for ( map < string, group > :: iterator it = other.group_data_.begin(); it != other.group_data_.end(); ++it ) {
+	for ( map < string, group > :: const_iterator it = other.group_data_.begin(); it != other.group_data_.end(); ++it ) {
 		if ( RE2::FullMatch ( it->first, groupre ) ) {
 			group_add ( it->first, it->second );
 		}
@@ -211,7 +211,7 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	intervals_data_.clear();
 
-	for ( map < string, intervals > :: iterator it = other.intervals_data_.begin(); it != other.intervals_data_.end(); ++it ) {
+	for ( map < string, intervals > :: const_iterator it = other.intervals_data_.begin(); it != other.intervals_data_.end(); ++it ) {
 		if ( RE2::FullMatch ( it->first, intre ) ) {
 			intervals_add ( it->first, it->second );
 		}
@@ -241,7 +241,7 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	block_data_.clear();
 
-	for ( map < string, block > :: iterator it = other.block_data_.begin(); it != other.block_data_.end(); ++it ) {
+	for ( map < string, block > :: const_iterator it = other.block_data_.begin(); it != other.block_data_.end(); ++it ) {
 		if ( RE2::FullMatch ( it->first, blockre ) ) {
 			block_add ( it->first, it->second );
 		}
@@ -329,7 +329,7 @@ backend_path tidas::block::block_loc ( backend_path const & loc, string const & 
 }
 
 
-group & tidas::block::group_add ( string const & name, group & grp ) {
+group & tidas::block::group_add ( string const & name, group const & grp ) {
 
 	if ( group_data_.count ( name ) > 0 ) {
 		ostringstream o;
@@ -369,7 +369,7 @@ void tidas::block::group_del ( string const & name ) {
 }
 
 
-intervals & tidas::block::intervals_add ( string const & name, intervals & intr ) {
+intervals & tidas::block::intervals_add ( string const & name, intervals const & intr ) {
 
 	if ( intervals_data_.count ( name ) > 0 ) {
 		ostringstream o;
@@ -409,7 +409,7 @@ void tidas::block::intervals_del ( string const & name ) {
 }
 
 
-block & tidas::block::block_add ( string const & name, block & blk ) {
+block & tidas::block::block_add ( string const & name, block const & blk ) {
 
 	if ( block_data_.count ( name ) > 0 ) {
 		ostringstream o;

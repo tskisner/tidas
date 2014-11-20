@@ -14,7 +14,7 @@ using namespace tidas;
 
 void tidas::data_copy ( intervals & in, intervals & out ) {
 
-	if ( in.location() == out.location() ) {
+	if ( ( in.location() == out.location() ) && ( in.location().type != BACKEND_MEM ) ) {
 		TIDAS_THROW( "cannot do data_copy between intervals with same location" );
 	}
 
@@ -35,7 +35,7 @@ void tidas::data_copy ( intervals & in, intervals & out ) {
 
 void tidas::data_copy ( group & in, group & out ) {
 
-	if ( in.location() == out.location() ) {
+	if ( ( in.location() == out.location() ) && ( in.location().type != BACKEND_MEM ) ) {
 		TIDAS_THROW( "cannot do data_copy between groups with same location" );
 	}
 
@@ -48,7 +48,7 @@ void tidas::data_copy ( group & in, group & out ) {
 	index_type nsamp = out.size();
 
 	// copy time field
-	group_helper_copy < double > ( in, out, group_time_field, nsamp );
+	group_helper_copy < time_type > ( in, out, group_time_field, nsamp );
 
 	schema schm = out.schema_get();
 

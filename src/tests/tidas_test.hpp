@@ -65,5 +65,24 @@ void schema_setup ( tidas::field_list & flist );
 void schema_verify ( tidas::field_list const & flist );
 
 
+class groupTest : public ::testing::Test {
+
+	public :
+
+		groupTest ();
+		~groupTest () { }
+		virtual void SetUp();
+		virtual void TearDown() { }
+
+		size_t gnsamp;
+};
+
+void group_setup ( tidas::group & grp );
+
+void group_verify ( tidas::group & grp );
+
+void group_verify_int ( tidas::group & grp );
+
+
 
 #endif

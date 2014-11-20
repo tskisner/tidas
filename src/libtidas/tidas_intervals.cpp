@@ -184,7 +184,7 @@ void tidas::intervals::copy ( intervals const & other, string const & filter, ba
 
 	size_ = other.size_;
 
-	if ( loc_ != other.loc_ ) {
+	if ( ( loc_ != other.loc_) || ( loc.type == BACKEND_MEM ) ) {
 		if ( loc_.mode == MODE_RW ) {
 
 			// write our metadata

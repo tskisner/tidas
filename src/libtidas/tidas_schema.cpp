@@ -184,7 +184,7 @@ void tidas::schema::copy ( schema const & other, string const & filter, backend_
 		}
 	}
 
-	if ( loc_ != other.loc_ ) {
+	if ( ( loc_ != other.loc_ ) || ( loc.type == BACKEND_MEM ) ) {
 		if ( loc_.mode == MODE_RW ) {
 
 			// write our metadata

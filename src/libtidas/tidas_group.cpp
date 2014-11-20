@@ -169,7 +169,7 @@ void tidas::group::copy ( group const & other, string const & filter, backend_pa
 	schmloc.meta = backend_->schema_meta();
 	schm_.copy ( other.schm_, filts[ schema_submatch_key ], schmloc );
 
-	if ( loc_ != other.loc_ ) {
+	if ( ( loc_ != other.loc_ ) || ( loc.type == BACKEND_MEM ) ) {
 		if ( loc_.mode == MODE_RW ) {
 
 			// compute counts

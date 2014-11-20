@@ -311,8 +311,9 @@ void tidas::intervals_backend_hdf5::write_data ( backend_path const & loc, inter
 
 	size_t i = 0;
 	for ( interval_list::const_iterator it = intr.begin(); it != intr.end(); ++it ) {
-		time_buffer[ 2 * i ] = it->start;
-		time_buffer[ 2 * i + 1 ] = it->stop;
+		time_buffer[i] = it->start;
+		++i;
+		time_buffer[i] = it->stop;
 		++i;
 	}
 
@@ -332,8 +333,9 @@ void tidas::intervals_backend_hdf5::write_data ( backend_path const & loc, inter
 
 	i = 0;
 	for ( interval_list::const_iterator it = intr.begin(); it != intr.end(); ++it ) {
-		ind_buffer[ 2 * i ] = it->first;
-		ind_buffer[ 2 * i + 1 ] = it->last;
+		ind_buffer[i] = it->first;
+		++i;
+		ind_buffer[i] = it->last;
 		++i;
 	}
 

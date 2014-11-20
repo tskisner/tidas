@@ -127,6 +127,8 @@ TEST_F( intervalsTest, HDF5Backend ) {
 
 	intervals test ( dt, intrvls.size() );
 
+	test.write_data ( intrvls );
+
 	// duplicate metadata to hdf5 location
 
 	backend_path loc;

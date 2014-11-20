@@ -13,19 +13,7 @@ using namespace tidas;
 
 
 
-TEST( schematest, all ) {
-
-	schema schm1;
-
-	// should return null field
-	field ftest = schm1.seek ( "dummy" );
-	EXPECT_EQ( ftest.name, "" );
-	EXPECT_EQ( ftest.units, "" );
-	EXPECT_EQ( ftest.type, TYPE_NONE );
-
-	// should return empty list
-	field_list flist = schm1.fields();
-	EXPECT_EQ( flist.size(), 0 );
+void schema_setup ( tidas::field_list & flist ) {
 
 	field f_int8;
 	field f_uint8;
@@ -37,8 +25,6 @@ TEST( schematest, all ) {
 	field f_uint64;
 	field f_float32;
 	field f_float64;
-
-	size_t nf = 10;
 
 	f_int8.type = TYPE_INT8;
 	f_int8.name = "int8";
@@ -92,86 +78,126 @@ TEST( schematest, all ) {
 	flist.push_back ( f_float32 );
 	flist.push_back ( f_float64 );
 
+
+
+	return;
+}
+
+
+void schema_verify ( tidas::field_list const & flist ) {
+
+	tidas::field_list check;
+
+	schema_setup ( check );
+
+	EXPECT_EQ( flist.size(), check.size() );
+
+	for ( size_t i = 0; i < flist.size(); ++i ) {
+		EXPECT_EQ( flist[i], check[i] );	
+	}
+
+	return;
+}
+
+
+schemaTest::schemaTest () {
+
+}
+
+
+TEST_F( schemaTest, MemBackend ) {
+
+	schema schm;
+
+	// should return null field
+	field ftest = schm.seek ( "dummy" );
+	EXPECT_EQ( ftest.name, "" );
+	EXPECT_EQ( ftest.units, "" );
+	EXPECT_EQ( ftest.type, TYPE_NONE );
+
+	// should return empty list
+	field_list flist = schm.fields();
+	EXPECT_EQ( flist.size(), 0 );
+
+	schema_setup ( flist );
+
 	schema schm2 ( flist );
 
-	field_list check = schm2.fields();
+	schema_verify ( flist );
 
-	EXPECT_EQ( check.size(), nf );
-	for ( size_t i = 0; i < nf; ++i ) {
-		EXPECT_EQ( flist[i], check[i] );	
+}
+
+
+TEST_F( schemaTest, AddRemove ) {
+
+	field_list flist;
+
+	schema_setup ( flist );
+
+	schema schm ( flist );
+
+	for ( size_t i = 0; i < flist.size(); ++i ) {
+		schm.remove ( flist[i].name );
 	}
 
-	schema schm3 ( schm2 );
+	EXPECT_EQ( schm.fields().size(), 0 );
 
-	check = schm3.fields();
-
-	EXPECT_EQ( check.size(), nf );
-	for ( size_t i = 0; i < nf; ++i ) {
-		EXPECT_EQ( flist[i], check[i] );	
+	for ( size_t i = 0; i < flist.size(); ++i ) {
+		schm.append ( flist[i] );
 	}
 
-	backend_path loc;
+	schema_verify ( schm.fields() );
+
+}
+
+
+TEST_F( schemaTest, Filter ) {
+
+	field_list flist;
+
+	schema_setup ( flist );
+
+	schema schm ( flist );
+
+	backend_path memloc;
+
+	schema filt_ischm ( schm, "int.*", memloc );
+	EXPECT_EQ( filt_ischm.fields().size(), 4 );
+
+	schema filt_aischm ( schm, ".*int.*", memloc );
+	EXPECT_EQ( filt_aischm.fields().size(), 8 );
+
+}
+
+
+TEST_F( schemaTest, HDF5Backend ) {
+
+	field_list flist;
+
+	schema_setup ( flist );
+
+	schema schm ( flist );
 
 #ifdef HAVE_HDF5
 
-	// test write / read
-
+	backend_path loc;
 	loc.type = BACKEND_HDF5;
 	loc.path = ".";
 	loc.name = "test_schema.hdf5.out";
 	loc.meta = string("/") + schema_hdf5_dataset;
 	loc.mode = MODE_RW;
 
-	schm3.duplicate ( loc );
+	schm.duplicate ( loc );
 
-	schema schm4 ( loc );
+	schema schm2 ( loc );
 
-	check = schm4.fields();
-	for ( size_t i = 0; i < nf; ++i ) {
-		EXPECT_EQ( flist[i], check[i] );	
-	}
+	schema_verify ( schm2.fields() );
 
-	// test filtered copy
+#else
 
-	backend_path memloc;
-
-	schema h5_ischm ( schm4, "int.*", memloc );
-	EXPECT_EQ( h5_ischm.fields().size(), 4 );
-
-	schema h5_aischm ( schm4, ".*int.*", memloc );
-	EXPECT_EQ( h5_aischm.fields().size(), 8 );
+	cout << "  skipping (not compiled with HDF5 support)" << endl;
 
 #endif
-
-	// FIXME:  add getdata backend test
-
-	schm3.remove ( "int8" );
-	schm3.remove ( "uint8" );
-	schm3.remove ( "int16" );
-	schm3.remove ( "uint16" );
-	schm3.remove ( "int32" );
-	schm3.remove ( "uint32" );
-	schm3.remove ( "int64" );
-	schm3.remove ( "uint64" );
-	schm3.remove ( "float32" );
-	schm3.remove ( "float64" );
-
-	schm3.append ( f_int8 );
-	schm3.append ( f_uint8 );
-	schm3.append ( f_int16 );
-	schm3.append ( f_uint16 );
-	schm3.append ( f_int32 );
-	schm3.append ( f_uint32 );
-	schm3.append ( f_int64 );
-	schm3.append ( f_uint64 );
-	schm3.append ( f_float32 );
-	schm3.append ( f_float64 );
-
-	check = schm3.fields();
-
-	for ( size_t i = 0; i < nf; ++i ) {
-		EXPECT_EQ( flist[i], check[i] );	
-	}
 
 }
 

@@ -163,8 +163,8 @@ void tidas::schema::copy ( schema const & other, string const & filter, backend_
 
 	string filt = filter_default ( filter );
 
-	if ( ( loc == other.loc_ ) && ( filt != ".*" ) ) {
-		TIDAS_THROW( "copy of schema with a filter requires a new location" );
+	if ( ( filt != ".*" ) && ( loc.type != BACKEND_MEM ) && ( loc == other.loc_ ) ) {
+		TIDAS_THROW( "copy of non-memory schema with a filter requires a new location" );
 	}
 
 	// set backend

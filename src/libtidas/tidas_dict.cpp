@@ -109,8 +109,8 @@ void tidas::dict::copy ( dict const & other, string const & filter, backend_path
 
 	string filt = filter_default ( filter );
 
-	if ( ( loc == other.loc_ ) && ( filt != ".*" ) ) {
-		TIDAS_THROW( "copy of dict with a filter requires a new location" );
+	if ( ( filt != ".*" ) && ( loc.type != BACKEND_MEM ) && ( loc == other.loc_ ) ) {
+		TIDAS_THROW( "copy of non-memory dict with a filter requires a new location" );
 	}
 
 	// set backend

@@ -12,6 +12,9 @@ Contents:
    :maxdepth: 2
 
    utils
+   backend
+   dict
+   intervals
    backend_hdf5
 
 .. todolist::

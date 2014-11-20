@@ -67,21 +67,32 @@ namespace tidas {
 
 	// common file operations
 
+	///
+	/// Return the size of the specified file.
+	///
 	int64_t fs_stat ( char const * path );
 
+	///
+	/// Remove the specified file.
+	///
 	void fs_rm ( char const * path );
 
+	/// Make the specified directory.
 	void fs_mkdir ( char const * path );
 
 
 	// data types
 
+	/// Return the data type based on the C++ typeid.
 	data_type data_type_get ( std::type_info const & test );
 
+	/// Return the string name of the data type.
 	std::string data_type_to_string ( data_type type );
 
+	/// Return the data type based on the string name.
 	data_type data_type_from_string ( std::string const & name );
 
+	/// Convert a string into the specified type.
 	template < typename T >
 	T data_convert ( std::string const & str ) {
 		T ret;

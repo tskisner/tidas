@@ -92,19 +92,30 @@ namespace tidas {
 	};
 
 
-	/// Dictionary class.  This class stores elements by name, and explicitly 
+	/// Dictionary class.  
+	/// This class stores elements by name, and explicitly 
 	/// tracks the type of the assigned value. 
 
 	class dict {
 
 		public :
 
+			/// Default constructor.  The backend is set to be memory based.
 			dict ();
 			~dict ();
 			dict & operator= ( dict const & other );
 
+			/// Copy constructor.  
+			/// All members and backend location are copied.
 			dict ( dict const & other );
+
+			/// Load the dictionary from an existing location.  
+			/// All meta data operations will apply to this location.
 			dict ( backend_path const & loc );
+
+			/// Copy from an existing dictionary.  
+			/// Apply an optional filter to elements and relocate to a new 
+			/// location.  If a filter is given, a new location must be specified.
 			dict ( dict const & other, std::string const & filter, backend_path const & loc );
 
 			// metadata ops
@@ -113,14 +124,18 @@ namespace tidas {
 
 			void relocate ( backend_path const & loc );
 
+			/// Reload metadata from the current location, overwriting the current state in memory.
 			void sync ();
 
+			/// Write metadata to the current location, overwriting the information at that location.
 			void flush ();
 
 			void copy ( dict const & other, std::string const & filter, backend_path const & loc );
 
+			/// Copy all metadata to a new location.
 			void duplicate ( backend_path const & loc );
 
+			/// The current location.
 			backend_path location () const;
 
 			// data ops
@@ -145,7 +160,7 @@ namespace tidas {
 				return data_convert < T > ( data_.at( key ) );
 			}
 
-			/// Clear all elements of the dictionary
+			/// Clear all elements of the dictionary.
 			void clear();
 
 			/// Return a const reference to the underlying data map.

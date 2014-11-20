@@ -27,39 +27,42 @@ namespace tidas {
 	typedef int64_t index_type;
 
 	typedef enum {
-		TYPE_NONE,
-		TYPE_INT8,
-		TYPE_UINT8,
-		TYPE_INT16,
-		TYPE_UINT16,
-		TYPE_INT32,
-		TYPE_UINT32,
-		TYPE_INT64,
-		TYPE_UINT64,
-		TYPE_FLOAT32,
-		TYPE_FLOAT64,
-		TYPE_STRING
+		TYPE_NONE, ///< Undefined type.
+		TYPE_INT8, ///< C compatible int8_t type.
+		TYPE_UINT8, ///< C compatible uint8_t type.
+		TYPE_INT16, ///< C compatible int16_t type.
+		TYPE_UINT16, ///< C compatible uint16_t type.
+		TYPE_INT32, ///< C compatible int32_t type.
+		TYPE_UINT32, ///< C compatible uint32_t type.
+		TYPE_INT64, ///< C compatible int64_t type.
+		TYPE_UINT64, ///< C compatible uint64_t type.
+		TYPE_FLOAT32, ///< float type.
+		TYPE_FLOAT64, ///< double type.
+		TYPE_STRING ///< C++ string type.
 	} data_type;
 
 	typedef enum {
-		BACKEND_MEM,
-		BACKEND_HDF5,
-		BACKEND_GETDATA
+		BACKEND_MEM, ///< In-memory backend.
+		BACKEND_HDF5, ///< HDF5 backend.
+		BACKEND_GETDATA ///< GetData backend.
 	} backend_type;
 
 	typedef enum {
-		COMPRESS_NONE,
-		COMPRESS_GZIP,
-		COMPRESS_BZIP2
+		COMPRESS_NONE, ///< No compression.
+		COMPRESS_GZIP, ///< gzip (libz) compression.
+		COMPRESS_BZIP2 ///< bzip2 compression.
 	} compression_type;
 
 	typedef enum {
-		MODE_R,
-		MODE_RW
+		MODE_R, ///< Read-only access
+		MODE_RW ///< Read-write access
 	} access_mode;
 
 
 	class volume;
+
+	/// Class representing the metadata location of a single object.
+	/// This includes the path on disk, the backend type, etc.
 
 	class backend_path {
 		

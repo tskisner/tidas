@@ -36,12 +36,6 @@ dict_backend_hdf5 & tidas::dict_backend_hdf5::operator= ( dict_backend_hdf5 cons
 }
 
 
-dict_backend * tidas::dict_backend_hdf5::clone () {
-	dict_backend_hdf5 * ret = new dict_backend_hdf5 ( *this );
-	return ret;
-}
-
-
 #ifdef HAVE_HDF5
 
 typedef struct {
@@ -135,7 +129,7 @@ void tidas::dict_backend_hdf5::read ( backend_path const & loc, map < string, st
 }
 
 
-void tidas::dict_backend_hdf5::write ( backend_path const & loc, map < string, string > const & data, map < string, data_type > const & types ) {
+void tidas::dict_backend_hdf5::write ( backend_path const & loc, map < string, string > const & data, map < string, data_type > const & types ) const {
 
 	// open file in write mode
 
@@ -212,7 +206,7 @@ void tidas::dict_backend_hdf5::read ( backend_path const & loc, map < string, st
 }
 
 
-void tidas::dict_backend_hdf5::write ( backend_path const & loc, map < string, string > const & data, map < string, data_type > const & types ) {
+void tidas::dict_backend_hdf5::write ( backend_path const & loc, map < string, string > const & data, map < string, data_type > const & types ) const {
 	TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
 	return;
 }

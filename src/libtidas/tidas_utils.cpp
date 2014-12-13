@@ -8,8 +8,10 @@
 #include <tidas_internal.hpp>
 
 #include <cstdlib>
+#include <cstdio>
 
 extern "C" {
+	#include <ftw.h>
 	#include <unistd.h>
 	#include <sys/stat.h>
 	#include <sys/types.h>
@@ -55,11 +57,35 @@ void tidas::fs_rm ( char const * path ) {
 	int64_t size;
 
 	size = fs_stat ( path );
-	if ( size > 0 ) {
-		ret = ::unlink ( path );
+	if ( size >= 0 ) {
+		ret = ::remove ( path );
+		if ( ret ) {
+			::perror ( path );
+		}
 	}
 
 	return;
+}
+
+
+int tidas_fs_rm_r_callback ( char const * fpath, const struct stat * sb, int typeflag, struct FTW * ftwbuf) {
+
+    int ret = ::remove ( fpath );
+
+    if ( ret ) {
+        ::perror ( fpath );
+    }
+
+    return ret;
+}
+
+
+void tidas::fs_rm_r ( char const * path ) {
+    int ret = ::nftw ( path, tidas_fs_rm_r_callback, 64, FTW_DEPTH | FTW_PHYS );
+    if ( ret ) {
+    	::perror ( path );
+    }
+    return;
 }
 
 
@@ -69,8 +95,28 @@ void tidas::fs_mkdir ( char const * path ) {
 
 	size = fs_stat ( path );
 
-	if ( size <= 0 ) {
+	if ( size < 0 ) {
 		ret = ::mkdir ( path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+		if ( ret ) {
+			::perror ( path );
+		}
+	}
+
+	return;
+}
+
+
+void tidas::fs_link ( char const * target, char const * path, bool hard ) {
+	int ret;
+
+	if ( hard ) {
+		ret = ::link ( target, path );
+	} else {
+		ret = ::symlink ( target, path );
+	}
+
+	if ( ret ) {
+		::perror ( path );
 	}
 
 	return;

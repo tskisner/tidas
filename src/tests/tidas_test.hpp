@@ -40,6 +40,7 @@ class intervalsTest : public ::testing::Test {
 		virtual void SetUp() { }
 		virtual void TearDown() { }
 
+		tidas::interval_list intrvls;
 
 };
 
@@ -47,7 +48,7 @@ void intervals_setup ( tidas::interval_list & inv );
 
 void intervals_verify ( tidas::interval_list const & inv );
 
-
+/*
 class schemaTest : public ::testing::Test {
 
 	public :
@@ -83,6 +84,22 @@ void group_verify ( tidas::group & grp );
 
 void group_verify_int ( tidas::group & grp );
 
+
+class blockTest : public ::testing::Test {
+
+	public :
+
+		blockTest ();
+		~blockTest () { }
+		virtual void SetUp();
+		virtual void TearDown() { }
+
+};
+
+void block_setup ( tidas::block & blk );
+
+void block_verify ( tidas::block & blk );
+*/
 
 
 #endif

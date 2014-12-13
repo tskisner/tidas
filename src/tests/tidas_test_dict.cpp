@@ -81,16 +81,15 @@ dictTest::dictTest () {
 }
 
 
-TEST_F( dictTest, PutGet ) {
+TEST_F( dictTest, MetaOps ) {
 
 	dict_verify ( dct );
 
-}
-
-
-TEST_F( dictTest, MemBackend ) {
-
 	dict test ( dct );
+
+	dict_verify ( test );
+
+	backend_path loc;
 
 	dict_verify ( test );
 
@@ -105,13 +104,14 @@ TEST_F( dictTest, HDF5Backend ) {
 
 	backend_path loc;
 	loc.type = BACKEND_HDF5;
+	loc.mode = MODE_RW;
 	loc.path = ".";
 	loc.name = "test_dict.hdf5.out";
 	loc.meta = "/fakedata";
 
 	// create a fake dataset in order to modify its attributes.
 
-	string fspath = loc.path + "/" + loc.name;
+	string fspath = loc.path + path_sep + loc.name;
 	int64_t fsize = fs_stat ( fspath.c_str() );
 
 	hid_t file;
@@ -143,13 +143,16 @@ TEST_F( dictTest, HDF5Backend ) {
 	status = H5Dclose ( dataset );
 	status = H5Fclose ( file );
 
-	// write / read dictionary	
+	// write / read dictionary
 
-	dct.duplicate ( loc );
+	dict test ( dct, ".*", loc );
+	test.flush();
 
-	dict test ( loc );
-
+	test.sync();
 	dict_verify ( test );
+
+	// now test symlink
+
 
 #else
 

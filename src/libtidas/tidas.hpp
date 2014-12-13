@@ -42,7 +42,7 @@ namespace tidas {
 	} data_type;
 
 	typedef enum {
-		BACKEND_MEM, ///< In-memory backend.
+		BACKEND_NONE, ///< Backend not assigned.
 		BACKEND_HDF5, ///< HDF5 backend.
 		BACKEND_GETDATA ///< GetData backend.
 	} backend_type;
@@ -54,9 +54,15 @@ namespace tidas {
 	} compression_type;
 
 	typedef enum {
-		MODE_R, ///< Read-only access
-		MODE_RW ///< Read-write access
+		MODE_R, ///< Read-only access.
+		MODE_RW ///< Read-write access.
 	} access_mode;
+
+	typedef enum {
+		LINK_NONE, ///< Not a link.
+		LINK_HARD, ///< Hard Link.
+		LINK_SOFT   ///< Symlink.
+	} link_type;
 
 
 	class volume;
@@ -85,13 +91,13 @@ namespace tidas {
 			/// Parent directory.
 			std::string path;
 
-			/// Name of on-disk object (backend-specific).
+			/// Name of on-disk object.
 			std::string name;
 
 			/// Metadata path inside object (backend-specific).
 			std::string meta;
 
-			//volume * vol;
+			//shared_ptr < volume > vol;
 
 	};
 
@@ -137,10 +143,14 @@ namespace tidas {
 #include <tidas/utils.hpp>
 #include <tidas/dict.hpp>
 #include <tidas/intervals.hpp>
+#include <tidas/copy.hpp>
+
+/*
 #include <tidas/schema.hpp>
 #include <tidas/group.hpp>
 #include <tidas/block.hpp>
 //#include <tidas/volume.hpp>
 #include <tidas/copy.hpp>
+*/
 
 #endif

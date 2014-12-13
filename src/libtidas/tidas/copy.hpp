@@ -14,13 +14,13 @@ namespace tidas {
 
 	// intervals copy
 
-	void data_copy ( intervals & in, intervals & out );
+	void data_copy ( intervals const & in, intervals & out );
 
-
+/*
 	// group copy
 
 	template < class T >
-	void group_helper_copy ( group & in, group & out, std::string const & field, index_type n ) {
+	void group_helper_copy ( group const & in, group & out, std::string const & field, index_type n ) {
 
 		std::vector < T > data ( n );
 		in.read_field ( field, 0, data );
@@ -30,17 +30,17 @@ namespace tidas {
 	}
 
 
-	void data_copy ( group & in, group & out );
+	void data_copy ( group const & in, group & out );
 
 
 	// block copy
 
-	//void data_copy ( block & in, block & out );
-
+	void data_copy ( block const & in, block & out );
+*/
 
 	// volume copy
 
-	//void data_copy ( volume & in, volume & out );
+	//void data_copy ( volume const & in, volume & out );
 
 
 }

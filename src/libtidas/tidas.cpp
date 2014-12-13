@@ -17,9 +17,9 @@ tidas::backend_path::backend_path () {
 	path = "";
 	name = "";
 	meta = "";
-	type = BACKEND_MEM;
+	type = BACKEND_NONE;
 	comp = COMPRESS_NONE;
-	mode = MODE_RW;
+	mode = MODE_R;
 	//vol = NULL;
 }
 

@@ -36,13 +36,7 @@ intervals_backend_hdf5 & tidas::intervals_backend_hdf5::operator= ( intervals_ba
 }
 
 
-intervals_backend * tidas::intervals_backend_hdf5::clone () {
-	intervals_backend_hdf5 * ret = new intervals_backend_hdf5 ( *this );
-	return ret;
-}
-
-
-string tidas::intervals_backend_hdf5::dict_meta () {
+string tidas::intervals_backend_hdf5::dict_meta () const {
 	return intervals_hdf5_dataset_time;
 }
 
@@ -107,7 +101,7 @@ void tidas::intervals_backend_hdf5::read ( backend_path const & loc, size_t & si
 }
 
 
-void tidas::intervals_backend_hdf5::write ( backend_path const & loc, size_t const & size ) {
+void tidas::intervals_backend_hdf5::write ( backend_path const & loc, size_t const & size ) const {
 
 #ifdef HAVE_HDF5
 
@@ -180,7 +174,49 @@ void tidas::intervals_backend_hdf5::write ( backend_path const & loc, size_t con
 }
 
 
-void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interval_list & intr ) {
+void tidas::intervals_backend_hdf5::link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const {
+
+#ifdef HAVE_HDF5
+
+	string fspath = loc.path + "/" + loc.name;
+	string lpath = path + "/" + name;
+
+	fs_link ( fspath.c_str(), lpath.c_str(), ( type == LINK_HARD ) );
+
+#else
+
+	TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
+
+#endif
+
+	return;
+}
+
+
+void tidas::intervals_backend_hdf5::purge ( backend_path const & loc ) const {
+
+#ifdef HAVE_HDF5
+
+	string fspath = loc.path + "/" + loc.name;
+
+	// delete file if it exists
+
+	int64_t fsize = fs_stat ( fspath.c_str() );
+	if ( fsize > 0 ) {
+		fs_rm ( fspath.c_str() );
+	}
+
+#else
+
+	TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
+
+#endif
+
+	return;
+}
+
+
+void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interval_list & intr ) const {
 
 #ifdef HAVE_HDF5
 

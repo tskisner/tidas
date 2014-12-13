@@ -108,7 +108,7 @@ void tidas::group::relocate ( backend_path const & loc ) {
 }
 
 
-void tidas::group::sync () {
+void tidas::group::sync () const {
 
 	// sync dict
 
@@ -292,7 +292,7 @@ index_type tidas::group::size () const {
 }
 
 
-void tidas::group::read_times ( vector < time_type > & data ) {
+void tidas::group::read_times ( vector < time_type > & data ) const {
 	data.resize ( size_ );
 	read_field ( group_time_field, 0, data );
 	return;
@@ -353,7 +353,7 @@ void tidas::group_backend_mem::copy ( group_backend_mem const & other ) {
 }
 
 
-void tidas::group_backend_mem::read ( backend_path const & loc, index_type & nsamp, map < data_type, size_t > & counts ) {
+void tidas::group_backend_mem::read ( backend_path const & loc, index_type & nsamp, map < data_type, size_t > & counts ) const {
 	nsamp = nsamp_;
 	counts = counts_;
 	return;
@@ -379,17 +379,17 @@ void tidas::group_backend_mem::write ( backend_path const & loc, index_type cons
 }
 
 
-string tidas::group_backend_mem::dict_meta () {
+string tidas::group_backend_mem::dict_meta () const {
 	return string("");
 }
 
 
-string tidas::group_backend_mem::schema_meta () {
+string tidas::group_backend_mem::schema_meta () const {
 	return string("");
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int8_t > & data ) {
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int8_t > & data ) const {
 	for ( index_type i = 0; i < data.size(); ++i ) {
 		data[ i ] = data_int8_[ type_indx ][ offset + i ];
 	}
@@ -404,7 +404,7 @@ void tidas::group_backend_mem::write_field ( backend_path const & loc, string co
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint8_t > & data ) {
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint8_t > & data ) const {
 	for ( index_type i = 0; i < data.size(); ++i ) {
 		data[ i ] = data_uint8_[ type_indx ][ offset + i ];
 	}
@@ -419,7 +419,7 @@ void tidas::group_backend_mem::write_field ( backend_path const & loc, string co
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int16_t > & data ) {
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int16_t > & data ) const {
 	for ( index_type i = 0; i < data.size(); ++i ) {
 		data[ i ] = data_int16_[ type_indx ][ offset + i ];
 	}
@@ -434,7 +434,7 @@ void tidas::group_backend_mem::write_field ( backend_path const & loc, string co
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint16_t > & data ) {
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint16_t > & data ) const {
 	for ( index_type i = 0; i < data.size(); ++i ) {
 		data[ i ] = data_uint16_[ type_indx ][ offset + i ];
 	}
@@ -449,7 +449,7 @@ void tidas::group_backend_mem::write_field ( backend_path const & loc, string co
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int32_t > & data ) {
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int32_t > & data ) const {
 	for ( index_type i = 0; i < data.size(); ++i ) {
 		data[ i ] = data_int32_[ type_indx ][ offset + i ];
 	}
@@ -464,7 +464,7 @@ void tidas::group_backend_mem::write_field ( backend_path const & loc, string co
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint32_t > & data ) {
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint32_t > & data ) const {
 	for ( index_type i = 0; i < data.size(); ++i ) {
 		data[ i ] = data_uint32_[ type_indx ][ offset + i ];
 	}
@@ -479,7 +479,7 @@ void tidas::group_backend_mem::write_field ( backend_path const & loc, string co
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int64_t > & data ) {
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < int64_t > & data ) const {
 	for ( index_type i = 0; i < data.size(); ++i ) {
 		data[ i ] = data_int64_[ type_indx ][ offset + i ];
 	}
@@ -494,7 +494,7 @@ void tidas::group_backend_mem::write_field ( backend_path const & loc, string co
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint64_t > & data ) {
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < uint64_t > & data ) const {
 	for ( index_type i = 0; i < data.size(); ++i ) {
 		data[ i ] = data_uint64_[ type_indx ][ offset + i ];
 	}
@@ -509,7 +509,7 @@ void tidas::group_backend_mem::write_field ( backend_path const & loc, string co
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < float > & data ) {
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < float > & data ) const {
 	for ( index_type i = 0; i < data.size(); ++i ) {
 		data[ i ] = data_float_[ type_indx ][ offset + i ];
 	}
@@ -524,7 +524,7 @@ void tidas::group_backend_mem::write_field ( backend_path const & loc, string co
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < double > & data ) {
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < double > & data ) const {
 	for ( index_type i = 0; i < data.size(); ++i ) {
 		data[ i ] = data_double_[ type_indx ][ offset + i ];
 	}
@@ -539,7 +539,7 @@ void tidas::group_backend_mem::write_field ( backend_path const & loc, string co
 }
 
 
-void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < string > & data ) {
+void tidas::group_backend_mem::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, vector < string > & data ) const {
 	for ( index_type i = 0; i < data.size(); ++i ) {
 		data[ i ] = data_string_[ type_indx ][ offset + i ];
 	}

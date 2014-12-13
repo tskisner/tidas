@@ -57,7 +57,6 @@ bool tidas::intrvl::operator!= ( const intrvl & other ) const {
 tidas::intervals::intervals () {
 	size_ = 0;
 	relocate ( loc_ );
-	flush();
 }
 
 
@@ -65,7 +64,6 @@ tidas::intervals::intervals ( dict const & d, size_t const & size ) {
 	size_ = size;
 	dict_ = d;
 	relocate ( loc_ );
-	flush();
 }
 
 
@@ -89,7 +87,7 @@ tidas::intervals::intervals ( intervals const & other ) {
 
 tidas::intervals::intervals ( backend_path const & loc ) {
 	relocate ( loc );
-	sync ();
+	sync();
 }
 
 
@@ -98,14 +96,14 @@ tidas::intervals::intervals ( intervals const & other, std::string const & filte
 }
 
 
-void tidas::intervals::set_backend ( backend_path const & loc, std::unique_ptr < intervals_backend > & backend ) {
+void tidas::intervals::set_backend () {
 
-	switch ( loc.type ) {
-		case BACKEND_MEM:
-			backend.reset( new intervals_backend_mem () );
+	switch ( loc_.type ) {
+		case BACKEND_NONE:
+			backend_.reset();
 			break;
 		case BACKEND_HDF5:
-			backend.reset( new intervals_backend_hdf5 () );
+			backend_.reset( new intervals_backend_hdf5 () );
 			break;
 		case BACKEND_GETDATA:
 			TIDAS_THROW( "GetData backend not yet implemented" );
@@ -122,16 +120,13 @@ void tidas::intervals::set_backend ( backend_path const & loc, std::unique_ptr <
 void tidas::intervals::relocate ( backend_path const & loc ) {
 
 	loc_ = loc;
-
-	// set backend
-
-	set_backend ( loc_, backend_ );
+	set_backend();
 
 	// relocate dict
 
-	backend_path dictloc = loc_;
-	dictloc.meta = backend_->dict_meta();
-	dict_.relocate ( dictloc );
+	backend_path dloc;
+	dict_loc ( dloc );
+	dict_.relocate ( dloc );
 
 	return;
 }
@@ -145,21 +140,25 @@ void tidas::intervals::sync () {
 
 	// read our own metadata
 
-	backend_->read ( loc_, size_ );
+	if ( loc_.type != BACKEND_NONE ) {
+		backend_->read ( loc_, size_ );
+	}
 
 	return;
 }
 
 
-void tidas::intervals::flush () {
+void tidas::intervals::flush () const {
 
-	if ( loc_.mode == MODE_R ) {
-		TIDAS_THROW( "cannot flush to read-only location" );
+	if ( loc_.type != BACKEND_NONE ) {
+
+		if ( loc_.mode == MODE_RW ) {	
+			// write our own metadata
+
+			backend_->write ( loc_, size_ );
+		}
+
 	}
-
-	// write our own metadata
-
-	backend_->write ( loc_, size_ );
 
 	// write dict
 
@@ -173,62 +172,68 @@ void tidas::intervals::copy ( intervals const & other, string const & filter, ba
 
 	// extract filters
 
-	map < string, string > filts = filter_split ( filter );
+	string root;
+	string subfilt;
+	filter_sub ( filter, root, subfilt );
+
+	map < string, string > filts = filter_split ( subfilt );
 
 	// set backend
 
 	loc_ = loc;
-	set_backend ( loc_, backend_ );
+	set_backend();
 
-	// copy of our metadata
+	// copy our metadata
 
 	size_ = other.size_;
 
-	if ( ( loc_ != other.loc_) || ( loc.type == BACKEND_MEM ) ) {
-		if ( loc_.mode == MODE_RW ) {
-
-			// write our metadata
-
-			backend_->write ( loc_, size_ );
-
-		} else {
-			TIDAS_THROW( "cannot copy to new read-only location" );
-		}
-	}
-
 	// copy dict
 
-	backend_path dictloc = loc_;
-	dictloc.meta = backend_->dict_meta();
-	dict_.copy ( other.dict_, filts[ dict_submatch_key ], dictloc );
+	backend_path dloc;
+	dict_loc ( dloc );
+
+	dict_.copy ( other.dict_, filts[ dict_submatch_key ], dloc );
 
 	return;
 }
 
 
-void tidas::intervals::duplicate ( backend_path const & loc ) {
+void tidas::intervals::link ( link_type const & type, string const & path, string const & name ) {
 
-	if ( loc.type == BACKEND_MEM ) {
-		TIDAS_THROW( "calling duplicate() with memory backend makes no sense" );
+	backend_path oldloc = loc_;
+
+	if ( type != LINK_NONE ) {
+
+		if ( loc_.type != BACKEND_NONE ) {
+			backend_->link ( loc_, type, path, name );
+		}
+
 	}
 
-	if ( loc.mode != MODE_RW ) {
-		TIDAS_THROW( "cannot duplicate to read-only location" );
+	return;
+}
+
+
+void tidas::intervals::del () const {
+
+	if ( loc_.type != BACKEND_NONE ) {
+
+		if ( loc_.mode == MODE_RW ) {
+			backend_->purge ( loc_ );
+		} else {
+			TIDAS_THROW( "cannot del() intervals in read-only mode" );
+		}
 	}
 
-	// write our metadata
+	return;
+}
 
-	unique_ptr < intervals_backend > backend;
-	set_backend ( loc, backend );
 
-	backend->write ( loc, size_ );
-
-	// duplicate dict
-
-	backend_path dictloc = loc;
-	dictloc.meta = backend->dict_meta();
-	dict_.duplicate ( dictloc );
-
+void tidas::intervals::dict_loc ( backend_path & dloc ) {
+	dloc = loc_;
+	if ( loc_.type != BACKEND_NONE ) {
+		dloc.meta = backend_->dict_meta();
+	}
 	return;
 }
 
@@ -243,7 +248,7 @@ size_t tidas::intervals::size () const {
 }
 
 
-void tidas::intervals::read_data ( interval_list & intr ) {
+void tidas::intervals::read_data ( interval_list & intr ) const {
 	if ( ! backend_ ) {
 		TIDAS_THROW( "intervals read_data:  backend not assigned" );
 	}
@@ -335,72 +340,5 @@ intrvl tidas::intervals::seek_floor ( interval_list const & intr, time_type time
 
 	return ret;
 }
-
-
-
-
-
-tidas::intervals_backend_mem::intervals_backend_mem () : intervals_backend () {
-
-}
-
-
-tidas::intervals_backend_mem::~intervals_backend_mem () {
-
-}
-
-
-tidas::intervals_backend_mem::intervals_backend_mem ( intervals_backend_mem const & other ) {
-	store_ = other.store_;
-	size_ = other.size_;
-}
-
-
-intervals_backend_mem & tidas::intervals_backend_mem::operator= ( intervals_backend_mem const & other ) {
-	if ( this != &other ) {
-		store_ = other.store_;
-		size_ = other.size_;
-	}
-	return *this;
-}
-
-
-intervals_backend * tidas::intervals_backend_mem::clone () {
-	intervals_backend_mem * ret = new intervals_backend_mem ( *this );
-	ret->store_ = store_;
-	ret->size_ = size_;
-	return ret;
-}
-
-
-string tidas::intervals_backend_mem::dict_meta () {
-	return string("");
-}
-
-
-void tidas::intervals_backend_mem::read ( backend_path const & loc, size_t & size ) {
-	size = size_;
-	return;
-}
-
-
-void tidas::intervals_backend_mem::write ( backend_path const & loc, size_t const & size ) {
-	size_ = size;
-	return;
-}
-
-
-void tidas::intervals_backend_mem::read_data ( backend_path const & loc, interval_list & intr ) {
-	intr = store_;
-	return;
-}
-
-
-void tidas::intervals_backend_mem::write_data ( backend_path const & loc, interval_list const & intr ) {
-	store_ = intr;
-	return;
-}
-
-
 
 

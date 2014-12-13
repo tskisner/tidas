@@ -63,20 +63,22 @@ void intervals_verify ( interval_list const & inv ) {
 
 
 intervalsTest::intervalsTest () {
-
+	intervals_setup ( intrvls );
 }
 
 
-TEST_F( intervalsTest, Loc ) {
+TEST_F( intervalsTest, MetaOps ) {
+
+	intervals_verify ( intrvls );
 
 	intervals intr;
 
 	backend_path loc = intr.location();
-	EXPECT_EQ( loc.type, BACKEND_MEM );
+	EXPECT_EQ( loc.type, BACKEND_NONE );
 	EXPECT_EQ( loc.path, "" );
 	EXPECT_EQ( loc.name, "" );
 	EXPECT_EQ( loc.meta, "" );
-	EXPECT_EQ( loc.mode, MODE_RW );
+	EXPECT_EQ( loc.mode, MODE_R );
 
 	intervals dummy ( intr );
 
@@ -86,29 +88,17 @@ TEST_F( intervalsTest, Loc ) {
 	EXPECT_EQ( loc.name, checkloc.name );
 	EXPECT_EQ( loc.mode, checkloc.mode );
 
-}
-
-
-TEST_F( intervalsTest, MemBackend ) {
-
 	dict dt;
 
 	dict_setup ( dt );
 
-	interval_list intrvls;
+	intervals intr2 ( dt, intrvls.size() );
 
-	intervals_setup ( intrvls );
-
-	intervals test ( dt, intrvls.size() );
-
-	// write to mem backend
-	test.write_data ( intrvls );
-
-	// read and verify
-	interval_list check;
-	test.read_data ( check );
-
-	intervals_verify ( check );
+	checkloc = intr2.location();
+	EXPECT_EQ( loc.type, checkloc.type );
+	EXPECT_EQ( loc.path, checkloc.path );
+	EXPECT_EQ( loc.name, checkloc.name );
+	EXPECT_EQ( loc.mode, checkloc.mode );	
 
 }
 
@@ -121,15 +111,9 @@ TEST_F( intervalsTest, HDF5Backend ) {
 
 	dict_setup ( dt );
 
-	interval_list intrvls;
-
-	intervals_setup ( intrvls );
-
 	intervals test ( dt, intrvls.size() );
 
-	test.write_data ( intrvls );
-
-	// duplicate metadata to hdf5 location
+	// move metadata to hdf5 location
 
 	backend_path loc;
 	loc.type = BACKEND_HDF5;
@@ -137,16 +121,24 @@ TEST_F( intervalsTest, HDF5Backend ) {
 	loc.path = ".";
 	loc.name = "test_intervals_data.hdf5.out";
 
-	test.duplicate ( loc );
+	intervals test2 ( test, ".*", loc );
+	test2.flush();
 
-	// copy data
+	test2.write_data ( intrvls );
 
-	intervals test2 ( loc );
-	data_copy ( test, test2 );
+	// copy 
+
+	loc.name = "copy_" + loc.name;
+
+	intervals test3 ( test2, ".*", loc );
+	test3.flush();
+	
+	data_copy ( test2, test3 );
 
 	// read and verify
+	
 	interval_list check;
-	test2.read_data ( check );
+	test3.read_data ( check );
 
 	intervals_verify ( check );
 

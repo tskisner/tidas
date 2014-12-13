@@ -133,7 +133,7 @@ void tidas::schema::relocate ( backend_path const & loc ) {
 }
 
 
-void tidas::schema::sync () {
+void tidas::schema::sync () const {
 
 	// read our own metadata
 
@@ -299,7 +299,7 @@ schema_backend * tidas::schema_backend_mem::clone () {
 }
 
 
-void tidas::schema_backend_mem::read ( backend_path const & loc, field_list & fields ) {
+void tidas::schema_backend_mem::read ( backend_path const & loc, field_list & fields ) const {
 	fields = fields_;
 	return;
 }

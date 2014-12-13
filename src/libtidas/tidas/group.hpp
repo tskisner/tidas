@@ -27,127 +27,44 @@ namespace tidas {
 
 			virtual group_backend * clone () = 0;
 
-			virtual void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts ) = 0;
-			virtual void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) = 0;
+			virtual void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts ) const = 0;
+			virtual void write ( backend_path const & loc, link_info const & link, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const = 0;
 
-			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > & data ) = 0;
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > & data ) const = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > const & data ) = 0;
 
-			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint8_t > & data ) = 0;
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint8_t > & data ) const = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint8_t > const & data ) = 0;
 
-			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int16_t > & data ) = 0;
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int16_t > & data ) const = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int16_t > const & data ) = 0;
 
-			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint16_t > & data ) = 0;
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint16_t > & data ) const = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint16_t > const & data ) = 0;
 
-			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int32_t > & data ) = 0;
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int32_t > & data ) const = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int32_t > const & data ) = 0;
 
-			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint32_t > & data ) = 0;
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint32_t > & data ) const = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint32_t > const & data ) = 0;
 
-			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int64_t > & data ) = 0;
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int64_t > & data ) const = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int64_t > const & data ) = 0;
 
-			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint64_t > & data ) = 0;
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint64_t > & data ) const = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint64_t > const & data ) = 0;
 
-			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < float > & data ) = 0;
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < float > & data ) const = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < float > const & data ) = 0;
 
-			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < double > & data ) = 0;
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < double > & data ) const = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < double > const & data ) = 0;
 
-			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < std::string > & data ) = 0;
+			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < std::string > & data ) const = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < std::string > const & data ) = 0;
 
-			virtual std::string dict_meta () = 0;
-			virtual std::string schema_meta () = 0;
-	};
-
-
-	// memory backend class
-
-	class group_backend_mem : public group_backend {
-
-		public :
-			
-			group_backend_mem ();
-			~group_backend_mem ();
-			group_backend_mem ( group_backend_mem const & other );
-			group_backend_mem & operator= ( group_backend_mem const & other );
-			void copy ( group_backend_mem const & other );
-
-			group_backend * clone ();
-
-			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts );
-			void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts );
-
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > & data );
-			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > const & data );
-
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint8_t > & data );
-			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint8_t > const & data );
-
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int16_t > & data );
-			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int16_t > const & data );
-
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint16_t > & data );
-			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint16_t > const & data );
-
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int32_t > & data );
-			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int32_t > const & data );
-
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint32_t > & data );
-			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint32_t > const & data );
-
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int64_t > & data );
-			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int64_t > const & data );
-
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint64_t > & data );
-			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint64_t > const & data );
-
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < float > & data );
-			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < float > const & data );
-
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < double > & data );
-			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < double > const & data );
-
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < std::string > & data );
-			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < std::string > const & data );
-
-			std::string dict_meta ();
-			std::string schema_meta ();
-
-			template < typename T >
-			void reset_data ( std::vector < std::vector < T > > & data, size_t count, size_t nsamp ) {
-				data.resize ( count );
-				for ( size_t i = 0; i < count; ++i ) {
-					data[i].resize ( nsamp );
-					data[i].assign ( nsamp, 0 );
-				}
-				return;
-			}
-
-		private :
-
-			index_type nsamp_;
-			std::map < data_type, size_t > counts_;
-
-			std::vector < std::vector < int8_t > > data_int8_;
-			std::vector < std::vector < uint8_t > > data_uint8_;
-			std::vector < std::vector < int16_t > > data_int16_;
-			std::vector < std::vector < uint16_t > > data_uint16_;
-			std::vector < std::vector < int32_t > > data_int32_;
-			std::vector < std::vector < uint32_t > > data_uint32_;
-			std::vector < std::vector < int64_t > > data_int64_;
-			std::vector < std::vector < uint64_t > > data_uint64_;
-			std::vector < std::vector < float > > data_float_;
-			std::vector < std::vector < double > > data_double_;
-			std::vector < std::vector < std::string > > data_string_;
-
+			virtual std::string dict_meta () const = 0;
+			virtual std::string schema_meta () const = 0;
 	};
 
 
@@ -164,44 +81,44 @@ namespace tidas {
 
 			group_backend * clone ();
 
-			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts );
-			void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts );
+			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts ) const;
+			void write ( backend_path const & loc, link_info const & link, index_type const & nsamp, std::map < data_type, size_t > const & counts );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint8_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint8_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint8_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int16_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int16_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int16_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint16_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint16_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint16_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int32_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int32_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int32_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint32_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint32_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint32_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int64_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int64_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int64_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint64_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint64_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint64_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < float > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < float > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < float > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < double > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < double > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < double > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < std::string > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < std::string > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < std::string > const & data );
 
-			std::string dict_meta ();
-			std::string schema_meta ();
+			std::string dict_meta () const;
+			std::string schema_meta () const;
 
 	};
 
@@ -219,44 +136,44 @@ namespace tidas {
 
 			group_backend * clone ();
 
-			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts );
-			void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts );
+			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts ) const;
+			void write ( backend_path const & loc, link_info const & link, index_type const & nsamp, std::map < data_type, size_t > const & counts );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint8_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint8_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint8_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int16_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int16_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int16_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint16_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint16_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint16_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int32_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int32_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int32_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint32_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint32_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint32_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int64_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int64_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int64_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint64_t > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint64_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < uint64_t > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < float > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < float > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < float > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < double > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < double > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < double > const & data );
 
-			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < std::string > & data );
+			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < std::string > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < std::string > const & data );
 
-			std::string dict_meta ();
-			std::string schema_meta ();
+			std::string dict_meta () const;
+			std::string schema_meta () const;
 
 	};
 
@@ -283,7 +200,7 @@ namespace tidas {
 
 			void relocate ( backend_path const & loc );
 
-			void sync ();
+			void sync () const;
 
 			void flush ();
 
@@ -301,12 +218,12 @@ namespace tidas {
 
 			index_type size () const;
 
-			void read_times ( std::vector < time_type > & data );
+			void read_times ( std::vector < time_type > & data ) const;
 
 			void write_times ( std::vector < time_type > const & data );
 
 			template < class T >
-			void read_field ( std::string const & field_name, index_type offset, std::vector < T > & data ) {
+			void read_field ( std::string const & field_name, index_type offset, std::vector < T > & data ) const {
 				field check = schm_.seek ( field_name );
 				if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
 					std::ostringstream o;

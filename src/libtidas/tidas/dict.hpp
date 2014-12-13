@@ -20,35 +20,9 @@ namespace tidas {
 			dict_backend () {}
 			virtual ~dict_backend () {}
 
-			virtual dict_backend * clone () = 0;
-
 			virtual void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) = 0;
 
-			virtual void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) = 0;
-
-	};
-
-	// memory backend class
-
-	class dict_backend_mem : public dict_backend {
-
-		public :
-			
-			dict_backend_mem ();
-			~dict_backend_mem ();
-			dict_backend_mem ( dict_backend_mem const & other );
-			dict_backend_mem & operator= ( dict_backend_mem const & other );
-
-			dict_backend * clone ();
-
-			void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
-
-			void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
-
-		private :
-
-			std::map < std::string, std::string > data_;
-			std::map < std::string, data_type > types_;
+			virtual void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) const = 0;
 
 	};
 
@@ -63,11 +37,9 @@ namespace tidas {
 			dict_backend_hdf5 ( dict_backend_hdf5 const & other );
 			dict_backend_hdf5 & operator= ( dict_backend_hdf5 const & other );
 
-			dict_backend * clone ();
-
 			void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
 
-			void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
+			void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) const;
 
 	};
 
@@ -83,11 +55,9 @@ namespace tidas {
 			dict_backend_getdata ( dict_backend_getdata const & other );
 			dict_backend_getdata & operator= ( dict_backend_getdata const & other );
 
-			dict_backend * clone ();
-
 			void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
 
-			void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
+			void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) const;
 
 	};
 
@@ -120,20 +90,15 @@ namespace tidas {
 
 			// metadata ops
 
-			void set_backend ( backend_path const & loc, std::unique_ptr < dict_backend > & backend );
-
 			void relocate ( backend_path const & loc );
 
 			/// Reload metadata from the current location, overwriting the current state in memory.
 			void sync ();
 
 			/// Write metadata to the current location, overwriting the information at that location.
-			void flush ();
+			void flush () const;
 
 			void copy ( dict const & other, std::string const & filter, backend_path const & loc );
-
-			/// Copy all metadata to a new location.
-			void duplicate ( backend_path const & loc );
 
 			/// The current location.
 			backend_path location () const;
@@ -170,6 +135,8 @@ namespace tidas {
 			std::map < std::string, data_type > const & types() const;
 
 		private :
+
+			void set_backend ();
 
 			std::map < std::string, std::string > data_;
 			std::map < std::string, data_type > types_;

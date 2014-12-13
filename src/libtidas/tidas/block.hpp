@@ -12,6 +12,17 @@
 
 namespace tidas {
 
+	// forward declare copy functions
+
+	class block;
+
+	void data_copy ( intervals const & in, intervals & out );
+	void data_copy ( group const & in, group & out );
+	void data_copy ( block const & in, block & out );
+
+
+	// block class
+
 	class block {
 
 		public :
@@ -28,7 +39,7 @@ namespace tidas {
 
 			void relocate ( backend_path const & loc );
 
-			void sync ();
+			void sync () const;
 
 			void flush ();
 
@@ -40,17 +51,25 @@ namespace tidas {
 
 			// data ops
 
+			void clear();
+
 			group & group_add ( std::string const & name, group const & grp );
 			group & group_get ( std::string const & name );
 			void group_del ( std::string const & name );
+			std::vector < std::string > all_groups () const;
+			void clear_groups();
 
 			intervals & intervals_add ( std::string const & name, intervals const & intr );
 			intervals & intervals_get ( std::string const & name );
 			void intervals_del ( std::string const & name );
+			std::vector < std::string > all_intervals () const;
+			void clear_intervals();
 
 			block & block_add ( std::string const & name, block const & blk );
 			block & block_get ( std::string const & name );
 			void block_del ( std::string const & name );
+			std::vector < std::string > all_blocks () const;
+			void clear_blocks();
 
 
 		private :

@@ -36,13 +36,7 @@ intervals_backend_getdata & tidas::intervals_backend_getdata::operator= ( interv
 }
 
 
-intervals_backend * tidas::intervals_backend_getdata::clone () {
-	intervals_backend_getdata * ret = new intervals_backend_getdata ( *this );
-	return ret;
-}
-
-
-string tidas::intervals_backend_getdata::dict_meta () {
+string tidas::intervals_backend_getdata::dict_meta () const {
 	return "";
 }
 
@@ -53,13 +47,25 @@ void tidas::intervals_backend_getdata::read ( backend_path const & loc, size_t &
 }
 
 
-void tidas::intervals_backend_getdata::write ( backend_path const & loc, size_t const & size ) {
+void tidas::intervals_backend_getdata::write ( backend_path const & loc, size_t const & size ) const {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::intervals_backend_getdata::read_data ( backend_path const & loc, interval_list & intr ) {
+void tidas::intervals_backend_getdata::link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const {
+	TIDAS_THROW( "GetData backend not supported" );
+	return;
+}
+
+
+void tidas::intervals_backend_getdata::purge ( backend_path const & loc ) const {
+	TIDAS_THROW( "GetData backend not supported" );
+	return;
+}
+
+
+void tidas::intervals_backend_getdata::read_data ( backend_path const & loc, interval_list & intr ) const {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }

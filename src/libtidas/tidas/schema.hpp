@@ -45,34 +45,12 @@ namespace tidas {
 
 			virtual schema_backend * clone () = 0;
 
-			virtual void read ( backend_path const & loc, field_list & fields ) = 0;
+			virtual void read ( backend_path const & loc, field_list & fields ) const = 0;
 
-			virtual void write ( backend_path const & loc, field_list const & fields ) = 0;
-
-	};
-
-	// memory backend class
-
-	class schema_backend_mem : public schema_backend {
-
-		public :
-			
-			schema_backend_mem ();
-			~schema_backend_mem ();
-			schema_backend_mem ( schema_backend_mem const & other );
-			schema_backend_mem & operator= ( schema_backend_mem const & other );
-
-			schema_backend * clone ();
-
-			void read ( backend_path const & loc, field_list & fields );
-
-			void write ( backend_path const & loc, field_list const & fields );
-
-		private :
-
-			field_list fields_;
+			virtual void write ( backend_path const & loc, link_info const & link, field_list const & fields ) = 0;
 
 	};
+
 
 	// HDF5 backend class
 
@@ -87,9 +65,9 @@ namespace tidas {
 
 			schema_backend * clone ();
 
-			void read ( backend_path const & loc, field_list & fields );
+			void read ( backend_path const & loc, field_list & fields ) const;
 
-			void write ( backend_path const & loc, field_list const & fields );
+			void write ( backend_path const & loc, link_info const & link, field_list const & fields );
 
 	};
 
@@ -107,9 +85,9 @@ namespace tidas {
 
 			schema_backend * clone ();
 
-			void read ( backend_path const & loc, field_list & fields );
+			void read ( backend_path const & loc, field_list & fields ) const;
 
-			void write ( backend_path const & loc, field_list const & fields );
+			void write ( backend_path const & loc, link_info const & link, field_list const & fields );
 
 	};
 
@@ -136,7 +114,7 @@ namespace tidas {
 
 			void relocate ( backend_path const & loc );
 
-			void sync ();
+			void sync () const;
 
 			void flush ();
 

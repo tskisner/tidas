@@ -206,10 +206,17 @@ TEST( utilstest, filesystem ) {
 	int ret = system ( com.str().c_str() );
 
 	int64_t check = fs_stat ( path.c_str() );
-
 	EXPECT_EQ( check, count );
 
 	fs_rm ( path.c_str() );
+
+	file = "blah.rnd";
+	path = dir + "/" + file;
+	com.str("");
+	com << "dd if=/dev/random of=" << path << " bs=1 count=" << count;
+	ret = system ( com.str().c_str() );
+
+	fs_rm_r ( dir.c_str() );
 
 }
 

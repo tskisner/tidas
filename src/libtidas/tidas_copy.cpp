@@ -12,9 +12,9 @@ using namespace std;
 using namespace tidas;
 
 
-void tidas::data_copy ( intervals & in, intervals & out ) {
+void tidas::data_copy ( intervals const & in, intervals & out ) {
 
-	if ( ( in.location() == out.location() ) && ( in.location().type != BACKEND_MEM ) ) {
+	if ( ( in.location() == out.location() ) && ( in.location().type != BACKEND_NONE ) ) {
 		TIDAS_THROW( "cannot do data_copy between intervals with same location" );
 	}
 
@@ -33,7 +33,9 @@ void tidas::data_copy ( intervals & in, intervals & out ) {
 }
 
 
-void tidas::data_copy ( group & in, group & out ) {
+/*
+
+void tidas::data_copy ( group const & in, group & out ) {
 
 	if ( ( in.location() == out.location() ) && ( in.location().type != BACKEND_MEM ) ) {
 		TIDAS_THROW( "cannot do data_copy between groups with same location" );
@@ -107,15 +109,14 @@ void tidas::data_copy ( group & in, group & out ) {
 }
 
 
-
-/*
-
-void tidas::data_copy ( block & in, block & out ) {
+void tidas::data_copy ( block const & in, block & out ) {
 
 
 	return;
 }
+*/
 
+/*
 
 void tidas::data_copy ( volume & in, volume & out ) {
 

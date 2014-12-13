@@ -52,48 +52,19 @@ namespace tidas {
 			intervals_backend () {}
 			virtual ~intervals_backend () {}
 
-			virtual intervals_backend * clone () = 0;
-
 			virtual void read ( backend_path const & loc, size_t & size ) = 0;
 
-			virtual void write ( backend_path const & loc, size_t const & size ) = 0;
+			virtual void write ( backend_path const & loc, size_t const & size ) const = 0;
 
-			virtual void read_data ( backend_path const & loc, interval_list & intr ) = 0;
+			virtual void link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const = 0;
+
+			virtual void purge ( backend_path const & loc ) const = 0;
+
+			virtual void read_data ( backend_path const & loc, interval_list & intr ) const = 0;
 			
 			virtual void write_data ( backend_path const & loc, interval_list const & intr ) = 0;
 
-			virtual std::string dict_meta () = 0;
-
-	};
-
-
-	// memory backend class
-
-	class intervals_backend_mem : public intervals_backend {
-
-		public :
-			
-			intervals_backend_mem ();
-			~intervals_backend_mem ();
-			intervals_backend_mem ( intervals_backend_mem const & other );
-			intervals_backend_mem & operator= ( intervals_backend_mem const & other );
-
-			intervals_backend * clone ();
-
-			void read ( backend_path const & loc, size_t & size );
-
-			void write ( backend_path const & loc, size_t const & size );
-			
-			void read_data ( backend_path const & loc, interval_list & intr );
-			
-			void write_data ( backend_path const & loc, interval_list const & intr );
-
-			std::string dict_meta ();
-
-		private :
-
-			size_t size_;
-			interval_list store_;
+			virtual std::string dict_meta () const = 0;
 
 	};
 
@@ -109,17 +80,19 @@ namespace tidas {
 			intervals_backend_hdf5 ( intervals_backend_hdf5 const & other );
 			intervals_backend_hdf5 & operator= ( intervals_backend_hdf5 const & other );
 
-			intervals_backend * clone ();
-
 			void read ( backend_path const & loc, size_t & size );
 
-			void write ( backend_path const & loc, size_t const & size );
+			void write ( backend_path const & loc, size_t const & size ) const;
 
-			void read_data ( backend_path const & loc, interval_list & intr );
+			void link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const;
+
+			void purge ( backend_path const & loc ) const;
+
+			void read_data ( backend_path const & loc, interval_list & intr ) const;
 			
 			void write_data ( backend_path const & loc, interval_list const & intr );
 
-			std::string dict_meta ();
+			std::string dict_meta () const;
 
 	};
 
@@ -135,17 +108,19 @@ namespace tidas {
 			intervals_backend_getdata ( intervals_backend_getdata const & other );
 			intervals_backend_getdata & operator= ( intervals_backend_getdata const & other );
 
-			intervals_backend * clone ();
-
 			void read ( backend_path const & loc, size_t & size );
 			
-			void write ( backend_path const & loc, size_t const & size );
+			void write ( backend_path const & loc, size_t const & size ) const;
 
-			void read_data ( backend_path const & loc, interval_list & intr );
+			void link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const;
+
+			void purge ( backend_path const & loc ) const;
+
+			void read_data ( backend_path const & loc, interval_list & intr ) const;
 
 			void write_data ( backend_path const & loc, interval_list const & intr );
 
-			std::string dict_meta ();
+			std::string dict_meta () const;
 
 	};
 
@@ -180,20 +155,22 @@ namespace tidas {
 
 			// metadata ops
 
-			void set_backend ( backend_path const & loc, std::unique_ptr < intervals_backend > & backend );
-
 			void relocate ( backend_path const & loc );
 
 			/// Reload metadata from the current location, overwriting the current state in memory.
 			void sync ();
 
 			/// Write metadata to the current location, overwriting the information at that location.
-			void flush ();
+			void flush () const;
 
 			void copy ( intervals const & other, std::string const & filter, backend_path const & loc );
 
-			/// Copy all metadata to a new location.
-			void duplicate ( backend_path const & loc );
+			/// Create a link at the specified location.
+			void link ( link_type const & type, std::string const & path, std::string const & name );
+
+			/// Delete the on-disk data and metadata associated with this object.
+			/// In-memory metadata is not modified.
+			void del () const;
 
 			/// The current location.
 			backend_path location () const;
@@ -204,7 +181,7 @@ namespace tidas {
 
 			dict const & dictionary () const;
 
-			void read_data ( interval_list & intr );
+			void read_data ( interval_list & intr ) const;
 
 			void write_data ( interval_list const & intr );
 
@@ -219,6 +196,10 @@ namespace tidas {
 			static intrvl seek_floor ( interval_list const & intr, time_type time );
 
 		private :
+
+			void set_backend ();
+
+			void dict_loc ( backend_path & dloc );
 
 			dict dict_;
 

@@ -77,8 +77,16 @@ namespace tidas {
 	///
 	void fs_rm ( char const * path );
 
+	///
+	/// Recursively remove directories
+	///
+	void fs_rm_r ( char const * path );
+
 	/// Make the specified directory.
 	void fs_mkdir ( char const * path );
+
+	/// Make a link
+	void fs_link ( char const * target, char const * path, bool hard = false );
 
 
 	// data types

@@ -101,23 +101,23 @@ void tidas::block::relocate ( backend_path const & loc ) {
 }
 
 
-void tidas::block::sync () {
+void tidas::block::sync () const {
 
 	// sync groups
 
-	for ( map < string, group > :: iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
+	for ( map < string, group > :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
 		it->second.sync();
 	}
 
 	// sync intervals
 
-	for ( map < string, intervals > :: iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
+	for ( map < string, intervals > :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
 		it->second.sync();
 	}
 
 	// sync sub blocks
 
-	for ( map < string, block > :: iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
+	for ( map < string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
 		it->second.sync();
 	}
 
@@ -199,7 +199,7 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	for ( map < string, group > :: const_iterator it = other.group_data_.begin(); it != other.group_data_.end(); ++it ) {
 		if ( RE2::FullMatch ( it->first, groupre ) ) {
-			group_add ( it->first, it->second );
+			group & ignored = group_add ( it->first, it->second );
 		}
 	}
 
@@ -213,7 +213,7 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	for ( map < string, intervals > :: const_iterator it = other.intervals_data_.begin(); it != other.intervals_data_.end(); ++it ) {
 		if ( RE2::FullMatch ( it->first, intre ) ) {
-			intervals_add ( it->first, it->second );
+			intervals & ignored = intervals_add ( it->first, it->second );
 		}
 	}
 
@@ -243,7 +243,7 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	for ( map < string, block > :: const_iterator it = other.block_data_.begin(); it != other.block_data_.end(); ++it ) {
 		if ( RE2::FullMatch ( it->first, blockre ) ) {
-			block_add ( it->first, it->second );
+			block & ignored = block_add ( it->first, it->second );
 		}
 	}
 
@@ -329,7 +329,11 @@ backend_path tidas::block::block_loc ( backend_path const & loc, string const & 
 }
 
 
-group & tidas::block::group_add ( string const & name, group const & grp ) {
+group & tidas::block::group_add ( string const & name, group & grp ) {
+
+	if ( loc_.mode == MODE_R ) {
+		TIDAS_THROW( "cannt add group: block is open in read-only mode" );
+	}
 
 	if ( group_data_.count ( name ) > 0 ) {
 		ostringstream o;
@@ -339,7 +343,9 @@ group & tidas::block::group_add ( string const & name, group const & grp ) {
 
 	group_data_[ name ].copy ( grp, "", group_loc ( loc_, name ) );
 
-	return group_data_.at ( name );
+	data_copy ( grp, group_data_.at( name ) );
+
+	return group_data_.at( name );
 }
 
 
@@ -357,11 +363,17 @@ group & tidas::block::group_get ( string const & name ) {
 
 void tidas::block::group_del ( string const & name ) {
 
+	if ( loc_.mode == MODE_R ) {
+		TIDAS_THROW( "cannt delete group: block is open in read-only mode" );
+	}
+
 	if ( group_data_.count ( name ) == 0 ) {
 		ostringstream o;
 		o << "cannot remove group with name \"" << name << "\": does not exist";
 		TIDAS_THROW( o.str().c_str() );
 	}
+
+	//group_data_[ name ].del();
 
 	group_data_.erase ( name );
 
@@ -369,7 +381,29 @@ void tidas::block::group_del ( string const & name ) {
 }
 
 
-intervals & tidas::block::intervals_add ( string const & name, intervals const & intr ) {
+vector < string > tidas::block::all_groups () const {
+	vector < string > ret;
+	for ( group_data_ :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
+		ret.push_back ( it->first );
+	}
+	return ret;
+}
+
+
+void tidas::block::clear_groups () {
+	vector < string > all = all_groups();
+	for ( vector < string > :: const_iterator it = all.begin(); it != all.end(); ++it ) {
+		group_del ( *it );
+	}
+	return;
+}
+
+
+intervals & tidas::block::intervals_add ( string const & name, intervals & intr ) {
+
+	if ( loc_.mode == MODE_R ) {
+		TIDAS_THROW( "cannt add intervals: block is open in read-only mode" );
+	}
 
 	if ( intervals_data_.count ( name ) > 0 ) {
 		ostringstream o;
@@ -379,7 +413,9 @@ intervals & tidas::block::intervals_add ( string const & name, intervals const &
 
 	intervals_data_[ name ].copy ( intr, "", intervals_loc ( loc_, name ) );
 
-	return intervals_data_.at ( name );
+	data_copy ( intr, intervals_data_.at( name ) );
+
+	return intervals_data_.at( name );
 }
 
 
@@ -397,11 +433,17 @@ intervals & tidas::block::intervals_get ( string const & name ) {
 
 void tidas::block::intervals_del ( string const & name ) {
 
+	if ( loc_.mode == MODE_R ) {
+		TIDAS_THROW( "cannt delete intervals: block is open in read-only mode" );
+	}
+
 	if ( intervals_data_.count ( name ) == 0 ) {
 		ostringstream o;
 		o << "cannot remove intervals with name \"" << name << "\": does not exist";
 		TIDAS_THROW( o.str().c_str() );
 	}
+
+	//intervals_data_[ name ].del();
 
 	intervals_data_.erase ( name );
 
@@ -409,7 +451,29 @@ void tidas::block::intervals_del ( string const & name ) {
 }
 
 
-block & tidas::block::block_add ( string const & name, block const & blk ) {
+vector < string > tidas::block::all_intervals () const {
+	vector < string > ret;
+	for ( intervals_data_ :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
+		ret.push_back ( it->first );
+	}
+	return ret;
+}
+
+
+void tidas::block::clear_intervals () {
+	vector < string > all = all_intervals();
+	for ( vector < string > :: const_iterator it = all.begin(); it != all.end(); ++it ) {
+		intervals_del ( *it );
+	}
+	return;
+}
+
+
+block & tidas::block::block_add ( string const & name, block & blk ) {
+
+	if ( loc_.mode == MODE_R ) {
+		TIDAS_THROW( "cannt add sub-block: block is open in read-only mode" );
+	}
 
 	if ( block_data_.count ( name ) > 0 ) {
 		ostringstream o;
@@ -418,6 +482,8 @@ block & tidas::block::block_add ( string const & name, block const & blk ) {
 	}
 
 	block_data_[ name ].copy ( blk, "", block_loc ( loc_, name ) );
+
+	data_copy ( blk, block_data_.at ( name ) );
 
 	return block_data_.at ( name );
 }
@@ -437,11 +503,17 @@ block & tidas::block::block_get ( string const & name ) {
 
 void tidas::block::block_del ( string const & name ) {
 
+	if ( loc_.mode == MODE_R ) {
+		TIDAS_THROW( "cannt delete sub-block: block is open in read-only mode" );
+	}
+
 	if ( block_data_.count ( name ) == 0 ) {
 		ostringstream o;
 		o << "cannot remove block with name \"" << name << "\": does not exist";
 		TIDAS_THROW( o.str().c_str() );
 	}
+
+	//block_data_[ name ].del();
 
 	block_data_.erase ( name );
 
@@ -449,6 +521,28 @@ void tidas::block::block_del ( string const & name ) {
 }
 
 
+vector < string > tidas::block::all_blocks () const {
+	vector < string > ret;
+	for ( block_data_ :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
+		ret.push_back ( it->first );
+	}
+	return ret;
+}
 
 
+void tidas::block::clear_blocks () {
+	vector < string > all = all_blocks();
+	for ( vector < string > :: const_iterator it = all.begin(); it != all.end(); ++it ) {
+		block_del ( *it );
+	}
+	return;
+}
+
+
+void tidas::block::clear () {
+	clear_groups();
+	clear_intervals();
+	clear_blocks();
+	return;
+}
 

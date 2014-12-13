@@ -43,7 +43,7 @@ schema_backend * tidas::schema_backend_getdata::clone () {
 }
 
 
-void tidas::schema_backend_getdata::read ( backend_path const & loc, field_list & fields ) {
+void tidas::schema_backend_getdata::read ( backend_path const & loc, field_list & fields ) const {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }

@@ -42,7 +42,7 @@ schema_backend * tidas::schema_backend_hdf5::clone () {
 }
 
 
-void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & fields ) {
+void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & fields ) const {
 
 #ifdef HAVE_HDF5
 

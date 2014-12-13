@@ -15,12 +15,10 @@ using namespace tidas;
 
 tidas::dict::dict () {
 	relocate ( loc_ );
-	flush();
 }
 
 
 tidas::dict::~dict () {
-
 }
 
 
@@ -48,14 +46,14 @@ tidas::dict::dict ( dict const & other, string const & filter, backend_path cons
 }
 
 
-void tidas::dict::set_backend ( backend_path const & loc, std::unique_ptr < dict_backend > & backend ) {
+void tidas::dict::set_backend () {
 
-	switch ( loc.type ) {
-		case BACKEND_MEM:
-			backend.reset( new dict_backend_mem () );
+	switch ( loc_.type ) {
+		case BACKEND_NONE:
+			backend_.reset();
 			break;
 		case BACKEND_HDF5:
-			backend.reset( new dict_backend_hdf5 () );
+			backend_.reset( new dict_backend_hdf5 () );
 			break;
 		case BACKEND_GETDATA:
 			TIDAS_THROW( "GetData backend not yet implemented" );
@@ -75,7 +73,7 @@ void tidas::dict::relocate ( backend_path const & loc ) {
 
 	// set backend
 
-	set_backend ( loc_, backend_ );
+	set_backend ();
 
 	return;
 }
@@ -85,21 +83,25 @@ void tidas::dict::sync () {
 
 	// read our own metadata
 
-	backend_->read ( loc_, data_, types_ );
+	if ( loc_.type != BACKEND_NONE ) {
+		backend_->read ( loc_, data_, types_ );
+	}
 
 	return;
 }
 
 
-void tidas::dict::flush () {
+void tidas::dict::flush () const {
 
-	if ( loc_.mode == MODE_R ) {
-		TIDAS_THROW( "cannot flush to read-only location" );
+	if ( loc_.type != BACKEND_NONE ) {
+
+		if ( loc_.mode == MODE_RW ) {
+			// write our own metadata
+
+			backend_->write ( loc_, data_, types_ );
+		}
+
 	}
-
-	// write our own metadata
-
-	backend_->write ( loc_, data_, types_ );
 
 	return;
 }
@@ -109,14 +111,14 @@ void tidas::dict::copy ( dict const & other, string const & filter, backend_path
 
 	string filt = filter_default ( filter );
 
-	if ( ( filt != ".*" ) && ( loc.type != BACKEND_MEM ) && ( loc == other.loc_ ) ) {
+	if ( ( filt != ".*" ) && ( loc.type != BACKEND_NONE ) && ( loc == other.loc_ ) ) {
 		TIDAS_THROW( "copy of non-memory dict with a filter requires a new location" );
 	}
 
 	// set backend
 
 	loc_ = loc;
-	set_backend ( loc_, backend_ );
+	set_backend ();
 
 	// filtered copy of our metadata
 
@@ -131,39 +133,6 @@ void tidas::dict::copy ( dict const & other, string const & filter, backend_path
 			types_[ it->first ] = other.types().at( it->first );
 		}
 	}
-
-	if ( ( loc_ != other.loc_ ) || ( loc.type == BACKEND_MEM ) ) {
-		if ( loc_.mode == MODE_RW ) {
-
-			// write our metadata
-			
-			backend_->write ( loc_, data_, types_ );
-
-		} else {
-			TIDAS_THROW( "cannot copy to new read-only location" );
-		}
-	}
-
-	return;
-}
-
-
-void tidas::dict::duplicate ( backend_path const & loc ) {
-
-	if ( loc.type == BACKEND_MEM ) {
-		TIDAS_THROW( "calling duplicate() with memory backend makes no sense" );
-	}
-
-	if ( loc.mode != MODE_RW ) {
-		TIDAS_THROW( "cannot duplicate to read-only location" );
-	}
-
-	// write our metadata
-
-	unique_ptr < dict_backend > backend;
-	set_backend ( loc, backend );
-
-	backend->write ( loc, data_, types_ );
 
 	return;
 }
@@ -189,52 +158,4 @@ std::map < std::string, std::string > const & tidas::dict::data() const {
 std::map < std::string, data_type > const & tidas::dict::types() const {
 	return types_;
 }
-
-
-tidas::dict_backend_mem::dict_backend_mem () {
-
-}
-
-
-tidas::dict_backend_mem::~dict_backend_mem () {
-
-}
-
-
-tidas::dict_backend_mem::dict_backend_mem ( dict_backend_mem const & other ) {
-	data_ = other.data_;
-	types_ = other.types_;
-}
-
-
-dict_backend_mem & tidas::dict_backend_mem::operator= ( dict_backend_mem const & other ) {
-	if ( this != &other ) {
-		data_ = other.data_;
-		types_ = other.types_;
-	}
-	return *this;
-}
-
-
-dict_backend * tidas::dict_backend_mem::clone () {
-	dict_backend_mem * ret = new dict_backend_mem ( *this );
-	ret->data_ = data_;
-	ret->types_ = types_;
-	return ret;
-}
-
-
-void tidas::dict_backend_mem::read ( backend_path const & loc, map < string, string > & data, map < string, data_type > & types ) {
-	data = data_;
-	types = types_;
-	return;
-}
-
-
-void tidas::dict_backend_mem::write ( backend_path const & loc, map < string, string > const & data, map < string, data_type > const & types ) {
-	data_ = data;
-	types_ = types;
-	return;
-}
-
 

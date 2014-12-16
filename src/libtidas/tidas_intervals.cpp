@@ -53,7 +53,6 @@ bool tidas::intrvl::operator!= ( const intrvl & other ) const {
 }
 
 
-
 tidas::intervals::intervals () {
 	size_ = 0;
 	relocate ( loc_ );
@@ -68,7 +67,6 @@ tidas::intervals::intervals ( dict const & d, size_t const & size ) {
 
 
 tidas::intervals::~intervals () {
-
 }
 
 
@@ -198,7 +196,7 @@ void tidas::intervals::copy ( intervals const & other, string const & filter, ba
 }
 
 
-void tidas::intervals::link ( link_type const & type, string const & path, string const & name ) {
+void tidas::intervals::link ( link_type const & type, string const & path, string const & name ) const {
 
 	backend_path oldloc = loc_;
 
@@ -214,14 +212,14 @@ void tidas::intervals::link ( link_type const & type, string const & path, strin
 }
 
 
-void tidas::intervals::del () const {
+void tidas::intervals::wipe () const {
 
 	if ( loc_.type != BACKEND_NONE ) {
 
 		if ( loc_.mode == MODE_RW ) {
-			backend_->purge ( loc_ );
+			backend_->wipe ( loc_ );
 		} else {
-			TIDAS_THROW( "cannot del() intervals in read-only mode" );
+			TIDAS_THROW( "cannot wipe intervals in read-only mode" );
 		}
 	}
 
@@ -252,6 +250,7 @@ void tidas::intervals::read_data ( interval_list & intr ) const {
 	if ( ! backend_ ) {
 		TIDAS_THROW( "intervals read_data:  backend not assigned" );
 	}
+
 	backend_->read_data ( loc_, intr );
 	return;
 }
@@ -261,6 +260,7 @@ void tidas::intervals::write_data ( interval_list const & intr ) {
 	if ( ! backend_ ) {
 		TIDAS_THROW( "intervals read_data:  backend not assigned" );
 	}
+
 	backend_->write_data ( loc_, intr );
 	return;
 }

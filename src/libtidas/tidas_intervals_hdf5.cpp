@@ -193,7 +193,7 @@ void tidas::intervals_backend_hdf5::link ( backend_path const & loc, link_type t
 }
 
 
-void tidas::intervals_backend_hdf5::purge ( backend_path const & loc ) const {
+void tidas::intervals_backend_hdf5::wipe ( backend_path const & loc ) const {
 
 #ifdef HAVE_HDF5
 

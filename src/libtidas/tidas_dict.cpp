@@ -70,9 +70,6 @@ void tidas::dict::set_backend () {
 void tidas::dict::relocate ( backend_path const & loc ) {
 
 	loc_ = loc;
-
-	// set backend
-
 	set_backend ();
 
 	return;

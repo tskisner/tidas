@@ -59,7 +59,7 @@ void tidas::intervals_backend_getdata::link ( backend_path const & loc, link_typ
 }
 
 
-void tidas::intervals_backend_getdata::purge ( backend_path const & loc ) const {
+void tidas::intervals_backend_getdata::wipe ( backend_path const & loc ) const {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }

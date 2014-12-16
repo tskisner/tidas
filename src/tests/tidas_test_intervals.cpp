@@ -113,7 +113,7 @@ TEST_F( intervalsTest, HDF5Backend ) {
 
 	intervals test ( dt, intrvls.size() );
 
-	// move metadata to hdf5 location
+	// copy to metadata to hdf5 location
 
 	backend_path loc;
 	loc.type = BACKEND_HDF5;
@@ -132,7 +132,7 @@ TEST_F( intervalsTest, HDF5Backend ) {
 
 	intervals test3 ( test2, ".*", loc );
 	test3.flush();
-	
+
 	data_copy ( test2, test3 );
 
 	// read and verify

@@ -70,7 +70,7 @@ namespace tidas {
 
 		public :
 
-			/// Default constructor.  The backend is set to be memory based.
+			/// Default constructor.  Backend is unassigned.
 			dict ();
 			~dict ();
 			dict & operator= ( dict const & other );

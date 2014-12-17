@@ -36,13 +36,7 @@ schema_backend_hdf5 & tidas::schema_backend_hdf5::operator= ( schema_backend_hdf
 }
 
 
-schema_backend * tidas::schema_backend_hdf5::clone () {
-	schema_backend_hdf5 * ret = new schema_backend_hdf5 ( *this );
-	return ret;
-}
-
-
-void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & fields ) const {
+void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & fields ) {
 
 #ifdef HAVE_HDF5
 
@@ -127,7 +121,7 @@ void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & f
 }
 
 
-void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list const & fields ) {
+void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list const & fields ) const {
 
 #ifdef HAVE_HDF5
 

@@ -48,7 +48,7 @@ void intervals_setup ( tidas::interval_list & inv );
 
 void intervals_verify ( tidas::interval_list const & inv );
 
-/*
+
 class schemaTest : public ::testing::Test {
 
 	public :
@@ -65,7 +65,7 @@ void schema_setup ( tidas::field_list & flist );
 
 void schema_verify ( tidas::field_list const & flist );
 
-
+/*
 class groupTest : public ::testing::Test {
 
 	public :

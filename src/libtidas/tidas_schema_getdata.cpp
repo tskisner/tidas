@@ -37,19 +37,13 @@ schema_backend_getdata & tidas::schema_backend_getdata::operator= ( schema_backe
 }
 
 
-schema_backend * tidas::schema_backend_getdata::clone () {
-	schema_backend_getdata * ret = new schema_backend_getdata ( *this );
-	return ret;
-}
-
-
-void tidas::schema_backend_getdata::read ( backend_path const & loc, field_list & fields ) const {
+void tidas::schema_backend_getdata::read ( backend_path const & loc, field_list & fields ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::schema_backend_getdata::write ( backend_path const & loc, field_list const & fields ) {
+void tidas::schema_backend_getdata::write ( backend_path const & loc, field_list const & fields ) const {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }

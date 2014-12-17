@@ -105,15 +105,19 @@ schemaTest::schemaTest () {
 }
 
 
-TEST_F( schemaTest, MemBackend ) {
+TEST_F( schemaTest, MetaOps ) {
 
 	schema schm;
 
-	// should return null field
-	field ftest = schm.seek ( "dummy" );
-	EXPECT_EQ( ftest.name, "" );
-	EXPECT_EQ( ftest.units, "" );
-	EXPECT_EQ( ftest.type, TYPE_NONE );
+	// should throw
+	try {
+		field ftest = schm.field_get ( "dummy" );
+		EXPECT_EQ( ftest.name, "" );
+		EXPECT_EQ( ftest.units, "" );
+		EXPECT_EQ( ftest.type, TYPE_NONE );
+	} catch(...) {
+		cout << "schema::field_get successfully threw exception" << endl;
+	}
 
 	// should return empty list
 	field_list flist = schm.fields();
@@ -123,7 +127,7 @@ TEST_F( schemaTest, MemBackend ) {
 
 	schema schm2 ( flist );
 
-	schema_verify ( flist );
+	schema_verify ( schm2.fields() );
 
 }
 
@@ -137,13 +141,13 @@ TEST_F( schemaTest, AddRemove ) {
 	schema schm ( flist );
 
 	for ( size_t i = 0; i < flist.size(); ++i ) {
-		schm.remove ( flist[i].name );
+		schm.field_del ( flist[i].name );
 	}
 
 	EXPECT_EQ( schm.fields().size(), 0 );
 
 	for ( size_t i = 0; i < flist.size(); ++i ) {
-		schm.append ( flist[i] );
+		schm.field_add ( flist[i] );
 	}
 
 	schema_verify ( schm.fields() );
@@ -159,12 +163,12 @@ TEST_F( schemaTest, Filter ) {
 
 	schema schm ( flist );
 
-	backend_path memloc;
+	backend_path loc;
 
-	schema filt_ischm ( schm, "int.*", memloc );
+	schema filt_ischm ( schm, "int.*", loc );
 	EXPECT_EQ( filt_ischm.fields().size(), 4 );
 
-	schema filt_aischm ( schm, ".*int.*", memloc );
+	schema filt_aischm ( schm, ".*int.*", loc );
 	EXPECT_EQ( filt_aischm.fields().size(), 8 );
 
 }
@@ -187,11 +191,12 @@ TEST_F( schemaTest, HDF5Backend ) {
 	loc.meta = string("/") + schema_hdf5_dataset;
 	loc.mode = MODE_RW;
 
-	schm.duplicate ( loc );
+	schema schm2 ( schm, ".*", loc );
+	schm2.flush();
 
-	schema schm2 ( loc );
+	schema schm3 ( loc );
 
-	schema_verify ( schm2.fields() );
+	schema_verify ( schm3.fields() );
 
 #else
 

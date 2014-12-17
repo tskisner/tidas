@@ -35,12 +35,6 @@ group_backend_getdata & tidas::group_backend_getdata::operator= ( group_backend_
 }
 
 
-group_backend * tidas::group_backend_getdata::clone () {
-	group_backend_getdata * ret = new group_backend_getdata ( *this );
-	return ret;
-}
-
-
 string tidas::group_backend_getdata::dict_meta () const {
 	return string("");
 }
@@ -51,13 +45,25 @@ string tidas::group_backend_getdata::schema_meta () const {
 }
 
 
-void tidas::group_backend_getdata::read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts ) const {
+void tidas::group_backend_getdata::read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
 
 
-void tidas::group_backend_getdata::write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) {
+void tidas::group_backend_getdata::write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const {
+	TIDAS_THROW( "GetData backend not supported" );
+	return;
+}
+
+
+void tidas::group_backend_getdata::link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const {
+	TIDAS_THROW( "GetData backend not supported" );
+	return;
+}
+
+
+void tidas::group_backend_getdata::wipe ( backend_path const & loc ) const {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }

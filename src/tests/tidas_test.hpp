@@ -65,7 +65,7 @@ void schema_setup ( tidas::field_list & flist );
 
 void schema_verify ( tidas::field_list const & flist );
 
-/*
+
 class groupTest : public ::testing::Test {
 
 	public :
@@ -85,6 +85,7 @@ void group_verify ( tidas::group & grp );
 void group_verify_int ( tidas::group & grp );
 
 
+/*
 class blockTest : public ::testing::Test {
 
 	public :

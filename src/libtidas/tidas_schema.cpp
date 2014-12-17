@@ -169,14 +169,14 @@ void tidas::schema::copy ( schema const & other, string const & filter, backend_
 	loc_ = loc;
 	set_backend();
 
-	// filtered copy of our metadata
+	// filtered copy of our metadata.  Note that we *always* keep the time field.
 
 	fields_.clear();
 
 	RE2 re ( filt );
 
 	for ( field_list :: const_iterator it = other.fields().begin(); it != other.fields().end(); ++it ) {
-		if ( RE2::FullMatch ( it->name, re ) ) {
+		if ( RE2::FullMatch ( it->name, re ) || ( it->name == group_time_field ) ) {
 			fields_.push_back ( field( it->name, it->type, it->units ) );
 		}
 	}

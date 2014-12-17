@@ -44,13 +44,13 @@ void group_setup ( group & grp ) {
 
 	for ( size_t i = 0; i < nsamp; ++i ) {
 		uint8_data[i] = (uint8_t)i;
-		int8_data[i] = (int8_t)(-i);
+		int8_data[i] = -(int8_t)(i);
 		uint16_data[i] = (uint16_t)i;
-		int16_data[i] = (int16_t)(-i);
+		int16_data[i] = -(int16_t)(i);
 		uint32_data[i] = (uint32_t)i;
-		int32_data[i] = (int32_t)(-i);
+		int32_data[i] = -(int32_t)(i);
 		uint64_data[i] = (uint64_t)i;
-		int64_data[i] = (int64_t)(-i);
+		int64_data[i] = -(int64_t)(i);
 		float_data[i] = (float)i / 10.0;
 		double_data[i] = (double)i / 10.0;
 	}
@@ -115,13 +115,13 @@ void group_verify ( group & grp ) {
 
 	for ( size_t i = 0; i < nsamp; ++i ) {
 		uint8_data[i] = (uint8_t)i;
-		int8_data[i] = (int8_t)(-i);
+		int8_data[i] = -(int8_t)(i);
 		uint16_data[i] = (uint16_t)i;
-		int16_data[i] = (int16_t)(-i);
+		int16_data[i] = -(int16_t)(i);
 		uint32_data[i] = (uint32_t)i;
-		int32_data[i] = (int32_t)(-i);
+		int32_data[i] = -(int32_t)(i);
 		uint64_data[i] = (uint64_t)i;
-		int64_data[i] = (int64_t)(-i);
+		int64_data[i] = -(int64_t)(i);
 		float_data[i] = (float)i / 10.0;
 		double_data[i] = (double)i / 10.0;
 	}
@@ -246,7 +246,7 @@ void groupTest::SetUp () {
 }
 
 
-TEST_F( groupTest, MemBackend ) {
+TEST_F( groupTest, MetaOps ) {
 
 	dict dt;
 	dict_setup ( dt );
@@ -256,35 +256,6 @@ TEST_F( groupTest, MemBackend ) {
 	schema schm ( flist );
 
 	group grp ( schm, dt, gnsamp );
-
-	group_setup ( grp );
-
-	group_verify ( grp );
-
-}
-
-
-TEST_F( groupTest, Filter ) {
-
-	dict dt;
-	dict_setup ( dt );
-
-	field_list flist;
-	schema_setup ( flist );
-	schema schm ( flist );
-
-	group grp ( schm, dt, gnsamp );
-	group_setup ( grp );
-
-	backend_path loc;
-
-	string filter = submatch_begin + schema_submatch_key + submatch_assign + string("int.*") + submatch_end;
-
-	group grp2 ( grp, filter, loc );
-
-	data_copy ( grp, grp2 );
-
-	group_verify_int ( grp2 );
 
 }
 
@@ -304,20 +275,39 @@ TEST_F( groupTest, HDF5Backend ) {
 
 	group grp ( schm, dt, gnsamp );
 
-	group_setup ( grp );
-
 	backend_path loc;
 	loc.type = BACKEND_HDF5;
 	loc.path = ".";
 	loc.name = "test_group.hdf5.out";
 	loc.mode = MODE_RW;
 
-	grp.duplicate ( loc );
-	group grp2 ( loc );
+	group grp2 ( grp, ".*", loc );
+	grp2.flush();
 
-	data_copy ( grp, grp2 );
+	// write test data
+	group_setup ( grp2 );
 
+	// read and verify
 	group_verify ( grp2 );
+
+	// construct from location and verify
+
+	group grp3 ( loc );
+	group_verify ( grp3 );
+
+	// create filtered copy and check
+
+	backend_path filtloc = loc;
+	filtloc.name = "test_group_filt.hdf5.out";
+
+	string filter = submatch_begin + schema_submatch_key + submatch_assign + string("int.*") + submatch_end;
+
+	group grp4 ( grp2, filter, filtloc );
+	grp4.flush();
+
+	data_copy ( grp2, grp4 );
+
+	group_verify_int ( grp4 );
 
 #else
 

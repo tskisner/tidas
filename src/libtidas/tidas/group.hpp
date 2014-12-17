@@ -25,10 +25,13 @@ namespace tidas {
 			group_backend () {}
 			virtual ~group_backend () {}
 
-			virtual group_backend * clone () = 0;
+			virtual void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts ) = 0;
 
-			virtual void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts ) const = 0;
-			virtual void write ( backend_path const & loc, link_info const & link, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const = 0;
+			virtual void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const = 0;
+
+			virtual void link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const = 0;
+
+			virtual void wipe ( backend_path const & loc ) const = 0;
 
 			virtual void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > & data ) const = 0;
 			virtual void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > const & data ) = 0;
@@ -79,10 +82,11 @@ namespace tidas {
 			group_backend_hdf5 ( group_backend_hdf5 const & other );
 			group_backend_hdf5 & operator= ( group_backend_hdf5 const & other );
 
-			group_backend * clone ();
+			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts );
+			void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const;
 
-			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts ) const;
-			void write ( backend_path const & loc, link_info const & link, index_type const & nsamp, std::map < data_type, size_t > const & counts );
+			void link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const;
+			void wipe ( backend_path const & loc ) const;
 
 			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > const & data );
@@ -134,10 +138,11 @@ namespace tidas {
 			group_backend_getdata ( group_backend_getdata const & other );
 			group_backend_getdata & operator= ( group_backend_getdata const & other );
 
-			group_backend * clone ();
+			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts );
+			void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const;
 
-			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts ) const;
-			void write ( backend_path const & loc, link_info const & link, index_type const & nsamp, std::map < data_type, size_t > const & counts );
+			void link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const;
+			void wipe ( backend_path const & loc ) const;
 
 			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > & data ) const;
 			void write_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > const & data );
@@ -185,28 +190,34 @@ namespace tidas {
 		public :
 
 			group ();
+
 			group ( schema const & schm, dict const & d, size_t const & size );
 
 			~group ();
 			group & operator= ( group const & other );
 
 			group ( group const & other );
+
 			group ( backend_path const & loc );
+			
 			group ( group const & other, std::string const & filter, backend_path const & loc );
 
 			// metadata ops
 
-			void set_backend ( backend_path const & loc, std::unique_ptr < group_backend > & backend );
-
 			void relocate ( backend_path const & loc );
 
-			void sync () const;
+			void sync ();
 
-			void flush ();
+			void flush () const;
 
 			void copy ( group const & other, std::string const & filter, backend_path const & loc );
 
-			void duplicate ( backend_path const & loc );
+			/// Create a link at the specified location.
+			void link ( link_type const & type, std::string const & path, std::string const & name ) const;
+
+			/// Delete the on-disk data and metadata associated with this object.
+			/// In-memory metadata is not modified.
+			void wipe () const;
 
 			backend_path location () const;
 
@@ -224,7 +235,7 @@ namespace tidas {
 
 			template < class T >
 			void read_field ( std::string const & field_name, index_type offset, std::vector < T > & data ) const {
-				field check = schm_.seek ( field_name );
+				field check = schm_.field_get ( field_name );
 				if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
 					std::ostringstream o;
 					o << "cannot read non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
@@ -236,13 +247,17 @@ namespace tidas {
 					o << "cannot read field " << field_name << ", samples " << offset << " - " << (offset+n-1) << " from group " << loc_.name << " (" << size_ << " samples)";
 					TIDAS_THROW( o.str().c_str() );
 				}
-				backend_->read_field ( loc_, field_name, type_indx_.at( field_name ), offset, data );
+				if ( loc_.type != BACKEND_NONE ) {
+					backend_->read_field ( loc_, field_name, type_indx_.at( field_name ), offset, data );
+				} else {
+					TIDAS_THROW( "cannot read field- backend not assigned" );
+				}
 				return;
 			}
 
 			template < class T >
 			void write_field ( std::string const & field_name, index_type offset, std::vector < T > const & data ) {
-				field check = schm_.seek ( field_name );
+				field check = schm_.field_get ( field_name );
 				if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
 					std::ostringstream o;
 					o << "cannot write non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
@@ -254,13 +269,23 @@ namespace tidas {
 					o << "cannot write field " << field_name << ", samples " << offset << " - " << (offset+n-1) << " to group " << loc_.name << " (" << size_ << " samples)";
 					TIDAS_THROW( o.str().c_str() );
 				}
-				backend_->write_field ( loc_, field_name, type_indx_.at( field_name ), offset, data );
+				if ( loc_.type != BACKEND_NONE ) {
+					backend_->write_field ( loc_, field_name, type_indx_.at( field_name ), offset, data );
+				} else {
+					TIDAS_THROW( "cannot write field- backend not assigned" );
+				}
 				return;
 			}
 
 		private :
 
+			void set_backend ();
+
 			void compute_counts();
+
+			void dict_loc ( backend_path & dloc );
+
+			void schema_loc ( backend_path & sloc );
 
 			schema schm_;
 			dict dict_;

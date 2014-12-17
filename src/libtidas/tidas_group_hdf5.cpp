@@ -39,12 +39,6 @@ group_backend_hdf5 & tidas::group_backend_hdf5::operator= ( group_backend_hdf5 c
 }
 
 
-group_backend * tidas::group_backend_hdf5::clone () {
-	group_backend_hdf5 * ret = new group_backend_hdf5 ( *this );
-	return ret;
-}
-
-
 string tidas::group_backend_hdf5::dict_meta () const {
 	string meta = string("/") + group_hdf5_dataset_prefix + string("_") + data_type_to_string( TYPE_FLOAT64 );
 	return meta;
@@ -57,7 +51,7 @@ string tidas::group_backend_hdf5::schema_meta () const {
 }
 
 
-void tidas::group_backend_hdf5::read ( backend_path const & loc, index_type & nsamp, map < data_type, size_t > & counts ) const {
+void tidas::group_backend_hdf5::read ( backend_path const & loc, index_type & nsamp, map < data_type, size_t > & counts ) {
 
 #ifdef HAVE_HDF5
 
@@ -169,7 +163,7 @@ void tidas::group_backend_hdf5::read ( backend_path const & loc, index_type & ns
 }
 
 
-void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type const & nsamp, map < data_type, size_t > const & counts ) {
+void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type const & nsamp, map < data_type, size_t > const & counts ) const {
 
 #ifdef HAVE_HDF5
 
@@ -218,6 +212,18 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
 	TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
 
 #endif
+
+	return;
+}
+
+
+void tidas::group_backend_hdf5::link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const {
+
+	return;
+}
+
+
+void tidas::group_backend_hdf5::wipe ( backend_path const & loc ) const {
 
 	return;
 }

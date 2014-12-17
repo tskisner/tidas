@@ -16,7 +16,7 @@ namespace tidas {
 
 	void data_copy ( intervals const & in, intervals & out );
 
-/*
+
 	// group copy
 
 	template < class T >
@@ -32,7 +32,7 @@ namespace tidas {
 
 	void data_copy ( group const & in, group & out );
 
-
+/*
 	// block copy
 
 	void data_copy ( block const & in, block & out );

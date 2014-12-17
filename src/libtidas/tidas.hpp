@@ -144,11 +144,10 @@ namespace tidas {
 #include <tidas/dict.hpp>
 #include <tidas/intervals.hpp>
 #include <tidas/schema.hpp>
+#include <tidas/group.hpp>
 #include <tidas/copy.hpp>
 
 /*
-
-#include <tidas/group.hpp>
 #include <tidas/block.hpp>
 //#include <tidas/volume.hpp>
 */

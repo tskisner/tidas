@@ -106,13 +106,30 @@ void tidas::data_copy ( group const & in, group & out ) {
 	return;
 }
 
-/*
+
 void tidas::data_copy ( block const & in, block & out ) {
 
+	vector < string > grps = in.all_groups();
+
+	for ( vector < string > :: const_iterator it = grps.begin(); it != grps.end(); ++it ) {
+		group & ref = out.group_add ( (*it), in.group_get ( (*it) ) );
+	}
+
+	vector < string > intrs = in.all_intervals();
+
+	for ( vector < string > :: const_iterator it = intrs.begin(); it != intrs.end(); ++it ) {
+		intervals & ref = out.intervals_add ( (*it), in.intervals_get ( (*it) ) );
+	}
+
+	vector < string > blks = in.all_blocks();
+
+	for ( vector < string > :: const_iterator it = blks.begin(); it != blks.end(); ++it ) {
+		block & ref = out.block_add ( (*it), in.block_get ( (*it) ) );
+	}
 
 	return;
 }
-*/
+
 
 /*
 

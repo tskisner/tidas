@@ -7,6 +7,7 @@
 
 #include <tidas_internal.hpp>
 
+#include <limits>
 #include <cstdlib>
 #include <cstdio>
 
@@ -267,30 +268,63 @@ string tidas::filter_default ( string const & filter ) {
 }
 
 
-//[grp=.*[schm=field.*,dict=prop.*],intr=base.*[dict=blah*]]/2012.* [grp=.*[schm=field.*,dict=prop.*],intr=base.*]/13.* [grp=.*[schm=field.*,dict=prop.*],intr=base.*]/.*
+// "/2012.*[grp=.*[schm=field.*,dict=prop.*],intr=base.*[dict=pr.*]]/13.*[grp=.*[schm=field.*,dict=prop.*],intr=base.*]/.*"
+//
+// block name match: "2012.*""
+// block filter pass: "[grp=.*[schm=field.*,dict=prop.*],intr=base.*[dict=pr.*]]/13.*[grp=.*[schm=field.*,dict=prop.*],intr=base.*]/.*"
+//   group name match: ".*"
+//   group filter pass: "[schm=field.*,dict=prop.*]"
+//   interval name match: "base.*"
+//   interval filter pass: "[dict=pr.*]"
+//   block name match: "13.*"
+//   block filter pass: "[grp=.*[schm=field.*,dict=prop.*],intr=base.*]/.*"
+//     group name match: ".*"
+//     group filter pass: "[schm=field.*,dict=prop.*]"
+//     interval name match: "base.*"
+//     interval filter pass: ""
+//     block name match: ".*"
+//     block filter pass: ""
 
 
-// This splits filter of the form XXXX[XXXXXXX]
+// This extracts the name and sub-filter:  XXXX/.... OR XXXX[]/.... OR XXXX,.... 
 
-void tidas::filter_sub ( string const & filter, string & root, string & subfilter ) {
+void tidas::filter_sub ( string const & filter, string & name, string & subfilter ) {
 
-	root = "";
+	name = "";
 	subfilter = "";
 
-	size_t off = 0;
+	size_t subpos = filter.find ( submatch_begin, 0 );
+	size_t pathpos = filter.find ( path_sep, 0 );
+	size_t seppos = filter.find ( submatch_sep, 0 );
 
-	size_t pos = filter.find ( submatch_begin, off );
-
-	if ( pos != string::npos ) {
-
-		root = filter.substr ( off, (pos-off) );
-
-		// we include the beginning character here
-		subfilter = filter.substr ( pos, (filter.size()-pos) );
+	if ( ( subpos == string::npos ) && ( pathpos == string::npos ) && ( seppos == string::npos ) ) {
+		// we have just a name match
+		name = filter;
 
 	} else {
-		// we just have the root filter
-		root = filter;
+
+		// find the first occurrence of any character that we want to split on
+
+		size_t pos = std::numeric_limits < size_t > :: max();
+		if ( subpos != string::npos ) {
+			if ( subpos < pos ) {
+				pos = subpos;
+			}
+		}
+		if ( seppos != string::npos ) {
+			if ( seppos < pos ) {
+				pos = seppos;
+			}
+		}
+		if ( pathpos != string::npos ) {
+			if ( pathpos < pos ) {
+				pos = pathpos;
+			}
+		}
+
+		name = filter.substr ( 0, pos );
+		subfilter = filter.substr ( pos, filter.size() - pos );
+
 	}
 
 	return;
@@ -312,9 +346,7 @@ void tidas::filter_block ( string const & filter, string & local, string & subfi
 
 		local = filter.substr ( off, (pos-off) );
 
-		off = pos + 1;
-
-		subfilter = filter.substr ( off, (pos-off) );
+		subfilter = filter.substr ( (pos + 1), (filter.size() - pos) );
 
 	} else {
 		// we just have a local filter
@@ -335,11 +367,15 @@ map < string, string > tidas::filter_split ( string const & filter ) {
 		// check enclosing chars
 
 		if ( filter.compare ( 0, 1, submatch_begin ) != 0 ) {
-			TIDAS_THROW( "filter does not start with correct character" );
+			ostringstream o;
+			o << "filter split string \"" << filter << "\" does not start with correct character (" << submatch_begin << ")";
+			TIDAS_THROW( o.str().c_str() );
 		}
 
 		if ( filter.compare ( (filter.size() - 1), 1, submatch_end ) != 0 ) {
-			TIDAS_THROW( "filter does not end with correct character" );
+			ostringstream o;
+			o << "filter split string \"" << filter << "\" does not end with correct character (" << submatch_end << ")";
+			TIDAS_THROW( o.str().c_str() );
 		}
 
 		// search through string and build up sub filters

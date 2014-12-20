@@ -121,7 +121,7 @@ TEST_F( intervalsTest, HDF5Backend ) {
 	loc.path = ".";
 	loc.name = "test_intervals_data.hdf5.out";
 
-	intervals test2 ( test, ".*", loc );
+	intervals test2 ( test, "", loc );
 	test2.flush();
 
 	test2.write_data ( intrvls );
@@ -130,7 +130,7 @@ TEST_F( intervalsTest, HDF5Backend ) {
 
 	loc.name = "copy_" + loc.name;
 
-	intervals test3 ( test2, ".*", loc );
+	intervals test3 ( test2, "", loc );
 	test3.flush();
 
 	data_copy ( test2, test3 );

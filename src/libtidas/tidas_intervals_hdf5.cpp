@@ -47,7 +47,7 @@ void tidas::intervals_backend_hdf5::read ( backend_path const & loc, size_t & si
 
 	// check if file exists
 
-	string fspath = loc.path + "/" + loc.name;
+	string fspath = loc.path + path_sep + loc.name;
 
 	int64_t fsize = fs_stat ( fspath.c_str() );
 	if ( fsize <= 0 ) {
@@ -105,7 +105,7 @@ void tidas::intervals_backend_hdf5::write ( backend_path const & loc, size_t con
 
 #ifdef HAVE_HDF5
 
-	string fspath = loc.path + "/" + loc.name;
+	string fspath = loc.path + path_sep + loc.name;
 
 	// delete file if it exists
 
@@ -178,8 +178,8 @@ void tidas::intervals_backend_hdf5::link ( backend_path const & loc, link_type t
 
 #ifdef HAVE_HDF5
 
-	string fspath = loc.path + "/" + loc.name;
-	string lpath = path + "/" + name;
+	string fspath = loc.path + path_sep + loc.name;
+	string lpath = path + path_sep + name;
 
 	fs_link ( fspath.c_str(), lpath.c_str(), ( type == LINK_HARD ) );
 
@@ -197,7 +197,7 @@ void tidas::intervals_backend_hdf5::wipe ( backend_path const & loc ) const {
 
 #ifdef HAVE_HDF5
 
-	string fspath = loc.path + "/" + loc.name;
+	string fspath = loc.path + path_sep + loc.name;
 
 	// delete file if it exists
 
@@ -222,7 +222,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
 
 	// check if file exists
 
-	string fspath = loc.path + "/" + loc.name;
+	string fspath = loc.path + path_sep + loc.name;
 
 	int64_t fsize = fs_stat ( fspath.c_str() );
 	if ( fsize <= 0 ) {
@@ -333,7 +333,7 @@ void tidas::intervals_backend_hdf5::write_data ( backend_path const & loc, inter
 
 	// open file in write mode
 
-	string fspath = loc.path + "/" + loc.name;
+	string fspath = loc.path + path_sep + loc.name;
 
 	hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
 

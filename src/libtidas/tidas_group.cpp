@@ -162,11 +162,7 @@ void tidas::group::copy ( group const & other, string const & filter, backend_pa
 
 	// extract filters
 
-	string root;
-	string subfilt;
-	filter_sub ( filter, root, subfilt );
-
-	map < string, string > filts = filter_split ( subfilt );
+	map < string, string > filts = filter_split ( filter );
 
 	// set backend
 
@@ -196,8 +192,6 @@ void tidas::group::copy ( group const & other, string const & filter, backend_pa
 
 void tidas::group::link ( link_type const & type, string const & path, string const & name ) const {
 
-	backend_path oldloc = loc_;
-
 	if ( type != LINK_NONE ) {
 
 		if ( loc_.type != BACKEND_NONE ) {
@@ -217,7 +211,7 @@ void tidas::group::wipe () const {
 		if ( loc_.mode == MODE_RW ) {
 			backend_->wipe ( loc_ );
 		} else {
-			TIDAS_THROW( "cannot wipe intervals in read-only mode" );
+			TIDAS_THROW( "cannot wipe group in read-only mode" );
 		}
 	}
 

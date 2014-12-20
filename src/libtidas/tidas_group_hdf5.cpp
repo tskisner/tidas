@@ -16,6 +16,21 @@ using namespace std;
 using namespace tidas;
 
 
+
+/*
+NOTES:
+
+- enable chunking per field and with some number of samples
+- set hash table size to number of chunks
+- dataset should be extensible in time direction
+- chunk cache size based on few times sample buffer * sizeof(double)
+
+
+
+
+*/
+
+
 tidas::group_backend_hdf5::group_backend_hdf5 ( ) {
 
 }
@@ -57,7 +72,7 @@ void tidas::group_backend_hdf5::read ( backend_path const & loc, index_type & ns
 
 	// check if file exists
 
-	string fspath = loc.path + "/" + loc.name;
+	string fspath = loc.path + path_sep + loc.name;
 
 	int64_t fsize = fs_stat ( fspath.c_str() );
 	if ( fsize <= 0 ) {
@@ -167,7 +182,7 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
 
 #ifdef HAVE_HDF5
 
-	string fspath = loc.path + "/" + loc.name;
+	string fspath = loc.path + path_sep + loc.name;
 
 	// delete file if it exists
 

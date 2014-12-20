@@ -39,9 +39,9 @@ libtidas_la_include_HEADERS = \
 	tidas/intervals.hpp \
 	tidas/schema.hpp \
 	tidas/group.hpp \
+	tidas/block.hpp \
 	tidas/copy.hpp
 
-#	tidas/block.hpp \
 #   tidas/volume.hpp
 	
 
@@ -62,9 +62,9 @@ tidas_schema_getdata.cpp \
 tidas_group.cpp \
 tidas_group_hdf5.cpp \
 tidas_group_getdata.cpp \
+tidas_block.cpp \
 tidas_copy.cpp
 
-#tidas_block.cpp \
 #tidas_volume.cpp
 
 

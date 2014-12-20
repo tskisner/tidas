@@ -19,7 +19,7 @@ namespace tidas {
 
 		// check if file exists
 
-		std::string fspath = loc.path + "/" + loc.name;
+		std::string fspath = loc.path + path_sep + loc.name;
 
 		int64_t fsize = fs_stat ( fspath.c_str() );
 		if ( fsize <= 0 ) {
@@ -84,7 +84,7 @@ namespace tidas {
 
 		// check if file exists
 
-		std::string fspath = loc.path + "/" + loc.name;
+		std::string fspath = loc.path + path_sep + loc.name;
 
 		int64_t fsize = fs_stat ( fspath.c_str() );
 		if ( fsize <= 0 ) {

@@ -32,20 +32,27 @@ namespace tidas {
 			block & operator= ( block const & other );
 
 			block ( block const & other );
+
 			block ( backend_path const & loc );
+			
 			block ( block const & other, std::string const & filter, backend_path const & loc );
 
 			// metadata ops
 
 			void relocate ( backend_path const & loc );
 
-			void sync () const;
+			void sync ();
 
-			void flush ();
+			void flush () const;
 
 			void copy ( block const & other, std::string const & filter, backend_path const & loc );
 
-			void duplicate ( backend_path const & loc );
+			/// Create a link at the specified location.
+			void link ( link_type const & type, std::string const & path, std::string const & name ) const;
+
+			/// Delete the on-disk data and metadata associated with this object.
+			/// In-memory metadata is not modified.
+			void wipe () const;
 
 			backend_path location () const;
 
@@ -53,29 +60,52 @@ namespace tidas {
 
 			void clear();
 
+
 			group & group_add ( std::string const & name, group const & grp );
+
 			group & group_get ( std::string const & name );
+
+			group const & group_get ( std::string const & name ) const;
+			
 			void group_del ( std::string const & name );
+
 			std::vector < std::string > all_groups () const;
+			
 			void clear_groups();
 
+
 			intervals & intervals_add ( std::string const & name, intervals const & intr );
+			
 			intervals & intervals_get ( std::string const & name );
+
+			intervals const & intervals_get ( std::string const & name ) const;
+			
 			void intervals_del ( std::string const & name );
+			
 			std::vector < std::string > all_intervals () const;
+			
 			void clear_intervals();
 
+
 			block & block_add ( std::string const & name, block const & blk );
+			
 			block & block_get ( std::string const & name );
+
+			block const & block_get ( std::string const & name ) const;
+			
 			void block_del ( std::string const & name );
+			
 			std::vector < std::string > all_blocks () const;
+			
 			void clear_blocks();
 
 
 		private :
 
 			backend_path group_loc ( backend_path const & loc, std::string const & name );
+			
 			backend_path intervals_loc ( backend_path const & loc, std::string const & name );
+			
 			backend_path block_loc ( backend_path const & loc, std::string const & name );
 
 			std::map < std::string, block > block_data_;

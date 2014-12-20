@@ -44,7 +44,7 @@ void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & f
 
 	// open file in read mode
 
-	string fspath = loc.path + "/" + loc.name;
+	string fspath = loc.path + path_sep + loc.name;
 
 	hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
 
@@ -127,7 +127,7 @@ void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list co
 
 	// open file in write mode or create if it does not exist
 
-	string fspath = loc.path + "/" + loc.name;
+	string fspath = loc.path + path_sep + loc.name;
 
 	int64_t fsize = fs_stat ( fspath.c_str() );
 

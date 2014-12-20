@@ -85,7 +85,6 @@ void group_verify ( tidas::group & grp );
 void group_verify_int ( tidas::group & grp );
 
 
-/*
 class blockTest : public ::testing::Test {
 
 	public :
@@ -95,12 +94,14 @@ class blockTest : public ::testing::Test {
 		virtual void SetUp();
 		virtual void TearDown() { }
 
+		size_t n_samp;
+		size_t n_intr;
+
 };
 
-void block_setup ( tidas::block & blk );
+void block_setup ( tidas::block & blk, size_t n_samp, size_t n_intr );
 
 void block_verify ( tidas::block & blk );
-*/
 
 
 #endif

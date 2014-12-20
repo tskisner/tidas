@@ -5,7 +5,12 @@
   level LICENSE file for details.
 */
 
+
 #include <tidas_internal.hpp>
+
+extern "C" {
+	#include <dirent.h>
+}
 
 #include <tidas/re2/re2.h>
 
@@ -18,12 +23,10 @@ using namespace tidas;
 
 tidas::block::block () {
 	relocate ( loc_ );
-	flush();
 }
 
 
 tidas::block::~block () {
-
 }
 
 
@@ -42,7 +45,7 @@ tidas::block::block ( block const & other ) {
 
 tidas::block::block ( backend_path const & loc ) {
 	relocate ( loc );
-	sync ();
+	sync();
 }
 
 
@@ -69,85 +72,149 @@ void tidas::block::relocate ( backend_path const & loc ) {
 
 	// relocate groups
 
-	backend_path grouploc = loc_;
-	grouploc.path = loc_.path + path_sep + loc_.name + path_sep + block_fs_group_dir;
-
 	for ( map < string, group > :: iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
-		grouploc.name = it->first;
-		it->second.relocate ( grouploc );
+		it->second.relocate ( group_loc ( loc_, it->first ) );
 	}
 
 	// relocate intervals
 
-	backend_path intrloc = loc_;
-	intrloc.path = loc_.path + path_sep + loc_.name + path_sep + block_fs_intervals_dir;
-
 	for ( map < string, intervals > :: iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
-		intrloc.name = it->first;
-		it->second.relocate ( intrloc );
+		it->second.relocate ( intervals_loc ( loc_, it->first ) );
 	}
 
 	// relocate sub blocks
 
-	backend_path blockloc = loc_;
-	blockloc.path = loc_.path + path_sep + loc_.name;
-
 	for ( map < string, block > :: iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
-		blockloc.name = it->first;
-		it->second.relocate ( blockloc );
+		it->second.relocate ( block_loc ( loc_, it->first ) );
 	}
 
 	return;
 }
 
 
-void tidas::block::sync () const {
+void tidas::block::sync () {
 
-	// sync groups
+	if ( loc_.type != BACKEND_NONE ) {
 
-	for ( map < string, group > :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
-		it->second.sync();
-	}
+		// find all sub-blocks
 
-	// sync intervals
+		string fspath = loc_.path + path_sep + loc_.name;
 
-	for ( map < string, intervals > :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
-		it->second.sync();
-	}
+		struct dirent * entry;
+		DIR * dp;
 
-	// sync sub blocks
+		dp = opendir ( fspath.c_str() );
 
-	for ( map < string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
-		it->second.sync();
+		if ( dp == NULL ) {
+			ostringstream o;
+			o << "cannot open block \"" << fspath << "\"";
+			TIDAS_THROW( o.str().c_str() );
+		}
+
+		bool found_groups;
+		bool found_intervals;
+
+		while ( ( entry = readdir ( dp ) ) ) {
+			string item = entry->d_name;
+
+			if ( item == block_fs_group_dir ) {
+				found_groups = true;
+			} else if ( item == block_fs_intervals_dir ) {
+				found_intervals = true;
+			} else {
+				// this must be a block!
+				block_data_[ item ] = block ( block_loc ( loc_, item ) );
+			}
+		}
+
+		closedir ( dp );
+
+		if ( ( ! found_groups ) || ( ! found_intervals ) ) {
+			ostringstream o;
+			o << "block \"" << fspath << "\" is missing the group or intervals subdirectories!";
+			TIDAS_THROW( o.str().c_str() );
+		}
+
+		// sync all groups
+
+		string groupdir = fspath + path_sep + block_fs_group_dir;
+
+		dp = opendir ( groupdir.c_str() );
+
+		if ( dp == NULL ) {
+			ostringstream o;
+			o << "cannot open block group directory \"" << groupdir << "\"";
+			TIDAS_THROW( o.str().c_str() );
+		}
+
+		while ( ( entry = readdir ( dp ) ) ) {
+			string item = entry->d_name;
+			group_data_[ item ] = group ( group_loc ( loc_, item ) );
+		}
+
+		closedir ( dp );
+
+		// sync all intervals
+
+		string intrdir = fspath + path_sep + block_fs_intervals_dir;
+
+		dp = opendir ( intrdir.c_str() );
+
+		if ( dp == NULL ) {
+			ostringstream o;
+			o << "cannot open block intervals directory \"" << intrdir << "\"";
+			TIDAS_THROW( o.str().c_str() );
+		}
+
+		while ( ( entry = readdir ( dp ) ) ) {
+			string item = entry->d_name;
+			intervals_data_[ item ] = intervals ( intervals_loc ( loc_, item ) );
+		}
+
+		closedir ( dp );
+
 	}
 
 	return;
 }
 
 
-void tidas::block::flush () {
+void tidas::block::flush () const {
 
-	if ( loc_.mode == MODE_R ) {
-		TIDAS_THROW( "cannot flush to read-only location" );
-	}
+	if ( loc_.type != BACKEND_NONE ) {
 
-	// flush sub blocks
+		if ( loc_.mode == MODE_RW ) {
 
-	for ( map < string, block > :: iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
-		it->second.flush();
+			string dir = loc_.path + path_sep + loc_.name;
+			fs_mkdir ( dir.c_str() );
+
+			string groupdir = dir + path_sep + block_fs_group_dir;
+			fs_mkdir ( groupdir.c_str() );
+
+			string intrdir = dir + path_sep + block_fs_intervals_dir;
+			fs_mkdir ( intrdir.c_str() );
+
+		}
+
 	}
 
 	// flush groups
 
-	for ( map < string, group > :: iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
+	for ( map < string, group > :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
 		it->second.flush();
 	}
 
 	// flush intervals
 
-	for ( map < string, intervals > :: iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
+	for ( map < string, intervals > :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
 		it->second.flush();
 	}
+
+	// flush sub blocks
+
+	for ( map < string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
+		it->second.flush();
+	}	
 
 	return;
 }
@@ -155,32 +222,16 @@ void tidas::block::flush () {
 
 void tidas::block::copy ( block const & other, string const & filter, backend_path const & loc ) {
 
-	// first split filter string into our local filter and the
-	// filters to pass to sub-blocks.
+	// split filter into local and sub blocks:  [XX=XX,XX=XX]/XXXX[XX=XX]/XXX ---> [XX=XX,XX=XX] XXXX[XX=XX]/XXX
 
 	string filt_local;
 	string filt_sub;
 
 	filter_block ( filter, filt_local, filt_sub );
 
-	// extract local filters
+	// split local filter string:  [XX=XX,XX=XX]
 
-	map < string, string > local = filter_split ( filt_local );
-
-	// are we copying to a new location?  if so, create directories
-
-	if ( ( loc != other.loc_ ) && ( loc.type != BACKEND_MEM ) ) {
-
-		string dir = loc.path + path_sep + loc.name;
-		fs_mkdir ( dir.c_str() );
-
-		string groupdir = dir + path_sep + block_fs_group_dir;
-		fs_mkdir ( groupdir.c_str() );
-
-		string intrdir = dir + path_sep + block_fs_intervals_dir;
-		fs_mkdir ( intrdir.c_str() );
-
-	}
+	map < string, string > filts = filter_split ( filt_local );
 
 	// set location
 
@@ -191,7 +242,9 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 	string filt_name;
 	string filt_pass;
 
-	filter_sub ( local[ group_submatch_key ], filt_name, filt_pass );
+	// XXX[schm=XXX,dict=XXX] ---> XXX [schm=XXX,dict=XXX]
+
+	filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
 
 	RE2 groupre ( filt_name );
 
@@ -199,13 +252,15 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	for ( map < string, group > :: const_iterator it = other.group_data_.begin(); it != other.group_data_.end(); ++it ) {
 		if ( RE2::FullMatch ( it->first, groupre ) ) {
-			group & ignored = group_add ( it->first, it->second );
+			group_data_[ it->first ].copy ( it->second, filt_pass, group_loc ( loc_, it->first ) );
 		}
 	}
 
 	// copy intervals
 
-	filter_sub ( local[ intervals_submatch_key ], filt_name, filt_pass );
+	// XXX[dict=XXX] ---> XXX [dict=XXX]
+
+	filter_sub ( filts[ intervals_submatch_key ], filt_name, filt_pass );
 
 	RE2 intre ( filt_name );
 
@@ -213,29 +268,15 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	for ( map < string, intervals > :: const_iterator it = other.intervals_data_.begin(); it != other.intervals_data_.end(); ++it ) {
 		if ( RE2::FullMatch ( it->first, intre ) ) {
-			intervals & ignored = intervals_add ( it->first, it->second );
+			intervals_data_[ it->first ].copy ( it->second, filt_pass, intervals_loc ( loc_, it->first ) );
 		}
 	}
 
 	// copy sub-blocks
 
-	string filt_local_block;
-	string filt_sub_block;
+	// extract sub-block name match and filter to pass on:  XXXX[XX=XX]/XXX ---> XXXX [XX=XX]/XXX
 
-	filter_block ( filt_sub, filt_local_block, filt_sub_block );
-
-	filter_sub ( filt_local_block, filt_name, filt_pass );
-
-	string filt_block_pass;
-	if ( filt_sub_block == "" ) {
-		filt_block_pass = filt_pass;
-	} else {
-		if ( filt_pass == "" ) {
-			filt_block_pass = filt_sub_block;
-		} else {
-			filt_block_pass = filt_pass + path_sep + filt_sub_block;
-		}
-	}
+	filter_sub ( filt_sub, filt_name, filt_pass );
 
 	RE2 blockre ( filt_name );
 
@@ -243,7 +284,7 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	for ( map < string, block > :: const_iterator it = other.block_data_.begin(); it != other.block_data_.end(); ++it ) {
 		if ( RE2::FullMatch ( it->first, blockre ) ) {
-			block & ignored = block_add ( it->first, it->second );
+			block_data_[ it->first ].copy ( it->second, filt_pass, block_loc ( loc_, it->first ) );
 		}
 	}
 
@@ -251,43 +292,95 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 }
 
 
-void tidas::block::duplicate ( backend_path const & loc ) {
+void tidas::block::link ( link_type const & type, string const & path, string const & name ) const {
 
-	if ( loc.mode != MODE_RW ) {
-		TIDAS_THROW( "cannot duplicate to read-only location" );
+	backend_path oldloc = loc_;
+
+	if ( type != LINK_NONE ) {
+
+		if ( loc_.type != BACKEND_NONE ) {
+
+			bool hard = ( type == LINK_HARD );
+
+			// create links for directories
+
+			string fspath = loc_.path + path_sep + loc_.name;
+			string linkpath = path + path_sep + name;
+
+			fs_link ( fspath.c_str(), linkpath.c_str(), hard );
+
+			string grouppath = fspath + path_sep + block_fs_group_dir;
+			string grouplink = linkpath + path_sep + block_fs_group_dir;
+
+			fs_link ( grouppath.c_str(), grouplink.c_str(), hard );
+
+			string intrpath = fspath + path_sep + block_fs_intervals_dir;
+			string intrlink = linkpath + path_sep + block_fs_intervals_dir;
+
+			fs_link ( intrpath.c_str(), intrlink.c_str(), hard );
+
+			// link groups
+
+			for ( map < string, group > :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
+				it->second.link ( type, grouplink, it->first );
+			}
+
+			// link intervals
+
+			for ( map < string, intervals > :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
+				it->second.link ( type, intrlink, it->first );
+			}
+
+			// link sub-blocks
+
+			for ( map < string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
+				it->second.link ( type, linkpath, it->first );
+			}
+
+		}
+
 	}
 
-	// write our directory structure
+	return;
+}
 
-	if ( loc.type != BACKEND_MEM ) {
 
-		string dir = loc.path + path_sep + loc.name;
-		fs_mkdir ( dir.c_str() );
+void tidas::block::wipe () const {
 
-		string groupdir = dir + path_sep + block_fs_group_dir;
-		fs_mkdir ( groupdir.c_str() );
+	if ( loc_.type != BACKEND_NONE ) {
 
-		string intrdir = dir + path_sep + block_fs_intervals_dir;
-		fs_mkdir ( intrdir.c_str() );
+		if ( loc_.mode == MODE_RW ) {
 
-	}
+			// wipe sub-blocks
+			for ( map < string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
+				it->second.wipe();
+			}
 
-	// duplicate groups
+			// wipe groups
+			for ( map < string, group > :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
+				it->second.wipe();
+			}
 
-	for ( map < string, group > :: iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
-		it->second.duplicate ( group_loc ( loc, it->first ) );
-	}
+			// wipe intervals
+			for ( map < string, intervals > :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
+				it->second.wipe();
+			}
 
-	// duplicate intervals
+			// remove directories
 
-	for ( map < string, intervals > :: iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
-		it->second.duplicate ( intervals_loc ( loc, it->first ) );
-	}
+			string dir = loc_.path + path_sep + loc_.name;
 
-	// duplicate sub blocks
+			string groupdir = dir + path_sep + block_fs_group_dir;
+			fs_rm ( groupdir.c_str() );
 
-	for ( map < string, block > :: iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
-		it->second.duplicate ( block_loc ( loc, it->first ) );
+			string intrdir = dir + path_sep + block_fs_intervals_dir;
+			fs_rm ( intrdir.c_str() );
+
+			fs_rm ( dir.c_str() );
+
+		} else {
+			TIDAS_THROW( "cannot wipe block in read-only mode" );
+		}
 	}
 
 	return;
@@ -329,10 +422,10 @@ backend_path tidas::block::block_loc ( backend_path const & loc, string const & 
 }
 
 
-group & tidas::block::group_add ( string const & name, group & grp ) {
+group & tidas::block::group_add ( string const & name, group const & grp ) {
 
 	if ( loc_.mode == MODE_R ) {
-		TIDAS_THROW( "cannt add group: block is open in read-only mode" );
+		TIDAS_THROW( "cannot add group: block is open in read-only mode" );
 	}
 
 	if ( group_data_.count ( name ) > 0 ) {
@@ -342,8 +435,6 @@ group & tidas::block::group_add ( string const & name, group & grp ) {
 	}
 
 	group_data_[ name ].copy ( grp, "", group_loc ( loc_, name ) );
-
-	data_copy ( grp, group_data_.at( name ) );
 
 	return group_data_.at( name );
 }
@@ -361,10 +452,22 @@ group & tidas::block::group_get ( string const & name ) {
 }
 
 
+group const & tidas::block::group_get ( string const & name ) const {
+
+	if ( group_data_.count ( name ) == 0 ) {
+		ostringstream o;
+		o << "group with name \"" << name << "\" does not exist";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	return group_data_.at ( name );
+}
+
+
 void tidas::block::group_del ( string const & name ) {
 
 	if ( loc_.mode == MODE_R ) {
-		TIDAS_THROW( "cannt delete group: block is open in read-only mode" );
+		TIDAS_THROW( "cannot delete group: block is open in read-only mode" );
 	}
 
 	if ( group_data_.count ( name ) == 0 ) {
@@ -373,8 +476,7 @@ void tidas::block::group_del ( string const & name ) {
 		TIDAS_THROW( o.str().c_str() );
 	}
 
-	//group_data_[ name ].del();
-
+	group_data_[ name ].wipe();
 	group_data_.erase ( name );
 
 	return;
@@ -383,7 +485,7 @@ void tidas::block::group_del ( string const & name ) {
 
 vector < string > tidas::block::all_groups () const {
 	vector < string > ret;
-	for ( group_data_ :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
+	for ( map < string, group > :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
 		ret.push_back ( it->first );
 	}
 	return ret;
@@ -399,10 +501,10 @@ void tidas::block::clear_groups () {
 }
 
 
-intervals & tidas::block::intervals_add ( string const & name, intervals & intr ) {
+intervals & tidas::block::intervals_add ( string const & name, intervals const & intr ) {
 
 	if ( loc_.mode == MODE_R ) {
-		TIDAS_THROW( "cannt add intervals: block is open in read-only mode" );
+		TIDAS_THROW( "cannot add intervals: block is open in read-only mode" );
 	}
 
 	if ( intervals_data_.count ( name ) > 0 ) {
@@ -412,6 +514,8 @@ intervals & tidas::block::intervals_add ( string const & name, intervals & intr 
 	}
 
 	intervals_data_[ name ].copy ( intr, "", intervals_loc ( loc_, name ) );
+
+	intervals_data_[ name ].flush();
 
 	data_copy ( intr, intervals_data_.at( name ) );
 
@@ -431,10 +535,22 @@ intervals & tidas::block::intervals_get ( string const & name ) {
 }
 
 
+intervals const & tidas::block::intervals_get ( string const & name ) const {
+
+	if ( intervals_data_.count ( name ) == 0 ) {
+		ostringstream o;
+		o << "intervals with name \"" << name << "\" does not exist";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	return intervals_data_.at ( name );
+}
+
+
 void tidas::block::intervals_del ( string const & name ) {
 
 	if ( loc_.mode == MODE_R ) {
-		TIDAS_THROW( "cannt delete intervals: block is open in read-only mode" );
+		TIDAS_THROW( "cannot delete intervals: block is open in read-only mode" );
 	}
 
 	if ( intervals_data_.count ( name ) == 0 ) {
@@ -443,8 +559,7 @@ void tidas::block::intervals_del ( string const & name ) {
 		TIDAS_THROW( o.str().c_str() );
 	}
 
-	//intervals_data_[ name ].del();
-
+	intervals_data_[ name ].wipe();
 	intervals_data_.erase ( name );
 
 	return;
@@ -453,7 +568,7 @@ void tidas::block::intervals_del ( string const & name ) {
 
 vector < string > tidas::block::all_intervals () const {
 	vector < string > ret;
-	for ( intervals_data_ :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
+	for ( map < string, intervals > :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
 		ret.push_back ( it->first );
 	}
 	return ret;
@@ -469,10 +584,10 @@ void tidas::block::clear_intervals () {
 }
 
 
-block & tidas::block::block_add ( string const & name, block & blk ) {
+block & tidas::block::block_add ( string const & name, block const & blk ) {
 
 	if ( loc_.mode == MODE_R ) {
-		TIDAS_THROW( "cannt add sub-block: block is open in read-only mode" );
+		TIDAS_THROW( "cannot add sub-block: block is open in read-only mode" );
 	}
 
 	if ( block_data_.count ( name ) > 0 ) {
@@ -482,6 +597,8 @@ block & tidas::block::block_add ( string const & name, block & blk ) {
 	}
 
 	block_data_[ name ].copy ( blk, "", block_loc ( loc_, name ) );
+
+	block_data_[ name ].flush();
 
 	data_copy ( blk, block_data_.at ( name ) );
 
@@ -501,10 +618,22 @@ block & tidas::block::block_get ( string const & name ) {
 }
 
 
+block const & tidas::block::block_get ( string const & name ) const {
+
+	if ( block_data_.count ( name ) == 0 ) {
+		ostringstream o;
+		o << "block with name \"" << name << "\" does not exist";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	return block_data_.at ( name );
+}
+
+
 void tidas::block::block_del ( string const & name ) {
 
 	if ( loc_.mode == MODE_R ) {
-		TIDAS_THROW( "cannt delete sub-block: block is open in read-only mode" );
+		TIDAS_THROW( "cannot delete sub-block: block is open in read-only mode" );
 	}
 
 	if ( block_data_.count ( name ) == 0 ) {
@@ -513,8 +642,7 @@ void tidas::block::block_del ( string const & name ) {
 		TIDAS_THROW( o.str().c_str() );
 	}
 
-	//block_data_[ name ].del();
-
+	block_data_[ name ].wipe();
 	block_data_.erase ( name );
 
 	return;
@@ -523,7 +651,7 @@ void tidas::block::block_del ( string const & name ) {
 
 vector < string > tidas::block::all_blocks () const {
 	vector < string > ret;
-	for ( block_data_ :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
+	for ( map < string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
 		ret.push_back ( it->first );
 	}
 	return ret;

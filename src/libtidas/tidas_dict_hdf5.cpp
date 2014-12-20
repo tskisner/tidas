@@ -102,7 +102,7 @@ void tidas::dict_backend_hdf5::read ( backend_path const & loc, map < string, st
 
 	// open file in write mode
 
-	string fspath = loc.path + "/" + loc.name;
+	string fspath = loc.path + path_sep + loc.name;
 
 	hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
 
@@ -133,7 +133,7 @@ void tidas::dict_backend_hdf5::write ( backend_path const & loc, map < string, s
 
 	// open file in write mode
 
-	string fspath = loc.path + "/" + loc.name;
+	string fspath = loc.path + path_sep + loc.name;
 
 	hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
 

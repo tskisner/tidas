@@ -281,7 +281,7 @@ TEST_F( groupTest, HDF5Backend ) {
 	loc.name = "test_group.hdf5.out";
 	loc.mode = MODE_RW;
 
-	group grp2 ( grp, ".*", loc );
+	group grp2 ( grp, "", loc );
 	grp2.flush();
 
 	// write test data

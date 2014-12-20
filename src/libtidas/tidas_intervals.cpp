@@ -170,11 +170,7 @@ void tidas::intervals::copy ( intervals const & other, string const & filter, ba
 
 	// extract filters
 
-	string root;
-	string subfilt;
-	filter_sub ( filter, root, subfilt );
-
-	map < string, string > filts = filter_split ( subfilt );
+	map < string, string > filts = filter_split ( filter );
 
 	// set backend
 
@@ -197,8 +193,6 @@ void tidas::intervals::copy ( intervals const & other, string const & filter, ba
 
 
 void tidas::intervals::link ( link_type const & type, string const & path, string const & name ) const {
-
-	backend_path oldloc = loc_;
 
 	if ( type != LINK_NONE ) {
 

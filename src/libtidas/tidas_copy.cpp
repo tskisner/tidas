@@ -14,8 +14,12 @@ using namespace tidas;
 
 void tidas::data_copy ( intervals const & in, intervals & out ) {
 
-	if ( ( in.location() == out.location() ) && ( in.location().type != BACKEND_NONE ) ) {
-		TIDAS_THROW( "cannot do data_copy between intervals with same location" );
+	if ( in.location() == out.location() ) {
+		return;
+	}
+
+	if ( ( in.location().type == BACKEND_NONE ) || ( out.location().type == BACKEND_NONE ) ) {
+		TIDAS_THROW( "cannot do data_copy between intervals with unassigned backends" );
 	}
 
 	if ( in.size() != out.size() ) {
@@ -35,8 +39,12 @@ void tidas::data_copy ( intervals const & in, intervals & out ) {
 
 void tidas::data_copy ( group const & in, group & out ) {
 
-	if ( ( in.location() == out.location() ) && ( in.location().type != BACKEND_NONE ) ) {
-		TIDAS_THROW( "cannot do data_copy between groups with same location" );
+	if ( in.location() == out.location() ) {
+		return;
+	}
+
+	if ( ( in.location().type == BACKEND_NONE ) || ( out.location().type == BACKEND_NONE ) ) {
+		TIDAS_THROW( "cannot do data_copy between groups with unassigned backends" );
 	}
 
 	if ( in.size() != out.size() ) {

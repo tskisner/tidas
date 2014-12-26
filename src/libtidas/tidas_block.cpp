@@ -436,6 +436,12 @@ group & tidas::block::group_add ( string const & name, group const & grp ) {
 
 	group_data_[ name ].copy ( grp, "", group_loc ( loc_, name ) );
 
+	group_data_[ name ].flush();
+
+	if ( ( loc_.type != BACKEND_NONE ) && ( grp.location().type != BACKEND_NONE ) ) {
+		data_copy ( grp, group_data_.at ( name ) );
+	}
+
 	return group_data_.at( name );
 }
 
@@ -517,7 +523,9 @@ intervals & tidas::block::intervals_add ( string const & name, intervals const &
 
 	intervals_data_[ name ].flush();
 
-	data_copy ( intr, intervals_data_.at( name ) );
+	if ( ( loc_.type != BACKEND_NONE ) && ( intr.location().type != BACKEND_NONE ) ) {
+		data_copy ( intr, intervals_data_.at ( name ) );
+	}
 
 	return intervals_data_.at( name );
 }
@@ -600,7 +608,9 @@ block & tidas::block::block_add ( string const & name, block const & blk ) {
 
 	block_data_[ name ].flush();
 
-	data_copy ( blk, block_data_.at ( name ) );
+	if ( ( loc_.type != BACKEND_NONE ) && ( blk.location().type != BACKEND_NONE ) ) {
+		data_copy ( blk, block_data_.at ( name ) );
+	}
 
 	return block_data_.at ( name );
 }

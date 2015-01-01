@@ -64,6 +64,12 @@ namespace tidas {
 		LINK_SOFT   ///< Symlink.
 	} link_type;
 
+	typedef enum {
+		EXEC_DEPTH_FIRST, ///< Operate on children before parent.
+		EXEC_DEPTH_LAST,  ///< Operate on children after parent.
+		EXEC_LEAF         ///< Operate only on leaves of the hierarchy.
+	} exec_order;
+
 
 	class volume;
 
@@ -137,6 +143,10 @@ namespace tidas {
 	static const std::string block_fs_intervals_dir = "_intervals";
 	static const std::string block_fs_ext_dir = "_extensions";
 
+	static const std::string volume_fs_data_dir = "_data";
+	static const std::string volume_fs_index = "index.db";
+	static const std::string volume_fs_props = "tidas_volume.txt";
+
 
 }
 
@@ -146,11 +156,7 @@ namespace tidas {
 #include <tidas/schema.hpp>
 #include <tidas/group.hpp>
 #include <tidas/block.hpp>
+#include <tidas/volume.hpp>
 #include <tidas/copy.hpp>
-
-/*
-
-//#include <tidas/volume.hpp>
-*/
 
 #endif

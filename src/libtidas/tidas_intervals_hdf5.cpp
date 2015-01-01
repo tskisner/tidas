@@ -174,7 +174,7 @@ void tidas::intervals_backend_hdf5::write ( backend_path const & loc, size_t con
 }
 
 
-void tidas::intervals_backend_hdf5::link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const {
+void tidas::intervals_backend_hdf5::link ( backend_path const & loc, link_type type, std::string const & path ) const {
 
 #ifdef HAVE_HDF5
 

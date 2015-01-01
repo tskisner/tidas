@@ -190,12 +190,12 @@ void tidas::group::copy ( group const & other, string const & filter, backend_pa
 }
 
 
-void tidas::group::link ( link_type const & type, string const & path, string const & name ) const {
+void tidas::group::link ( link_type const & type, string const & path ) const {
 
 	if ( type != LINK_NONE ) {
 
 		if ( loc_.type != BACKEND_NONE ) {
-			backend_->link ( loc_, type, path, name );
+			backend_->link ( loc_, type, path );
 		}
 
 	}

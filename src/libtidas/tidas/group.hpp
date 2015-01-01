@@ -29,7 +29,7 @@ namespace tidas {
 
 			virtual void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const = 0;
 
-			virtual void link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const = 0;
+			virtual void link ( backend_path const & loc, link_type type, std::string const & path ) const = 0;
 
 			virtual void wipe ( backend_path const & loc ) const = 0;
 
@@ -85,7 +85,7 @@ namespace tidas {
 			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts );
 			void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const;
 
-			void link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const;
+			void link ( backend_path const & loc, link_type type, std::string const & path ) const;
 			void wipe ( backend_path const & loc ) const;
 
 			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > & data ) const;
@@ -141,7 +141,7 @@ namespace tidas {
 			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts );
 			void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const;
 
-			void link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const;
+			void link ( backend_path const & loc, link_type type, std::string const & path ) const;
 			void wipe ( backend_path const & loc ) const;
 
 			void read_field ( backend_path const & loc, std::string const & field_name, size_t type_indx, index_type offset, std::vector < int8_t > & data ) const;
@@ -213,7 +213,7 @@ namespace tidas {
 			void copy ( group const & other, std::string const & filter, backend_path const & loc );
 
 			/// Create a link at the specified location.
-			void link ( link_type const & type, std::string const & path, std::string const & name ) const;
+			void link ( link_type const & type, std::string const & path ) const;
 
 			/// Delete the on-disk data and metadata associated with this object.
 			/// In-memory metadata is not modified.

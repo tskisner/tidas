@@ -23,7 +23,11 @@ namespace tidas {
 			volume & operator= ( volume const & other );
 
 			volume ( volume const & other );
-			volume ( backend_path const & loc );
+
+			volume ( std::string const & path, backend_type type, compression_type comp );
+
+			volume ( std::string const & path, access_mode mode );
+			
 			volume ( volume const & other, std::string const & filter, backend_path const & loc );
 
 			// metadata ops
@@ -32,35 +36,52 @@ namespace tidas {
 
 			void sync ();
 
-			void flush ();
+			void flush () const;
 
 			void copy ( volume const & other, std::string const & filter, backend_path const & loc );
 
-			void duplicate ( backend_path const & loc );
+			/// Create a link at the specified location.
+			void link ( link_type const & type, std::string const & path ) const;
+
+			/// Delete the on-disk data and metadata associated with this object.
+			/// In-memory metadata is not modified.
+			void wipe () const;
 
 			backend_path location () const;
 
-			volume ();
-			volume ( std::string const & path, std::string const & filter );
-			~volume ();
 
-			void write ( std::string const & path, std::string const & filter, backend_type type, compression_type comp );
+			void reindex ();
 
-			void duplicate ( std::string const & path, std::string const & filter, backend_type type, compression_type comp );
+			block & root ();
 
-			void index ();
+			block const & root () const;
 
-			void set_dirty ();
+			template < class P >
+			void exec ( P & op, exec_order order, std::string const & filter = "" ) {
 
-			std::vector < block > & blocks ();
+				if ( filter == "" ) {
 
-			block & block_append ( std::string const & name, block const & blk );
+					root_.exec ( op, order );
+				
+				} else {
+				
+					block selected = root_.select ( filter );
+					selected.exec ( op, order );
+				
+				}
+
+				return;
+			}
 
 		private :
-			// copy constructor forbidden
-			volume ( volume const & orig ) {}
 
-			bool dirty_;
+
+
+			void read_props ( backend_path & loc );
+
+			void write_props ( backend_path const & loc ) const;
+
+			backend_path root_loc ( backend_path const & loc );
 
 			backend_path loc_;
 

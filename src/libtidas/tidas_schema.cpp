@@ -173,10 +173,10 @@ void tidas::schema::copy ( schema const & other, string const & filter, backend_
 
 	fields_.clear();
 
-	RE2 re ( filt );
+	regex re ( filt, std::regex::extended );
 
 	for ( field_list :: const_iterator it = other.fields().begin(); it != other.fields().end(); ++it ) {
-		if ( RE2::FullMatch ( it->name, re ) || ( it->name == group_time_field ) ) {
+		if ( regex_match ( it->name, re ) || ( it->name == group_time_field ) ) {
 			fields_.push_back ( field( it->name, it->type, it->units ) );
 		}
 	}

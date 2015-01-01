@@ -192,7 +192,7 @@ void tidas::intervals::copy ( intervals const & other, string const & filter, ba
 }
 
 
-void tidas::intervals::link ( link_type const & type, string const & path, string const & name ) const {
+void tidas::intervals::link ( link_type const & type, string const & path ) const {
 
 	if ( type != LINK_NONE ) {
 

@@ -1,11 +1,10 @@
 
-SUBDIRS = sqlite re2
+SUBDIRS = sqlite
 
 # Initialize compile and linking flags
 
 AM_CPPFLAGS = \
 -I$(top_srcdir)/src/libtidas \
--I$(top_srcdir)/src/libtidas/re2 \
 -I$(top_srcdir)/src/libtidas/sqlite
 
 AM_CFLAGS =
@@ -40,9 +39,8 @@ libtidas_la_include_HEADERS = \
 	tidas/schema.hpp \
 	tidas/group.hpp \
 	tidas/block.hpp \
+	tidas/volume.hpp \
 	tidas/copy.hpp
-
-#   tidas/volume.hpp
 	
 
 libtidas_la_SOURCES = \
@@ -63,17 +61,14 @@ tidas_group.cpp \
 tidas_group_hdf5.cpp \
 tidas_group_getdata.cpp \
 tidas_block.cpp \
+tidas_volume.cpp \
 tidas_copy.cpp
-
-#tidas_volume.cpp
-
 
 
 libtidas_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@
 
 libtidas_la_LIBADD = \
-$(top_builddir)/src/libtidas/sqlite/libtidas_sqlite.la \
-$(top_builddir)/src/libtidas/re2/libtidas_re2.la
+$(top_builddir)/src/libtidas/sqlite/libtidas_sqlite.la
 
 
 # install / uninstall cereal headers

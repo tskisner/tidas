@@ -57,7 +57,7 @@ void tidas::group_backend_getdata::write ( backend_path const & loc, index_type 
 }
 
 
-void tidas::group_backend_getdata::link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const {
+void tidas::group_backend_getdata::link ( backend_path const & loc, link_type type, std::string const & path ) const {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }

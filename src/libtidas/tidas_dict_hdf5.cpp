@@ -71,11 +71,12 @@ herr_t tidas_dict_backend_hdf5_attr_parse ( hid_t location_id, const char * attr
 	string val = buf;
 
 	string match = string ( "^(.*)" ) + dict_hdf5_type_suffix + string ( "$" );
-	RE2 re ( match );
+	regex re ( match, std::regex::extended );
 
-	string name;
-	if ( RE2::FullMatch ( key, re, &name ) ) {
-		d->types[ name ] = data_type_from_string ( val );
+	smatch name;
+	
+	if ( regex_match ( key, name, re ) ) {
+		d->types[ name[1] ] = data_type_from_string ( val );
 	} else {
 		d->data[ key ] = val;
 	}

@@ -11,8 +11,7 @@
 #include <config.h>
 #include <tidas.hpp>
 
-#include <tidas/re2/re2.h>
-
+#include <regex>
 
 #ifdef HAVE_HDF5
 extern "C" {

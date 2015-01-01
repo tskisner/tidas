@@ -14,74 +14,320 @@ using namespace std;
 using namespace tidas;
 
 
-class volume {
 
-		public :
 
 tidas::volume::volume () {
-
-
+	relocate ( loc_ );
 }
 
 
-volume ( string const & path, string const & filter ) {
+tidas::volume::volume ( string const & path, backend_type type, compression_type comp ) {
 
+	if ( fs_stat ( path.c_str() ) >= 0 ) {
+		ostringstream o;
+		o << "cannot create volume \"" << path << "\", a file or directory already exists";
+		TIDAS_THROW( o.str().c_str() );
+	}
 
+	loc_.path = path;
+	loc_.name = "";
+	loc_.meta = "";
+	loc_.type = type;
+	loc_.comp = comp;
+	loc_.mode = MODE_RW;
+	relocate ( loc_ );
+
+	flush();
 }
 
 
-~volume () {
-
-
-	// free index if needed
-
+tidas::volume::~volume () {
 }
 
 
-void write ( string const & path, string const & filter, backend_type type, compression_type comp ) {
+volume & tidas::volume::operator= ( volume const & other ) {
+	if ( this != &other ) {
+		copy ( other, "", other.loc_ );
+	}
+	return *this;
+}
+
+
+tidas::volume::volume ( volume const & other ) {
+	copy ( other, "", other.loc_ );
+}
+
+
+tidas::volume::volume ( string const & path, access_mode mode ) {
+	loc_.path = path;
+	loc_.name = "";
+	loc_.meta = "";
+
+	read_props();
+	
+	relocate ( loc_ );
+	sync();
+}
+
+
+tidas::volume::volume ( volume const & other, std::string const & filter, backend_path const & loc ) {
+	copy ( other, filter, loc );
+}
+
+
+void tidas::volume::relocate ( backend_path const & loc ) {
+
+	loc_ = loc;
+
+	root_.relocate ( root_loc ( loc_ ) );
 
 	return;
 }
 
 
-void duplicate ( string const & path, string const & filter, backend_type type, compression_type comp ) {
+void tidas::volume::sync () {
+
+	if ( loc_.type != BACKEND_NONE ) {
+
+		// check that root block exists
+
+		string fspath = loc_.path;
+
+		struct dirent * entry;
+		DIR * dp;
+
+		dp = opendir ( fspath.c_str() );
+
+		if ( dp == NULL ) {
+			ostringstream o;
+			o << "cannot open volume \"" << fspath << "\"";
+			TIDAS_THROW( o.str().c_str() );
+		}
+
+		bool found_data;
+		bool found_index;
+
+		while ( ( entry = readdir ( dp ) ) ) {
+			string item = entry->d_name;
+
+			if ( item == volume_fs_data_dir ) {
+				found_data = true;
+			} else if ( item == volume_fs_index ) {
+				found_index = true;
+			}
+		}
+
+		closedir ( dp );
+
+		if ( ! found_data ) {
+			ostringstream o;
+			o << "volume \"" << fspath << "\" is missing the data subdirectory!";
+			TIDAS_THROW( o.str().c_str() );
+		}
+
+		// sync root block
+
+		root_.sync();
+
+		// load index if it exists
+
+		if ( found_index ) {
+
+
+		}
+
+	}
 
 	return;
 }
 
 
-void index () {
+void tidas::volume::flush () const {
 
-	dirty_ = false;
+	write_props();
+
+	if ( loc_.type != BACKEND_NONE ) {
+
+		if ( loc_.mode == MODE_RW ) {
+			root_.flush();
+		}
+
+	}
+
+	return;
 }
 
 
-void set_dirty () {
-	dirty_ = true;
+void tidas::volume::copy ( volume const & other, string const & filter, backend_path const & loc ) {
+
+	loc_ = loc;
+
+	root_.copy ( other.root_, filter, root_loc ( loc_ ) );
+
+	// copy props file
+
+
+	// copy index or reindex
+
+
+
+	return;
 }
 
 
-vector < block > & blocks () {
-	return root_.blocks();
+void tidas::volume::link ( link_type const & type, string const & path, string const & filter ) const {
+
+	if ( type != LINK_NONE ) {
+
+		if ( loc_.type != BACKEND_NONE ) {
+
+			bool hard = ( type == LINK_HARD );
+
+			// make the top level directory
+
+			if ( fs_stat ( path.c_str() ) >= 0 ) {
+				ostringstream o;
+				o << "cannot create volume link \"" << path << "\", a file or directory already exists";
+				TIDAS_THROW( o.str().c_str() );
+			}
+
+			fs_mkdir ( path.c_str() );
+
+			// link properties file
+
+
+
+			// link root block
+
+			root_.link ();
+
+		}
+
+	}
+
+	return;
 }
 
 
-block & block_append ( string const & name, block const & blk ) {
-	backend_path blockloc;
-	blockloc.type = loc_.type;
-	blockloc.comp = loc_.comp;
-	blockloc.path = loc_.path;
-	blockloc.meta = "";
-	blockloc.name = name;
-	blockloc.vol = this;
+void tidas::volume::wipe ( string const & filter ) const {
 
-	root_.blocks().push_back( block( blk ) );
+	if ( loc_.type != BACKEND_NONE ) {
 
-	vector < block > iterator final = root_.blocks().rbegin();
+		if ( loc_.mode == MODE_RW ) {
 
-	final->relocate ( blockloc );
 
-	return (*final);
+		} else {
+			TIDAS_THROW( "cannot wipe volume in read-only mode" );
+		}
+	}
+
+	return;
+}
+
+
+backend_path tidas::volume::location () const {
+	return loc_;
+}
+
+
+backend_path tidas::volume::root_loc ( backend_path const & loc ) {
+	backend_path ret = loc;
+
+	ret.name = volume_fs_data_dir;
+
+	return ret;
+}
+
+
+block & tidas::volume::root () {
+	return root_;
+}
+
+
+block const & tidas::volume::root () const {
+	return root_;
+}
+
+
+void tidas::volume::read_props ( backend_path & loc ) {
+
+	string propfile = loc.path + path_sep + volume_fs_props;
+
+	ifstream props ( propfile, ios::in );
+
+	if ( ! props.is_open() ) {
+		ostringstream o;
+		o << "cannot read volume properties from " << propfile;
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	string line;
+
+	getline ( props, line );
+
+	if ( line == "HDF5" ) {
+		loc.type = BACKEND_HDF5;
+	} else if ( line == "GETDATA" ) {
+		loc.type = BACKEND_GETDATA;
+	} else {
+		ostringstream o;
+		o << "volume has unsupported backend \"" << line << "\"";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	getline ( props, line );
+
+	if ( line == "GZIP" ) {
+		loc.comp = COMPRESS_GZIP;
+	} else if ( line == "BZIP2" ) {
+		loc.comp = COMPRESS_BZIP2;
+	} else {
+		loc.comp = COMPRESS_NONE;
+	}
+
+	props.close();
+
+	return;
+}
+
+			
+void tidas::volume::write_props ( backend_path const & loc ) const {
+
+	// make directory for the volume
+
+	fs_mkdir ( loc.path.c_str() );
+
+	// write properties to file
+
+	string propfile = loc.path + path_sep + volume_fs_props;
+
+	ofstream props ( propfile, ios::out );
+
+	if ( ! props.is_open() ) {
+		ostringstream o;
+		o << "cannot write volume properties to " << propfile;
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	if ( loc.type == BACKEND_HDF5 ) {
+		props << "HDF5" << endl;
+	} else if ( loc.type == BACKEND_GETDATA ) {
+		props << "GETDATA" << endl;
+	} else {
+		props << "NONE" << endl;
+	}
+
+	if ( loc.comp == COMPRESS_GZIP ) {
+		props << "GZIP" << endl;
+	} else if ( loc.comp == COMPRESS_BZIP2 ) {
+		props << "BZIP2" << endl;
+	} else {
+		props << "NONE" << endl;
+	}
+
+	props.close();
+
+	return;
 }
 
 

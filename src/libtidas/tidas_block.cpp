@@ -12,13 +12,103 @@ extern "C" {
 	#include <dirent.h>
 }
 
-#include <tidas/re2/re2.h>
-
 
 using namespace std;
 using namespace tidas;
 
 
+
+void tidas::block_link_operator::operator() ( block & blk ) {
+
+	// find the location of this block relative to the start
+
+	backend_path loc = blk.location();
+
+	string blkpath = loc.path + path_sep + loc.name;
+
+	if ( start == "" ) {
+		start = blkpath;
+	}
+
+	if ( blkpath.compare ( 0, start.size(), start ) != 0 ) {
+		TIDAS_THROW( "link operator path error" );
+	}
+
+	string relpath = blkpath.substr ( start.size(), string::npos );
+
+	string linkpath = path + relpath;
+
+	bool hard = ( type == LINK_HARD );
+
+	// create directories
+
+	fs_mkdir ( linkpath.c_str() );
+
+	string groupdir = linkpath + path_sep + block_fs_group_dir;
+	fs_mkdir ( groupdir.c_str() );
+
+	string intrdir = linkpath + path_sep + block_fs_intervals_dir;
+	fs_mkdir ( intrdir.c_str() );
+
+	// compute link paths for groups and intervals
+
+	string grouplink = linkpath + path_sep + block_fs_group_dir;
+	string intrlink = linkpath + path_sep + block_fs_intervals_dir;
+
+	// link groups
+
+	vector < string > names;
+
+	names = blk.all_groups();
+
+	for ( vector < string > :: const_iterator it = names.begin(); it != names.end(); ++it ) {
+		blk.group_get( *it ).link ( type, grouplink, (*it) );
+	}
+
+	// link intervals
+
+	names = blk.all_intervals();
+
+	for ( vector < string > :: const_iterator it = names.begin(); it != names.end(); ++it ) {
+		blk.intervals_get( *it ).link ( type, intrlink, (*it) );
+	}
+
+	return;
+}
+
+
+void tidas::block_wipe_operator::operator() ( block & blk ) {
+
+	// wipe groups
+
+	vector < string > names;
+
+	names = blk.all_groups();
+
+	for ( vector < string > :: const_iterator it = names.begin(); it != names.end(); ++it ) {
+		blk.group_get( *it ).wipe();
+	}
+
+	// wipe intervals
+
+	names = blk.all_intervals();
+
+	for ( vector < string > :: const_iterator it = names.begin(); it != names.end(); ++it ) {
+		blk.intervals_get( *it ).wipe();
+	}
+
+	// remove sub-block directories that have already been wiped.
+
+	names = blk.all_blocks();
+
+	for ( vector < string > :: const_iterator it = names.begin(); it != names.end(); ++it ) {
+		backend_path loc = blk.block_get( *it ).location();
+		string dir = loc.path + path_sep + loc.name;
+		fs_rm_r ( dir.c_str() );
+	}
+
+	return;
+}
 
 
 tidas::block::block () {
@@ -246,12 +336,12 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
 
-	RE2 groupre ( filt_name );
+	regex groupre ( filt_name, std::regex::extended );
 
 	group_data_.clear();
 
 	for ( map < string, group > :: const_iterator it = other.group_data_.begin(); it != other.group_data_.end(); ++it ) {
-		if ( RE2::FullMatch ( it->first, groupre ) ) {
+		if ( regex_match ( it->first, groupre ) ) {
 			group_data_[ it->first ].copy ( it->second, filt_pass, group_loc ( loc_, it->first ) );
 		}
 	}
@@ -262,12 +352,12 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	filter_sub ( filts[ intervals_submatch_key ], filt_name, filt_pass );
 
-	RE2 intre ( filt_name );
+	regex intre ( filt_name, std::regex::extended );
 
 	intervals_data_.clear();
 
 	for ( map < string, intervals > :: const_iterator it = other.intervals_data_.begin(); it != other.intervals_data_.end(); ++it ) {
-		if ( RE2::FullMatch ( it->first, intre ) ) {
+		if ( regex_match ( it->first, intre ) ) {
 			intervals_data_[ it->first ].copy ( it->second, filt_pass, intervals_loc ( loc_, it->first ) );
 		}
 	}
@@ -278,12 +368,12 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	filter_sub ( filt_sub, filt_name, filt_pass );
 
-	RE2 blockre ( filt_name );
+	regex blockre ( filt_name, std::regex::extended );
 
 	block_data_.clear();
 
 	for ( map < string, block > :: const_iterator it = other.block_data_.begin(); it != other.block_data_.end(); ++it ) {
-		if ( RE2::FullMatch ( it->first, blockre ) ) {
+		if ( regex_match ( it->first, blockre ) ) {
 			block_data_[ it->first ].copy ( it->second, filt_pass, block_loc ( loc_, it->first ) );
 		}
 	}
@@ -292,50 +382,85 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 }
 
 
-void tidas::block::link ( link_type const & type, string const & path, string const & name ) const {
+block tidas::block::select ( string const & filter ) const {
 
-	backend_path oldloc = loc_;
+	block ret;
+	ret.relocate ( loc_ );
+
+	// split filter into local and sub blocks:  [XX=XX,XX=XX]/XXXX[XX=XX]/XXX ---> [XX=XX,XX=XX] XXXX[XX=XX]/XXX
+
+	string filt_local;
+	string filt_sub;
+
+	filter_block ( filter, filt_local, filt_sub );
+
+	// split local filter string:  [XX=XX,XX=XX]
+
+	map < string, string > filts = filter_split ( filt_local );
+
+	// select groups.  Since we are not copying objects to a
+	// new location, we strip off any sub-object filters.
+
+	string filt_name;
+	string filt_pass;
+
+	// XXX[schm=XXX,dict=XXX] ---> XXX [schm=XXX,dict=XXX]
+
+	filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
+
+	regex groupre ( filt_name, std::regex::extended );
+
+	for ( map < string, group > :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
+		if ( regex_match ( it->first, groupre ) ) {
+			ret.group_data_[ it->first ].copy ( it->second, "", group_loc ( ret.loc_, it->first ) );
+		}
+	}
+
+	// select intervals.  Again, we strip off sub-filters.
+
+	// XXX[dict=XXX] ---> XXX [dict=XXX]
+
+	filter_sub ( filts[ intervals_submatch_key ], filt_name, filt_pass );
+
+	regex intre ( filt_name, std::regex::extended );
+
+	for ( map < string, intervals > :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
+		if ( regex_match ( it->first, intre ) ) {
+			ret.intervals_data_[ it->first ].copy ( it->second, "", intervals_loc ( ret.loc_, it->first ) );
+		}
+	}
+
+	// select sub-blocks
+
+	// extract sub-block name match and filter to pass on:  XXXX[XX=XX]/XXX ---> XXXX [XX=XX]/XXX
+
+	filter_sub ( filt_sub, filt_name, filt_pass );
+
+	regex blockre ( filt_name, std::regex::extended );
+
+	for ( map < string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
+		if ( regex_match ( it->first, blockre ) ) {
+			ret.block_data_[ it->first ].copy ( it->second, filt_pass, block_loc ( ret.loc_, it->first ) );
+		}
+	}
+
+	return ret;
+}
+
+
+void tidas::block::link ( link_type const & type, string const & path, string const & filter ) const {
 
 	if ( type != LINK_NONE ) {
 
 		if ( loc_.type != BACKEND_NONE ) {
 
-			bool hard = ( type == LINK_HARD );
+			block selected = select ( filter );
 
-			// create links for directories
+			block_link_operator op;
+			op.type = type;
+			op.path = path;
 
-			string fspath = loc_.path + path_sep + loc_.name;
-			string linkpath = path + path_sep + name;
-
-			fs_link ( fspath.c_str(), linkpath.c_str(), hard );
-
-			string grouppath = fspath + path_sep + block_fs_group_dir;
-			string grouplink = linkpath + path_sep + block_fs_group_dir;
-
-			fs_link ( grouppath.c_str(), grouplink.c_str(), hard );
-
-			string intrpath = fspath + path_sep + block_fs_intervals_dir;
-			string intrlink = linkpath + path_sep + block_fs_intervals_dir;
-
-			fs_link ( intrpath.c_str(), intrlink.c_str(), hard );
-
-			// link groups
-
-			for ( map < string, group > :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
-				it->second.link ( type, grouplink, it->first );
-			}
-
-			// link intervals
-
-			for ( map < string, intervals > :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
-				it->second.link ( type, intrlink, it->first );
-			}
-
-			// link sub-blocks
-
-			for ( map < string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
-				it->second.link ( type, linkpath, it->first );
-			}
+			selected.exec ( op, EXEC_DEPTH_LAST );
 
 		}
 
@@ -345,38 +470,15 @@ void tidas::block::link ( link_type const & type, string const & path, string co
 }
 
 
-void tidas::block::wipe () const {
+void tidas::block::wipe ( string const & filter ) const {
 
 	if ( loc_.type != BACKEND_NONE ) {
 
 		if ( loc_.mode == MODE_RW ) {
 
-			// wipe sub-blocks
-			for ( map < string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
-				it->second.wipe();
-			}
+			block_wipe_operator op;
 
-			// wipe groups
-			for ( map < string, group > :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
-				it->second.wipe();
-			}
-
-			// wipe intervals
-			for ( map < string, intervals > :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
-				it->second.wipe();
-			}
-
-			// remove directories
-
-			string dir = loc_.path + path_sep + loc_.name;
-
-			string groupdir = dir + path_sep + block_fs_group_dir;
-			fs_rm ( groupdir.c_str() );
-
-			string intrdir = dir + path_sep + block_fs_intervals_dir;
-			fs_rm ( intrdir.c_str() );
-
-			fs_rm ( dir.c_str() );
+			exec ( op, EXEC_DEPTH_FIRST, filter );
 
 		} else {
 			TIDAS_THROW( "cannot wipe block in read-only mode" );
@@ -392,7 +494,7 @@ backend_path tidas::block::location () const {
 }
 
 
-backend_path tidas::block::group_loc ( backend_path const & loc, string const & name ) {
+backend_path tidas::block::group_loc ( backend_path const & loc, string const & name ) const {
 	backend_path ret = loc;
 
 	ret.path = loc.path + path_sep + loc.name + path_sep + block_fs_group_dir;
@@ -402,7 +504,7 @@ backend_path tidas::block::group_loc ( backend_path const & loc, string const & 
 }
 
 
-backend_path tidas::block::intervals_loc ( backend_path const & loc, string const & name ) {
+backend_path tidas::block::intervals_loc ( backend_path const & loc, string const & name ) const {
 	backend_path ret = loc;
 
 	ret.path = loc.path + path_sep + loc.name + path_sep + block_fs_intervals_dir;
@@ -412,7 +514,7 @@ backend_path tidas::block::intervals_loc ( backend_path const & loc, string cons
 }
 
 
-backend_path tidas::block::block_loc ( backend_path const & loc, string const & name ) {
+backend_path tidas::block::block_loc ( backend_path const & loc, string const & name ) const {
 	backend_path ret = loc;
 
 	ret.path = loc.path + path_sep + loc.name;

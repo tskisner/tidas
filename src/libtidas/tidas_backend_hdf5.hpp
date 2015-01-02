@@ -5,18 +5,25 @@
   level LICENSE file for details.
 */
 
-#ifndef TIDAS_INTERNAL_HPP
-#define TIDAS_INTERNAL_HPP
+#ifndef TIDAS_BACKEND_HDF5_HPP
+#define TIDAS_BACKEND_HDF5_HPP
 
-#include <config.h>
-#include <tidas.hpp>
+
+#ifdef HAVE_HDF5
+extern "C" {
+	#include <hdf5.h>
+}
+#endif
 
 
 namespace tidas {
 
+#ifdef HAVE_HDF5
 
-	static const size_t backend_string_size = 64;
+	hid_t hdf5_data_type ( data_type type );
 
+
+#endif
 
 }
 

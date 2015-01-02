@@ -7,7 +7,11 @@
 
 #include <tidas_internal.hpp>
 
-#include <tidas/re2/re2.h>
+#include <fstream>
+
+extern "C" {
+	#include <dirent.h>
+}
 
 
 using namespace std;
@@ -63,7 +67,7 @@ tidas::volume::volume ( string const & path, access_mode mode ) {
 	loc_.name = "";
 	loc_.meta = "";
 
-	read_props();
+	read_props ( loc_ );
 	
 	relocate ( loc_ );
 	sync();
@@ -144,7 +148,7 @@ void tidas::volume::sync () {
 
 void tidas::volume::flush () const {
 
-	write_props();
+	write_props ( loc_ );
 
 	if ( loc_.type != BACKEND_NONE ) {
 
@@ -199,7 +203,7 @@ void tidas::volume::link ( link_type const & type, string const & path, string c
 
 			// link root block
 
-			root_.link ();
+			//root_.link ();
 
 		}
 
@@ -253,7 +257,7 @@ void tidas::volume::read_props ( backend_path & loc ) {
 
 	string propfile = loc.path + path_sep + volume_fs_props;
 
-	ifstream props ( propfile, ios::in );
+	ifstream props ( propfile );
 
 	if ( ! props.is_open() ) {
 		ostringstream o;
@@ -301,7 +305,7 @@ void tidas::volume::write_props ( backend_path const & loc ) const {
 
 	string propfile = loc.path + path_sep + volume_fs_props;
 
-	ofstream props ( propfile, ios::out );
+	ofstream props ( propfile );
 
 	if ( ! props.is_open() ) {
 		ostringstream o;

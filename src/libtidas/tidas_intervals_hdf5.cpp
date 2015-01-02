@@ -6,7 +6,9 @@
 */
 
 #include <tidas_internal.hpp>
-  
+
+#include <tidas_backend_hdf5.hpp>
+
 
 using namespace std;
 using namespace tidas;
@@ -179,9 +181,8 @@ void tidas::intervals_backend_hdf5::link ( backend_path const & loc, link_type t
 #ifdef HAVE_HDF5
 
 	string fspath = loc.path + path_sep + loc.name;
-	string lpath = path + path_sep + name;
 
-	fs_link ( fspath.c_str(), lpath.c_str(), ( type == LINK_HARD ) );
+	fs_link ( fspath.c_str(), path.c_str(), ( type == LINK_HARD ) );
 
 #else
 

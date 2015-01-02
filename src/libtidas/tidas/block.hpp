@@ -48,11 +48,11 @@ namespace tidas {
 			void copy ( block const & other, std::string const & filter, backend_path const & loc );
 
 			/// Create a link at the specified location.
-			void link ( link_type const & type, std::string const & path, std::string const & filter ) const;
+			void link ( link_type const & type, std::string const & path ) const;
 
 			/// Delete the on-disk data and metadata associated with this object.
 			/// In-memory metadata is not modified.
-			void wipe ( std::string const & filter ) const;
+			void wipe () const;
 
 			backend_path location () const;
 
@@ -102,8 +102,44 @@ namespace tidas {
 
 			block select ( std::string const & filter = "" ) const;
 
+
+			// non-const version
+
 			template < class P >
 			void exec ( P & op, exec_order order ) {
+
+				if ( order == EXEC_DEPTH_LAST ) {
+					op ( *this );
+				}
+
+				if ( block_data_.size() == 0 ) {
+
+					// this is a leaf
+					if ( order == EXEC_LEAF ) {
+						op ( *this );
+					}
+				
+				} else {
+					// operate on sub blocks
+
+					for ( std::map < std::string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
+						it->second.exec ( op, order );
+					}
+
+				}
+
+				if ( order == EXEC_DEPTH_FIRST ) {
+					op ( *this );
+				}
+
+				return;
+			}
+
+
+			// const version
+			
+			template < class P >
+			void exec ( P & op, exec_order order ) const {
 
 				if ( order == EXEC_DEPTH_LAST ) {
 					op ( *this );
@@ -154,7 +190,7 @@ namespace tidas {
 
 		public :
 
-			void operator() ( block & blk );
+			void operator() ( block const & blk );
 
 			link_type type;
 			std::string path;
@@ -167,7 +203,7 @@ namespace tidas {
 
 		public :
 
-			void operator() ( block & blk );
+			void operator() ( block const & blk );
 
 	};
 

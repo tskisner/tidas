@@ -7,6 +7,8 @@
 
 #include <tidas_internal.hpp>
 
+#include <tidas_backend_hdf5.hpp>
+
 #ifdef HAVE_HDF5
 #include <tidas_group_hdf5.hpp>
 #endif

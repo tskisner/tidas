@@ -7,6 +7,10 @@
 
 #include <tidas_internal.hpp>
 
+#include <tidas_backend_hdf5.hpp>
+
+#include <regex>
+
 
 using namespace std;
 using namespace tidas;

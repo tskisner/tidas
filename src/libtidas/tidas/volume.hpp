@@ -9,8 +9,6 @@
 #ifndef TIDAS_VOLUME_HPP
 #define TIDAS_VOLUME_HPP
 
-#include <tidas/sqlite3.h>
-
 
 namespace tidas {
 
@@ -41,11 +39,11 @@ namespace tidas {
 			void copy ( volume const & other, std::string const & filter, backend_path const & loc );
 
 			/// Create a link at the specified location.
-			void link ( link_type const & type, std::string const & path ) const;
+			void link ( link_type const & type, std::string const & path, std::string const & filter ) const;
 
 			/// Delete the on-disk data and metadata associated with this object.
 			/// In-memory metadata is not modified.
-			void wipe () const;
+			void wipe ( std::string const & filter ) const;
 
 			backend_path location () const;
 
@@ -86,8 +84,6 @@ namespace tidas {
 			backend_path loc_;
 
 			block root_;
-
-			std::unique_ptr < sqlite3 > index_;
 
 	};
 

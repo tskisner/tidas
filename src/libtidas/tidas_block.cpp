@@ -8,6 +8,9 @@
 
 #include <tidas_internal.hpp>
 
+#include <regex>
+
+
 extern "C" {
 	#include <dirent.h>
 }
@@ -18,7 +21,7 @@ using namespace tidas;
 
 
 
-void tidas::block_link_operator::operator() ( block & blk ) {
+void tidas::block_link_operator::operator() ( block const & blk ) {
 
 	// find the location of this block relative to the start
 
@@ -62,7 +65,8 @@ void tidas::block_link_operator::operator() ( block & blk ) {
 	names = blk.all_groups();
 
 	for ( vector < string > :: const_iterator it = names.begin(); it != names.end(); ++it ) {
-		blk.group_get( *it ).link ( type, grouplink, (*it) );
+		string full_link = grouplink + path_sep + (*it);
+		blk.group_get( *it ).link ( type, full_link );
 	}
 
 	// link intervals
@@ -70,14 +74,15 @@ void tidas::block_link_operator::operator() ( block & blk ) {
 	names = blk.all_intervals();
 
 	for ( vector < string > :: const_iterator it = names.begin(); it != names.end(); ++it ) {
-		blk.intervals_get( *it ).link ( type, intrlink, (*it) );
+		string full_link = intrlink + path_sep + (*it);
+		blk.intervals_get( *it ).link ( type, full_link );
 	}
 
 	return;
 }
 
 
-void tidas::block_wipe_operator::operator() ( block & blk ) {
+void tidas::block_wipe_operator::operator() ( block const & blk ) {
 
 	// wipe groups
 
@@ -448,19 +453,17 @@ block tidas::block::select ( string const & filter ) const {
 }
 
 
-void tidas::block::link ( link_type const & type, string const & path, string const & filter ) const {
+void tidas::block::link ( link_type const & type, string const & path ) const {
 
 	if ( type != LINK_NONE ) {
 
 		if ( loc_.type != BACKEND_NONE ) {
 
-			block selected = select ( filter );
-
 			block_link_operator op;
 			op.type = type;
 			op.path = path;
 
-			selected.exec ( op, EXEC_DEPTH_LAST );
+			exec ( op, EXEC_DEPTH_LAST );
 
 		}
 
@@ -470,7 +473,7 @@ void tidas::block::link ( link_type const & type, string const & path, string co
 }
 
 
-void tidas::block::wipe ( string const & filter ) const {
+void tidas::block::wipe ( ) const {
 
 	if ( loc_.type != BACKEND_NONE ) {
 
@@ -478,7 +481,7 @@ void tidas::block::wipe ( string const & filter ) const {
 
 			block_wipe_operator op;
 
-			exec ( op, EXEC_DEPTH_FIRST, filter );
+			exec ( op, EXEC_DEPTH_FIRST );
 
 		} else {
 			TIDAS_THROW( "cannot wipe block in read-only mode" );

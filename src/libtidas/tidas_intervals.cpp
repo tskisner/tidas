@@ -197,7 +197,7 @@ void tidas::intervals::link ( link_type const & type, string const & path ) cons
 	if ( type != LINK_NONE ) {
 
 		if ( loc_.type != BACKEND_NONE ) {
-			backend_->link ( loc_, type, path, name );
+			backend_->link ( loc_, type, path );
 		}
 
 	}

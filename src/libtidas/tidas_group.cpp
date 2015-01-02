@@ -7,9 +7,6 @@
 
 #include <tidas_internal.hpp>
 
-#include <tidas/re2/re2.h>
-
-
 
 using namespace std;
 using namespace tidas;

@@ -7,7 +7,7 @@
 
 #include <tidas_internal.hpp>
 
-#include <tidas/re2/re2.h>
+#include <regex>
 
 
 using namespace std;

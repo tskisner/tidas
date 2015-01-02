@@ -7,6 +7,8 @@
 
 #include <tidas_internal.hpp>
 
+#include <regex>
+
 
 using namespace std;
 using namespace tidas;

@@ -7,6 +7,8 @@
 
 #include <tidas_test.hpp>
 
+#include <tidas_backend_hdf5.hpp>
+
 #include <cstdlib>
 #include <limits>
 

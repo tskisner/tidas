@@ -5,13 +5,21 @@
   level LICENSE file for details.
 */
 
-#include <tidas_internal.hpp>
-#include <tidas_backend_getdata.hpp>
+#ifndef TIDAS_BACKEND_GETDATA_HPP
+#define TIDAS_BACKEND_GETDATA_HPP
+
+#ifdef HAVE_GETDATA
+extern "C" {
+	#include <getdata.h>
+}
+#endif
 
 
-using namespace std;
-using namespace tidas;
+namespace tidas {
 
 
 
+}
 
+
+#endif

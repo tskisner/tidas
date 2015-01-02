@@ -56,7 +56,7 @@ namespace tidas {
 
 			virtual void write ( backend_path const & loc, size_t const & size ) const = 0;
 
-			virtual void link ( backend_path const & loc, link_type type, std::string const & path, std::string const & name ) const = 0;
+			virtual void link ( backend_path const & loc, link_type type, std::string const & path ) const = 0;
 
 			virtual void wipe ( backend_path const & loc ) const = 0;
 

@@ -158,7 +158,7 @@ void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list co
 
 	hid_t dataspace = H5Screate_simple ( 2, dims, NULL ); 
 
-	hid_t datatype = hdf5_data_type ( TYPE_STRING );
+	hid_t datatype = hdf5_data_type ( data_type::string );
 
 	hid_t dataset = H5Dcreate ( file, loc.meta.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
 

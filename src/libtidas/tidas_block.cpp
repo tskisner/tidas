@@ -41,7 +41,7 @@ void tidas::block_link_operator::operator() ( block const & blk ) {
 
 	string linkpath = path + relpath;
 
-	bool hard = ( type == LINK_HARD );
+	bool hard = ( type == link_type::hard );
 
 	// create directories
 
@@ -189,7 +189,7 @@ void tidas::block::relocate ( backend_path const & loc ) {
 
 void tidas::block::sync () {
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 
 		// find all sub-blocks
 
@@ -276,9 +276,9 @@ void tidas::block::sync () {
 
 void tidas::block::flush () const {
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == MODE_RW ) {
+		if ( loc_.mode == access_mode::readwrite ) {
 
 			string dir = loc_.path + path_sep + loc_.name;
 			fs_mkdir ( dir.c_str() );
@@ -455,15 +455,15 @@ block tidas::block::select ( string const & filter ) const {
 
 void tidas::block::link ( link_type const & type, string const & path ) const {
 
-	if ( type != LINK_NONE ) {
+	if ( type != link_type::none ) {
 
-		if ( loc_.type != BACKEND_NONE ) {
+		if ( loc_.type != backend_type::none ) {
 
 			block_link_operator op;
 			op.type = type;
 			op.path = path;
 
-			exec ( op, EXEC_DEPTH_LAST );
+			exec ( op, exec_order::depth_last );
 
 		}
 
@@ -475,13 +475,13 @@ void tidas::block::link ( link_type const & type, string const & path ) const {
 
 void tidas::block::wipe ( ) const {
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == MODE_RW ) {
+		if ( loc_.mode == access_mode::readwrite ) {
 
 			block_wipe_operator op;
 
-			exec ( op, EXEC_DEPTH_FIRST );
+			exec ( op, exec_order::depth_first );
 
 		} else {
 			TIDAS_THROW( "cannot wipe block in read-only mode" );
@@ -529,7 +529,7 @@ backend_path tidas::block::block_loc ( backend_path const & loc, string const & 
 
 group & tidas::block::group_add ( string const & name, group const & grp ) {
 
-	if ( loc_.mode == MODE_R ) {
+	if ( loc_.mode == access_mode::read ) {
 		TIDAS_THROW( "cannot add group: block is open in read-only mode" );
 	}
 
@@ -543,7 +543,7 @@ group & tidas::block::group_add ( string const & name, group const & grp ) {
 
 	group_data_[ name ].flush();
 
-	if ( ( loc_.type != BACKEND_NONE ) && ( grp.location().type != BACKEND_NONE ) ) {
+	if ( ( loc_.type != backend_type::none ) && ( grp.location().type != backend_type::none ) ) {
 		data_copy ( grp, group_data_.at ( name ) );
 	}
 
@@ -577,7 +577,7 @@ group const & tidas::block::group_get ( string const & name ) const {
 
 void tidas::block::group_del ( string const & name ) {
 
-	if ( loc_.mode == MODE_R ) {
+	if ( loc_.mode == access_mode::read ) {
 		TIDAS_THROW( "cannot delete group: block is open in read-only mode" );
 	}
 
@@ -614,7 +614,7 @@ void tidas::block::clear_groups () {
 
 intervals & tidas::block::intervals_add ( string const & name, intervals const & intr ) {
 
-	if ( loc_.mode == MODE_R ) {
+	if ( loc_.mode == access_mode::read ) {
 		TIDAS_THROW( "cannot add intervals: block is open in read-only mode" );
 	}
 
@@ -628,7 +628,7 @@ intervals & tidas::block::intervals_add ( string const & name, intervals const &
 
 	intervals_data_[ name ].flush();
 
-	if ( ( loc_.type != BACKEND_NONE ) && ( intr.location().type != BACKEND_NONE ) ) {
+	if ( ( loc_.type != backend_type::none ) && ( intr.location().type != backend_type::none ) ) {
 		data_copy ( intr, intervals_data_.at ( name ) );
 	}
 
@@ -662,7 +662,7 @@ intervals const & tidas::block::intervals_get ( string const & name ) const {
 
 void tidas::block::intervals_del ( string const & name ) {
 
-	if ( loc_.mode == MODE_R ) {
+	if ( loc_.mode == access_mode::read ) {
 		TIDAS_THROW( "cannot delete intervals: block is open in read-only mode" );
 	}
 
@@ -699,7 +699,7 @@ void tidas::block::clear_intervals () {
 
 block & tidas::block::block_add ( string const & name, block const & blk ) {
 
-	if ( loc_.mode == MODE_R ) {
+	if ( loc_.mode == access_mode::read ) {
 		TIDAS_THROW( "cannot add sub-block: block is open in read-only mode" );
 	}
 
@@ -713,7 +713,7 @@ block & tidas::block::block_add ( string const & name, block const & blk ) {
 
 	block_data_[ name ].flush();
 
-	if ( ( loc_.type != BACKEND_NONE ) && ( blk.location().type != BACKEND_NONE ) ) {
+	if ( ( loc_.type != backend_type::none ) && ( blk.location().type != backend_type::none ) ) {
 		data_copy ( blk, block_data_.at ( name ) );
 	}
 
@@ -747,7 +747,7 @@ block const & tidas::block::block_get ( string const & name ) const {
 
 void tidas::block::block_del ( string const & name ) {
 
-	if ( loc_.mode == MODE_R ) {
+	if ( loc_.mode == access_mode::read ) {
 		TIDAS_THROW( "cannot delete sub-block: block is open in read-only mode" );
 	}
 

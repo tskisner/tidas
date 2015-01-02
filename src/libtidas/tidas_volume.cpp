@@ -38,7 +38,7 @@ tidas::volume::volume ( string const & path, backend_type type, compression_type
 	loc_.meta = "";
 	loc_.type = type;
 	loc_.comp = comp;
-	loc_.mode = MODE_RW;
+	loc_.mode = access_mode::readwrite;
 	relocate ( loc_ );
 
 	flush();
@@ -91,7 +91,7 @@ void tidas::volume::relocate ( backend_path const & loc ) {
 
 void tidas::volume::sync () {
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 
 		// check that root block exists
 
@@ -150,9 +150,9 @@ void tidas::volume::flush () const {
 
 	write_props ( loc_ );
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == MODE_RW ) {
+		if ( loc_.mode == access_mode::readwrite ) {
 			root_.flush();
 		}
 
@@ -181,11 +181,11 @@ void tidas::volume::copy ( volume const & other, string const & filter, backend_
 
 void tidas::volume::link ( link_type const & type, string const & path, string const & filter ) const {
 
-	if ( type != LINK_NONE ) {
+	if ( type != link_type::none ) {
 
-		if ( loc_.type != BACKEND_NONE ) {
+		if ( loc_.type != backend_type::none ) {
 
-			bool hard = ( type == LINK_HARD );
+			bool hard = ( type == link_type::hard );
 
 			// make the top level directory
 
@@ -215,9 +215,9 @@ void tidas::volume::link ( link_type const & type, string const & path, string c
 
 void tidas::volume::wipe ( string const & filter ) const {
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == MODE_RW ) {
+		if ( loc_.mode == access_mode::readwrite ) {
 
 
 		} else {
@@ -269,10 +269,10 @@ void tidas::volume::read_props ( backend_path & loc ) {
 
 	getline ( props, line );
 
-	if ( line == "HDF5" ) {
-		loc.type = BACKEND_HDF5;
-	} else if ( line == "GETDATA" ) {
-		loc.type = BACKEND_GETDATA;
+	if ( line == "hdf5" ) {
+		loc.type = backend_type::hdf5;
+	} else if ( line == "getdata" ) {
+		loc.type = backend_type::getdata;
 	} else {
 		ostringstream o;
 		o << "volume has unsupported backend \"" << line << "\"";
@@ -281,12 +281,12 @@ void tidas::volume::read_props ( backend_path & loc ) {
 
 	getline ( props, line );
 
-	if ( line == "GZIP" ) {
-		loc.comp = COMPRESS_GZIP;
-	} else if ( line == "BZIP2" ) {
-		loc.comp = COMPRESS_BZIP2;
+	if ( line == "gzip" ) {
+		loc.comp = compression_type::gzip;
+	} else if ( line == "bzip2" ) {
+		loc.comp = compression_type::bzip2;
 	} else {
-		loc.comp = COMPRESS_NONE;
+		loc.comp = compression_type::none;
 	}
 
 	props.close();
@@ -313,20 +313,20 @@ void tidas::volume::write_props ( backend_path const & loc ) const {
 		TIDAS_THROW( o.str().c_str() );
 	}
 
-	if ( loc.type == BACKEND_HDF5 ) {
-		props << "HDF5" << endl;
-	} else if ( loc.type == BACKEND_GETDATA ) {
-		props << "GETDATA" << endl;
+	if ( loc.type == backend_type::hdf5 ) {
+		props << "hdf5" << endl;
+	} else if ( loc.type == backend_type::getdata ) {
+		props << "getdata" << endl;
 	} else {
-		props << "NONE" << endl;
+		props << "none" << endl;
 	}
 
-	if ( loc.comp == COMPRESS_GZIP ) {
-		props << "GZIP" << endl;
-	} else if ( loc.comp == COMPRESS_BZIP2 ) {
-		props << "BZIP2" << endl;
+	if ( loc.comp == compression_type::gzip ) {
+		props << "gzip" << endl;
+	} else if ( loc.comp == compression_type::bzip2 ) {
+		props << "bzip2" << endl;
 	} else {
-		props << "NONE" << endl;
+		props << "none" << endl;
 	}
 
 	props.close();

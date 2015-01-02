@@ -97,13 +97,13 @@ tidas::intervals::intervals ( intervals const & other, std::string const & filte
 void tidas::intervals::set_backend () {
 
 	switch ( loc_.type ) {
-		case BACKEND_NONE:
+		case backend_type::none:
 			backend_.reset();
 			break;
-		case BACKEND_HDF5:
+		case backend_type::hdf5:
 			backend_.reset( new intervals_backend_hdf5 () );
 			break;
-		case BACKEND_GETDATA:
+		case backend_type::getdata:
 			TIDAS_THROW( "GetData backend not yet implemented" );
 			break;
 		default:
@@ -138,7 +138,7 @@ void tidas::intervals::sync () {
 
 	// read our own metadata
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 		backend_->read ( loc_, size_ );
 	}
 
@@ -148,9 +148,9 @@ void tidas::intervals::sync () {
 
 void tidas::intervals::flush () const {
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == MODE_RW ) {	
+		if ( loc_.mode == access_mode::readwrite ) {	
 			// write our own metadata
 
 			backend_->write ( loc_, size_ );
@@ -194,9 +194,9 @@ void tidas::intervals::copy ( intervals const & other, string const & filter, ba
 
 void tidas::intervals::link ( link_type const & type, string const & path ) const {
 
-	if ( type != LINK_NONE ) {
+	if ( type != link_type::none ) {
 
-		if ( loc_.type != BACKEND_NONE ) {
+		if ( loc_.type != backend_type::none ) {
 			backend_->link ( loc_, type, path );
 		}
 
@@ -208,9 +208,9 @@ void tidas::intervals::link ( link_type const & type, string const & path ) cons
 
 void tidas::intervals::wipe () const {
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == MODE_RW ) {
+		if ( loc_.mode == access_mode::readwrite ) {
 			backend_->wipe ( loc_ );
 		} else {
 			TIDAS_THROW( "cannot wipe intervals in read-only mode" );
@@ -223,7 +223,7 @@ void tidas::intervals::wipe () const {
 
 void tidas::intervals::dict_loc ( backend_path & dloc ) {
 	dloc = loc_;
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 		dloc.meta = backend_->dict_meta();
 	}
 	return;

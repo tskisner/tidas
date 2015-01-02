@@ -108,14 +108,14 @@ namespace tidas {
 			template < class P >
 			void exec ( P & op, exec_order order ) {
 
-				if ( order == EXEC_DEPTH_LAST ) {
+				if ( order == exec_order::depth_last ) {
 					op ( *this );
 				}
 
 				if ( block_data_.size() == 0 ) {
 
 					// this is a leaf
-					if ( order == EXEC_LEAF ) {
+					if ( order == exec_order::leaf ) {
 						op ( *this );
 					}
 				
@@ -128,7 +128,7 @@ namespace tidas {
 
 				}
 
-				if ( order == EXEC_DEPTH_FIRST ) {
+				if ( order == exec_order::depth_first ) {
 					op ( *this );
 				}
 
@@ -141,14 +141,14 @@ namespace tidas {
 			template < class P >
 			void exec ( P & op, exec_order order ) const {
 
-				if ( order == EXEC_DEPTH_LAST ) {
+				if ( order == exec_order::depth_last ) {
 					op ( *this );
 				}
 
 				if ( block_data_.size() == 0 ) {
 
 					// this is a leaf
-					if ( order == EXEC_LEAF ) {
+					if ( order == exec_order::leaf ) {
 						op ( *this );
 					}
 				
@@ -161,7 +161,7 @@ namespace tidas {
 
 				}
 
-				if ( order == EXEC_DEPTH_FIRST ) {
+				if ( order == exec_order::depth_first ) {
 					op ( *this );
 				}
 

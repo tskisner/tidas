@@ -51,13 +51,13 @@ tidas::dict::dict ( dict const & other, string const & filter, backend_path cons
 void tidas::dict::set_backend () {
 
 	switch ( loc_.type ) {
-		case BACKEND_NONE:
+		case backend_type::none:
 			backend_.reset();
 			break;
-		case BACKEND_HDF5:
+		case backend_type::hdf5:
 			backend_.reset( new dict_backend_hdf5 () );
 			break;
-		case BACKEND_GETDATA:
+		case backend_type::getdata:
 			TIDAS_THROW( "GetData backend not yet implemented" );
 			break;
 		default:
@@ -82,7 +82,7 @@ void tidas::dict::sync () {
 
 	// read our own metadata
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 		backend_->read ( loc_, data_, types_ );
 	}
 
@@ -92,9 +92,9 @@ void tidas::dict::sync () {
 
 void tidas::dict::flush () const {
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == MODE_RW ) {
+		if ( loc_.mode == access_mode::readwrite ) {
 			// write our own metadata
 
 			backend_->write ( loc_, data_, types_ );
@@ -110,7 +110,7 @@ void tidas::dict::copy ( dict const & other, string const & filter, backend_path
 
 	string filt = filter_default ( filter );
 
-	if ( ( filt != ".*" ) && ( loc.type != BACKEND_NONE ) && ( loc == other.loc_ ) ) {
+	if ( ( filt != ".*" ) && ( loc.type != backend_type::none ) && ( loc == other.loc_ ) ) {
 		TIDAS_THROW( "copy of non-memory dict with a filter requires a new location" );
 	}
 

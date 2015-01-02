@@ -102,86 +102,86 @@ TEST( utilstest, datatype ) {
 	data_type check;
 
 	type = data_type_get ( typeid ( vint8 ) );
-	EXPECT_EQ( type, TYPE_INT8 );
+	EXPECT_EQ( type, data_type::int8 );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "TYPE_INT8" );
+	EXPECT_EQ( typestr, "int8" );
 	check = data_type_from_string ( typestr );
 	EXPECT_EQ( check, type );
 
 	type = data_type_get ( typeid ( vuint8 ) );
-	EXPECT_EQ( type, TYPE_UINT8 );
+	EXPECT_EQ( type, data_type::uint8 );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "TYPE_UINT8" );
+	EXPECT_EQ( typestr, "uint8" );
 	check = data_type_from_string ( typestr );
 	EXPECT_EQ( check, type );
 
 	type = data_type_get ( typeid ( vint16 ) );
-	EXPECT_EQ( type, TYPE_INT16 );
+	EXPECT_EQ( type, data_type::int16 );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "TYPE_INT16" );
+	EXPECT_EQ( typestr, "int16" );
 	check = data_type_from_string ( typestr );
 	EXPECT_EQ( check, type );
 
 	type = data_type_get ( typeid ( vuint16 ) );
-	EXPECT_EQ( type, TYPE_UINT16 );
+	EXPECT_EQ( type, data_type::uint16 );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "TYPE_UINT16" );
+	EXPECT_EQ( typestr, "uint16" );
 	check = data_type_from_string ( typestr );
 	EXPECT_EQ( check, type );
 
 	type = data_type_get ( typeid ( vint32 ) );
-	EXPECT_EQ( type, TYPE_INT32 );
+	EXPECT_EQ( type, data_type::int32 );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "TYPE_INT32" );
+	EXPECT_EQ( typestr, "int32" );
 	check = data_type_from_string ( typestr );
 	EXPECT_EQ( check, type );
 
 	type = data_type_get ( typeid ( vuint32 ) );
-	EXPECT_EQ( type, TYPE_UINT32 );
+	EXPECT_EQ( type, data_type::uint32 );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "TYPE_UINT32" );
+	EXPECT_EQ( typestr, "uint32" );
 	check = data_type_from_string ( typestr );
 	EXPECT_EQ( check, type );
 
 	type = data_type_get ( typeid ( vint64 ) );
-	EXPECT_EQ( type, TYPE_INT64 );
+	EXPECT_EQ( type, data_type::int64 );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "TYPE_INT64" );
+	EXPECT_EQ( typestr, "int64" );
 	check = data_type_from_string ( typestr );
 	EXPECT_EQ( check, type );
 
 	type = data_type_get ( typeid ( vuint64 ) );
-	EXPECT_EQ( type, TYPE_UINT64 );
+	EXPECT_EQ( type, data_type::uint64 );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "TYPE_UINT64" );
+	EXPECT_EQ( typestr, "uint64" );
 	check = data_type_from_string ( typestr );
 	EXPECT_EQ( check, type );
 
 	type = data_type_get ( typeid ( vfloat32 ) );
-	EXPECT_EQ( type, TYPE_FLOAT32 );
+	EXPECT_EQ( type, data_type::float32 );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "TYPE_FLOAT32" );
+	EXPECT_EQ( typestr, "float32" );
 	check = data_type_from_string ( typestr );
 	EXPECT_EQ( check, type );
 
 	type = data_type_get ( typeid ( vfloat64 ) );
-	EXPECT_EQ( type, TYPE_FLOAT64 );
+	EXPECT_EQ( type, data_type::float64 );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "TYPE_FLOAT64" );
+	EXPECT_EQ( typestr, "float64" );
 	check = data_type_from_string ( typestr );
 	EXPECT_EQ( check, type );
 
 	type = data_type_get ( typeid ( vstring ) );
-	EXPECT_EQ( type, TYPE_STRING );
+	EXPECT_EQ( type, data_type::string );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "TYPE_STRING" );
+	EXPECT_EQ( typestr, "string" );
 	check = data_type_from_string ( typestr );
 	EXPECT_EQ( check, type );
 
 	type = data_type_get ( typeid ( bad ) );
-	EXPECT_EQ( type, TYPE_NONE );
+	EXPECT_EQ( type, data_type::none );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "TYPE_NONE" );
+	EXPECT_EQ( typestr, "none" );
 	check = data_type_from_string ( typestr );
 	EXPECT_EQ( check, type );
 

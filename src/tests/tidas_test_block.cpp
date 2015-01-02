@@ -101,10 +101,10 @@ TEST_F( blockTest, HDF5Backend ) {
 #ifdef HAVE_HDF5
 
 	backend_path loc;
-	loc.type = BACKEND_HDF5;
+	loc.type = backend_type::hdf5;
 	loc.path = ".";
 	loc.name = "test_block.out";
-	loc.mode = MODE_RW;
+	loc.mode = access_mode::readwrite;
 
 	block blk;
 	blk.relocate ( loc );

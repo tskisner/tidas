@@ -29,7 +29,7 @@ tidas::group::group ( schema const & schm, dict const & d, size_t const & size )
 
 	field time;
 	time.name = group_time_field;
-	time.type = TYPE_FLOAT64;
+	time.type = data_type::float64;
 	time.units = "seconds";
 
 	schm_.field_del( time.name );
@@ -72,13 +72,13 @@ tidas::group::group ( group const & other, std::string const & filter, backend_p
 void tidas::group::set_backend ( ) {
 
 	switch ( loc_.type ) {
-		case BACKEND_NONE:
+		case backend_type::none:
 			backend_.reset();
 			break;
-		case BACKEND_HDF5:
+		case backend_type::hdf5:
 			backend_.reset( new group_backend_hdf5 () );
 			break;
-		case BACKEND_GETDATA:
+		case backend_type::getdata:
 			TIDAS_THROW( "GetData backend not yet implemented" );
 			break;
 		default:
@@ -123,7 +123,7 @@ void tidas::group::sync () {
 
 	// read our own metadata
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 		backend_->read ( loc_, size_, counts_ );
 	}
 
@@ -133,9 +133,9 @@ void tidas::group::sync () {
 
 void tidas::group::flush () const {
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == MODE_RW ) {	
+		if ( loc_.mode == access_mode::readwrite ) {	
 			// write our own metadata
 
 			backend_->write ( loc_, size_, counts_ );
@@ -189,9 +189,9 @@ void tidas::group::copy ( group const & other, string const & filter, backend_pa
 
 void tidas::group::link ( link_type const & type, string const & path ) const {
 
-	if ( type != LINK_NONE ) {
+	if ( type != link_type::none ) {
 
-		if ( loc_.type != BACKEND_NONE ) {
+		if ( loc_.type != backend_type::none ) {
 			backend_->link ( loc_, type, path );
 		}
 
@@ -203,9 +203,9 @@ void tidas::group::link ( link_type const & type, string const & path ) const {
 
 void tidas::group::wipe () const {
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == MODE_RW ) {
+		if ( loc_.mode == access_mode::readwrite ) {
 			backend_->wipe ( loc_ );
 		} else {
 			TIDAS_THROW( "cannot wipe group in read-only mode" );
@@ -225,24 +225,24 @@ void tidas::group::compute_counts() {
 
 	// clear counts
 	counts_.clear();
-	counts_[ TYPE_INT8 ] = 0;
-	counts_[ TYPE_UINT8 ] = 0;
-	counts_[ TYPE_INT16 ] = 0;
-	counts_[ TYPE_UINT16 ] = 0;
-	counts_[ TYPE_INT32 ] = 0;
-	counts_[ TYPE_UINT32 ] = 0;
-	counts_[ TYPE_INT64 ] = 0;
-	counts_[ TYPE_UINT64 ] = 0;
-	counts_[ TYPE_FLOAT32 ] = 0;
-	counts_[ TYPE_FLOAT64 ] = 0;
-	counts_[ TYPE_STRING ] = 0;
+	counts_[ data_type::int8 ] = 0;
+	counts_[ data_type::uint8 ] = 0;
+	counts_[ data_type::int16 ] = 0;
+	counts_[ data_type::uint16 ] = 0;
+	counts_[ data_type::int32 ] = 0;
+	counts_[ data_type::uint32 ] = 0;
+	counts_[ data_type::int64 ] = 0;
+	counts_[ data_type::uint64 ] = 0;
+	counts_[ data_type::float32 ] = 0;
+	counts_[ data_type::float64 ] = 0;
+	counts_[ data_type::string ] = 0;
 
 	// clear type_indx
 	type_indx_.clear();
 
 	// we always have a time field
-	type_indx_[ group_time_field ] = counts_[ TYPE_FLOAT64 ];
-	++counts_[ TYPE_FLOAT64 ];
+	type_indx_[ group_time_field ] = counts_[ data_type::float64 ];
+	++counts_[ data_type::float64 ];
 
 	field_list fields = schm_.fields();
 
@@ -250,9 +250,9 @@ void tidas::group::compute_counts() {
 		if ( it->name == group_time_field ) {
 			// ignore time field, since we already counted it 
 		} else {
-			if ( it->type == TYPE_NONE ) {
+			if ( it->type == data_type::none ) {
 				ostringstream o;
-				o << "group schema field \"" << it->name << "\" has type == TYPE_NONE";
+				o << "group schema field \"" << it->name << "\" has type == none";
 				TIDAS_THROW( o.str().c_str() );
 			}
 			type_indx_[ it->name ] = counts_[ it->type ];
@@ -266,7 +266,7 @@ void tidas::group::compute_counts() {
 
 void tidas::group::dict_loc ( backend_path & dloc ) {
 	dloc = loc_;
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 		dloc.meta = backend_->dict_meta();
 	}
 	return;
@@ -275,7 +275,7 @@ void tidas::group::dict_loc ( backend_path & dloc ) {
 
 void tidas::group::schema_loc ( backend_path & sloc ) {
 	sloc = loc_;
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 		sloc.meta = backend_->schema_meta();
 	}
 	return;

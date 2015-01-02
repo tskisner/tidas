@@ -276,10 +276,10 @@ TEST_F( groupTest, HDF5Backend ) {
 	group grp ( schm, dt, gnsamp );
 
 	backend_path loc;
-	loc.type = BACKEND_HDF5;
+	loc.type = backend_type::hdf5;
 	loc.path = ".";
 	loc.name = "test_group.hdf5.out";
-	loc.mode = MODE_RW;
+	loc.mode = access_mode::readwrite;
 
 	group grp2 ( grp, "", loc );
 	grp2.flush();

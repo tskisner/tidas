@@ -26,43 +26,43 @@ void schema_setup ( tidas::field_list & flist ) {
 	field f_float32;
 	field f_float64;
 
-	f_int8.type = TYPE_INT8;
+	f_int8.type = data_type::int8;
 	f_int8.name = "int8";
 	f_int8.units = "int8";
 
-	f_uint8.type = TYPE_UINT8;
+	f_uint8.type = data_type::uint8;
 	f_uint8.name = "uint8";
 	f_uint8.units = "uint8";
 
-	f_int16.type = TYPE_INT16;
+	f_int16.type = data_type::int16;
 	f_int16.name = "int16";
 	f_int16.units = "int16";
 
-	f_uint16.type = TYPE_UINT16;
+	f_uint16.type = data_type::uint16;
 	f_uint16.name = "uint16";
 	f_uint16.units = "uint16";
 
-	f_int32.type = TYPE_INT32;
+	f_int32.type = data_type::int32;
 	f_int32.name = "int32";
 	f_int32.units = "int32";
 
-	f_uint32.type = TYPE_UINT32;
+	f_uint32.type = data_type::uint32;
 	f_uint32.name = "uint32";
 	f_uint32.units = "uint32";
 
-	f_int64.type = TYPE_INT64;
+	f_int64.type = data_type::int64;
 	f_int64.name = "int64";
 	f_int64.units = "int64";
 
-	f_uint64.type = TYPE_UINT64;
+	f_uint64.type = data_type::uint64;
 	f_uint64.name = "uint64";
 	f_uint64.units = "uint64";
 
-	f_float32.type = TYPE_FLOAT32;
+	f_float32.type = data_type::float32;
 	f_float32.name = "float32";
 	f_float32.units = "float32";
 
-	f_float64.type = TYPE_FLOAT64;
+	f_float64.type = data_type::float64;
 	f_float64.name = "float64";
 	f_float64.units = "float64";
 
@@ -114,7 +114,7 @@ TEST_F( schemaTest, MetaOps ) {
 		field ftest = schm.field_get ( "dummy" );
 		EXPECT_EQ( ftest.name, "" );
 		EXPECT_EQ( ftest.units, "" );
-		EXPECT_EQ( ftest.type, TYPE_NONE );
+		EXPECT_EQ( ftest.type, data_type::none );
 	} catch(...) {
 		cout << "schema::field_get successfully threw exception" << endl;
 	}
@@ -185,11 +185,11 @@ TEST_F( schemaTest, HDF5Backend ) {
 #ifdef HAVE_HDF5
 
 	backend_path loc;
-	loc.type = BACKEND_HDF5;
+	loc.type = backend_type::hdf5;
 	loc.path = ".";
 	loc.name = "test_schema.hdf5.out";
 	loc.meta = string("/") + schema_hdf5_dataset;
-	loc.mode = MODE_RW;
+	loc.mode = access_mode::readwrite;
 
 	schema schm2 ( schm, ".*", loc );
 	schm2.flush();

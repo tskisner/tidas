@@ -15,7 +15,7 @@ using namespace tidas;
 
 
 tidas::field::field () {
-	type = TYPE_NONE;
+	type = data_type::none;
 	name = "";
 	units = "";
 }
@@ -100,13 +100,13 @@ tidas::schema::schema ( schema const & other, std::string const & filter, backen
 void tidas::schema::set_backend () {
 
 	switch ( loc_.type ) {
-		case BACKEND_NONE:
+		case backend_type::none:
 			backend_.reset();
 			break;
-		case BACKEND_HDF5:
+		case backend_type::hdf5:
 			backend_.reset( new schema_backend_hdf5 () );
 			break;
-		case BACKEND_GETDATA:
+		case backend_type::getdata:
 			TIDAS_THROW( "GetData backend not yet implemented" );
 			break;
 		default:
@@ -131,7 +131,7 @@ void tidas::schema::sync () {
 
 	// read our own metadata
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 		backend_->read ( loc_, fields_ );
 	}
 
@@ -141,9 +141,9 @@ void tidas::schema::sync () {
 
 void tidas::schema::flush () const {
 
-	if ( loc_.type != BACKEND_NONE ) {
+	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == MODE_RW ) {
+		if ( loc_.mode == access_mode::readwrite ) {
 			// write our own metadata
 
 			backend_->write ( loc_, fields_ );
@@ -160,7 +160,7 @@ void tidas::schema::copy ( schema const & other, string const & filter, backend_
 
 	string filt = filter_default ( filter );
 
-	if ( ( filt != ".*" ) && ( loc.type != BACKEND_NONE ) && ( loc == other.loc_ ) ) {
+	if ( ( filt != ".*" ) && ( loc.type != backend_type::none ) && ( loc == other.loc_ ) ) {
 		TIDAS_THROW( "copy of non-memory schema with a filter requires a new location" );
 	}
 

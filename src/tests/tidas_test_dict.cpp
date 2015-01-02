@@ -105,8 +105,8 @@ TEST_F( dictTest, HDF5Backend ) {
 #ifdef HAVE_HDF5
 
 	backend_path loc;
-	loc.type = BACKEND_HDF5;
-	loc.mode = MODE_RW;
+	loc.type = backend_type::hdf5;
+	loc.mode = access_mode::readwrite;
 	loc.path = ".";
 	loc.name = "test_dict.hdf5.out";
 	loc.meta = "/fakedata";

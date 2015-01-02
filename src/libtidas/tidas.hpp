@@ -25,49 +25,49 @@ namespace tidas {
 
 	typedef int64_t index_type;
 
-	typedef enum {
-		TYPE_NONE, ///< Undefined type.
-		TYPE_INT8, ///< C compatible int8_t type.
-		TYPE_UINT8, ///< C compatible uint8_t type.
-		TYPE_INT16, ///< C compatible int16_t type.
-		TYPE_UINT16, ///< C compatible uint16_t type.
-		TYPE_INT32, ///< C compatible int32_t type.
-		TYPE_UINT32, ///< C compatible uint32_t type.
-		TYPE_INT64, ///< C compatible int64_t type.
-		TYPE_UINT64, ///< C compatible uint64_t type.
-		TYPE_FLOAT32, ///< float type.
-		TYPE_FLOAT64, ///< double type.
-		TYPE_STRING ///< C++ string type.
-	} data_type;
+	enum class data_type {
+		none, ///< Undefined type.
+		int8, ///< C compatible int8_t type.
+		uint8, ///< C compatible uint8_t type.
+		int16, ///< C compatible int16_t type.
+		uint16, ///< C compatible uint16_t type.
+		int32, ///< C compatible int32_t type.
+		uint32, ///< C compatible uint32_t type.
+		int64, ///< C compatible int64_t type.
+		uint64, ///< C compatible uint64_t type.
+		float32, ///< float type.
+		float64, ///< double type.
+		string ///< C++ string type.
+	};
 
-	typedef enum {
-		BACKEND_NONE, ///< Backend not assigned.
-		BACKEND_HDF5, ///< HDF5 backend.
-		BACKEND_GETDATA ///< GetData backend.
-	} backend_type;
+	enum class backend_type {
+		none, ///< Backend not assigned.
+		hdf5, ///< HDF5 backend.
+		getdata ///< GetData backend.
+	};
 
-	typedef enum {
-		COMPRESS_NONE, ///< No compression.
-		COMPRESS_GZIP, ///< gzip (libz) compression.
-		COMPRESS_BZIP2 ///< bzip2 compression.
-	} compression_type;
+	enum class compression_type {
+		none, ///< No compression.
+		gzip, ///< gzip (libz) compression.
+		bzip2 ///< bzip2 compression.
+	};
 
-	typedef enum {
-		MODE_R, ///< Read-only access.
-		MODE_RW ///< Read-write access.
-	} access_mode;
+	enum class access_mode {
+		read, ///< Read-only access.
+		readwrite ///< Read-write access.
+	};
 
-	typedef enum {
-		LINK_NONE, ///< Not a link.
-		LINK_HARD, ///< Hard Link.
-		LINK_SOFT   ///< Symlink.
-	} link_type;
+	enum class link_type {
+		none, ///< Not a link.
+		hard, ///< Hard Link.
+		soft   ///< Symlink.
+	};
 
-	typedef enum {
-		EXEC_DEPTH_FIRST, ///< Operate on children before parent.
-		EXEC_DEPTH_LAST,  ///< Operate on children after parent.
-		EXEC_LEAF         ///< Operate only on leaves of the hierarchy.
-	} exec_order;
+	enum class exec_order {
+		depth_first, ///< Operate on children before parent.
+		depth_last,  ///< Operate on children after parent.
+		leaf         ///< Operate only on leaves of the hierarchy.
+	};
 
 
 	class volume;

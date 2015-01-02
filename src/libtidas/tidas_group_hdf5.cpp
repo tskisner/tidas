@@ -57,7 +57,7 @@ group_backend_hdf5 & tidas::group_backend_hdf5::operator= ( group_backend_hdf5 c
 
 
 string tidas::group_backend_hdf5::dict_meta () const {
-	string meta = string("/") + group_hdf5_dataset_prefix + string("_") + data_type_to_string( TYPE_FLOAT64 );
+	string meta = string("/") + group_hdf5_dataset_prefix + string("_") + data_type_to_string( data_type::float64 );
 	return meta;
 }
 
@@ -89,7 +89,7 @@ void tidas::group_backend_hdf5::read ( backend_path const & loc, index_type & ns
 
 	// we always have the FLOAT64 dataset, since we always have at least the time field
 
-	string mpath = string("/") + group_hdf5_dataset_prefix + string("_") + data_type_to_string( TYPE_FLOAT64 );
+	string mpath = string("/") + group_hdf5_dataset_prefix + string("_") + data_type_to_string( data_type::float64 );
 
 	hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
 	hid_t dataspace = H5Dget_space ( dataset );
@@ -106,7 +106,7 @@ void tidas::group_backend_hdf5::read ( backend_path const & loc, index_type & ns
 	hsize_t maxdims[2];
 	int ret = H5Sget_simple_extent_dims ( dataspace, dims, maxdims );
 
-	counts[ TYPE_FLOAT64 ] = dims[0];
+	counts[ data_type::float64 ] = dims[0];
 	nsamp = dims[1];
 
 	herr_t status = H5Sclose ( dataspace );
@@ -115,17 +115,17 @@ void tidas::group_backend_hdf5::read ( backend_path const & loc, index_type & ns
 	// now iterate over all other types and find the number of fields
 
 	vector < data_type > othertypes;
-	othertypes.push_back ( TYPE_INT8 );
-	othertypes.push_back ( TYPE_UINT8 );
-	othertypes.push_back ( TYPE_INT16 );
-	othertypes.push_back ( TYPE_UINT16 );
-	othertypes.push_back ( TYPE_INT32 );
-	othertypes.push_back ( TYPE_UINT32 );
-	othertypes.push_back ( TYPE_INT64 );
-	othertypes.push_back ( TYPE_UINT64 );
-	othertypes.push_back ( TYPE_FLOAT32 );
-	othertypes.push_back ( TYPE_FLOAT64 );
-	othertypes.push_back ( TYPE_STRING );
+	othertypes.push_back ( data_type::int8 );
+	othertypes.push_back ( data_type::uint8 );
+	othertypes.push_back ( data_type::int16 );
+	othertypes.push_back ( data_type::uint16 );
+	othertypes.push_back ( data_type::int32 );
+	othertypes.push_back ( data_type::uint32 );
+	othertypes.push_back ( data_type::int64 );
+	othertypes.push_back ( data_type::uint64 );
+	othertypes.push_back ( data_type::float32 );
+	othertypes.push_back ( data_type::float64 );
+	othertypes.push_back ( data_type::string );
 
 	for ( vector < data_type > :: const_iterator it = othertypes.begin(); it != othertypes.end(); ++it ) {
 

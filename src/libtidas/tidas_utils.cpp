@@ -125,7 +125,7 @@ void tidas::fs_link ( char const * target, char const * path, bool hard ) {
 
 
 data_type tidas::data_type_get ( type_info const & test ) {
-	data_type ret = TYPE_NONE;
+	data_type ret = data_type::none;
 
 	int8_t type_int8;
 	uint8_t type_uint8;
@@ -140,29 +140,29 @@ data_type tidas::data_type_get ( type_info const & test ) {
 	string type_string;
 
 	if ( test == typeid ( type_int8 ) ) {
-		ret = TYPE_INT8;
+		ret = data_type::int8;
 	} else if ( test == typeid ( type_uint8 ) ) {
-		ret = TYPE_UINT8;
+		ret = data_type::uint8;
 	} else if ( test == typeid ( type_int16 ) ) {
-		ret = TYPE_INT16;
+		ret = data_type::int16;
 	} else if ( test == typeid ( type_uint16 ) ) {
-		ret = TYPE_UINT16;
+		ret = data_type::uint16;
 	} else if ( test == typeid ( type_int32 ) ) {
-		ret = TYPE_INT32;
+		ret = data_type::int32;
 	} else if ( test == typeid ( type_uint32 ) ) {
-		ret = TYPE_UINT32;
+		ret = data_type::uint32;
 	} else if ( test == typeid ( type_int64 ) ) {
-		ret = TYPE_INT64;
+		ret = data_type::int64;
 	} else if ( test == typeid ( type_uint64 ) ) {
-		ret = TYPE_UINT64;
+		ret = data_type::uint64;
 	} else if ( test == typeid ( type_float ) ) {
-		ret = TYPE_FLOAT32;
+		ret = data_type::float32;
 	} else if ( test == typeid ( type_double ) ) {
-		ret = TYPE_FLOAT64;
+		ret = data_type::float64;
 	} else if ( test == typeid ( type_string ) ) {
-		ret = TYPE_STRING;
+		ret = data_type::string;
 	} else {
-		ret = TYPE_NONE;
+		ret = data_type::none;
 	}
 
 	return ret;
@@ -172,41 +172,41 @@ data_type tidas::data_type_get ( type_info const & test ) {
 string tidas::data_type_to_string ( data_type type ) {
 	string ret;
 	switch ( type ) {
-		case TYPE_INT8:
-			ret = "TYPE_INT8";
+		case data_type::int8:
+			ret = "int8";
 			break;
-		case TYPE_UINT8:
-			ret = "TYPE_UINT8";
+		case data_type::uint8:
+			ret = "uint8";
 			break;
-		case TYPE_INT16:
-			ret = "TYPE_INT16";
+		case data_type::int16:
+			ret = "int16";
 			break;
-		case TYPE_UINT16:
-			ret = "TYPE_UINT16";
+		case data_type::uint16:
+			ret = "uint16";
 			break;
-		case TYPE_INT32:
-			ret = "TYPE_INT32";
+		case data_type::int32:
+			ret = "int32";
 			break;
-		case TYPE_UINT32:
-			ret = "TYPE_UINT32";
+		case data_type::uint32:
+			ret = "uint32";
 			break;
-		case TYPE_INT64:
-			ret = "TYPE_INT64";
+		case data_type::int64:
+			ret = "int64";
 			break;
-		case TYPE_UINT64:
-			ret = "TYPE_UINT64";
+		case data_type::uint64:
+			ret = "uint64";
 			break;
-		case TYPE_FLOAT32:
-			ret = "TYPE_FLOAT32";
+		case data_type::float32:
+			ret = "float32";
 			break;
-		case TYPE_FLOAT64:
-			ret = "TYPE_FLOAT64";
+		case data_type::float64:
+			ret = "float64";
 			break;
-		case TYPE_STRING:
-			ret = "TYPE_STRING";
+		case data_type::string:
+			ret = "string";
 			break;
-		case TYPE_NONE:
-			ret = "TYPE_NONE";
+		case data_type::none:
+			ret = "none";
 			break;
 		default:
 			TIDAS_THROW( "data type not recognized" );
@@ -220,30 +220,30 @@ data_type tidas::data_type_from_string ( string const & name ) {
 
 	data_type ret;
 	
-	if ( name.compare( "TYPE_INT8" ) == 0 ) {
-		ret = TYPE_INT8;
-	} else if ( name.compare( "TYPE_UINT8" ) == 0 ) {
-		ret = TYPE_UINT8;
-	} else if ( name.compare( "TYPE_INT16" ) == 0 ) {
-		ret = TYPE_INT16;
-	} else if ( name.compare( "TYPE_UINT16" ) == 0 ) {
-		ret = TYPE_UINT16;
-	} else if ( name.compare( "TYPE_INT32" ) == 0 ) {
-		ret = TYPE_INT32;
-	} else if ( name.compare( "TYPE_UINT32" ) == 0 ) {
-		ret = TYPE_UINT32;
-	} else if ( name.compare( "TYPE_INT64" ) == 0 ) {
-		ret = TYPE_INT64;
-	} else if ( name.compare( "TYPE_UINT64" ) == 0 ) {
-		ret = TYPE_UINT64;
-	} else if ( name.compare( "TYPE_FLOAT32" ) == 0 ) {
-		ret = TYPE_FLOAT32;
-	} else if ( name.compare( "TYPE_FLOAT64" ) == 0 ) {
-		ret = TYPE_FLOAT64;
-	} else if ( name.compare( "TYPE_STRING" ) == 0 ) {
-		ret = TYPE_STRING;
-	} else if ( name.compare( "TYPE_NONE" ) == 0 ) {
-		ret = TYPE_NONE;
+	if ( name.compare( "int8" ) == 0 ) {
+		ret = data_type::int8;
+	} else if ( name.compare( "uint8" ) == 0 ) {
+		ret = data_type::uint8;
+	} else if ( name.compare( "int16" ) == 0 ) {
+		ret = data_type::int16;
+	} else if ( name.compare( "uint16" ) == 0 ) {
+		ret = data_type::uint16;
+	} else if ( name.compare( "int32" ) == 0 ) {
+		ret = data_type::int32;
+	} else if ( name.compare( "uint32" ) == 0 ) {
+		ret = data_type::uint32;
+	} else if ( name.compare( "int64" ) == 0 ) {
+		ret = data_type::int64;
+	} else if ( name.compare( "uint64" ) == 0 ) {
+		ret = data_type::uint64;
+	} else if ( name.compare( "float32" ) == 0 ) {
+		ret = data_type::float32;
+	} else if ( name.compare( "float64" ) == 0 ) {
+		ret = data_type::float64;
+	} else if ( name.compare( "string" ) == 0 ) {
+		ret = data_type::string;
+	} else if ( name.compare( "none" ) == 0 ) {
+		ret = data_type::none;
 	} else {
 		ostringstream o;
 		o << "data type \"" << name << "\" not recognized";

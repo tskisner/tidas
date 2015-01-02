@@ -74,11 +74,11 @@ TEST_F( intervalsTest, MetaOps ) {
 	intervals intr;
 
 	backend_path loc = intr.location();
-	EXPECT_EQ( loc.type, BACKEND_NONE );
+	EXPECT_EQ( loc.type, backend_type::none );
 	EXPECT_EQ( loc.path, "" );
 	EXPECT_EQ( loc.name, "" );
 	EXPECT_EQ( loc.meta, "" );
-	EXPECT_EQ( loc.mode, MODE_R );
+	EXPECT_EQ( loc.mode, access_mode::read );
 
 	intervals dummy ( intr );
 
@@ -116,8 +116,8 @@ TEST_F( intervalsTest, HDF5Backend ) {
 	// copy to metadata to hdf5 location
 
 	backend_path loc;
-	loc.type = BACKEND_HDF5;
-	loc.mode = MODE_RW;
+	loc.type = backend_type::hdf5;
+	loc.mode = access_mode::readwrite;
 	loc.path = ".";
 	loc.name = "test_intervals_data.hdf5.out";
 

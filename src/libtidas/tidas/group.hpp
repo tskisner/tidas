@@ -247,7 +247,7 @@ namespace tidas {
 					o << "cannot read field " << field_name << ", samples " << offset << " - " << (offset+n-1) << " from group " << loc_.name << " (" << size_ << " samples)";
 					TIDAS_THROW( o.str().c_str() );
 				}
-				if ( loc_.type != BACKEND_NONE ) {
+				if ( loc_.type != backend_type::none ) {
 					backend_->read_field ( loc_, field_name, type_indx_.at( field_name ), offset, data );
 				} else {
 					TIDAS_THROW( "cannot read field- backend not assigned" );
@@ -269,7 +269,7 @@ namespace tidas {
 					o << "cannot write field " << field_name << ", samples " << offset << " - " << (offset+n-1) << " to group " << loc_.name << " (" << size_ << " samples)";
 					TIDAS_THROW( o.str().c_str() );
 				}
-				if ( loc_.type != BACKEND_NONE ) {
+				if ( loc_.type != backend_type::none ) {
 					backend_->write_field ( loc_, field_name, type_indx_.at( field_name ), offset, data );
 				} else {
 					TIDAS_THROW( "cannot write field- backend not assigned" );

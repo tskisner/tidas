@@ -182,7 +182,7 @@ void tidas::intervals_backend_hdf5::link ( backend_path const & loc, link_type t
 
 	string fspath = loc.path + path_sep + loc.name;
 
-	fs_link ( fspath.c_str(), path.c_str(), ( type == LINK_HARD ) );
+	fs_link ( fspath.c_str(), path.c_str(), ( type == link_type::hard ) );
 
 #else
 

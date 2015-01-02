@@ -18,7 +18,7 @@ void tidas::data_copy ( intervals const & in, intervals & out ) {
 		return;
 	}
 
-	if ( ( in.location().type == BACKEND_NONE ) || ( out.location().type == BACKEND_NONE ) ) {
+	if ( ( in.location().type == backend_type::none ) || ( out.location().type == backend_type::none ) ) {
 		TIDAS_THROW( "cannot do data_copy between intervals with unassigned backends" );
 	}
 
@@ -43,7 +43,7 @@ void tidas::data_copy ( group const & in, group & out ) {
 		return;
 	}
 
-	if ( ( in.location().type == BACKEND_NONE ) || ( out.location().type == BACKEND_NONE ) ) {
+	if ( ( in.location().type == backend_type::none ) || ( out.location().type == backend_type::none ) ) {
 		TIDAS_THROW( "cannot do data_copy between groups with unassigned backends" );
 	}
 
@@ -69,37 +69,37 @@ void tidas::data_copy ( group const & in, group & out ) {
 		if ( it->name != group_time_field ) {
 
 			switch ( it->type ) {
-				case TYPE_INT8:
+				case data_type::int8:
 					group_helper_copy < int8_t > ( in, out, it->name, nsamp );
 					break;
-				case TYPE_UINT8:
+				case data_type::uint8:
 					group_helper_copy < uint8_t > ( in, out, it->name, nsamp );
 					break;
-				case TYPE_INT16:
+				case data_type::int16:
 					group_helper_copy < int16_t > ( in, out, it->name, nsamp );
 					break;
-				case TYPE_UINT16:
+				case data_type::uint16:
 					group_helper_copy < uint16_t > ( in, out, it->name, nsamp );
 					break;
-				case TYPE_INT32:
+				case data_type::int32:
 					group_helper_copy < int32_t > ( in, out, it->name, nsamp );
 					break;
-				case TYPE_UINT32:
+				case data_type::uint32:
 					group_helper_copy < uint32_t > ( in, out, it->name, nsamp );
 					break;
-				case TYPE_INT64:
+				case data_type::int64:
 					group_helper_copy < int64_t > ( in, out, it->name, nsamp );
 					break;
-				case TYPE_UINT64:
+				case data_type::uint64:
 					group_helper_copy < uint64_t > ( in, out, it->name, nsamp );
 					break;
-				case TYPE_FLOAT32:
+				case data_type::float32:
 					group_helper_copy < float > ( in, out, it->name, nsamp );
 					break;
-				case TYPE_FLOAT64:
+				case data_type::float64:
 					group_helper_copy < double > ( in, out, it->name, nsamp );
 					break;
-				case TYPE_STRING:
+				case data_type::string:
 					group_helper_copy < string > ( in, out, it->name, nsamp );
 					break;
 				default:

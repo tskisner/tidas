@@ -5,8 +5,8 @@
   level LICENSE file for details.
 */
 
-#ifndef TIDAS_BACKEND_HDF5_HPP
-#define TIDAS_BACKEND_HDF5_HPP
+#ifndef TIDAS_HDF5_HPP
+#define TIDAS_HDF5_HPP
 
 
 #ifdef HAVE_HDF5

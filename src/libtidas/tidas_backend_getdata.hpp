@@ -5,8 +5,8 @@
   level LICENSE file for details.
 */
 
-#ifndef TIDAS_BACKEND_GETDATA_HPP
-#define TIDAS_BACKEND_GETDATA_HPP
+#ifndef TIDAS_GETDATA_HPP
+#define TIDAS_GETDATA_HPP
 
 #ifdef HAVE_GETDATA
 extern "C" {

@@ -104,4 +104,24 @@ void block_setup ( tidas::block & blk, size_t n_samp, size_t n_intr );
 void block_verify ( tidas::block & blk );
 
 
+class volumeTest : public ::testing::Test {
+
+	public :
+
+		volumeTest ();
+		~volumeTest () { }
+		virtual void SetUp();
+		virtual void TearDown() { }
+
+		size_t n_samp;
+		size_t n_intr;
+		size_t n_block;
+
+};
+
+void volume_setup ( tidas::volume & vol, size_t n_samp, size_t n_intr, size_t n_block );
+
+void volume_verify ( tidas::volume & vol );
+
+
 #endif

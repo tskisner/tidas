@@ -5,7 +5,6 @@ SUBDIRS = gtest
 
 AM_CPPFLAGS = \
 -I$(top_srcdir)/src/libtidas \
--I$(top_srcdir)/src/libtidas/re2 \
 -I$(top_srcdir)/src/libtidas/sqlite \
 -I$(top_srcdir)/src/tests/gtest \
 -I$(top_srcdir)/src/tests
@@ -41,7 +40,8 @@ tidas_test_dict.cpp \
 tidas_test_intervals.cpp \
 tidas_test_schema.cpp \
 tidas_test_group.cpp \
-tidas_test_block.cpp
+tidas_test_block.cpp \
+tidas_test_volume.cpp
 
 tidas_test_LDADD = $(AM_LIBS)
 

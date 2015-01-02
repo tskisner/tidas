@@ -139,14 +139,14 @@ void tidas::data_copy ( block const & in, block & out ) {
 }
 
 
-/*
+void tidas::data_copy ( volume const & in, volume & out ) {
 
-void tidas::data_copy ( volume & in, volume & out ) {
+	// just copy the root block
 
+	data_copy ( in.root(), out.root() );
 
 	return;
 }
 
 
-*/
 

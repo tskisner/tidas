@@ -32,15 +32,15 @@ namespace tidas {
 
 	void data_copy ( group const & in, group & out );
 
-/*
+
 	// block copy
 
 	void data_copy ( block const & in, block & out );
-*/
+
 
 	// volume copy
 
-	//void data_copy ( volume const & in, volume & out );
+	void data_copy ( volume const & in, volume & out );
 
 
 }

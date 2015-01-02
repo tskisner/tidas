@@ -13,11 +13,8 @@ extern "C" {
 	#include <dirent.h>
 }
 
-
 using namespace std;
 using namespace tidas;
-
-
 
 
 tidas::volume::volume () {
@@ -39,6 +36,7 @@ tidas::volume::volume ( string const & path, backend_type type, compression_type
 	loc_.type = type;
 	loc_.comp = comp;
 	loc_.mode = access_mode::readwrite;
+
 	relocate ( loc_ );
 
 	flush();
@@ -67,9 +65,8 @@ tidas::volume::volume ( string const & path, access_mode mode ) {
 	loc_.name = "";
 	loc_.meta = "";
 
-	read_props ( loc_ );
-	
 	relocate ( loc_ );
+
 	sync();
 }
 
@@ -91,54 +88,52 @@ void tidas::volume::relocate ( backend_path const & loc ) {
 
 void tidas::volume::sync () {
 
-	if ( loc_.type != backend_type::none ) {
+	read_props ( loc_ );
 
-		// check that root block exists
+	// check that root block exists
 
-		string fspath = loc_.path;
+	string fspath = loc_.path;
 
-		struct dirent * entry;
-		DIR * dp;
+	struct dirent * entry;
+	DIR * dp;
 
-		dp = opendir ( fspath.c_str() );
+	dp = opendir ( fspath.c_str() );
 
-		if ( dp == NULL ) {
-			ostringstream o;
-			o << "cannot open volume \"" << fspath << "\"";
-			TIDAS_THROW( o.str().c_str() );
+	if ( dp == NULL ) {
+		ostringstream o;
+		o << "cannot open volume \"" << fspath << "\"";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	bool found_data;
+	bool found_index;
+
+	while ( ( entry = readdir ( dp ) ) ) {
+		string item = entry->d_name;
+
+		if ( item == volume_fs_data_dir ) {
+			found_data = true;
+		} else if ( item == volume_fs_index ) {
+			found_index = true;
 		}
+	}
 
-		bool found_data;
-		bool found_index;
+	closedir ( dp );
 
-		while ( ( entry = readdir ( dp ) ) ) {
-			string item = entry->d_name;
+	if ( ! found_data ) {
+		ostringstream o;
+		o << "volume \"" << fspath << "\" is missing the data subdirectory!";
+		TIDAS_THROW( o.str().c_str() );
+	}
 
-			if ( item == volume_fs_data_dir ) {
-				found_data = true;
-			} else if ( item == volume_fs_index ) {
-				found_index = true;
-			}
-		}
+	// sync root block
 
-		closedir ( dp );
+	root_.sync();
 
-		if ( ! found_data ) {
-			ostringstream o;
-			o << "volume \"" << fspath << "\" is missing the data subdirectory!";
-			TIDAS_THROW( o.str().c_str() );
-		}
+	// load index if it exists
 
-		// sync root block
+	if ( found_index ) {
 
-		root_.sync();
-
-		// load index if it exists
-
-		if ( found_index ) {
-
-
-		}
 
 	}
 
@@ -150,13 +145,14 @@ void tidas::volume::flush () const {
 
 	write_props ( loc_ );
 
-	if ( loc_.type != backend_type::none ) {
-
-		if ( loc_.mode == access_mode::readwrite ) {
-			root_.flush();
-		}
-
+	if ( loc_.mode == access_mode::readwrite ) {
+		root_.flush();
 	}
+
+	// write index
+
+
+
 
 	return;
 }
@@ -166,14 +162,21 @@ void tidas::volume::copy ( volume const & other, string const & filter, backend_
 
 	loc_ = loc;
 
+	if ( loc_.type != backend_type::none ) {
+		write_props ( loc_ );
+	}
+
 	root_.copy ( other.root_, filter, root_loc ( loc_ ) );
-
-	// copy props file
-
 
 	// copy index or reindex
 
+	if ( filter == "" ) {
+		// just copy index
 
+	} else {
+		// regenerate
+		reindex();
+	}
 
 	return;
 }
@@ -250,6 +253,12 @@ block & tidas::volume::root () {
 
 block const & tidas::volume::root () const {
 	return root_;
+}
+
+
+void tidas::volume::reindex () {
+
+	return;
 }
 
 

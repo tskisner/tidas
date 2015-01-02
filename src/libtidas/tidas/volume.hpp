@@ -47,7 +47,6 @@ namespace tidas {
 
 			backend_path location () const;
 
-
 			void reindex ();
 
 			block & root ();
@@ -72,8 +71,6 @@ namespace tidas {
 			}
 
 		private :
-
-
 
 			void read_props ( backend_path & loc );
 

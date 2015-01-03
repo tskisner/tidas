@@ -49,9 +49,9 @@ bool tidas::field::operator!= ( const field & other ) const {
 
 field_list tidas::field_filter_type ( field_list const & fields, data_type type ) {
 	field_list ret;
-	for ( field_list::const_iterator it = fields.begin(); it != fields.end(); ++it ) {
-		if ( it->type == type ) {
-			ret.push_back ( *it );
+	for ( auto fld : fields ) {
+		if ( fld.type == type ) {
+			ret.push_back ( fld );
 		}
 	}
 	return ret;
@@ -175,9 +175,9 @@ void tidas::schema::copy ( schema const & other, string const & filter, backend_
 
 	regex re ( filt, std::regex::extended );
 
-	for ( field_list :: const_iterator it = other.fields().begin(); it != other.fields().end(); ++it ) {
-		if ( regex_match ( it->name, re ) || ( it->name == group_time_field ) ) {
-			fields_.push_back ( field( it->name, it->type, it->units ) );
+	for ( auto fld : other.fields_ ) {
+		if ( regex_match ( fld.name, re ) || ( fld.name == group_time_field ) ) {
+			fields_.push_back ( field( fld.name, fld.type, fld.units ) );
 		}
 	}
 

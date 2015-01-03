@@ -64,43 +64,43 @@ void tidas::data_copy ( group const & in, group & out ) {
 
 	// copy other fields
 
-	for ( field_list :: const_iterator it = fields.begin(); it != fields.end(); ++it ) {
+	for ( auto fld : fields ) {
 
-		if ( it->name != group_time_field ) {
+		if ( fld.name != group_time_field ) {
 
-			switch ( it->type ) {
+			switch ( fld.type ) {
 				case data_type::int8:
-					group_helper_copy < int8_t > ( in, out, it->name, nsamp );
+					group_helper_copy < int8_t > ( in, out, fld.name, nsamp );
 					break;
 				case data_type::uint8:
-					group_helper_copy < uint8_t > ( in, out, it->name, nsamp );
+					group_helper_copy < uint8_t > ( in, out, fld.name, nsamp );
 					break;
 				case data_type::int16:
-					group_helper_copy < int16_t > ( in, out, it->name, nsamp );
+					group_helper_copy < int16_t > ( in, out, fld.name, nsamp );
 					break;
 				case data_type::uint16:
-					group_helper_copy < uint16_t > ( in, out, it->name, nsamp );
+					group_helper_copy < uint16_t > ( in, out, fld.name, nsamp );
 					break;
 				case data_type::int32:
-					group_helper_copy < int32_t > ( in, out, it->name, nsamp );
+					group_helper_copy < int32_t > ( in, out, fld.name, nsamp );
 					break;
 				case data_type::uint32:
-					group_helper_copy < uint32_t > ( in, out, it->name, nsamp );
+					group_helper_copy < uint32_t > ( in, out, fld.name, nsamp );
 					break;
 				case data_type::int64:
-					group_helper_copy < int64_t > ( in, out, it->name, nsamp );
+					group_helper_copy < int64_t > ( in, out, fld.name, nsamp );
 					break;
 				case data_type::uint64:
-					group_helper_copy < uint64_t > ( in, out, it->name, nsamp );
+					group_helper_copy < uint64_t > ( in, out, fld.name, nsamp );
 					break;
 				case data_type::float32:
-					group_helper_copy < float > ( in, out, it->name, nsamp );
+					group_helper_copy < float > ( in, out, fld.name, nsamp );
 					break;
 				case data_type::float64:
-					group_helper_copy < double > ( in, out, it->name, nsamp );
+					group_helper_copy < double > ( in, out, fld.name, nsamp );
 					break;
 				case data_type::string:
-					group_helper_copy < string > ( in, out, it->name, nsamp );
+					group_helper_copy < string > ( in, out, fld.name, nsamp );
 					break;
 				default:
 					TIDAS_THROW( "data type not recognized" );
@@ -119,20 +119,20 @@ void tidas::data_copy ( block const & in, block & out ) {
 
 	vector < string > grps = in.all_groups();
 
-	for ( vector < string > :: const_iterator it = grps.begin(); it != grps.end(); ++it ) {
-		group & ref = out.group_add ( (*it), in.group_get ( (*it) ) );
+	for ( auto name : grps ) {
+		group & ref = out.group_add ( name, in.group_get ( name ) );
 	}
 
 	vector < string > intrs = in.all_intervals();
 
-	for ( vector < string > :: const_iterator it = intrs.begin(); it != intrs.end(); ++it ) {
-		intervals & ref = out.intervals_add ( (*it), in.intervals_get ( (*it) ) );
+	for ( auto name : intrs ) {
+		intervals & ref = out.intervals_add ( name, in.intervals_get ( name ) );
 	}
 
 	vector < string > blks = in.all_blocks();
 
-	for ( vector < string > :: const_iterator it = blks.begin(); it != blks.end(); ++it ) {
-		block & ref = out.block_add ( (*it), in.block_get ( (*it) ) );
+	for ( auto name : blks ) {
+		block & ref = out.block_add ( name, in.block_get ( name ) );
 	}
 
 	return;

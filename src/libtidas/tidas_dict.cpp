@@ -126,10 +126,10 @@ void tidas::dict::copy ( dict const & other, string const & filter, backend_path
 
 	regex re ( filt, std::regex::extended );
 
-	for ( map < string, string > :: const_iterator it = other.data().begin(); it != other.data().end(); ++it ) {
-		if ( regex_match ( it->first, re ) ) {
-			data_[ it->first ] = it->second;
-			types_[ it->first ] = other.types().at( it->first );
+	for ( auto dat : other.data() ) {
+		if ( regex_match ( dat.first, re ) ) {
+			data_[ dat.first ] = dat.second;
+			types_[ dat.first ] = other.types().at( dat.first );
 		}
 	}
 

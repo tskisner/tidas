@@ -64,18 +64,18 @@ void tidas::block_link_operator::operator() ( block const & blk ) {
 
 	names = blk.all_groups();
 
-	for ( vector < string > :: const_iterator it = names.begin(); it != names.end(); ++it ) {
-		string full_link = grouplink + path_sep + (*it);
-		blk.group_get( *it ).link ( type, full_link );
+	for ( auto n : names ) {
+		string full_link = grouplink + path_sep + n;
+		blk.group_get( n ).link ( type, full_link );
 	}
 
 	// link intervals
 
 	names = blk.all_intervals();
 
-	for ( vector < string > :: const_iterator it = names.begin(); it != names.end(); ++it ) {
-		string full_link = intrlink + path_sep + (*it);
-		blk.intervals_get( *it ).link ( type, full_link );
+	for ( auto n : names ) {
+		string full_link = intrlink + path_sep + n;
+		blk.intervals_get( n ).link ( type, full_link );
 	}
 
 	return;
@@ -90,24 +90,24 @@ void tidas::block_wipe_operator::operator() ( block const & blk ) {
 
 	names = blk.all_groups();
 
-	for ( vector < string > :: const_iterator it = names.begin(); it != names.end(); ++it ) {
-		blk.group_get( *it ).wipe();
+	for ( auto n : names ) {
+		blk.group_get( n ).wipe();
 	}
 
 	// wipe intervals
 
 	names = blk.all_intervals();
 
-	for ( vector < string > :: const_iterator it = names.begin(); it != names.end(); ++it ) {
-		blk.intervals_get( *it ).wipe();
+	for ( auto n : names ) {
+		blk.intervals_get( n ).wipe();
 	}
 
 	// remove sub-block directories that have already been wiped.
 
 	names = blk.all_blocks();
 
-	for ( vector < string > :: const_iterator it = names.begin(); it != names.end(); ++it ) {
-		backend_path loc = blk.block_get( *it ).location();
+	for ( auto n : names ) {
+		backend_path loc = blk.block_get( n ).location();
 		string dir = loc.path + path_sep + loc.name;
 		fs_rm_r ( dir.c_str() );
 	}
@@ -167,20 +167,20 @@ void tidas::block::relocate ( backend_path const & loc ) {
 
 	// relocate groups
 
-	for ( map < string, group > :: iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
-		it->second.relocate ( group_loc ( loc_, it->first ) );
+	for ( auto gr : group_data_ ) {
+		gr.second.relocate ( group_loc ( loc_, gr.first ) );
 	}
 
 	// relocate intervals
 
-	for ( map < string, intervals > :: iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
-		it->second.relocate ( intervals_loc ( loc_, it->first ) );
+	for ( auto inv : intervals_data_ ) {
+		inv.second.relocate ( intervals_loc ( loc_, inv.first ) );
 	}
 
 	// relocate sub blocks
 
-	for ( map < string, block > :: iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
-		it->second.relocate ( block_loc ( loc_, it->first ) );
+	for ( auto blk : block_data_ ) {
+		blk.second.relocate ( block_loc ( loc_, blk.first ) );
 	}
 
 	return;
@@ -295,20 +295,20 @@ void tidas::block::flush () const {
 
 	// flush groups
 
-	for ( map < string, group > :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
-		it->second.flush();
+	for ( auto gr : group_data_ ) {
+		gr.second.flush();
 	}
 
 	// flush intervals
 
-	for ( map < string, intervals > :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
-		it->second.flush();
+	for ( auto inv : intervals_data_ ) {
+		inv.second.flush();
 	}
 
 	// flush sub blocks
 
-	for ( map < string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
-		it->second.flush();
+	for ( auto blk : block_data_ ) {
+		blk.second.flush();
 	}	
 
 	return;
@@ -345,9 +345,9 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	group_data_.clear();
 
-	for ( map < string, group > :: const_iterator it = other.group_data_.begin(); it != other.group_data_.end(); ++it ) {
-		if ( regex_match ( it->first, groupre ) ) {
-			group_data_[ it->first ].copy ( it->second, filt_pass, group_loc ( loc_, it->first ) );
+	for ( auto gr : group_data_ ) {
+		if ( regex_match ( gr.first, groupre ) ) {
+			group_data_[ gr.first ].copy ( gr.second, filt_pass, group_loc ( loc_, gr.first ) );
 		}
 	}
 
@@ -361,9 +361,9 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	intervals_data_.clear();
 
-	for ( map < string, intervals > :: const_iterator it = other.intervals_data_.begin(); it != other.intervals_data_.end(); ++it ) {
-		if ( regex_match ( it->first, intre ) ) {
-			intervals_data_[ it->first ].copy ( it->second, filt_pass, intervals_loc ( loc_, it->first ) );
+	for ( auto inv : intervals_data_ ) {
+		if ( regex_match ( inv.first, intre ) ) {
+			intervals_data_[ inv.first ].copy ( inv.second, filt_pass, intervals_loc ( loc_, inv.first ) );
 		}
 	}
 
@@ -377,9 +377,9 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	block_data_.clear();
 
-	for ( map < string, block > :: const_iterator it = other.block_data_.begin(); it != other.block_data_.end(); ++it ) {
-		if ( regex_match ( it->first, blockre ) ) {
-			block_data_[ it->first ].copy ( it->second, filt_pass, block_loc ( loc_, it->first ) );
+	for ( auto blk : block_data_ ) {
+		if ( regex_match ( blk.first, blockre ) ) {
+			block_data_[ blk.first ].copy ( blk.second, filt_pass, block_loc ( loc_, blk.first ) );
 		}
 	}
 
@@ -415,9 +415,9 @@ block tidas::block::select ( string const & filter ) const {
 
 	regex groupre ( filt_name, std::regex::extended );
 
-	for ( map < string, group > :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
-		if ( regex_match ( it->first, groupre ) ) {
-			ret.group_data_[ it->first ].copy ( it->second, "", group_loc ( ret.loc_, it->first ) );
+	for ( auto gr : group_data_ ) {
+		if ( regex_match ( gr.first, groupre ) ) {
+			ret.group_data_[ gr.first ].copy ( gr.second, "", group_loc ( ret.loc_, gr.first ) );
 		}
 	}
 
@@ -429,9 +429,9 @@ block tidas::block::select ( string const & filter ) const {
 
 	regex intre ( filt_name, std::regex::extended );
 
-	for ( map < string, intervals > :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
-		if ( regex_match ( it->first, intre ) ) {
-			ret.intervals_data_[ it->first ].copy ( it->second, "", intervals_loc ( ret.loc_, it->first ) );
+	for ( auto inv : intervals_data_ ) {
+		if ( regex_match ( inv.first, intre ) ) {
+			ret.intervals_data_[ inv.first ].copy ( inv.second, "", intervals_loc ( ret.loc_, inv.first ) );
 		}
 	}
 
@@ -443,9 +443,9 @@ block tidas::block::select ( string const & filter ) const {
 
 	regex blockre ( filt_name, std::regex::extended );
 
-	for ( map < string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
-		if ( regex_match ( it->first, blockre ) ) {
-			ret.block_data_[ it->first ].copy ( it->second, filt_pass, block_loc ( ret.loc_, it->first ) );
+	for ( auto blk : block_data_ ) {
+		if ( regex_match ( blk.first, blockre ) ) {
+			ret.block_data_[ blk.first ].copy ( blk.second, filt_pass, block_loc ( ret.loc_, blk.first ) );
 		}
 	}
 
@@ -596,8 +596,8 @@ void tidas::block::group_del ( string const & name ) {
 
 vector < string > tidas::block::all_groups () const {
 	vector < string > ret;
-	for ( map < string, group > :: const_iterator it = group_data_.begin(); it != group_data_.end(); ++it ) {
-		ret.push_back ( it->first );
+	for ( auto gr : group_data_ ) {
+		ret.push_back ( gr.first );
 	}
 	return ret;
 }
@@ -605,8 +605,8 @@ vector < string > tidas::block::all_groups () const {
 
 void tidas::block::clear_groups () {
 	vector < string > all = all_groups();
-	for ( vector < string > :: const_iterator it = all.begin(); it != all.end(); ++it ) {
-		group_del ( *it );
+	for ( auto gr : all ) {
+		group_del ( gr );
 	}
 	return;
 }
@@ -681,8 +681,8 @@ void tidas::block::intervals_del ( string const & name ) {
 
 vector < string > tidas::block::all_intervals () const {
 	vector < string > ret;
-	for ( map < string, intervals > :: const_iterator it = intervals_data_.begin(); it != intervals_data_.end(); ++it ) {
-		ret.push_back ( it->first );
+	for ( auto inv : intervals_data_ ) {
+		ret.push_back ( inv.first );
 	}
 	return ret;
 }
@@ -690,8 +690,8 @@ vector < string > tidas::block::all_intervals () const {
 
 void tidas::block::clear_intervals () {
 	vector < string > all = all_intervals();
-	for ( vector < string > :: const_iterator it = all.begin(); it != all.end(); ++it ) {
-		intervals_del ( *it );
+	for ( auto inv : all ) {
+		intervals_del ( inv );
 	}
 	return;
 }
@@ -766,8 +766,8 @@ void tidas::block::block_del ( string const & name ) {
 
 vector < string > tidas::block::all_blocks () const {
 	vector < string > ret;
-	for ( map < string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
-		ret.push_back ( it->first );
+	for ( auto blk : block_data_ ) {
+		ret.push_back ( blk.first );
 	}
 	return ret;
 }
@@ -775,8 +775,8 @@ vector < string > tidas::block::all_blocks () const {
 
 void tidas::block::clear_blocks () {
 	vector < string > all = all_blocks();
-	for ( vector < string > :: const_iterator it = all.begin(); it != all.end(); ++it ) {
-		block_del ( *it );
+	for ( auto blk : all ) {
+		block_del ( blk );
 	}
 	return;
 }

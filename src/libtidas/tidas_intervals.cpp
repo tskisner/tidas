@@ -267,8 +267,8 @@ dict const & tidas::intervals::dictionary () const {
 
 index_type tidas::intervals::total_samples ( interval_list const & intr ) {
 	index_type tot = 0;
-	for ( interval_list::const_iterator it = intr.begin(); it != intr.end(); ++it ) {
-		tot += it->last - it->first + 1;
+	for ( auto inv : intr ) {
+		tot += inv.last - inv.first + 1;
 	}
 	return tot;
 }
@@ -276,8 +276,8 @@ index_type tidas::intervals::total_samples ( interval_list const & intr ) {
 
 time_type tidas::intervals::total_time ( interval_list const & intr ) {
 	time_type tot = 0.0;
-	for ( interval_list::const_iterator it = intr.begin(); it != intr.end(); ++it ) {
-		tot += it->stop - it->start;
+	for ( auto inv : intr ) {
+		tot += inv.stop - inv.start;
 	}
 	return tot;
 }
@@ -290,9 +290,9 @@ intrvl tidas::intervals::seek ( interval_list const & intr, time_type time ) {
 	// just do a linear seek, since the number of intervals in a single
 	// block should never be too large...
 
-	for ( interval_list::const_iterator it = intr.begin(); it != intr.end(); ++it ) {
-		if ( ( time >= it->start ) && ( time <= it->stop ) ) {
-			ret = (*it);
+	for ( auto inv : intr ) {
+		if ( ( time >= inv.start ) && ( time <= inv.stop ) ) {
+			ret = inv;
 		}
 	}
 
@@ -307,10 +307,10 @@ intrvl tidas::intervals::seek_ceil ( interval_list const & intr, time_type time 
 	// just do a linear seek, since the number of intervals in a single
 	// block should never be too large...
 
-	for ( interval_list::const_iterator it = intr.begin(); it != intr.end(); ++it ) {
-		if ( time < it->stop ) {
+	for ( auto inv : intr ) {
+		if ( time < inv.stop ) {
 			// we are inside the interval, or after the stop of the previous one
-			ret = (*it);
+			ret = inv;
 		}
 	}
 
@@ -325,10 +325,10 @@ intrvl tidas::intervals::seek_floor ( interval_list const & intr, time_type time
 	// just do a linear seek, since the number of intervals in a single
 	// block should never be too large...
 
-	for ( interval_list::const_iterator it = intr.begin(); it != intr.end(); ++it ) {
-		if ( time > it->start ) {
+	for ( auto inv : intr ) {
+		if ( time > inv.start ) {
 			// we are inside the interval, or before the start of the next one
-			ret = (*it);
+			ret = inv;
 		}
 	}
 

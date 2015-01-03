@@ -246,17 +246,17 @@ void tidas::group::compute_counts() {
 
 	field_list fields = schm_.fields();
 
-	for ( field_list::const_iterator it = fields.begin(); it != fields.end(); ++it ) {
-		if ( it->name == group_time_field ) {
+	for ( auto fld : fields ) {
+		if ( fld.name == group_time_field ) {
 			// ignore time field, since we already counted it 
 		} else {
-			if ( it->type == data_type::none ) {
+			if ( fld.type == data_type::none ) {
 				ostringstream o;
-				o << "group schema field \"" << it->name << "\" has type == none";
+				o << "group schema field \"" << fld.name << "\" has type == none";
 				TIDAS_THROW( o.str().c_str() );
 			}
-			type_indx_[ it->name ] = counts_[ it->type ];
-			++counts_[ it->type ];
+			type_indx_[ fld.name ] = counts_[ fld.type ];
+			++counts_[ fld.type ];
 		}
 	}
 

@@ -146,6 +146,9 @@ namespace tidas {
 	static const std::string volume_fs_index = "index.db";
 	static const std::string volume_fs_props = "tidas_volume.txt";
 
+	static const std::string env_hdf5_chunk = "TIDAS_HDF5_CHUNK";
+	static const size_t env_hdf5_chunk_default = 1000000;
+
 
 }
 

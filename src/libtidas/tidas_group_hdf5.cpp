@@ -33,6 +33,27 @@ NOTES:
 */
 
 
+size_t tidas::hdf5_chunk ( ) {
+	static size_t chunk = 0;
+
+	if ( chunk == 0 ) {
+		char * envval = getenv ( env_hdf5_chunk.c_str() );
+		if ( envval ) {
+			long tmp = atol ( envval );
+			if ( tmp > 0 ) {
+				chunk = (size_t)tmp;
+			} else {
+				chunk = env_hdf5_chunk_default;
+			}
+		} else {
+			chunk = env_hdf5_chunk_default;
+		}
+	}
+
+	return chunk;
+}
+
+
 tidas::group_backend_hdf5::group_backend_hdf5 ( ) {
 
 }
@@ -184,6 +205,10 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
 
 #ifdef HAVE_HDF5
 
+	if ( loc.comp == compression_type::bzip2 ) {
+		TIDAS_THROW( "HDF5 does not support bzip2 compression" );
+	}
+
 	string fspath = loc.path + path_sep + loc.name;
 
 	// delete file if it exists
@@ -214,10 +239,28 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
 
 		hid_t datatype = hdf5_data_type ( it->first );
 
-		hid_t dataset = H5Dcreate ( file, mpath.c_str(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+		// we create the dataset using chunks, and optionally compression
+
+
+		// FIXME:  what way do we want to do chunking to enable resizing????
+
+
+		size_t chunksize = hdf5_chunk();
+
+		hsize_t chunk_dims[2] = { 1, chunksize }; 
+
+		hid_t dataprops = H5Pcreate ( H5P_DATASET_CREATE );
+		H5Pset_chunk ( dataprops, 2, chunk_dims );
+
+		if ( loc.comp == compression_type::gzip ) {
+			status = H5Pset_deflate ( dataprops, 6 );
+		}
+
+		hid_t dataset = H5Dcreate ( file, mpath.c_str(), datatype, dataspace, H5P_DEFAULT, dataprops, H5P_DEFAULT );
 
 		status = H5Sclose ( dataspace );
 		status = H5Tclose ( datatype );
+		status = H5Pclose ( dataprops );
 		status = H5Dclose ( dataset );
 
 	}

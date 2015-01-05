@@ -11,6 +11,10 @@
 
 namespace tidas {
 
+
+	size_t hdf5_chunk ();
+
+
 	template < typename T >
 	void hdf5_helper_field_read ( backend_path const & loc, size_t type_indx, index_type offset, std::vector < T > & data ) {
 

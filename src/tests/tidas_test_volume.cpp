@@ -120,6 +120,8 @@ TEST_F( volumeTest, HDF5Backend ) {
 
 #ifdef HAVE_HDF5
 
+	fs_rm_r ( "test_volume.out" );
+
 	volume vol ( "test_volume.out", backend_type::hdf5, compression_type::none );
 
 	volume_setup ( vol, n_samp, n_intr, n_block );

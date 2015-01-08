@@ -180,31 +180,54 @@ namespace tidas {
 
 			void copy ( indexdb const & other );
 
-			/*
+			//---------------------------
+
 			void add_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
+
 			void del_dict ( backend_path loc );
+			
 			bool query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) const;
 
+			//---------------------------
+
 			void add_schema ( backend_path loc, field_list const & fields );
+			
 			void del_schema ( backend_path loc );
+			
 			bool query_schema ( backend_path loc, field_list & fields ) const;
 
+			//---------------------------
+
 			void add_group ( backend_path loc, index_type const & nsamp, std::map < data_type, size_t > const & counts );
+			
 			void del_group ( backend_path loc );
+			
 			bool query_group ( backend_path loc, index_type & nsamp, std::map < data_type, size_t > & counts ) const;
 
+			//---------------------------
+
 			void add_intervals ( backend_path loc, size_t const & size );
+			
 			void del_intervals ( backend_path loc );
+			
 			bool query_intervals ( backend_path loc, size_t & size ) const;
 
+			//---------------------------
+
 			void add_block ( backend_path loc );
+			
 			void del_block ( backend_path loc );
+			
 			bool query_block ( backend_path loc ) const;
 
+			//---------------------------
+
 			std::deque < indexdb_transaction > const & history () const;
+			
 			void history_clear();
+			
 			void replay ( std::deque < indexdb_transaction > const & trans );
-			*/
+			
 
 			template < class Archive >
 			void serialize ( Archive & ar ) {

@@ -24,31 +24,7 @@ void volume_setup ( volume & vol, size_t n_samp, size_t n_intr, size_t n_block )
 
 		block & blk = vol.root().block_add ( blkname.str(), block() );
 
-		dict dt;
-		dict_setup ( dt );
-
-		intervals intr ( dt, n_intr );
-
-		interval_list inv;
-		intervals_setup ( inv );
-
-		field_list flist;
-		schema_setup ( flist );
-		schema schm ( flist );
-
-		group grp ( schm, dt, n_samp );
-
-		group & grefa = blk.group_add ( "group_A", grp );
-		group_setup ( grefa );
-
-		group & grefb = blk.group_add ( "group_B", grp );
-		group_setup ( grefb );
-
-		intervals & irefa = blk.intervals_add ( "intr_A", intr );
-		irefa.write_data ( inv );
-
-		intervals & irefb = blk.intervals_add ( "intr_B", intr );
-		irefb.write_data ( inv );
+		block_setup ( blk, n_samp, n_intr );
 
 	}
 
@@ -58,36 +34,15 @@ void volume_setup ( volume & vol, size_t n_samp, size_t n_intr, size_t n_block )
 
 void volume_verify ( volume & vol ) {
 
-	block const & rt = vol.root();
+	block & rt = vol.root();
 
 	vector < string > names = rt.all_blocks();
 
-	for ( vector < string > :: const_iterator it = names.begin(); it != names.end(); ++it ) {
+	for ( vector < string > :: iterator it = names.begin(); it != names.end(); ++it ) {
 
-		block const & blk = rt.block_get ( *it );
+		block & blk = rt.block_get ( *it );
 
-		group grp = blk.group_get ( "group_A" );
-		group_verify ( grp );
-
-		grp = blk.group_get ( "group_B" );
-		group_verify ( grp );
-
-		interval_list inv;
-		
-		intervals intr = blk.intervals_get ( "intr_A" );
-		intr.read_data ( inv );
-		intervals_verify ( inv );
-
-		intr = blk.intervals_get ( "intr_B" );
-		intr.read_data ( inv );
-		intervals_verify ( inv );
-
-		vector < string > blks = blk.all_blocks();
-
-		for ( size_t i = 0; i < blks.size(); ++i ) {
-			block subblk = blk.block_get ( blks[i] );
-			block_verify ( subblk );
-		}
+		block_verify ( blk );
 
 	}
 
@@ -101,7 +56,7 @@ volumeTest::volumeTest () {
 
 
 void volumeTest::SetUp () {
-	n_samp = 10;
+	n_samp = 10 + env_hdf5_chunk_default;
 	n_intr = 10;
 	n_block = 3;
 }
@@ -122,7 +77,7 @@ TEST_F( volumeTest, HDF5Backend ) {
 
 	fs_rm_r ( "test_volume.out" );
 
-	volume vol ( "test_volume.out", backend_type::hdf5, compression_type::none );
+	volume vol ( "test_volume.out", backend_type::hdf5, compression_type::gzip );
 
 	volume_setup ( vol, n_samp, n_intr, n_block );
 

@@ -297,6 +297,27 @@ index_type tidas::group::size () const {
 }
 
 
+void tidas::group::resize ( index_type const & newsize ) {
+
+	if ( loc_.type != backend_type::none ) {
+
+		if ( loc_.mode == access_mode::readwrite ) {
+			backend_->resize ( loc_, newsize );
+			size_ = newsize;
+
+			// update index
+
+
+			
+		} else {
+			TIDAS_THROW( "cannot resize group in read-only mode" );
+		}
+	}
+
+	return;
+}
+
+
 void tidas::group::read_times ( vector < time_type > & data ) const {
 	data.resize ( size_ );
 	read_field ( group_time_field, 0, data );

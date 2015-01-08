@@ -78,11 +78,11 @@ class groupTest : public ::testing::Test {
 		size_t gnsamp;
 };
 
-void group_setup ( tidas::group & grp );
+void group_setup ( tidas::group & grp, size_t offset, size_t full_nsamp );
 
-void group_verify ( tidas::group & grp );
+void group_verify ( tidas::group & grp, size_t offset, size_t full_nsamp );
 
-void group_verify_int ( tidas::group & grp );
+void group_verify_int ( tidas::group & grp, size_t offset, size_t full_nsamp );
 
 
 class blockTest : public ::testing::Test {

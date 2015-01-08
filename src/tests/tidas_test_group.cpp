@@ -13,11 +13,9 @@ using namespace tidas;
 
 
 
-void group_setup ( group & grp ) {
+void group_setup ( group & grp, size_t offset, size_t full_nsamp ) {
 
 	// write data
-
-	size_t full_nsamp = grp.size();
 
 	size_t nsamp = (size_t)( full_nsamp / 2 );
 
@@ -39,7 +37,7 @@ void group_setup ( group & grp ) {
 	vector < double > double_data ( nsamp );
 
 	for ( size_t i = 0; i < full_nsamp; ++i ) {
-		time[i] = (double)i / 10.0;
+		time[i] = (double)( offset + i ) / 10.0;
 	}
 
 	for ( size_t i = 0; i < nsamp; ++i ) {
@@ -55,7 +53,7 @@ void group_setup ( group & grp ) {
 		double_data[i] = (double)i / 10.0;
 	}
 
-	size_t off = full_nsamp - nsamp;
+	size_t off = offset + full_nsamp - nsamp;
 
 	grp.write_times ( time );
 	grp.write_field ( "int8", off, int8_data );
@@ -73,11 +71,9 @@ void group_setup ( group & grp ) {
 }
 
 
-void group_verify ( group & grp ) {
+void group_verify ( group & grp, size_t offset, size_t full_nsamp ) {
 
 	// read data and check
-
-	size_t full_nsamp = grp.size();
 
 	size_t nsamp = (size_t)( full_nsamp / 2 );
 
@@ -110,7 +106,7 @@ void group_verify ( group & grp ) {
 	vector < double > double_check ( nsamp );
 
 	for ( size_t i = 0; i < full_nsamp; ++i ) {
-		time[i] = (double)i / 10.0;
+		time[i] = (double)( offset + i ) / 10.0;
 	}
 
 	for ( size_t i = 0; i < nsamp; ++i ) {
@@ -138,7 +134,7 @@ void group_verify ( group & grp ) {
 	float_check.assign ( nsamp, 0 );
 	double_check.assign ( nsamp, 0 );
 
-	size_t off = full_nsamp - nsamp;
+	size_t off = offset + full_nsamp - nsamp;
 
 	grp.read_times ( check );
 	grp.read_field ( "int8", off, int8_check );
@@ -173,11 +169,9 @@ void group_verify ( group & grp ) {
 }
 
 
-void group_verify_int ( group & grp ) {
+void group_verify_int ( group & grp, size_t offset, size_t full_nsamp ) {
 
 	// read data and check
-
-	size_t full_nsamp = grp.size();
 
 	size_t nsamp = (size_t)( full_nsamp / 2 );
 
@@ -197,7 +191,7 @@ void group_verify_int ( group & grp ) {
 	vector < int64_t > int64_check ( nsamp );
 
 	for ( size_t i = 0; i < full_nsamp; ++i ) {
-		time[i] = (double)i / 10.0;
+		time[i] = (double)( offset + i ) / 10.0;
 	}
 
 	for ( size_t i = 0; i < nsamp; ++i ) {
@@ -213,7 +207,7 @@ void group_verify_int ( group & grp ) {
 	int32_check.assign ( nsamp, 0 );
 	int64_check.assign ( nsamp, 0 );
 
-	size_t off = full_nsamp - nsamp;
+	size_t off = offset + full_nsamp - nsamp;
 
 	grp.read_times ( check );
 	grp.read_field ( "int8", off, int8_check );
@@ -242,7 +236,7 @@ groupTest::groupTest () {
 
 
 void groupTest::SetUp () {
-	gnsamp = 10;
+	gnsamp = 10 + env_hdf5_chunk_default;
 }
 
 
@@ -285,15 +279,15 @@ TEST_F( groupTest, HDF5Backend ) {
 	grp2.flush();
 
 	// write test data
-	group_setup ( grp2 );
+	group_setup ( grp2, 0, grp2.size() );
 
 	// read and verify
-	group_verify ( grp2 );
+	group_verify ( grp2, 0, grp2.size() );
 
 	// construct from location and verify
 
 	group grp3 ( loc );
-	group_verify ( grp3 );
+	group_verify ( grp3, 0, grp3.size() );
 
 	// create filtered copy and check
 
@@ -307,7 +301,28 @@ TEST_F( groupTest, HDF5Backend ) {
 
 	data_copy ( grp2, grp4 );
 
-	group_verify_int ( grp4 );
+	group_verify_int ( grp4, 0, grp4.size() );
+
+	// test resizing and compression
+
+	backend_path resizeloc = loc;
+	resizeloc.name = "test_group_resize.hdf.out";
+	resizeloc.comp = compression_type::gzip;
+
+	group grp5 ( grp2, "", resizeloc );
+	grp5.flush();
+
+	data_copy ( grp2, grp5 );
+
+	grp5.resize ( 2 * gnsamp );
+	group_setup ( grp5, gnsamp, gnsamp );
+
+	grp5.resize ( 3 * gnsamp );
+	group_setup ( grp5, (2 * gnsamp), gnsamp );
+
+	group_setup ( grp5, 0, (3 * gnsamp) );
+
+	group_verify ( grp5, 0, (3 * gnsamp) );
 
 #else
 

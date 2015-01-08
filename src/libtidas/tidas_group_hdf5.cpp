@@ -225,6 +225,7 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
 	// create datasets
 
 	hsize_t dims[2];
+	hsize_t maxdims[2];
 
 	herr_t status = 0;
 
@@ -235,15 +236,14 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
 		dims[0] = it->second;
 		dims[1] = nsamp;
 
-		hid_t dataspace = H5Screate_simple ( 2, dims, NULL ); 
+		maxdims[0] = it->second;
+		maxdims[1] = H5S_UNLIMITED;
+
+		hid_t dataspace = H5Screate_simple ( 2, dims, maxdims ); 
 
 		hid_t datatype = hdf5_data_type ( it->first );
 
-		// we create the dataset using chunks, and optionally compression
-
-
-		// FIXME:  what way do we want to do chunking to enable resizing????
-
+		// we create the dataset using chunks, and optionally compression.
 
 		size_t chunksize = hdf5_chunk();
 
@@ -266,6 +266,115 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
 	}
 	
 	status = H5Fclose ( file ); 
+
+#else
+
+	TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
+
+#endif
+
+	return;
+}
+
+
+void tidas::group_backend_hdf5::resize ( backend_path const & loc, index_type const & nsamp ) {
+
+#ifdef HAVE_HDF5
+
+	// check if file exists
+
+	string fspath = loc.path + path_sep + loc.name;
+
+	int64_t fsize = fs_stat ( fspath.c_str() );
+	if ( fsize <= 0 ) {
+		ostringstream o;
+		o << "HDF5 group file " << fspath << " does not exist";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	// open file
+
+	hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
+
+	// we always have the FLOAT64 dataset, since we always have at least the time field
+
+	string mpath = string("/") + group_hdf5_dataset_prefix + string("_") + data_type_to_string( data_type::float64 );
+
+	hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
+	hid_t dataspace = H5Dget_space ( dataset );
+
+	int ndims = H5Sget_simple_extent_ndims ( dataspace );
+
+	if ( ndims != 2 ) {
+		ostringstream o;
+		o << "HDF5 group dataset " << fspath << ":" << mpath << " has wrong dimensions (" << ndims << ")";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	hsize_t dims[2];
+	hsize_t maxdims[2];
+	int ret = H5Sget_simple_extent_dims ( dataspace, dims, maxdims );
+
+	hsize_t newsize[2];
+	newsize[0] = dims[0];
+	newsize[1] = nsamp;
+
+	herr_t status = H5Dset_extent ( dataset, newsize );
+
+	status = H5Sclose ( dataspace );
+	status = H5Dclose ( dataset );
+
+	// now iterate over all other types and find the number of fields
+
+	vector < data_type > othertypes;
+	othertypes.push_back ( data_type::int8 );
+	othertypes.push_back ( data_type::uint8 );
+	othertypes.push_back ( data_type::int16 );
+	othertypes.push_back ( data_type::uint16 );
+	othertypes.push_back ( data_type::int32 );
+	othertypes.push_back ( data_type::uint32 );
+	othertypes.push_back ( data_type::int64 );
+	othertypes.push_back ( data_type::uint64 );
+	othertypes.push_back ( data_type::float32 );
+	othertypes.push_back ( data_type::float64 );
+	othertypes.push_back ( data_type::string );
+
+	for ( vector < data_type > :: const_iterator it = othertypes.begin(); it != othertypes.end(); ++it ) {
+
+		mpath = string("/") + group_hdf5_dataset_prefix + string("_") + data_type_to_string( (*it) );
+
+		// check if dataset exists
+
+		htri_t check = H5Lexists ( file, mpath.c_str(), H5P_DEFAULT );
+
+		if ( check ) {
+
+			dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
+			dataspace = H5Dget_space ( dataset );
+
+			ndims = H5Sget_simple_extent_ndims ( dataspace );
+
+			if ( ndims != 2 ) {
+				ostringstream o;
+				o << "HDF5 group dataset " << fspath << ":" << mpath << " has wrong dimensions (" << ndims << ")";
+				TIDAS_THROW( o.str().c_str() );
+			}
+
+			ret = H5Sget_simple_extent_dims ( dataspace, dims, maxdims );
+
+			newsize[0] = dims[0];
+			newsize[1] = nsamp;
+
+			status = H5Dset_extent ( dataset, newsize );
+
+			status = H5Sclose ( dataspace );
+			status = H5Dclose ( dataset );
+
+		}
+
+	}
+
+	status = H5Fclose ( file );
 
 #else
 

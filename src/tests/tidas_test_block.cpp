@@ -32,10 +32,10 @@ void block_setup ( block & blk, size_t n_samp, size_t n_intr ) {
 	group grp ( schm, dt, n_samp );
 
 	group & grefa = blk.group_add ( "group_A", grp );
-	group_setup ( grefa );
+	group_setup ( grefa, 0, grefa.size() );
 
 	group & grefb = blk.group_add ( "group_B", grp );
-	group_setup ( grefb );
+	group_setup ( grefb, 0, grefb.size() );
 
 	intervals & irefa = blk.intervals_add ( "intr_A", intr );
 	irefa.write_data ( inv );
@@ -50,10 +50,10 @@ void block_setup ( block & blk, size_t n_samp, size_t n_intr ) {
 void block_verify ( block & blk ) {
 
 	group grp = blk.group_get ( "group_A" );
-	group_verify ( grp );
+	group_verify ( grp, 0, grp.size() );
 
 	grp = blk.group_get ( "group_B" );
-	group_verify ( grp );
+	group_verify ( grp, 0, grp.size() );
 
 	interval_list inv;
 	
@@ -82,7 +82,7 @@ blockTest::blockTest () {
 
 
 void blockTest::SetUp () {
-	n_samp = 10;
+	n_samp = 10 + env_hdf5_chunk_default;
 	n_intr = 10;
 }
 
@@ -105,6 +105,7 @@ TEST_F( blockTest, HDF5Backend ) {
 	loc.path = ".";
 	loc.name = "test_block.out";
 	loc.mode = access_mode::readwrite;
+	loc.comp = compression_type::gzip;
 
 	block blk;
 	blk.relocate ( loc );

@@ -29,6 +29,8 @@ namespace tidas {
 
 			virtual void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const = 0;
 
+			virtual void resize ( backend_path const & loc, index_type const & nsamp ) = 0;
+
 			virtual void link ( backend_path const & loc, link_type type, std::string const & path ) const = 0;
 
 			virtual void wipe ( backend_path const & loc ) const = 0;
@@ -85,6 +87,8 @@ namespace tidas {
 			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts );
 			void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const;
 
+			void resize ( backend_path const & loc, index_type const & nsamp );
+
 			void link ( backend_path const & loc, link_type type, std::string const & path ) const;
 			void wipe ( backend_path const & loc ) const;
 
@@ -140,6 +144,8 @@ namespace tidas {
 
 			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts );
 			void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const;
+
+			void resize ( backend_path const & loc, index_type const & nsamp );
 
 			void link ( backend_path const & loc, link_type type, std::string const & path ) const;
 			void wipe ( backend_path const & loc ) const;
@@ -228,6 +234,8 @@ namespace tidas {
 			schema const & schema_get () const;
 
 			index_type size () const;
+
+			void resize ( index_type const & newsize );
 
 			void read_times ( std::vector < time_type > & data ) const;
 

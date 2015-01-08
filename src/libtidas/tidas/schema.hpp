@@ -27,6 +27,14 @@ namespace tidas {
 			std::string name;
 			std::string units;
 
+			template < class Archive >
+			void serialize ( Archive & ar ) {
+				ar ( CEREAL_NVP( type ) );
+				ar ( CEREAL_NVP( name ) );
+				ar ( CEREAL_NVP( units ) );
+				return;
+			}
+
 	};
 
 	typedef std::vector < field > field_list;

@@ -174,7 +174,7 @@ dnl | Set outputs
 dnl +------------------------------------------------
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
-AC_CONFIG_FILES([src/libtidas/sqlite/Makefile])
+dnl AC_CONFIG_FILES([src/libtidas/sqlite/Makefile])
 AC_CONFIG_FILES([src/libtidas/Makefile])
 AC_CONFIG_FILES([src/tests/Makefile])
 AC_CONFIG_FILES([src/tests/gtest/Makefile])

@@ -36,14 +36,14 @@ namespace tidas {
 			indexdb_object_type type;
 			std::string path;
 
-	};
+			template < class Archive >
+			void serialize ( Archive & ar ) {
+				ar ( CEREAL_NVP( type ) );
+				ar ( CEREAL_NVP( path ) );
+				return;
+			}
 
-	template < class Archive >
-	void serialize ( Archive & ar, indexdb_object & obj ) {
-		ar ( CEREAL_NVP( obj.type ) );
-		ar ( CEREAL_NVP( obj.path ) );
-		return;
-	}
+	};
 
 
 	class indexdb_dict : public indexdb_object {
@@ -57,7 +57,7 @@ namespace tidas {
 
 			template < class Archive >
 			void serialize ( Archive & ar ) {
-				ar ( cereal::virtual_base_class < indexdb_object > ( this ) );
+				ar ( cereal::base_class < indexdb_object > ( this ) );
 				ar ( CEREAL_NVP( data ) );
 				ar ( CEREAL_NVP( types ) );
 				return;
@@ -180,6 +180,7 @@ namespace tidas {
 
 			void copy ( indexdb const & other );
 
+			/*
 			void add_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
 			void del_dict ( backend_path loc );
 			bool query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) const;
@@ -203,6 +204,7 @@ namespace tidas {
 			std::deque < indexdb_transaction > const & history () const;
 			void history_clear();
 			void replay ( std::deque < indexdb_transaction > const & trans );
+			*/
 
 			template < class Archive >
 			void serialize ( Archive & ar ) {

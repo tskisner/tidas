@@ -82,6 +82,8 @@ namespace tidas {
 
 			block root_;
 
+			std::shared_ptr < indexdb > db_;
+
 	};
 
 }

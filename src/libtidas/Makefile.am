@@ -44,7 +44,8 @@ libtidas_la_include_HEADERS = \
 	tidas/group.hpp \
 	tidas/block.hpp \
 	tidas/volume.hpp \
-	tidas/copy.hpp
+	tidas/copy.hpp \
+	tidas/indexdb.hpp
 	
 
 libtidas_la_SOURCES = \
@@ -66,7 +67,8 @@ tidas_group_hdf5.cpp \
 tidas_group_getdata.cpp \
 tidas_block.cpp \
 tidas_volume.cpp \
-tidas_copy.cpp
+tidas_copy.cpp \
+tidas_indexdb.cpp
 
 
 libtidas_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@

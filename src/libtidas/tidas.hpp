@@ -15,8 +15,14 @@
 #include <map>
 #include <typeinfo>
 #include <memory>
+#include <deque>
 
 #include <cstdint>
+
+#include <cereal/types/base_class.hpp>
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/archives/portable_binary.hpp>
+
 
 
 namespace tidas {
@@ -70,10 +76,10 @@ namespace tidas {
 	};
 
 
-	class volume;
-
 	/// Class representing the metadata location of a single object.
 	/// This includes the path on disk, the backend type, etc.
+
+	class indexdb;
 
 	class backend_path {
 		
@@ -102,7 +108,7 @@ namespace tidas {
 			/// Metadata path inside object (backend-specific).
 			std::string meta;
 
-			//shared_ptr < volume > vol;
+			std::shared_ptr < indexdb > idx;
 
 	};
 
@@ -158,6 +164,7 @@ namespace tidas {
 #include <tidas/schema.hpp>
 #include <tidas/group.hpp>
 #include <tidas/block.hpp>
+#include <tidas/indexdb.hpp>
 #include <tidas/volume.hpp>
 #include <tidas/copy.hpp>
 

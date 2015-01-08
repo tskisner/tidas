@@ -80,6 +80,10 @@ void tidas::volume::relocate ( backend_path const & loc ) {
 
 	loc_ = loc;
 
+	db_.reset ( new indexdb() );
+
+	loc_.idx = db_;
+
 	root_.relocate ( root_loc ( loc_ ) );
 
 	return;

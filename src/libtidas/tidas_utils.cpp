@@ -333,10 +333,11 @@ void tidas::filter_sub ( string const & filter, string & name, string & subfilte
 
 // This splits filter of the form XXXX/XXXX
 
-void tidas::filter_block ( string const & filter, string & local, string & subfilter ) {
+void tidas::filter_block ( string const & filter, string & local, string & subfilter, bool & stop ) {
 
 	local = "";
 	subfilter = "";
+	stop = false;
 
 	size_t off = 0;
 
@@ -346,7 +347,11 @@ void tidas::filter_block ( string const & filter, string & local, string & subfi
 
 		local = filter.substr ( off, (pos-off) );
 
-		subfilter = filter.substr ( (pos + 1), (filter.size() - pos) );
+		if ( pos == filter.size() - 1 ) {
+			stop = true;
+		} else {
+			subfilter = filter.substr ( (pos + 1), (filter.size() - pos) );
+		}
 
 	} else {
 		// we just have a local filter
@@ -357,7 +362,8 @@ void tidas::filter_block ( string const & filter, string & local, string & subfi
 }
 
 
-// This splits a filter of form [XXX=XXX,XXX=XXX]
+// This splits a filter of form [XXX=XXX,XXX=XXX[XX=XX[X=X,X=X],XX=XX],XXX=XXX]
+// into XXX : XXX, XXX : XXX[XX=XX[X=X,X=X],XX=XX], XXX : XXX
 
 map < string, string > tidas::filter_split ( string const & filter ) {
 	map < string, string > ret;
@@ -380,11 +386,10 @@ map < string, string > tidas::filter_split ( string const & filter ) {
 
 		// search through string and build up sub filters
 
-		string inside = filter.substr ( 1, (filter.size() - 2) );
-
 		size_t off = 0;
 
 		size_t pos;
+		size_t end;
 
 		string keyval;
 		string key;
@@ -392,9 +397,64 @@ map < string, string > tidas::filter_split ( string const & filter ) {
 
 		size_t assign;
 
-		while ( ( pos = inside.find ( submatch_sep, off ) ) != string::npos ) {
+		while ( off < ( filter.size() - 1 ) ) {
 
-			keyval = inside.substr ( off, (pos-off) );
+			++off;
+
+			size_t pos = filter.find ( submatch_sep, off );
+
+			if ( pos == string::npos ) {
+
+				end = filter.size() - 1;
+
+			} else {
+
+				// we might have more than one key/value left.
+				// do we have a nested filter ahead?
+
+				size_t substart = filter.find ( submatch_begin, off );
+
+				if ( ( substart != string::npos ) && ( substart < pos ) ) {
+					// ok, we do, now find the separator we are looking for
+
+					size_t nest = 1;
+					size_t cur = substart + 1;
+					bool done = false;
+
+					while ( ! done ) {
+						size_t nextstart = filter.find ( submatch_begin, cur );
+						size_t nextstop = filter.find ( submatch_end, cur );
+						if ( nextstop == string::npos ) {
+							ostringstream o;
+							o << "filter split string \"" << filter << "\" contains unmatched grouping";
+							TIDAS_THROW( o.str().c_str() );
+						}
+						if ( ( nextstart != string::npos ) && ( nextstart < nextstop ) ) {
+							// we are descending
+							++nest;
+							cur = nextstart + 1;
+						} else {
+							--nest;
+							cur = nextstop + 1;
+						}
+						if ( nest == 0 ) {
+							done = true;
+						}
+					}
+
+					end = cur;
+
+				} else {
+
+					end = pos;
+
+				}
+
+			}
+
+			// extract the entry
+
+			keyval = filter.substr ( off, (end-off) );
 
 			assign = keyval.find ( submatch_assign );
 
@@ -409,26 +469,9 @@ map < string, string > tidas::filter_split ( string const & filter ) {
 
 			ret[ key ] = val;
 
-			off = pos + 1;
+			off = end;
 
 		}
-
-		// last entry
-
-		keyval = inside.substr ( off, (inside.size() - off) );
-
-		assign = keyval.find ( submatch_assign );
-
-		if ( assign == string::npos ) {
-			ostringstream o;
-			o << "filter string sub-match must include the \"" << submatch_assign << "\" character";
-			TIDAS_THROW( o.str().c_str() );
-		}
-
-		key = keyval.substr ( 0, assign );
-		val = keyval.substr ( (assign+1), (keyval.size() - assign) );
-
-		ret[ key ] = val;
 
 	}
 	return ret;

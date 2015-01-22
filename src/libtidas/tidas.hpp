@@ -28,8 +28,7 @@
 #include <cereal/types/vector.hpp>
 #include <cereal/types/memory.hpp>
 
-//#include <cereal/archives/portable_binary.hpp>
-#include <cereal/archives/json.hpp>
+#include <cereal/archives/portable_binary.hpp>
 
 
 

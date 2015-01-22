@@ -138,9 +138,9 @@ tidas::block::block ( block const & other ) {
 }
 
 
-tidas::block::block ( backend_path const & loc ) {
+tidas::block::block ( backend_path const & loc, string const & filter ) {
 	relocate ( loc );
-	sync();
+	sync ( filter );
 }
 
 
@@ -167,19 +167,19 @@ void tidas::block::relocate ( backend_path const & loc ) {
 
 	// relocate groups
 
-	for ( auto gr : group_data_ ) {
+	for ( auto & gr : group_data_ ) {
 		gr.second.relocate ( group_loc ( loc_, gr.first ) );
 	}
 
 	// relocate intervals
 
-	for ( auto inv : intervals_data_ ) {
+	for ( auto & inv : intervals_data_ ) {
 		inv.second.relocate ( intervals_loc ( loc_, inv.first ) );
 	}
 
 	// relocate sub blocks
 
-	for ( auto blk : block_data_ ) {
+	for ( auto & blk : block_data_ ) {
 		blk.second.relocate ( block_loc ( loc_, blk.first ) );
 	}
 
@@ -187,86 +187,135 @@ void tidas::block::relocate ( backend_path const & loc ) {
 }
 
 
-void tidas::block::sync () {
+void tidas::block::sync ( string const & filter ) {
 
 	if ( loc_.type != backend_type::none ) {
 
-		// find all sub-blocks
+		group_data_.clear();
+		intervals_data_.clear();
+		block_data_.clear();
 
-		string fspath = loc_.path + path_sep + loc_.name;
+		string filt_local;
+		string filt_sub;
+		bool stop;
 
-		struct dirent * entry;
-		DIR * dp;
+		filter_block ( filter, filt_local, filt_sub, stop );
 
-		dp = opendir ( fspath.c_str() );
+		// split local filter string:  [XX=XX,XX=XX]
 
-		if ( dp == NULL ) {
-			ostringstream o;
-			o << "cannot open block \"" << fspath << "\"";
-			TIDAS_THROW( o.str().c_str() );
-		}
+		map < string, string > filts = filter_split ( filt_local );
 
-		bool found_groups;
-		bool found_intervals;
+		// if we have an index, use it!
 
-		while ( ( entry = readdir ( dp ) ) ) {
-			string item = entry->d_name;
+		if ( loc_.idx ) {
 
-			if ( item == block_fs_group_dir ) {
-				found_groups = true;
-			} else if ( item == block_fs_intervals_dir ) {
-				found_intervals = true;
-			} else {
-				// this must be a block!
-				block_data_[ item ] = block ( block_loc ( loc_, item ) );
+
+
+		} else {
+
+			// extract sub-block filter
+
+			string filt_name;
+			string filt_pass;
+
+			filter_sub ( filt_sub, filt_name, filt_pass );
+			regex blockre ( filter_default ( filt_name ), std::regex::extended );
+
+			// find all sub-blocks
+
+			string fspath = loc_.path + path_sep + loc_.name;
+
+			struct dirent * entry;
+			DIR * dp;
+
+			dp = opendir ( fspath.c_str() );
+
+			if ( dp == NULL ) {
+				ostringstream o;
+				o << "cannot open block \"" << fspath << "\"";
+				TIDAS_THROW( o.str().c_str() );
 			}
+
+			bool found_groups;
+			bool found_intervals;
+
+			while ( ( entry = readdir ( dp ) ) ) {
+				string item = entry->d_name;
+
+				if ( item == block_fs_group_dir ) {
+					found_groups = true;
+				} else if ( item == block_fs_intervals_dir ) {
+					found_intervals = true;
+				} else {
+					// this must be a block!
+
+					if ( ! stop ) {
+						if ( regex_match ( item, blockre ) ) {
+							block_data_[ item ] = block ( block_loc ( loc_, item ) );
+						}
+					}
+				}
+			}
+
+			closedir ( dp );
+
+			if ( ( ! found_groups ) || ( ! found_intervals ) ) {
+				ostringstream o;
+				o << "block \"" << fspath << "\" is missing the group or intervals subdirectories!";
+				TIDAS_THROW( o.str().c_str() );
+			}
+
+			// extract group filter
+
+			filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
+			regex groupre ( filter_default ( filt_name ), std::regex::extended );
+
+			// sync all groups
+
+			string groupdir = fspath + path_sep + block_fs_group_dir;
+
+			dp = opendir ( groupdir.c_str() );
+
+			if ( dp == NULL ) {
+				ostringstream o;
+				o << "cannot open block group directory \"" << groupdir << "\"";
+				TIDAS_THROW( o.str().c_str() );
+			}
+
+			while ( ( entry = readdir ( dp ) ) ) {
+				string item = entry->d_name;
+				if ( regex_match ( item, groupre ) ) {
+					group_data_[ item ] = group ( group_loc ( loc_, item ) );
+				}
+			}
+
+			closedir ( dp );
+
+			// extract intervals filter
+
+			filter_sub ( filts[ intervals_submatch_key ], filt_name, filt_pass );
+			regex intre ( filter_default ( filt_name ), std::regex::extended );
+
+			// sync all intervals
+
+			string intrdir = fspath + path_sep + block_fs_intervals_dir;
+
+			dp = opendir ( intrdir.c_str() );
+
+			if ( dp == NULL ) {
+				ostringstream o;
+				o << "cannot open block intervals directory \"" << intrdir << "\"";
+				TIDAS_THROW( o.str().c_str() );
+			}
+
+			while ( ( entry = readdir ( dp ) ) ) {
+				string item = entry->d_name;
+				intervals_data_[ item ] = intervals ( intervals_loc ( loc_, item ) );
+			}
+
+			closedir ( dp );
+
 		}
-
-		closedir ( dp );
-
-		if ( ( ! found_groups ) || ( ! found_intervals ) ) {
-			ostringstream o;
-			o << "block \"" << fspath << "\" is missing the group or intervals subdirectories!";
-			TIDAS_THROW( o.str().c_str() );
-		}
-
-		// sync all groups
-
-		string groupdir = fspath + path_sep + block_fs_group_dir;
-
-		dp = opendir ( groupdir.c_str() );
-
-		if ( dp == NULL ) {
-			ostringstream o;
-			o << "cannot open block group directory \"" << groupdir << "\"";
-			TIDAS_THROW( o.str().c_str() );
-		}
-
-		while ( ( entry = readdir ( dp ) ) ) {
-			string item = entry->d_name;
-			group_data_[ item ] = group ( group_loc ( loc_, item ) );
-		}
-
-		closedir ( dp );
-
-		// sync all intervals
-
-		string intrdir = fspath + path_sep + block_fs_intervals_dir;
-
-		dp = opendir ( intrdir.c_str() );
-
-		if ( dp == NULL ) {
-			ostringstream o;
-			o << "cannot open block intervals directory \"" << intrdir << "\"";
-			TIDAS_THROW( o.str().c_str() );
-		}
-
-		while ( ( entry = readdir ( dp ) ) ) {
-			string item = entry->d_name;
-			intervals_data_[ item ] = intervals ( intervals_loc ( loc_, item ) );
-		}
-
-		closedir ( dp );
 
 	}
 
@@ -289,25 +338,33 @@ void tidas::block::flush () const {
 			string intrdir = dir + path_sep + block_fs_intervals_dir;
 			fs_mkdir ( intrdir.c_str() );
 
+			// update index
+
+			if ( loc_.idx ) {
+
+
+
+			}
+
 		}
 
 	}
 
 	// flush groups
 
-	for ( auto gr : group_data_ ) {
+	for ( auto & gr : group_data_ ) {
 		gr.second.flush();
 	}
 
 	// flush intervals
 
-	for ( auto inv : intervals_data_ ) {
+	for ( auto & inv : intervals_data_ ) {
 		inv.second.flush();
 	}
 
 	// flush sub blocks
 
-	for ( auto blk : block_data_ ) {
+	for ( auto & blk : block_data_ ) {
 		blk.second.flush();
 	}	
 
@@ -321,8 +378,9 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	string filt_local;
 	string filt_sub;
+	bool stop;
 
-	filter_block ( filter, filt_local, filt_sub );
+	filter_block ( filter, filt_local, filt_sub, stop );
 
 	// split local filter string:  [XX=XX,XX=XX]
 
@@ -341,11 +399,11 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
 
-	regex groupre ( filt_name, std::regex::extended );
+	regex groupre ( filter_default ( filt_name ), std::regex::extended );
 
 	group_data_.clear();
 
-	for ( auto gr : group_data_ ) {
+	for ( auto & gr : group_data_ ) {
 		if ( regex_match ( gr.first, groupre ) ) {
 			group_data_[ gr.first ].copy ( gr.second, filt_pass, group_loc ( loc_, gr.first ) );
 		}
@@ -357,11 +415,11 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	filter_sub ( filts[ intervals_submatch_key ], filt_name, filt_pass );
 
-	regex intre ( filt_name, std::regex::extended );
+	regex intre ( filter_default ( filt_name ), std::regex::extended );
 
 	intervals_data_.clear();
 
-	for ( auto inv : intervals_data_ ) {
+	for ( auto & inv : intervals_data_ ) {
 		if ( regex_match ( inv.first, intre ) ) {
 			intervals_data_[ inv.first ].copy ( inv.second, filt_pass, intervals_loc ( loc_, inv.first ) );
 		}
@@ -370,17 +428,22 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 	// copy sub-blocks
 
 	// extract sub-block name match and filter to pass on:  XXXX[XX=XX]/XXX ---> XXXX [XX=XX]/XXX
+	// check if we have reached a hard stop at this depth, and in this case ignore all sub-blocks.
 
-	filter_sub ( filt_sub, filt_name, filt_pass );
+	if ( ! stop ) {
 
-	regex blockre ( filt_name, std::regex::extended );
+		filter_sub ( filt_sub, filt_name, filt_pass );
 
-	block_data_.clear();
+		regex blockre ( filter_default ( filt_name ), std::regex::extended );
 
-	for ( auto blk : block_data_ ) {
-		if ( regex_match ( blk.first, blockre ) ) {
-			block_data_[ blk.first ].copy ( blk.second, filt_pass, block_loc ( loc_, blk.first ) );
+		block_data_.clear();
+
+		for ( auto & blk : block_data_ ) {
+			if ( regex_match ( blk.first, blockre ) ) {
+				block_data_[ blk.first ].copy ( blk.second, filt_pass, block_loc ( loc_, blk.first ) );
+			}
 		}
+
 	}
 
 	return;
@@ -392,12 +455,13 @@ block tidas::block::select ( string const & filter ) const {
 	block ret;
 	ret.relocate ( loc_ );
 
-	// split filter into local and sub blocks:  [XX=XX,XX=XX]/XXXX[XX=XX]/XXX ---> [XX=XX,XX=XX] XXXX[XX=XX]/XXX
+	// split filter into local and sub blocks:  [XX=XX,XX=XX]/XXXX[XX=XX]/XXX[X=X]/ ---> [XX=XX,XX=XX] XXXX[XX=XX]/XXX[X=X]/
 
 	string filt_local;
 	string filt_sub;
+	bool stop;
 
-	filter_block ( filter, filt_local, filt_sub );
+	filter_block ( filter, filt_local, filt_sub, stop );
 
 	// split local filter string:  [XX=XX,XX=XX]
 
@@ -413,9 +477,9 @@ block tidas::block::select ( string const & filter ) const {
 
 	filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
 
-	regex groupre ( filt_name, std::regex::extended );
+	regex groupre ( filter_default ( filt_name ), std::regex::extended );
 
-	for ( auto gr : group_data_ ) {
+	for ( auto & gr : group_data_ ) {
 		if ( regex_match ( gr.first, groupre ) ) {
 			ret.group_data_[ gr.first ].copy ( gr.second, "", group_loc ( ret.loc_, gr.first ) );
 		}
@@ -427,9 +491,9 @@ block tidas::block::select ( string const & filter ) const {
 
 	filter_sub ( filts[ intervals_submatch_key ], filt_name, filt_pass );
 
-	regex intre ( filt_name, std::regex::extended );
+	regex intre ( filter_default ( filt_name ), std::regex::extended );
 
-	for ( auto inv : intervals_data_ ) {
+	for ( auto & inv : intervals_data_ ) {
 		if ( regex_match ( inv.first, intre ) ) {
 			ret.intervals_data_[ inv.first ].copy ( inv.second, "", intervals_loc ( ret.loc_, inv.first ) );
 		}
@@ -438,15 +502,20 @@ block tidas::block::select ( string const & filter ) const {
 	// select sub-blocks
 
 	// extract sub-block name match and filter to pass on:  XXXX[XX=XX]/XXX ---> XXXX [XX=XX]/XXX
+	// check if we have reached a hard stop at this depth, and in this case ignore all sub-blocks.
 
-	filter_sub ( filt_sub, filt_name, filt_pass );
+	if ( ! stop ) {
 
-	regex blockre ( filt_name, std::regex::extended );
+		filter_sub ( filt_sub, filt_name, filt_pass );
 
-	for ( auto blk : block_data_ ) {
-		if ( regex_match ( blk.first, blockre ) ) {
-			ret.block_data_[ blk.first ].copy ( blk.second, filt_pass, block_loc ( ret.loc_, blk.first ) );
+		regex blockre ( filter_default ( filt_name ), std::regex::extended );
+
+		for ( auto & blk : block_data_ ) {
+			if ( regex_match ( blk.first, blockre ) ) {
+				ret.block_data_[ blk.first ] = blk.second.select ( filt_pass );
+			}
 		}
+
 	}
 
 	return ret;
@@ -596,7 +665,7 @@ void tidas::block::group_del ( string const & name ) {
 
 vector < string > tidas::block::all_groups () const {
 	vector < string > ret;
-	for ( auto gr : group_data_ ) {
+	for ( auto & gr : group_data_ ) {
 		ret.push_back ( gr.first );
 	}
 	return ret;
@@ -605,7 +674,7 @@ vector < string > tidas::block::all_groups () const {
 
 void tidas::block::clear_groups () {
 	vector < string > all = all_groups();
-	for ( auto gr : all ) {
+	for ( auto & gr : all ) {
 		group_del ( gr );
 	}
 	return;
@@ -681,7 +750,7 @@ void tidas::block::intervals_del ( string const & name ) {
 
 vector < string > tidas::block::all_intervals () const {
 	vector < string > ret;
-	for ( auto inv : intervals_data_ ) {
+	for ( auto & inv : intervals_data_ ) {
 		ret.push_back ( inv.first );
 	}
 	return ret;
@@ -690,7 +759,7 @@ vector < string > tidas::block::all_intervals () const {
 
 void tidas::block::clear_intervals () {
 	vector < string > all = all_intervals();
-	for ( auto inv : all ) {
+	for ( auto & inv : all ) {
 		intervals_del ( inv );
 	}
 	return;
@@ -766,7 +835,7 @@ void tidas::block::block_del ( string const & name ) {
 
 vector < string > tidas::block::all_blocks () const {
 	vector < string > ret;
-	for ( auto blk : block_data_ ) {
+	for ( auto & blk : block_data_ ) {
 		ret.push_back ( blk.first );
 	}
 	return ret;
@@ -775,7 +844,7 @@ vector < string > tidas::block::all_blocks () const {
 
 void tidas::block::clear_blocks () {
 	vector < string > all = all_blocks();
-	for ( auto blk : all ) {
+	for ( auto & blk : all ) {
 		block_del ( blk );
 	}
 	return;

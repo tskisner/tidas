@@ -74,11 +74,11 @@ TEST_F( intervalsTest, MetaOps ) {
 	intervals intr;
 
 	backend_path loc = intr.location();
-	EXPECT_EQ( loc.type, backend_type::none );
-	EXPECT_EQ( loc.path, "" );
-	EXPECT_EQ( loc.name, "" );
-	EXPECT_EQ( loc.meta, "" );
-	EXPECT_EQ( loc.mode, access_mode::read );
+	EXPECT_EQ( backend_type::none, loc.type );
+	EXPECT_EQ( "", loc.path );
+	EXPECT_EQ( "", loc.name );
+	EXPECT_EQ( "", loc.meta );
+	EXPECT_EQ( access_mode::read, loc.mode );
 
 	intervals dummy ( intr );
 

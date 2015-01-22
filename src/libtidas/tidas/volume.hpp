@@ -24,7 +24,7 @@ namespace tidas {
 
 			volume ( std::string const & path, backend_type type, compression_type comp );
 
-			volume ( std::string const & path, access_mode mode );
+			volume ( std::string const & path, access_mode mode, bool use_index = true );
 			
 			volume ( volume const & other, std::string const & filter, backend_path const & loc );
 

@@ -90,10 +90,10 @@ void schema_verify ( tidas::field_list const & flist ) {
 
 	schema_setup ( check );
 
-	EXPECT_EQ( flist.size(), check.size() );
+	EXPECT_EQ( check.size(), flist.size() );
 
 	for ( size_t i = 0; i < flist.size(); ++i ) {
-		EXPECT_EQ( flist[i], check[i] );	
+		EXPECT_EQ( check[i], flist[i] );	
 	}
 
 	return;
@@ -121,7 +121,7 @@ TEST_F( schemaTest, MetaOps ) {
 
 	// should return empty list
 	field_list flist = schm.fields();
-	EXPECT_EQ( flist.size(), 0 );
+	EXPECT_EQ( 0, flist.size() );
 
 	schema_setup ( flist );
 
@@ -144,7 +144,7 @@ TEST_F( schemaTest, AddRemove ) {
 		schm.field_del ( flist[i].name );
 	}
 
-	EXPECT_EQ( schm.fields().size(), 0 );
+	EXPECT_EQ( 0, schm.fields().size() );
 
 	for ( size_t i = 0; i < flist.size(); ++i ) {
 		schm.field_add ( flist[i] );
@@ -166,10 +166,10 @@ TEST_F( schemaTest, Filter ) {
 	backend_path loc;
 
 	schema filt_ischm ( schm, "int.*", loc );
-	EXPECT_EQ( filt_ischm.fields().size(), 4 );
+	EXPECT_EQ( 4, filt_ischm.fields().size() );
 
 	schema filt_aischm ( schm, ".*int.*", loc );
-	EXPECT_EQ( filt_aischm.fields().size(), 8 );
+	EXPECT_EQ( 8, filt_aischm.fields().size() );
 
 }
 

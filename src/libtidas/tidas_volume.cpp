@@ -60,7 +60,7 @@ tidas::volume::volume ( volume const & other ) {
 }
 
 
-tidas::volume::volume ( string const & path, access_mode mode ) {
+tidas::volume::volume ( string const & path, access_mode mode, bool use_index ) {
 	loc_.path = path;
 	loc_.name = "";
 	loc_.meta = "";

@@ -184,41 +184,51 @@ namespace tidas {
 
 			void add_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
 
+			void update_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
+
 			void del_dict ( backend_path loc );
 			
-			bool query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) const;
+			void query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) const;
 
 			//---------------------------
 
 			void add_schema ( backend_path loc, field_list const & fields );
+
+			void update_schema ( backend_path loc, field_list const & fields );
 			
 			void del_schema ( backend_path loc );
 			
-			bool query_schema ( backend_path loc, field_list & fields ) const;
+			void query_schema ( backend_path loc, field_list & fields ) const;
 
 			//---------------------------
 
 			void add_group ( backend_path loc, index_type const & nsamp, std::map < data_type, size_t > const & counts );
+
+			void update_group ( backend_path loc, index_type const & nsamp, std::map < data_type, size_t > const & counts );
 			
 			void del_group ( backend_path loc );
 			
-			bool query_group ( backend_path loc, index_type & nsamp, std::map < data_type, size_t > & counts ) const;
+			void query_group ( backend_path loc, index_type & nsamp, std::map < data_type, size_t > & counts, std::vector < std::string > & child_schema, std::vector < std::string > & child_dict ) const;
 
 			//---------------------------
 
 			void add_intervals ( backend_path loc, size_t const & size );
+
+			void update_intervals ( backend_path loc, size_t const & size );
 			
 			void del_intervals ( backend_path loc );
 			
-			bool query_intervals ( backend_path loc, size_t & size ) const;
+			void query_intervals ( backend_path loc, size_t & size, std::vector < std::string > & child_dict ) const;
 
 			//---------------------------
 
 			void add_block ( backend_path loc );
+
+			void update_block ( backend_path loc );
 			
 			void del_block ( backend_path loc );
 			
-			bool query_block ( backend_path loc ) const;
+			void query_block ( backend_path loc, std::vector < std::string > & child_blocks, std::vector < std::string > & child_groups, std::vector < std::string > & child_intervals ) const;
 
 			//---------------------------
 
@@ -227,7 +237,10 @@ namespace tidas {
 			void history_clear();
 			
 			void replay ( std::deque < indexdb_transaction > const & trans );
+
+			void load_tree ( backend_path loc, size_t depth );
 			
+			void dump_tree ( backend_path loc, size_t depth );
 
 			template < class Archive >
 			void serialize ( Archive & ar ) {
@@ -238,8 +251,31 @@ namespace tidas {
 
 		private :
 
+			void ins_dict ( std::string const & path, indexdb_dict const & d );
+			void rm_dict ( std::string const & path );
+			void ins_schema ( std::string const & path, indexdb_schema const & s );
+			void rm_schema ( std::string const & path );
+			void ins_group ( std::string const & path, indexdb_group const & g );
+			void rm_group ( std::string const & path );
+			void ins_intervals ( std::string const & path, indexdb_intervals const & t );
+			void rm_intervals ( std::string const & path );
+			void ins_block ( std::string const & path, indexdb_block const & b );
+			void rm_block ( std::string const & path );
+
 			std::string path_;
 			std::deque < indexdb_transaction > history_;
+
+
+
+			// FIXME: keep root / name separate to more easily describe parent path.
+
+			std::map < std::string, std::vector < std::string > > descend_;
+
+			std::map < std::string, indexdb_dict > data_dict_;
+			std::map < std::string, indexdb_schema > data_schema_;
+			std::map < std::string, indexdb_group > data_group_;
+			std::map < std::string, indexdb_intervals > data_intervals_;
+			std::map < std::string, indexdb_block > data_block_;
 
 	};
 

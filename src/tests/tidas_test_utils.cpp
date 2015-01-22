@@ -15,6 +15,9 @@ using namespace tidas;
 
 
 
+// recall EXPECT_EQ(expected, actual)
+
+
 TEST( utilstest, mem ) {
 
 	size_t ntest = 10;
@@ -102,88 +105,88 @@ TEST( utilstest, datatype ) {
 	data_type check;
 
 	type = data_type_get ( typeid ( vint8 ) );
-	EXPECT_EQ( type, data_type::int8 );
+	EXPECT_EQ( data_type::int8, type );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "int8" );
+	EXPECT_EQ( "int8", typestr );
 	check = data_type_from_string ( typestr );
-	EXPECT_EQ( check, type );
+	EXPECT_EQ( type, check );
 
 	type = data_type_get ( typeid ( vuint8 ) );
-	EXPECT_EQ( type, data_type::uint8 );
+	EXPECT_EQ( data_type::uint8, type );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "uint8" );
+	EXPECT_EQ( "uint8", typestr );
 	check = data_type_from_string ( typestr );
-	EXPECT_EQ( check, type );
+	EXPECT_EQ( type, check );
 
 	type = data_type_get ( typeid ( vint16 ) );
-	EXPECT_EQ( type, data_type::int16 );
+	EXPECT_EQ( data_type::int16, type );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "int16" );
+	EXPECT_EQ( "int16", typestr );
 	check = data_type_from_string ( typestr );
-	EXPECT_EQ( check, type );
+	EXPECT_EQ( type, check );
 
 	type = data_type_get ( typeid ( vuint16 ) );
-	EXPECT_EQ( type, data_type::uint16 );
+	EXPECT_EQ( data_type::uint16, type );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "uint16" );
+	EXPECT_EQ( "uint16", typestr );
 	check = data_type_from_string ( typestr );
-	EXPECT_EQ( check, type );
+	EXPECT_EQ( type, check );
 
 	type = data_type_get ( typeid ( vint32 ) );
-	EXPECT_EQ( type, data_type::int32 );
+	EXPECT_EQ( data_type::int32, type );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "int32" );
+	EXPECT_EQ( "int32", typestr );
 	check = data_type_from_string ( typestr );
-	EXPECT_EQ( check, type );
+	EXPECT_EQ( type, check );
 
 	type = data_type_get ( typeid ( vuint32 ) );
-	EXPECT_EQ( type, data_type::uint32 );
+	EXPECT_EQ( data_type::uint32, type );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "uint32" );
+	EXPECT_EQ( "uint32", typestr );
 	check = data_type_from_string ( typestr );
-	EXPECT_EQ( check, type );
+	EXPECT_EQ( type, check );
 
 	type = data_type_get ( typeid ( vint64 ) );
-	EXPECT_EQ( type, data_type::int64 );
+	EXPECT_EQ( data_type::int64, type );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "int64" );
+	EXPECT_EQ( "int64", typestr );
 	check = data_type_from_string ( typestr );
-	EXPECT_EQ( check, type );
+	EXPECT_EQ( type, check );
 
 	type = data_type_get ( typeid ( vuint64 ) );
-	EXPECT_EQ( type, data_type::uint64 );
+	EXPECT_EQ( data_type::uint64, type );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "uint64" );
+	EXPECT_EQ( "uint64", typestr );
 	check = data_type_from_string ( typestr );
-	EXPECT_EQ( check, type );
+	EXPECT_EQ( type, check );
 
 	type = data_type_get ( typeid ( vfloat32 ) );
-	EXPECT_EQ( type, data_type::float32 );
+	EXPECT_EQ( data_type::float32, type );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "float32" );
+	EXPECT_EQ( "float32", typestr );
 	check = data_type_from_string ( typestr );
-	EXPECT_EQ( check, type );
+	EXPECT_EQ( type, check );
 
 	type = data_type_get ( typeid ( vfloat64 ) );
-	EXPECT_EQ( type, data_type::float64 );
+	EXPECT_EQ( data_type::float64, type );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "float64" );
+	EXPECT_EQ( "float64", typestr );
 	check = data_type_from_string ( typestr );
-	EXPECT_EQ( check, type );
+	EXPECT_EQ( type, check );
 
 	type = data_type_get ( typeid ( vstring ) );
-	EXPECT_EQ( type, data_type::string );
+	EXPECT_EQ( data_type::string, type );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "string" );
+	EXPECT_EQ( "string", typestr );
 	check = data_type_from_string ( typestr );
-	EXPECT_EQ( check, type );
+	EXPECT_EQ( type, check );
 
 	type = data_type_get ( typeid ( bad ) );
-	EXPECT_EQ( type, data_type::none );
+	EXPECT_EQ( data_type::none, type );
 	typestr = data_type_to_string ( type );
-	EXPECT_EQ( typestr, "none" );
+	EXPECT_EQ( "none", typestr );
 	check = data_type_from_string ( typestr );
-	EXPECT_EQ( check, type );
+	EXPECT_EQ( type, check );
 
 }
 
@@ -206,7 +209,7 @@ TEST( utilstest, filesystem ) {
 	int ret = system ( com.str().c_str() );
 
 	int64_t check = fs_stat ( path.c_str() );
-	EXPECT_EQ( check, count );
+	EXPECT_EQ( count, check );
 
 	fs_rm ( path.c_str() );
 
@@ -220,6 +223,149 @@ TEST( utilstest, filesystem ) {
 
 }
 
+
+TEST( utilstest, filter ) {
+
+	string filt = "";
+	string check = filter_default ( filt );
+	EXPECT_EQ( ".*", check );
+
+	filt = string("foo") + path_sep + string("bar");
+	string local;
+	string sub;
+	bool stop;
+
+	filter_block ( filt, local, sub, stop );
+	EXPECT_EQ( "foo", local );
+	EXPECT_EQ( "bar", sub );
+	EXPECT_FALSE( stop );
+
+	filt = string("foobar") + path_sep;
+	filter_block ( filt, local, sub, stop );
+	EXPECT_EQ( "foobar", local );
+	EXPECT_EQ( "", sub );
+	EXPECT_TRUE( stop );
+
+	filt = string("foo") + path_sep + string("bar");
+	check = path_sep + string("bar");
+	filter_sub ( filt, local, sub );
+	EXPECT_EQ( "foo", local );
+	EXPECT_EQ( check, sub );
+
+	filt = string("foo") + submatch_begin + string("bar");
+	check = submatch_begin + string("bar");
+	filter_sub ( filt, local, sub );
+	EXPECT_EQ( "foo", local );
+	EXPECT_EQ( check, sub );
+
+	filt = string("foo") + submatch_sep + string("bar");
+	check = submatch_sep + string("bar");
+	filter_sub ( filt, local, sub );
+	EXPECT_EQ( "foo", local );
+	EXPECT_EQ( check, sub );
+
+	string nested = submatch_begin
+					+ string("a") + submatch_assign + string("b") + submatch_sep
+					+ string("c") + submatch_assign + string("d") + submatch_begin
+					+ string("x") + submatch_assign + string("y") + submatch_sep
+					+ string("w") + submatch_assign + string("z") + submatch_end
+					+ submatch_end;
+
+	filt = submatch_begin 
+			+ string("foo1") + submatch_assign + string("bar1") + submatch_sep
+			+ string("foo2") + submatch_assign + string("bar2") + nested + submatch_sep
+			+ string("foo3") + submatch_assign + string("bar3") + submatch_sep
+			+ string("foo4") + submatch_assign + string("bar4") + nested
+			+ submatch_end;
+
+	map < string, string > filts = filter_split ( filt );
+
+	EXPECT_EQ( "bar1", filts[ "foo1" ] );
+
+	check = "bar2" + nested;
+	EXPECT_EQ( check, filts[ "foo2" ] );
+	
+	EXPECT_EQ( "bar3", filts[ "foo3" ] );
+
+	check = "bar4" + nested;
+	EXPECT_EQ( check, filts[ "foo4" ] );
+
+	// now for a bigger test.  build up our filter from the inside out
+
+
+	filt = string(".*") + path_sep;
+	string blkcheck1 = filt;
+
+	string grpsub = submatch_begin + schema_submatch_key + submatch_assign + string("field.*") + submatch_sep
+					+ dict_submatch_key + submatch_assign + string("prop.*") + submatch_end;
+
+	filts = filter_split ( grpsub );
+	EXPECT_EQ( "field.*", filts[ schema_submatch_key ] );
+	EXPECT_EQ( "prop.*", filts[ dict_submatch_key ] );
+
+	string grpmatch = string(".*") + grpsub;
+	filter_sub ( grpmatch, local, sub );
+	EXPECT_EQ( ".*", local );
+	EXPECT_EQ( grpsub, sub );
+
+	string intrsub = submatch_begin + dict_submatch_key + submatch_assign + string("pr.*") + submatch_end;
+	filts = filter_split ( intrsub );
+	EXPECT_EQ( "pr.*", filts[ dict_submatch_key ] );
+
+	string intrmatch = string("base.*") + intrsub;
+	filter_sub ( intrmatch, local, sub );
+	EXPECT_EQ( "base.*", local );
+	EXPECT_EQ( intrsub, sub );
+
+	string blksub = submatch_begin + group_submatch_key + submatch_assign + grpmatch + submatch_sep
+					+ intervals_submatch_key + submatch_assign + intrmatch + submatch_end;
+
+	filts = filter_split ( blksub );
+	EXPECT_EQ( grpmatch, filts[ group_submatch_key ] );
+	EXPECT_EQ( intrmatch, filts[ intervals_submatch_key ] );
+
+	filt = string("13.*") + blksub + path_sep + filt;
+	string blkcheck2 = filt;
+
+	filt = string("2012.*") + blksub + path_sep + filt;
+	string blkcheck3 = filt;
+
+	filt = blksub + path_sep + filt;
+
+
+	filter_block ( filt, local, sub, stop );
+	EXPECT_EQ( blkcheck3, sub );
+	EXPECT_FALSE( stop );
+
+	EXPECT_EQ( blksub, local );
+	
+	string temp = sub;
+	filter_block ( temp, local, sub, stop );
+	EXPECT_EQ( blkcheck2, sub );
+	EXPECT_FALSE( stop );
+
+	string blkmatch;
+	filter_sub ( local, blkmatch, check );
+	EXPECT_EQ( "2012.*", blkmatch );
+	EXPECT_EQ( blksub, check );
+
+	temp = sub;
+	filter_block ( temp, local, sub, stop );
+	EXPECT_EQ( blkcheck1, sub );
+	EXPECT_FALSE( stop );
+
+	blkmatch;
+	filter_sub ( local, blkmatch, check );
+	EXPECT_EQ( "13.*", blkmatch );
+	EXPECT_EQ( blksub, check );
+
+	temp = sub;
+	filter_block ( temp, local, sub, stop );
+	EXPECT_EQ( "", sub );
+	EXPECT_EQ( ".*", local );
+	EXPECT_TRUE( stop );
+
+}
 
 
 

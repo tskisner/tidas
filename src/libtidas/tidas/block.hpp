@@ -33,7 +33,7 @@ namespace tidas {
 
 			block ( block const & other );
 
-			block ( backend_path const & loc );
+			block ( backend_path const & loc, std::string const & filter = "" );
 			
 			block ( block const & other, std::string const & filter, backend_path const & loc );
 
@@ -41,7 +41,7 @@ namespace tidas {
 
 			void relocate ( backend_path const & loc );
 
-			void sync ();
+			void sync ( std::string const & filter = "" );
 
 			void flush () const;
 

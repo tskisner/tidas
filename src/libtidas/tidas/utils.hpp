@@ -152,7 +152,7 @@ namespace tidas {
 
 	void filter_sub ( std::string const & filter, std::string & root, std::string & subfilter );
 
-	void filter_block ( std::string const & filter, std::string & local, std::string & subfilter );
+	void filter_block ( std::string const & filter, std::string & local, std::string & subfilter, bool & stop );
 
 	std::map < std::string, std::string > filter_split ( std::string const & filter );
 

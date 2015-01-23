@@ -132,7 +132,16 @@ void tidas::schema::sync () {
 	// read our own metadata
 
 	if ( loc_.type != backend_type::none ) {
-		backend_->read ( loc_, fields_ );
+
+		// if we have an index, use it!
+
+		if ( loc_.idx ) {
+
+
+
+		} else {
+			backend_->read ( loc_, fields_ );
+		}
 	}
 
 	return;
@@ -147,6 +156,14 @@ void tidas::schema::flush () const {
 			// write our own metadata
 
 			backend_->write ( loc_, fields_ );
+
+			// update index
+
+			if ( loc_.idx ) {
+
+
+
+			}
 		}
 	}
 

@@ -1,5 +1,5 @@
 
-SUBDIRS = 
+SUBDIRS = sqlite
 
 # Initialize compile and linking flags
 

@@ -237,6 +237,8 @@ namespace tidas {
 
 			void resize ( index_type const & newsize );
 
+			void range ( time_type & start, time_type & stop ) const;
+
 			void read_times ( std::vector < time_type > & data ) const;
 
 			void write_times ( std::vector < time_type > const & data );
@@ -285,6 +287,11 @@ namespace tidas {
 				return;
 			}
 
+			// overload for time_type which updates range
+
+			void write_field ( std::string const & field_name, index_type offset, std::vector < time_type > const & data );
+
+
 		private :
 
 			void set_backend ();
@@ -298,6 +305,9 @@ namespace tidas {
 			schema schm_;
 			dict dict_;
 			index_type size_;
+
+			time_type start_;
+			time_type stop_;
 
 			std::map < data_type, size_t > counts_;
 			std::map < std::string, size_t > type_indx_;

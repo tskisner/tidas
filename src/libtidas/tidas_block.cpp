@@ -9,6 +9,7 @@
 #include <tidas_internal.hpp>
 
 #include <regex>
+#include <limits>
 
 
 extern "C" {
@@ -77,6 +78,13 @@ void tidas::block_link_operator::operator() ( block const & blk ) {
 		string full_link = intrlink + path_sep + n;
 		blk.intervals_get( n ).link ( type, full_link );
 	}
+
+	// recursively link all files in aux directory
+
+	string auxtarget = blkpath + path_sep + block_fs_aux_dir;
+	string auxdir = linkpath + path_sep + block_fs_aux_dir;
+
+	fs_link_r ( auxtarget.c_str(), auxdir.c_str(), hard );
 
 	return;
 }
@@ -593,6 +601,37 @@ backend_path tidas::block::block_loc ( backend_path const & loc, string const & 
 	ret.name = name;
 
 	return ret;
+}
+
+
+void tidas::block::range ( time_type & start, time_type & stop ) const {
+
+	// iterate over all groups, and find the maximum time extent
+
+	time_type mintime = numeric_limits < time_type > :: max();
+	time_type maxtime = numeric_limits < time_type > :: min();
+
+	time_type grmin;
+	time_type grmax;
+
+	for ( auto & gr : group_data_ ) {
+
+		gr.second.range ( grmin, grmax );
+
+		if ( grmin < mintime ) {
+			mintime = grmin;
+		}
+
+		if ( grmax > maxtime ) {
+			maxtime = grmax;
+		}
+
+	}
+
+	start = mintime;
+	stop = maxtime;
+
+	return;
 }
 
 

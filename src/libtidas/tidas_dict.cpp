@@ -83,7 +83,17 @@ void tidas::dict::sync () {
 	// read our own metadata
 
 	if ( loc_.type != backend_type::none ) {
-		backend_->read ( loc_, data_, types_ );
+
+		// if we have an index, use it!
+
+		if ( loc_.idx ) {
+
+
+
+		} else {
+			backend_->read ( loc_, data_, types_ );
+		}
+
 	}
 
 	return;
@@ -98,6 +108,14 @@ void tidas::dict::flush () const {
 			// write our own metadata
 
 			backend_->write ( loc_, data_, types_ );
+
+			// update index
+
+			if ( loc_.idx ) {
+
+
+
+			}
 		}
 
 	}

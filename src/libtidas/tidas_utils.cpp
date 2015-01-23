@@ -69,7 +69,7 @@ void tidas::fs_rm ( char const * path ) {
 }
 
 
-int tidas_fs_rm_r_callback ( char const * fpath, const struct stat * sb, int typeflag, struct FTW * ftwbuf) {
+int tidas_fs_rm_r_callback ( char const * fpath, const struct stat * sb, int typeflag, struct FTW * ftwbuf ) {
 
     int ret = ::remove ( fpath );
 
@@ -121,6 +121,61 @@ void tidas::fs_link ( char const * target, char const * path, bool hard ) {
 	}
 
 	return;
+}
+
+
+int tidas_fs_link_r_callback ( char const * fpath, const struct stat * sb, int typeflag, struct FTW * ftwbuf ) {
+
+	// FIXME:  probably have to do this manually, in order to maintain state...
+
+	/*
+	string target_root = ftwbuf->base;
+
+	static string link_root;
+	bool hard;
+
+	// check for permissions errors
+
+	if ( ( typeflag & FTW_DNR ) || ( typeflag & FTW_NS ) ) {
+		cerr << "WARNING:  permissions / access error on \"" << fpath << "\" prevents linking" << endl;
+		return 1;
+	} else {
+
+		// construct path relative to root
+
+		string path = fpath;
+		string relpath = path.substr ( target_root.size() );
+		string linkpath = link_root + relpath;
+
+		if ( typeflag | FTW_D ) {
+			// we have a directory, in that case, just make the directory
+			fs_mkdir ( linkpath.c_str() );
+		} else if ( typeflag | FTW_SL ) {
+			// we have a symlink, just copy it
+			ostringstream com;
+			com << "cp -a " << path << " " << linkpath;
+			int sret = ::system( com.str().c_str() );
+		} else {
+			// make a link
+			fs_link ( path.c_str(), linkpath.c_str(), hard );
+		}
+
+	}
+	*/
+
+	return 0;
+}
+
+
+
+void tidas::fs_link_r ( char const * target, char const * path, bool hard ) {
+
+	int ret = ::nftw ( target, tidas_fs_link_r_callback, 64, FTW_PHYS );
+    
+    if ( ret ) {
+    	::perror ( target );
+    }
+    return;
 }
 
 

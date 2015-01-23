@@ -154,6 +154,7 @@ namespace tidas {
 	static const std::string block_fs_group_dir = "_groups";
 	static const std::string block_fs_intervals_dir = "_intervals";
 	static const std::string block_fs_ext_dir = "_extensions";
+	static const std::string block_fs_aux_dir = "_aux";
 
 	static const std::string volume_fs_data_dir = "_data";
 	static const std::string volume_fs_index = "index.db";

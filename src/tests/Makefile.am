@@ -41,7 +41,8 @@ tidas_test_intervals.cpp \
 tidas_test_schema.cpp \
 tidas_test_group.cpp \
 tidas_test_block.cpp \
-tidas_test_volume.cpp
+tidas_test_indexdb.cpp \
+tidas_test_volume.cpp 
 
 tidas_test_LDADD = $(AM_LIBS)
 

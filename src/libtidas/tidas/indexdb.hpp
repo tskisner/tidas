@@ -9,6 +9,11 @@
 #define TIDAS_INDEXDB_HPP
 
 
+extern "C" {
+#include <tidas/sqlite3.h>
+}
+
+
 namespace tidas {
 
 
@@ -91,12 +96,16 @@ namespace tidas {
 			indexdb_object * clone ();
 
 			index_type nsamp;
+			time_type start;
+			time_type stop;
 			std::map < data_type, size_t > counts;
 
 			template < class Archive >
 			void serialize ( Archive & ar ) {
 				ar ( cereal::virtual_base_class < indexdb_object > ( this ) );
 				ar ( CEREAL_NVP( nsamp ) );
+				ar ( CEREAL_NVP( start ) );
+				ar ( CEREAL_NVP( stop ) );
 				ar ( CEREAL_NVP( counts ) );
 				return;
 			}
@@ -202,13 +211,13 @@ namespace tidas {
 
 			//---------------------------
 
-			void add_group ( backend_path loc, index_type const & nsamp, std::map < data_type, size_t > const & counts );
+			void add_group ( backend_path loc, index_type const & nsamp, time_type const & start, time_type const & stop, std::map < data_type, size_t > const & counts );
 
-			void update_group ( backend_path loc, index_type const & nsamp, std::map < data_type, size_t > const & counts );
+			void update_group ( backend_path loc, index_type const & nsamp, time_type const & start, time_type const & stop, std::map < data_type, size_t > const & counts );
 			
 			void del_group ( backend_path loc );
 			
-			void query_group ( backend_path loc, index_type & nsamp, std::map < data_type, size_t > & counts, std::vector < std::string > & child_schema, std::vector < std::string > & child_dict ) const;
+			void query_group ( backend_path loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts ) const;
 
 			//---------------------------
 
@@ -218,7 +227,7 @@ namespace tidas {
 			
 			void del_intervals ( backend_path loc );
 			
-			void query_intervals ( backend_path loc, size_t & size, std::vector < std::string > & child_dict ) const;
+			void query_intervals ( backend_path loc, size_t & size ) const;
 
 			//---------------------------
 
@@ -238,14 +247,19 @@ namespace tidas {
 			
 			void replay ( std::deque < indexdb_transaction > const & trans );
 
-			void load_tree ( backend_path loc, size_t depth );
-			
-			void dump_tree ( backend_path loc, size_t depth );
+			// FIXME:  split load / save in order to handle sqlite pointer!!!
 
 			template < class Archive >
 			void serialize ( Archive & ar ) {
 				ar ( CEREAL_NVP( path_ ) );
 				ar ( CEREAL_NVP( history_ ) );
+				ar ( CEREAL_NVP( data_dict_ ) );
+				ar ( CEREAL_NVP( data_schema_ ) );
+				ar ( CEREAL_NVP( data_group_ ) );
+				ar ( CEREAL_NVP( data_intervals_ ) );
+				ar ( CEREAL_NVP( data_block_ ) );
+
+
 				return;
 			}
 
@@ -263,13 +277,9 @@ namespace tidas {
 			void rm_block ( std::string const & path );
 
 			std::string path_;
+			sqlite3 * sql_;
+
 			std::deque < indexdb_transaction > history_;
-
-
-
-			// FIXME: keep root / name separate to more easily describe parent path.
-
-			std::map < std::string, std::vector < std::string > > descend_;
 
 			std::map < std::string, indexdb_dict > data_dict_;
 			std::map < std::string, indexdb_schema > data_schema_;

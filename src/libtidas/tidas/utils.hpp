@@ -88,6 +88,9 @@ namespace tidas {
 	/// Make a link
 	void fs_link ( char const * target, char const * path, bool hard = false );
 
+	/// Recursively make directories and link files
+	void fs_link_r ( char const * target, char const * path, bool hard );
+
 
 	// data types
 

@@ -58,6 +58,8 @@ namespace tidas {
 
 			// data ops
 
+			void range ( time_type & start, time_type & stop ) const;
+
 			void clear();
 
 

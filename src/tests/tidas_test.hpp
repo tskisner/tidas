@@ -104,6 +104,12 @@ void block_setup ( tidas::block & blk, size_t n_samp, size_t n_intr );
 void block_verify ( tidas::block & blk );
 
 
+
+void indexdb_setup ( tidas::indexdb & idx );
+
+void indexdb_verify ( tidas::indexdb & idx );
+
+
 class volumeTest : public ::testing::Test {
 
 	public :

@@ -146,6 +146,7 @@ namespace tidas {
 
 	static const std::string group_time_field = "TIDAS_TIME";
 	static const std::string group_hdf5_dataset_prefix = "data";
+	static const std::string group_hdf5_range_dataset = "range";
 	static const std::string group_submatch_key = "grp";
 
 	static const std::string extension_hdf5_dataset_prefix = "data";
@@ -161,7 +162,7 @@ namespace tidas {
 	static const std::string volume_fs_props = "tidas_volume.txt";
 
 	static const std::string env_hdf5_chunk = "TIDAS_HDF5_CHUNK";
-	static const size_t env_hdf5_chunk_default = 50000;
+	static const size_t env_hdf5_chunk_default = 50;
 
 
 }

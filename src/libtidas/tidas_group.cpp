@@ -127,6 +127,8 @@ void tidas::group::sync () {
 
 	schm_.sync();
 
+	compute_counts();
+
 	// read our own metadata
 
 	if ( loc_.type != backend_type::none ) {
@@ -137,13 +139,17 @@ void tidas::group::sync () {
 
 
 
-		} else {		
-			backend_->read ( loc_, size_, counts_ );
-			vector < time_type > data(1);
-			read_field ( group_time_field, 0, data );
-			start_ = data[0];
-			read_field ( group_time_field, (size_ - 1), data );
-			stop_ = data[0];
+		} else {
+			map < data_type, size_t > backend_counts;
+			backend_->read ( loc_, size_, start_, stop_, backend_counts );
+
+			for ( auto c : backend_counts ) {
+				if ( c.second != counts_[ c.first ] ) {
+					ostringstream o;
+					o << "group backend counts does not match schema";
+					TIDAS_THROW( o.str().c_str() );
+				}
+			}
 		}
 
 	}
@@ -160,6 +166,7 @@ void tidas::group::flush () const {
 			// write our own metadata
 
 			backend_->write ( loc_, size_, counts_ );
+			backend_->update_range ( loc_, start_, stop_ );
 
 			// update index
 
@@ -386,16 +393,26 @@ void tidas::group::write_field ( std::string const & field_name, index_type offs
 		// if we are writing to the time field, update group range
 
 		if ( field_name == group_time_field ) {
+			bool update = false;
+
 			if ( data[0] < start_ ) {
 				start_ = data[0];
+				update = true;
 			}
-			if ( data[0] > stop_ ) {
-				stop_ = data[0];
+
+			if ( data[ data.size() - 1 ] > stop_ ) {
+				stop_ = data[ data.size() - 1 ];
+				update = true;
 			}
-			if ( loc_.idx ) {
-				// update index
+			
+			if ( update ) {
+				backend_->update_range ( loc_, start_, stop_ );
+
+				if ( loc_.idx ) {
+					// update index
 
 
+				}
 			}
 		}
 

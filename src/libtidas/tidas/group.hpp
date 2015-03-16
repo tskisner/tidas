@@ -25,11 +25,13 @@ namespace tidas {
 			group_backend () {}
 			virtual ~group_backend () {}
 
-			virtual void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts ) = 0;
+			virtual void read ( backend_path const & loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts ) = 0;
 
 			virtual void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const = 0;
 
 			virtual void resize ( backend_path const & loc, index_type const & nsamp ) = 0;
+
+			virtual void update_range ( backend_path const & loc, time_type const & start, time_type const & stop ) = 0;
 
 			virtual void link ( backend_path const & loc, link_type type, std::string const & path ) const = 0;
 
@@ -84,10 +86,11 @@ namespace tidas {
 			group_backend_hdf5 ( group_backend_hdf5 const & other );
 			group_backend_hdf5 & operator= ( group_backend_hdf5 const & other );
 
-			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts );
+			void read ( backend_path const & loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts );
 			void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const;
 
 			void resize ( backend_path const & loc, index_type const & nsamp );
+			void update_range ( backend_path const & loc, time_type const & start, time_type const & stop );
 
 			void link ( backend_path const & loc, link_type type, std::string const & path ) const;
 			void wipe ( backend_path const & loc ) const;
@@ -142,10 +145,11 @@ namespace tidas {
 			group_backend_getdata ( group_backend_getdata const & other );
 			group_backend_getdata & operator= ( group_backend_getdata const & other );
 
-			void read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts );
+			void read ( backend_path const & loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts );
 			void write ( backend_path const & loc, index_type const & nsamp, std::map < data_type, size_t > const & counts ) const;
 
 			void resize ( backend_path const & loc, index_type const & nsamp );
+			void update_range ( backend_path const & loc, time_type const & start, time_type const & stop );
 
 			void link ( backend_path const & loc, link_type type, std::string const & path ) const;
 			void wipe ( backend_path const & loc ) const;

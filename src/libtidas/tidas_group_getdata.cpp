@@ -47,7 +47,7 @@ string tidas::group_backend_getdata::schema_meta () const {
 }
 
 
-void tidas::group_backend_getdata::read ( backend_path const & loc, index_type & nsamp, std::map < data_type, size_t > & counts ) {
+void tidas::group_backend_getdata::read ( backend_path const & loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }
@@ -60,6 +60,12 @@ void tidas::group_backend_getdata::write ( backend_path const & loc, index_type 
 
 
 void tidas::group_backend_getdata::resize ( backend_path const & loc, index_type const & nsamp ) {
+	TIDAS_THROW( "GetData backend not supported" );
+	return;
+}
+
+
+void tidas::group_backend_getdata::update_range ( backend_path const & loc, time_type const & start, time_type const & stop ) {
 	TIDAS_THROW( "GetData backend not supported" );
 	return;
 }

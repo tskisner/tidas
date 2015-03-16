@@ -316,7 +316,7 @@ void tidas::indexdb::rm_block ( string const & path ) {
 
 void tidas::indexdb::add_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) {
 
-	string path = loc.path + path_sep + loc.name;
+	string path = loc.path + path_sep + loc.name + path_sep + dict_submatch_key;
 
 	indexdb_dict d;
 	d.type = indexdb_object_type::dict;
@@ -342,7 +342,7 @@ void tidas::indexdb::add_dict ( backend_path loc, std::map < std::string, std::s
 
 void tidas::indexdb::update_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) {
 
-	string path = loc.path + path_sep + loc.name;
+	string path = loc.path + path_sep + loc.name + path_sep + dict_submatch_key;
 
 	indexdb_dict d;
 	d.type = indexdb_object_type::dict;
@@ -368,7 +368,7 @@ void tidas::indexdb::update_dict ( backend_path loc, std::map < std::string, std
 
 void tidas::indexdb::del_dict ( backend_path loc ) {
 
-	string path = loc.path + path_sep + loc.name;
+	string path = loc.path + path_sep + loc.name + path_sep + dict_submatch_key;
 
 	indexdb_dict d;
 	d.type = indexdb_object_type::dict;
@@ -392,7 +392,7 @@ void tidas::indexdb::del_dict ( backend_path loc ) {
 
 void tidas::indexdb::query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) const {
 
-	string path = loc.path + path_sep + loc.name;
+	string path = loc.path + path_sep + loc.name + path_sep + dict_submatch_key;
 
 	if ( data_dict_.count ( path ) == 0 ) {
 		if ( path_ != "" ) {
@@ -415,7 +415,7 @@ void tidas::indexdb::query_dict ( backend_path loc, std::map < std::string, std:
 
 void tidas::indexdb::add_schema ( backend_path loc, field_list const & fields ) {
 
-	string path = loc.path + path_sep + loc.name;
+	string path = loc.path + path_sep + loc.name + path_sep + schema_submatch_key;
 
 	indexdb_schema s;
 	s.type = indexdb_object_type::schema;
@@ -440,7 +440,7 @@ void tidas::indexdb::add_schema ( backend_path loc, field_list const & fields ) 
 
 void tidas::indexdb::update_schema ( backend_path loc, field_list const & fields ) {
 
-	string path = loc.path + path_sep + loc.name;
+	string path = loc.path + path_sep + loc.name + path_sep + schema_submatch_key;
 
 	indexdb_schema s;
 	s.type = indexdb_object_type::schema;
@@ -465,7 +465,7 @@ void tidas::indexdb::update_schema ( backend_path loc, field_list const & fields
 
 void tidas::indexdb::del_schema ( backend_path loc ) {
 
-	string path = loc.path + path_sep + loc.name;
+	string path = loc.path + path_sep + loc.name + path_sep + schema_submatch_key;
 
 	indexdb_schema s;
 	s.type = indexdb_object_type::schema;
@@ -489,7 +489,7 @@ void tidas::indexdb::del_schema ( backend_path loc ) {
 
 void tidas::indexdb::query_schema ( backend_path loc, field_list & fields ) const {
 
-	string path = loc.path + path_sep + loc.name;
+	string path = loc.path + path_sep + loc.name + path_sep + schema_submatch_key;
 
 	if ( data_schema_.count ( path ) == 0 ) {
 		if ( path_ != "" ) {
@@ -749,7 +749,7 @@ void tidas::indexdb::update_block ( backend_path loc ) {
 		// save transaction
 
 		indexdb_transaction tr;
-		tr.op = indexdb_op::add;
+		tr.op = indexdb_op::update;
 		tr.obj.reset ( b.clone() );
 
 		history_.push_back ( tr );
@@ -799,8 +799,8 @@ void tidas::indexdb::query_block ( backend_path loc, std::vector < std::string >
 		}
 	}
 
-	// Find all direct descendants.  If are using a DB, we query this and update our copy
-	// in memory.
+	// Find all direct descendants.  If we are using a DB, we query
+	// this and update our copy in memory.
 
 	child_blocks.clear();
 	child_groups.clear();

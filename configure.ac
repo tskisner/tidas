@@ -122,6 +122,9 @@ dnl +------------------------------------------------
 AC_LANG_PUSH([C])
 tidas_python=yes
 AC_ARG_ENABLE(python, [AC_HELP_STRING([--disable-python], [Disable python bindings])], [tidas_python=$enable_python])
+if test $tidas_static = yes; then
+  tidas_python=no
+fi
 if test $tidas_python = yes; then
   AM_PATH_PYTHON
   ACX_PYTHON_DEV
@@ -166,7 +169,7 @@ dnl | Do we have at least one backend?
 dnl +------------------------------------------------
 if test $tidas_hdf5 = no; then
   if test $tidas_getdata = no; then
-    AC_MSG_WARN([Only the MEMORY backend is enabled- are you sure this is what you want?])
+    AC_MSG_ERROR([No supported backend formats can be used!])
   fi
 fi
 dnl +------------------------------------------------

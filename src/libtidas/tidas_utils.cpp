@@ -82,10 +82,16 @@ int tidas_fs_rm_r_callback ( char const * fpath, const struct stat * sb, int typ
 
 
 void tidas::fs_rm_r ( char const * path ) {
-    int ret = ::nftw ( path, tidas_fs_rm_r_callback, 64, FTW_DEPTH | FTW_PHYS );
-    if ( ret ) {
-    	::perror ( path );
-    }
+
+	int64_t size = fs_stat ( path );
+	
+	if ( size >= 0 ) {
+	    int ret = ::nftw ( path, tidas_fs_rm_r_callback, 64, FTW_DEPTH | FTW_PHYS );
+	    if ( ret ) {
+	    	::perror ( path );
+	    }
+	}
+
     return;
 }
 

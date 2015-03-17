@@ -8,6 +8,7 @@
 #include <tidas_test.hpp>
 
 #include <cstdlib>
+#include <fstream>
 
 
 using namespace std;
@@ -389,5 +390,34 @@ TEST( indexdbtest, history ) {
 }
 
 
+TEST( indexdbtest, serialize ) {
+
+	indexdb idx;
+
+	indexdb_setup( idx );
+
+	// serialize
+
+	string outfile = "./indexdb_serialized.out";
+
+	{
+		ofstream os( outfile, ios::binary );
+  		cereal::PortableBinaryOutputArchive outarch ( os );
+  		outarch ( idx );
+  		os.close();
+
+		ifstream is( outfile, ios::binary );
+  		cereal::PortableBinaryInputArchive inarch ( is );
+  		inarch ( idx );
+  		is.close();
+	}
+
+	indexdb check;
+
+	check.replay ( idx.history() );
+
+	indexdb_verify( check );
+
+}
 
 

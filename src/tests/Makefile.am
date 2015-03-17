@@ -36,6 +36,7 @@ TESTS = tidas_test
 tidas_test_SOURCES = \
 tidas_test.cpp \
 tidas_test_utils.cpp \
+tidas_test_cereal.cpp \
 tidas_test_dict.cpp \
 tidas_test_intervals.cpp \
 tidas_test_schema.cpp \

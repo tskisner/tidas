@@ -81,7 +81,7 @@ namespace tidas {
 
 			template < class Archive >
 			void serialize ( Archive & ar ) {
-				ar ( cereal::virtual_base_class < indexdb_object > ( this ) );
+				ar ( cereal::base_class < indexdb_object > ( this ) );
 				ar ( CEREAL_NVP( fields ) );
 				return;
 			}
@@ -102,7 +102,7 @@ namespace tidas {
 
 			template < class Archive >
 			void serialize ( Archive & ar ) {
-				ar ( cereal::virtual_base_class < indexdb_object > ( this ) );
+				ar ( cereal::base_class < indexdb_object > ( this ) );
 				ar ( CEREAL_NVP( nsamp ) );
 				ar ( CEREAL_NVP( start ) );
 				ar ( CEREAL_NVP( stop ) );
@@ -123,7 +123,7 @@ namespace tidas {
 
 			template < class Archive >
 			void serialize ( Archive & ar ) {
-				ar ( cereal::virtual_base_class < indexdb_object > ( this ) );
+				ar ( cereal::base_class < indexdb_object > ( this ) );
 				ar ( CEREAL_NVP( size ) );
 				return;
 			}
@@ -139,7 +139,7 @@ namespace tidas {
 
 			template < class Archive >
 			void serialize ( Archive & ar ) {
-				ar ( cereal::virtual_base_class < indexdb_object > ( this ) );
+				ar ( cereal::base_class < indexdb_object > ( this ) );
 				return;
 			}
 

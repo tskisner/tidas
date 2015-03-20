@@ -185,7 +185,7 @@ namespace tidas {
 
 			indexdb ( indexdb const & other );
 
-			indexdb ( std::string const & path );
+			indexdb ( std::string const & path, access_mode mode );
 
 			void copy ( indexdb const & other );
 
@@ -197,7 +197,7 @@ namespace tidas {
 
 			void del_dict ( backend_path loc );
 			
-			void query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) const;
+			void query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
 
 			//---------------------------
 
@@ -207,7 +207,7 @@ namespace tidas {
 			
 			void del_schema ( backend_path loc );
 			
-			void query_schema ( backend_path loc, field_list & fields ) const;
+			void query_schema ( backend_path loc, field_list & fields );
 
 			//---------------------------
 
@@ -217,7 +217,7 @@ namespace tidas {
 			
 			void del_group ( backend_path loc );
 			
-			void query_group ( backend_path loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts ) const;
+			void query_group ( backend_path loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts );
 
 			//---------------------------
 
@@ -227,7 +227,7 @@ namespace tidas {
 			
 			void del_intervals ( backend_path loc );
 			
-			void query_intervals ( backend_path loc, size_t & size ) const;
+			void query_intervals ( backend_path loc, size_t & size );
 
 			//---------------------------
 
@@ -237,7 +237,7 @@ namespace tidas {
 			
 			void del_block ( backend_path loc );
 			
-			void query_block ( backend_path loc, std::vector < std::string > & child_blocks, std::vector < std::string > & child_groups, std::vector < std::string > & child_intervals ) const;
+			void query_block ( backend_path loc, std::vector < std::string > & child_blocks, std::vector < std::string > & child_groups, std::vector < std::string > & child_intervals );
 
 			//---------------------------
 
@@ -247,10 +247,8 @@ namespace tidas {
 			
 			void replay ( std::deque < indexdb_transaction > const & trans );
 
-			// FIXME:  split load / save in order to handle sqlite pointer!!!
-
 			template < class Archive >
-			void serialize ( Archive & ar ) {
+			void save ( Archive & ar ) const {
 				ar ( CEREAL_NVP( path_ ) );
 				ar ( CEREAL_NVP( history_ ) );
 				ar ( CEREAL_NVP( data_dict_ ) );
@@ -258,12 +256,30 @@ namespace tidas {
 				ar ( CEREAL_NVP( data_group_ ) );
 				ar ( CEREAL_NVP( data_intervals_ ) );
 				ar ( CEREAL_NVP( data_block_ ) );
+				return;
+			}
 
-
+			template < class Archive >
+			void load ( Archive & ar ) {
+				ar ( CEREAL_NVP( path_ ) );
+				ar ( CEREAL_NVP( history_ ) );
+				ar ( CEREAL_NVP( data_dict_ ) );
+				ar ( CEREAL_NVP( data_schema_ ) );
+				ar ( CEREAL_NVP( data_group_ ) );
+				ar ( CEREAL_NVP( data_intervals_ ) );
+				ar ( CEREAL_NVP( data_block_ ) );
+				sql_ = NULL;
+				sql_open();
 				return;
 			}
 
 		private :
+
+			void sql_open ();
+
+			void sql_close ();
+
+			void sql_err ( bool err, char const * msg, char const * file, int line );
 
 			void ins_dict ( std::string const & path, indexdb_dict const & d );
 			void rm_dict ( std::string const & path );
@@ -277,6 +293,8 @@ namespace tidas {
 			void rm_block ( std::string const & path );
 
 			std::string path_;
+			access_mode mode_;
+
 			sqlite3 * sql_;
 
 			std::deque < indexdb_transaction > history_;

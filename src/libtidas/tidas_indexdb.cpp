@@ -8,10 +8,11 @@
 
 #include <tidas_internal.hpp>
 
+#include <cstdio>
+
 
 using namespace std;
 using namespace tidas;
-
 
 
 indexdb_object * tidas::indexdb_dict::clone () {
@@ -70,19 +71,20 @@ void tidas::indexdb_transaction::copy ( indexdb_transaction const & other ) {
 
 
 
+#define SQLERR(err, msg) \
+sql_err( err, msg, __FILE__, __LINE__ )
+
+
 tidas::indexdb::indexdb () {
 	path_ = "";
+	mode_ = access_mode::read;
 	sql_ = NULL;
+	sql_open();
 }
 
 
 tidas::indexdb::~indexdb () {
-	// close DB if it is open
-	if ( path_ != "" ) {
-		if ( sql_ ) {
-
-		}
-	}
+	sql_close();
 }
 
 
@@ -95,12 +97,14 @@ indexdb & tidas::indexdb::operator= ( indexdb const & other ) {
 
 
 tidas::indexdb::indexdb ( indexdb const & other ) {
+	sql_ = NULL;
 	copy ( other );
 }
 
 
 void tidas::indexdb::copy ( indexdb const & other ) {
 	path_ = other.path_;
+	mode_ = other.mode_;
 	history_ = other.history_;
 
 	data_dict_ = other.data_dict_;
@@ -109,24 +113,123 @@ void tidas::indexdb::copy ( indexdb const & other ) {
 	data_intervals_ = other.data_intervals_;
 	data_block_ = other.data_block_;
 
-	// open DB if path is set
-	if ( path_ != "" ) {
-
-	} else {
-		sql_ = NULL;
-	}
+	sql_close();
+	sql_open();
 
 	return;
 }
 
 
-tidas::indexdb::indexdb ( string const & path ) {
+tidas::indexdb::indexdb ( string const & path, access_mode mode ) {
 	path_ = path;
+	mode_ = mode;
+	sql_ = NULL;
+	sql_open();
+}
 
-	// open DB if path is set
+
+void tidas::indexdb::sql_open () {
+	// close DB if it is open
 	if ( path_ != "" ) {
+		if ( sql_ ) {
+			TIDAS_THROW( "sqlite DB already open" );
+		} else {
 
+			int64_t size = fs_stat ( path_.c_str() );
+
+			int flags = 0;
+
+			if ( size > 0 ) {
+				// just open
+				
+				if ( mode_ == access_mode::readwrite ) {
+					flags = flags | SQLITE_OPEN_READWRITE;
+				} else {
+					flags = flags | SQLITE_OPEN_READONLY;
+				}
+
+				int ret = sqlite3_open_v2 ( path_.c_str(), &sql_, flags, NULL );
+				SQLERR( ret != SQLITE_OK, "open" );
+
+			} else {
+				// create and initialize schema
+
+				if ( mode_ == access_mode::readwrite ) {
+					flags = flags | SQLITE_OPEN_READWRITE;
+					flags = flags | SQLITE_OPEN_CREATE;
+
+					int ret = sqlite3_open_v2 ( path_.c_str(), &sql_, flags, NULL );
+					SQLERR( ret != SQLITE_OK, "open" );
+
+					string command;
+					char * sqlerr;
+
+					command = "CREATE TABLE blk ( path TEXT PRIMARY KEY, parent TEXT, FOREIGN KEY(parent) REFERENCES blk(path) );";
+
+					ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+					SQLERR( ret != SQLITE_OK, "create block table" );
+
+					command = "CREATE TABLE grp ( path TEXT PRIMARY KEY, parent TEXT, start REAL, stop REAL, counts BLOB, FOREIGN KEY(parent) REFERENCES blk(path) );";
+
+					ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+					SQLERR( ret != SQLITE_OK, "create group table" );
+
+					command = "CREATE TABLE intrvl ( path TEXT PRIMARY KEY, parent TEXT, size INTEGER, FOREIGN KEY(parent) REFERENCES blk(path) );";
+
+					ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+					SQLERR( ret != SQLITE_OK, "create intervals table" );
+
+					command = "CREATE TABLE schm ( parent TEXT UNIQUE, fields BLOB, FOREIGN KEY(parent) REFERENCES grp(path) );";
+
+					ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+					SQLERR( ret != SQLITE_OK, "create schema table" );
+
+					command = "CREATE TABLE dct_grp ( parent TEXT UNIQUE, data BLOB, types BLOB, FOREIGN KEY(parent) REFERENCES grp(path) );";
+
+					ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+					SQLERR( ret != SQLITE_OK, "create group dict table" );
+
+					command = "CREATE TABLE dct_intrvl ( parent TEXT UNIQUE, data BLOB, types BLOB, FOREIGN KEY(parent) REFERENCES intrvl(path) );";
+
+					ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+					SQLERR( ret != SQLITE_OK, "create intervals dict table" );
+
+				} else {
+					ostringstream o;
+					o << "cannot create sqlite DB \"" << path_ << "\" in read-only mode";
+					TIDAS_THROW( o.str().c_str() );
+				}
+
+			}
+			
+		}
 	}
+	return;
+}
+
+
+void tidas::indexdb::sql_close () {
+	// close DB if it is open
+	if ( path_ != "" ) {
+		if ( sql_ ) {
+			int ret = sqlite3_close_v2 ( sql_ );
+			SQLERR( ret != SQLITE_OK, "close" );
+			sql_ = NULL;
+		}
+	}
+	return;
+}
+
+
+void tidas::indexdb::sql_err ( bool err, char const * msg, char const * file, int line ) {
+
+	if ( err ) {
+		ostringstream o;
+		o << "sqlite DB error at " << msg << " (" << file << ", line " << line << "):  \"" << sqlite3_errmsg( sql_ ) << "\"";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	return;
 }
 
 
@@ -136,7 +239,54 @@ void tidas::indexdb::ins_dict ( string const & path, indexdb_dict const & d ) {
 
 	// modify DB if path is set
 	if ( path_ != "" ) {
+		if ( sql_ ) {
 
+			ostringstream command;
+			command.precision(20);
+
+			size_t pos = path.find( block_fs_group_dir );
+			if ( pos != string::npos ) {
+				command.str("");
+				command << "INSERT OR REPLACE INTO dct_grp ( parent, data, types ) VALUES ( \"" << path << "\", ?, ? );";
+			} else {
+				pos = path.find( block_fs_intervals_dir );
+				if ( pos != string::npos ) {
+					command.str("");
+					command << "INSERT OR REPLACE INTO dct_intrvl ( parent, data, types ) VALUES ( \"" << path << "\", ?, ? );";
+				} else {
+					TIDAS_THROW( "dictionary path not associated with group or intervals" );
+				}
+			}
+
+			sqlite3_stmt * stmt;
+			int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
+			SQLERR( ret != SQLITE_OK, "dict prepare" );
+
+			ostringstream datastr;
+			cereal::PortableBinaryOutputArchive outdata ( datastr );
+  			outdata ( d.data );
+
+  			ret = sqlite3_bind_blob ( stmt, 2, (void*)datastr.str().c_str(), datastr.str().size(), SQLITE_TRANSIENT );
+  			SQLERR( ret != SQLITE_OK, "dict bind data" );
+
+  			ostringstream typestr;
+  			cereal::PortableBinaryOutputArchive outtype ( typestr );
+  			outtype ( d.types );
+
+  			ret = sqlite3_bind_blob ( stmt, 3, (void*)typestr.str().c_str(), typestr.str().size(), SQLITE_TRANSIENT );
+  			SQLERR( ret != SQLITE_OK, "dict bind types" );
+
+			ret = sqlite3_step ( stmt );
+			SQLERR( ret != SQLITE_DONE, "dict step" );
+
+			ret = sqlite3_finalize ( stmt );
+			SQLERR( ret != SQLITE_OK, "dict finalize" );
+
+		} else {
+			ostringstream o;
+			o << "indexdb path = \"" << path_ << "\", but sqlite DB is not open!";
+			TIDAS_THROW( o.str().c_str() );
+		}
 	}
 
 	return;
@@ -155,6 +305,36 @@ void tidas::indexdb::rm_dict ( string const & path ) {
 
 	// modify DB if path is set
 	if ( path_ != "" ) {
+
+		if ( sql_ ) {
+
+			ostringstream command;
+			command.precision(20);
+
+			size_t pos = path.find( block_fs_group_dir );
+			if ( pos != string::npos ) {
+				command.str("");
+				command << "DELETE FROM dct_grp WHERE parent = \"" << path << "\";";
+			} else {
+				pos = path.find( block_fs_intervals_dir );
+				if ( pos != string::npos ) {
+					command.str("");
+					command << "DELETE FROM dct_intrvl WHERE parent = \"" << path << "\";";
+				} else {
+					TIDAS_THROW( "dictionary path not associated with group or intervals" );
+				}
+			}
+
+			char * sqlerr;
+
+			int ret = sqlite3_exec ( sql_, command.str().c_str(), NULL, NULL, &sqlerr );
+			SQLERR( ret != SQLITE_OK, "dict delete" );
+
+		} else {
+			ostringstream o;
+			o << "indexdb path = \"" << path_ << "\", but sqlite DB is not open!";
+			TIDAS_THROW( o.str().c_str() );
+		}		
 
 	}
 
@@ -316,7 +496,7 @@ void tidas::indexdb::rm_block ( string const & path ) {
 
 void tidas::indexdb::add_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) {
 
-	string path = loc.path + path_sep + loc.name + path_sep + dict_submatch_key;
+	string path = loc.path + path_sep + loc.name;
 
 	indexdb_dict d;
 	d.type = indexdb_object_type::dict;
@@ -342,7 +522,7 @@ void tidas::indexdb::add_dict ( backend_path loc, std::map < std::string, std::s
 
 void tidas::indexdb::update_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) {
 
-	string path = loc.path + path_sep + loc.name + path_sep + dict_submatch_key;
+	string path = loc.path + path_sep + loc.name;
 
 	indexdb_dict d;
 	d.type = indexdb_object_type::dict;
@@ -368,7 +548,7 @@ void tidas::indexdb::update_dict ( backend_path loc, std::map < std::string, std
 
 void tidas::indexdb::del_dict ( backend_path loc ) {
 
-	string path = loc.path + path_sep + loc.name + path_sep + dict_submatch_key;
+	string path = loc.path + path_sep + loc.name;
 
 	indexdb_dict d;
 	d.type = indexdb_object_type::dict;
@@ -390,14 +570,64 @@ void tidas::indexdb::del_dict ( backend_path loc ) {
 }
 
 
-void tidas::indexdb::query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) const {
+void tidas::indexdb::query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) {
 
-	string path = loc.path + path_sep + loc.name + path_sep + dict_submatch_key;
+	string path = loc.path + path_sep + loc.name;
 
 	if ( data_dict_.count ( path ) == 0 ) {
 		if ( path_ != "" ) {
 			// fetch it from the DB
 
+			if ( sql_ ) {
+
+				ostringstream command;
+				command.precision(20);
+
+				size_t pos = path.find( block_fs_group_dir );
+				if ( pos != string::npos ) {
+					command.str("");
+					command << "SELECT FROM dct_grp WHERE parent = \"" << path << "\";";
+				} else {
+					pos = path.find( block_fs_intervals_dir );
+					if ( pos != string::npos ) {
+						command.str("");
+						command << "SELECT FROM dct_intrvl WHERE parent = \"" << path << "\";";
+					} else {
+						TIDAS_THROW( "dictionary path not associated with group or intervals" );
+					}
+				}
+
+				sqlite3_stmt * stmt;
+				int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
+				SQLERR( ret != SQLITE_OK, "dict query prepare" );
+
+				ret = sqlite3_step ( stmt );
+				SQLERR( ret != SQLITE_ROW, "dict query step" );
+
+				indexdb_dict d;
+				d.type = indexdb_object_type::dict;
+				d.path = path;
+
+				string blobstr = (char*)sqlite3_column_blob ( stmt, 1 );
+				istringstream datastr ( blobstr );
+				cereal::PortableBinaryInputArchive indata ( datastr );
+				indata ( d.data );
+
+				blobstr = (char*)sqlite3_column_blob ( stmt, 2 );
+				istringstream typestr ( blobstr );
+				cereal::PortableBinaryInputArchive intypes ( typestr );
+				intypes ( d.types );
+
+				ret = sqlite3_finalize ( stmt );
+				SQLERR( ret != SQLITE_OK, "dict query finalize" );
+
+				data_dict_[ path ] = d;
+
+			} else {
+				ostringstream o;
+				o << "indexdb path = \"" << path_ << "\", but sqlite DB is not open!";
+				TIDAS_THROW( o.str().c_str() );
+			}
 
 		} else {
 			ostringstream o;
@@ -487,7 +717,7 @@ void tidas::indexdb::del_schema ( backend_path loc ) {
 }
 
 
-void tidas::indexdb::query_schema ( backend_path loc, field_list & fields ) const {
+void tidas::indexdb::query_schema ( backend_path loc, field_list & fields ) {
 
 	string path = loc.path + path_sep + loc.name + path_sep + schema_submatch_key;
 
@@ -589,7 +819,7 @@ void tidas::indexdb::del_group ( backend_path loc ) {
 }
 
 
-void tidas::indexdb::query_group ( backend_path loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts ) const {
+void tidas::indexdb::query_group ( backend_path loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts ) {
 
 	string path = loc.path + path_sep + loc.name;
 
@@ -688,7 +918,7 @@ void tidas::indexdb::del_intervals ( backend_path loc ) {
 }
 
 
-void tidas::indexdb::query_intervals ( backend_path loc, size_t & size ) const {
+void tidas::indexdb::query_intervals ( backend_path loc, size_t & size ) {
 
 	string path = loc.path + path_sep + loc.name;
 
@@ -783,7 +1013,7 @@ void tidas::indexdb::del_block ( backend_path loc ) {
 }
 
 
-void tidas::indexdb::query_block ( backend_path loc, std::vector < std::string > & child_blocks, std::vector < std::string > & child_groups, std::vector < std::string > & child_intervals ) const {
+void tidas::indexdb::query_block ( backend_path loc, std::vector < std::string > & child_blocks, std::vector < std::string > & child_groups, std::vector < std::string > & child_intervals ) {
 
 	string path = loc.path + path_sep + loc.name;
 

@@ -421,3 +421,40 @@ TEST( indexdbtest, serialize ) {
 }
 
 
+TEST( indexdbtest, sqlite ) {
+
+	string dbfile = "./indexdb_sql.out";
+	fs_rm ( dbfile.c_str() );
+
+	indexdb idx ( dbfile, access_mode::readwrite );
+
+	indexdb_setup( idx );
+
+	// serialize
+
+	string outfile = "./indexdb_sql_serialized.out";
+
+	{
+		ofstream os( outfile, ios::binary );
+  		cereal::PortableBinaryOutputArchive outarch ( os );
+  		outarch ( idx );
+  		os.close();
+
+		ifstream is( outfile, ios::binary );
+  		cereal::PortableBinaryInputArchive inarch ( is );
+  		inarch ( idx );
+  		is.close();
+	}
+
+	indexdb check ( idx );
+
+	indexdb check2;
+	indexdb_setup ( check2 );
+
+	check2 = check;
+
+	indexdb_verify( check2 );
+
+}
+
+

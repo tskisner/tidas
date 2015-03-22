@@ -62,6 +62,9 @@ tidas::volume::volume ( volume const & other ) {
 
 tidas::volume::volume ( string const & path, access_mode mode, bool use_index ) {
 	loc_.path = path;
+	if ( loc_.path[ loc_.path.size() - 1 ] == '/' ) {
+		loc_.path[ loc_.path.size() - 1 ] = '\0';
+	}
 	loc_.name = "";
 	loc_.meta = "";
 
@@ -80,7 +83,12 @@ void tidas::volume::relocate ( backend_path const & loc ) {
 
 	loc_ = loc;
 
-	db_.reset ( new indexdb() );
+	if ( loc_.path != "" ) {
+		string indxpath = loc_.path + path_sep + volume_fs_index;
+		db_.reset ( new indexdb( indxpath, loc_.mode ) );
+	} else {
+		db_.reset ( new indexdb() );
+	}
 
 	loc_.idx = db_;
 

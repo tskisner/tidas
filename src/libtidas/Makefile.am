@@ -21,12 +21,13 @@ include $(top_srcdir)/src/build_options.am
 
 EXTRA_DIST = cereal
 
-include_HEADERS = tidas.hpp
+include_HEADERS = tidas.hpp ctidas.h
 noinst_HEADERS = \
 	tidas_internal.hpp \
 	tidas_group_hdf5.hpp \
 	tidas_backend_getdata.hpp \
-	tidas_backend_hdf5.hpp
+	tidas_backend_hdf5.hpp \
+	ctidas.hpp
 
 noinst_SCRIPTS = gen_pkgconfig.sh
 
@@ -68,7 +69,8 @@ tidas_group_getdata.cpp \
 tidas_block.cpp \
 tidas_volume.cpp \
 tidas_copy.cpp \
-tidas_indexdb.cpp
+tidas_indexdb.cpp \
+ctidas.cpp
 
 
 libtidas_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@

@@ -244,6 +244,8 @@ namespace tidas {
 			std::deque < indexdb_transaction > const & history () const;
 			
 			void history_clear();
+
+			void duplicate ( std::string const & path );
 			
 			void replay ( std::deque < indexdb_transaction > const & trans );
 
@@ -278,6 +280,8 @@ namespace tidas {
 			void sql_open ();
 
 			void sql_close ();
+
+			void sql_init ( std::string const & path );
 
 			void sql_err ( bool err, char const * msg, char const * file, int line );
 

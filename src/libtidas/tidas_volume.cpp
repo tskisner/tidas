@@ -18,11 +18,23 @@ using namespace tidas;
 
 
 tidas::volume::volume () {
-	relocate ( loc_ );
+	index_setup();
 }
 
 
 tidas::volume::volume ( string const & path, backend_type type, compression_type comp ) {
+
+	// set up location
+
+	loc_.path = path;
+	if ( loc_.path[ loc_.path.size() - 1 ] == '/' ) {
+		loc_.path[ loc_.path.size() - 1 ] = '\0';
+	}
+	loc_.name = "";
+	loc_.meta = "";
+	loc_.type = type;
+	loc_.comp = comp;
+	loc_.mode = access_mode::readwrite;
 
 	if ( fs_stat ( path.c_str() ) >= 0 ) {
 		ostringstream o;
@@ -30,16 +42,22 @@ tidas::volume::volume ( string const & path, backend_type type, compression_type
 		TIDAS_THROW( o.str().c_str() );
 	}
 
-	loc_.path = path;
-	loc_.name = "";
-	loc_.meta = "";
-	loc_.type = type;
-	loc_.comp = comp;
-	loc_.mode = access_mode::readwrite;
+	// write properties
 
-	relocate ( loc_ );
+	write_props( loc_ );
 
-	flush();
+	// open index
+
+	index_setup();
+
+	// relocate root block
+
+	root_.relocate ( root_loc ( loc_ ) );
+
+	// write root block
+
+	root_.flush();
+
 }
 
 
@@ -60,7 +78,8 @@ tidas::volume::volume ( volume const & other ) {
 }
 
 
-tidas::volume::volume ( string const & path, access_mode mode, bool use_index ) {
+tidas::volume::volume ( string const & path, access_mode mode ) {
+
 	loc_.path = path;
 	if ( loc_.path[ loc_.path.size() - 1 ] == '/' ) {
 		loc_.path[ loc_.path.size() - 1 ] = '\0';
@@ -68,9 +87,22 @@ tidas::volume::volume ( string const & path, access_mode mode, bool use_index ) 
 	loc_.name = "";
 	loc_.meta = "";
 
-	relocate ( loc_ );
+	// read properties
 
-	sync();
+	read_props( loc_ );
+
+	// open index
+
+	index_setup();
+
+	// relocate root block
+
+	root_.relocate ( root_loc ( loc_ ) );
+
+	// read root block
+
+	root_.sync();
+
 }
 
 
@@ -79,9 +111,9 @@ tidas::volume::volume ( volume const & other, std::string const & filter, backen
 }
 
 
-void tidas::volume::relocate ( backend_path const & loc ) {
+void tidas::volume::index_setup () {
 
-	loc_ = loc;
+	// create index
 
 	if ( loc_.path != "" ) {
 		string indxpath = loc_.path + path_sep + volume_fs_index;
@@ -92,137 +124,127 @@ void tidas::volume::relocate ( backend_path const & loc ) {
 
 	loc_.idx = db_;
 
-	root_.relocate ( root_loc ( loc_ ) );
-
-	return;
-}
-
-
-void tidas::volume::sync () {
-
-	read_props ( loc_ );
-
-	// check that root block exists
-
-	string fspath = loc_.path;
-
-	struct dirent * entry;
-	DIR * dp;
-
-	dp = opendir ( fspath.c_str() );
-
-	if ( dp == NULL ) {
-		ostringstream o;
-		o << "cannot open volume \"" << fspath << "\"";
-		TIDAS_THROW( o.str().c_str() );
-	}
-
-	bool found_data;
-	bool found_index;
-
-	while ( ( entry = readdir ( dp ) ) ) {
-		string item = entry->d_name;
-
-		if ( item == volume_fs_data_dir ) {
-			found_data = true;
-		} else if ( item == volume_fs_index ) {
-			found_index = true;
-		}
-	}
-
-	closedir ( dp );
-
-	if ( ! found_data ) {
-		ostringstream o;
-		o << "volume \"" << fspath << "\" is missing the data subdirectory!";
-		TIDAS_THROW( o.str().c_str() );
-	}
-
-	// sync root block
-
-	root_.sync();
-
-	// load index if it exists
-
-	if ( found_index ) {
-
-
-	}
-
-	return;
-}
-
-
-void tidas::volume::flush () const {
-
-	write_props ( loc_ );
-
-	if ( loc_.mode == access_mode::readwrite ) {
-		root_.flush();
-	}
-
-	// write index
-
-
-
-
 	return;
 }
 
 
 void tidas::volume::copy ( volume const & other, string const & filter, backend_path const & loc ) {
 
+	string filt = filter_default ( filter );
+
+	if ( ( filt != ".*" ) && ( loc.type != backend_type::none ) && ( loc == other.loc_ ) ) {
+		TIDAS_THROW( "copy of non-memory volume with a filter requires a new location" );
+	}
+
 	loc_ = loc;
 
-	if ( loc_.type != backend_type::none ) {
-		write_props ( loc_ );
+	if ( loc != other.loc_ ) {
+
+		if ( loc.path != "" ) {
+
+			if ( fs_stat ( loc_.path.c_str() ) >= 0 ) {
+				ostringstream o;
+				o << "cannot create volume \"" << loc_.path << "\", a file or directory already exists";
+				TIDAS_THROW( o.str().c_str() );
+			}
+
+			// write properties
+
+			write_props( loc_ );
+
+		}
+
 	}
+
+	// open index
+
+	index_setup();
+
+	// copy root
 
 	root_.copy ( other.root_, filter, root_loc ( loc_ ) );
 
-	// copy index or reindex
+	// write root block
 
-	if ( filter == "" ) {
-		// just copy index
-
-	} else {
-		// regenerate
-		reindex();
-	}
+	root_.flush();
 
 	return;
 }
 
 
-void tidas::volume::link ( link_type const & type, string const & path, string const & filter ) const {
+void tidas::volume::link ( std::string const & path, link_type const & ltype, std::string const & filter ) const {
 
-	if ( type != link_type::none ) {
+	string lpath = path;
 
-		if ( loc_.type != backend_type::none ) {
-
-			bool hard = ( type == link_type::hard );
-
-			// make the top level directory
-
-			if ( fs_stat ( path.c_str() ) >= 0 ) {
-				ostringstream o;
-				o << "cannot create volume link \"" << path << "\", a file or directory already exists";
-				TIDAS_THROW( o.str().c_str() );
-			}
-
-			fs_mkdir ( path.c_str() );
-
-			// link properties file
-
-
-
-			// link root block
-
-			//root_.link ();
-
-		}
-
+	if ( lpath[ loc_.path.size() - 1 ] == '/' ) {
+		lpath[ loc_.path.size() - 1 ] = '\0';
 	}
+
+	if ( ltype == link_type::none ) {
+		TIDAS_THROW( "you must specify a link type" );
+	}
+
+	if ( loc_.type == backend_type::none ) {
+		TIDAS_THROW( "you cannot link a volume which has no backend assigned" );
+	}
+
+	bool hard = ( ltype == link_type::hard );
+
+	// make the top level directory
+
+	if ( fs_stat ( lpath.c_str() ) >= 0 ) {
+		ostringstream o;
+		o << "cannot create volume link \"" << lpath << "\", a file or directory already exists";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	fs_mkdir ( lpath.c_str() );
+
+	// link properties file
+
+	string propfile = loc_.path + path_sep + volume_fs_props;
+	string newpropfile = lpath + path_sep + volume_fs_props;
+
+	fs_link ( propfile.c_str(), newpropfile.c_str(), hard );
+
+	string rootpath = lpath + path_sep + volume_fs_data_dir;
+
+	root_.link ( ltype, rootpath );
+
+	// make a copy of the index, so that we can add new objects
+
+	string newdb = lpath + path_sep + volume_fs_index;
+	db_->duplicate ( newdb );
+
+	return;
+}
+
+
+void tidas::volume::duplicate ( std::string const & path, backend_type type, compression_type comp, std::string const & filter ) const {
+
+	if ( fs_stat ( path.c_str() ) >= 0 ) {
+		ostringstream o;
+		o << "cannot export volume to \"" << path << "\", which already exists";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	// construct new volume
+
+	backend_path exploc;
+	exploc.path = path;
+	if ( exploc.path[ exploc.path.size() - 1 ] == '/' ) {
+		exploc.path[ exploc.path.size() - 1 ] = '\0';
+	}
+	exploc.name = "";
+	exploc.meta = "";
+	exploc.type = type;
+	exploc.comp = comp;
+	exploc.mode = access_mode::readwrite;
+
+	volume newvol;
+	newvol.copy ( (*this), filter, exploc );
+
+	data_copy ( (*this), newvol );
 
 	return;
 }
@@ -265,12 +287,6 @@ block & tidas::volume::root () {
 
 block const & tidas::volume::root () const {
 	return root_;
-}
-
-
-void tidas::volume::reindex () {
-
-	return;
 }
 
 

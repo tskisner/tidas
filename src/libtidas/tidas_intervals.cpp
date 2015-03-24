@@ -183,7 +183,13 @@ void tidas::intervals::flush () const {
 }
 
 
-void tidas::intervals::copy ( intervals const & other, string const & filter, backend_path const & loc ) {	
+void tidas::intervals::copy ( intervals const & other, string const & filter, backend_path const & loc ) {
+
+	string filt = filter_default ( filter );
+
+	if ( ( filt != ".*" ) && ( loc.type != backend_type::none ) && ( loc == other.loc_ ) ) {
+		TIDAS_THROW( "copy of non-memory group with a filter requires a new location" );
+	}
 
 	// extract filters
 

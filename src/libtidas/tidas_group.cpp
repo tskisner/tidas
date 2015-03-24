@@ -193,6 +193,12 @@ void tidas::group::flush () const {
 
 void tidas::group::copy ( group const & other, string const & filter, backend_path const & loc ) {	
 
+	string filt = filter_default ( filter );
+
+	if ( ( filt != ".*" ) && ( loc.type != backend_type::none ) && ( loc == other.loc_ ) ) {
+		TIDAS_THROW( "copy of non-memory group with a filter requires a new location" );
+	}
+
 	// extract filters
 
 	map < string, string > filts = filter_split ( filter );

@@ -430,9 +430,16 @@ TEST( indexdbtest, sqlite ) {
 
 	indexdb_setup( idx );
 
-	// serialize
+	// copy constructor
+
+	indexdb check ( idx );
+	indexdb_verify ( check );
+
+	// serialize to file
 
 	string outfile = "./indexdb_sql_serialized.out";
+
+	indexdb check2;
 
 	{
 		ofstream os( outfile, ios::binary );
@@ -442,18 +449,39 @@ TEST( indexdbtest, sqlite ) {
 
 		ifstream is( outfile, ios::binary );
   		cereal::PortableBinaryInputArchive inarch ( is );
-  		inarch ( idx );
+  		inarch ( check2 );
   		is.close();
 	}
 
-	indexdb check ( idx );
+	indexdb_verify ( check2 );
 
-	indexdb check2;
-	indexdb_setup ( check2 );
+	// serialize to string
 
-	check2 = check;
+	indexdb check3;
 
-	indexdb_verify( check2 );
+	{
+  		stringstream istr;
+		cereal::PortableBinaryOutputArchive outarch ( istr );
+		outarch ( idx );
+
+		stringstream ostr;
+		ostr << istr.str();
+		cereal::PortableBinaryInputArchive inarch ( ostr );
+		inarch ( check3 );
+	}
+
+	indexdb_verify ( check3 );
+
+	// duplicate
+
+	string dupfile = "./indexdb_sql_dup.out";
+	fs_rm ( dupfile.c_str() );
+
+	check3.duplicate ( dupfile );
+
+	indexdb check4 ( dupfile, access_mode::read );
+
+	indexdb_verify ( check4 );
 
 }
 

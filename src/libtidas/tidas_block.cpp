@@ -382,6 +382,12 @@ void tidas::block::flush () const {
 
 void tidas::block::copy ( block const & other, string const & filter, backend_path const & loc ) {
 
+	string filt = filter_default ( filter );
+
+	if ( ( filt != ".*" ) && ( loc.type != backend_type::none ) && ( loc == other.loc_ ) ) {
+		TIDAS_THROW( "copy of non-memory block with a filter requires a new location" );
+	}
+
 	// split filter into local and sub blocks:  [XX=XX,XX=XX]/XXXX[XX=XX]/XXX ---> [XX=XX,XX=XX] XXXX[XX=XX]/XXX
 
 	string filt_local;

@@ -77,7 +77,7 @@ sql_err( err, msg, __FILE__, __LINE__ )
 
 tidas::indexdb::indexdb () {
 	path_ = "";
-	mode_ = access_mode::read;
+	mode_ = access_mode::readwrite;
 	sql_ = NULL;
 	sql_open();
 }
@@ -128,6 +128,77 @@ tidas::indexdb::indexdb ( string const & path, access_mode mode ) {
 }
 
 
+void tidas::indexdb::sql_init ( string const & path ) {
+
+	if ( path != "" ) {
+
+		int64_t size = fs_stat ( path.c_str() );
+
+		int flags = 0;
+
+		if ( size > 0 ) {
+
+			ostringstream o;
+			o << "sqlite DB \"" << path << "\" already exists";
+			TIDAS_THROW( o.str().c_str() );
+
+		} else {
+
+			// create and initialize schema
+
+			flags = flags | SQLITE_OPEN_READWRITE;
+			flags = flags | SQLITE_OPEN_CREATE;
+
+			sqlite3 * sql;
+
+			int ret = sqlite3_open_v2 ( path.c_str(), &sql, flags, NULL );
+			SQLERR( ret != SQLITE_OK, "open" );
+
+			string command;
+			char * sqlerr;
+
+			command = "CREATE TABLE blk ( path TEXT PRIMARY KEY, parent TEXT, FOREIGN KEY(parent) REFERENCES blk(path) );";
+
+			ret = sqlite3_exec ( sql, command.c_str(), NULL, NULL, &sqlerr );
+			SQLERR( ret != SQLITE_OK, "create block table" );
+
+			command = "CREATE TABLE grp ( path TEXT PRIMARY KEY, parent TEXT, nsamp INTEGER, start REAL, stop REAL, counts BLOB, FOREIGN KEY(parent) REFERENCES blk(path) );";
+
+			ret = sqlite3_exec ( sql, command.c_str(), NULL, NULL, &sqlerr );
+			SQLERR( ret != SQLITE_OK, "create group table" );
+
+			command = "CREATE TABLE intrvl ( path TEXT PRIMARY KEY, parent TEXT, size INTEGER, FOREIGN KEY(parent) REFERENCES blk(path) );";
+
+			ret = sqlite3_exec ( sql, command.c_str(), NULL, NULL, &sqlerr );
+			SQLERR( ret != SQLITE_OK, "create intervals table" );
+
+			command = "CREATE TABLE schm ( parent TEXT UNIQUE, fields BLOB, FOREIGN KEY(parent) REFERENCES grp(path) );";
+
+			ret = sqlite3_exec ( sql, command.c_str(), NULL, NULL, &sqlerr );
+			SQLERR( ret != SQLITE_OK, "create schema table" );
+
+			command = "CREATE TABLE dct_grp ( parent TEXT UNIQUE, data BLOB, types BLOB, FOREIGN KEY(parent) REFERENCES grp(path) );";
+
+			ret = sqlite3_exec ( sql, command.c_str(), NULL, NULL, &sqlerr );
+			SQLERR( ret != SQLITE_OK, "create group dict table" );
+
+			command = "CREATE TABLE dct_intrvl ( parent TEXT UNIQUE, data BLOB, types BLOB, FOREIGN KEY(parent) REFERENCES intrvl(path) );";
+
+			ret = sqlite3_exec ( sql, command.c_str(), NULL, NULL, &sqlerr );
+			SQLERR( ret != SQLITE_OK, "create intervals dict table" );
+
+			// close
+
+			ret = sqlite3_close_v2 ( sql );
+			SQLERR( ret != SQLITE_OK, "close" );
+
+		}
+			
+	}
+	return;
+}
+
+
 void tidas::indexdb::sql_open () {
 	// close DB if it is open
 	if ( path_ != "" ) {
@@ -155,44 +226,13 @@ void tidas::indexdb::sql_open () {
 				// create and initialize schema
 
 				if ( mode_ == access_mode::readwrite ) {
+
+					sql_init ( path_ );
+
 					flags = flags | SQLITE_OPEN_READWRITE;
-					flags = flags | SQLITE_OPEN_CREATE;
 
 					int ret = sqlite3_open_v2 ( path_.c_str(), &sql_, flags, NULL );
 					SQLERR( ret != SQLITE_OK, "open" );
-
-					string command;
-					char * sqlerr;
-
-					command = "CREATE TABLE blk ( path TEXT PRIMARY KEY, parent TEXT, FOREIGN KEY(parent) REFERENCES blk(path) );";
-
-					ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-					SQLERR( ret != SQLITE_OK, "create block table" );
-
-					command = "CREATE TABLE grp ( path TEXT PRIMARY KEY, parent TEXT, nsamp INTEGER, start REAL, stop REAL, counts BLOB, FOREIGN KEY(parent) REFERENCES blk(path) );";
-
-					ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-					SQLERR( ret != SQLITE_OK, "create group table" );
-
-					command = "CREATE TABLE intrvl ( path TEXT PRIMARY KEY, parent TEXT, size INTEGER, FOREIGN KEY(parent) REFERENCES blk(path) );";
-
-					ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-					SQLERR( ret != SQLITE_OK, "create intervals table" );
-
-					command = "CREATE TABLE schm ( parent TEXT UNIQUE, fields BLOB, FOREIGN KEY(parent) REFERENCES grp(path) );";
-
-					ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-					SQLERR( ret != SQLITE_OK, "create schema table" );
-
-					command = "CREATE TABLE dct_grp ( parent TEXT UNIQUE, data BLOB, types BLOB, FOREIGN KEY(parent) REFERENCES grp(path) );";
-
-					ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-					SQLERR( ret != SQLITE_OK, "create group dict table" );
-
-					command = "CREATE TABLE dct_intrvl ( parent TEXT UNIQUE, data BLOB, types BLOB, FOREIGN KEY(parent) REFERENCES intrvl(path) );";
-
-					ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-					SQLERR( ret != SQLITE_OK, "create intervals dict table" );
 
 				} else {
 					ostringstream o;
@@ -228,6 +268,56 @@ void tidas::indexdb::sql_err ( bool err, char const * msg, char const * file, in
 		o << "sqlite DB error at " << msg << " (" << file << ", line " << line << "):  \"" << sqlite3_errmsg( sql_ ) << "\"";
 		TIDAS_THROW( o.str().c_str() );
 	}
+
+	return;
+}
+
+
+void tidas::indexdb::duplicate ( std::string const & path ) {
+
+	// create new sqlite db
+	sql_init ( path );
+
+	// attach export db
+
+	string command;
+	char * sqlerr;
+
+	command = "ATTACH DATABASE \"" + path + "\" AS external;";
+	int ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+	SQLERR( ret != SQLITE_OK, "attach external DB" );
+
+	// copy all tables
+
+	command = "INSERT INTO external.blk SELECT * from main.blk;";
+	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+	SQLERR( ret != SQLITE_OK, "copy block table" );
+
+	command = "INSERT INTO external.grp SELECT * from main.grp;";
+	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+	SQLERR( ret != SQLITE_OK, "copy group table" );
+
+	command = "INSERT INTO external.intrvl SELECT * from main.intrvl;";
+	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+	SQLERR( ret != SQLITE_OK, "copy intervals table" );
+
+	command = "INSERT INTO external.schm SELECT * from main.schm;";
+	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+	SQLERR( ret != SQLITE_OK, "copy schema table" );
+
+	command = "INSERT INTO external.dct_grp SELECT * from main.dct_grp;";
+	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+	SQLERR( ret != SQLITE_OK, "copy dict group table" );
+
+	command = "INSERT INTO external.dct_intrvl SELECT * from main.dct_intrvl;";
+	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+	SQLERR( ret != SQLITE_OK, "copy dict intervals table" );
+
+	// detach database
+
+	command = "DETACH DATABASE external;";
+	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
+	SQLERR( ret != SQLITE_OK, "detach external DB" );
 
 	return;
 }
@@ -1094,6 +1184,7 @@ void tidas::indexdb::query_group ( backend_path loc, index_type & nsamp, time_ty
 				g.stop = sqlite3_column_double ( stmt, 4 );
 
 				string blobstr = (char*)sqlite3_column_blob ( stmt, 5 );
+				cerr << blobstr << endl;
 				istringstream countstr ( blobstr );
 				cereal::PortableBinaryInputArchive incounts ( countstr );
 				incounts ( g.counts );
@@ -1392,6 +1483,7 @@ void tidas::indexdb::query_block ( backend_path loc, std::vector < std::string >
 			while ( ret == SQLITE_ROW ) {
 				string result = (char*)sqlite3_column_text ( stmt, 1 );
 				child_blocks.push_back ( result );
+				ret = sqlite3_step ( stmt );
 			}
 
 			ret = sqlite3_finalize ( stmt );
@@ -1407,6 +1499,7 @@ void tidas::indexdb::query_block ( backend_path loc, std::vector < std::string >
 			while ( ret == SQLITE_ROW ) {
 				string result = (char*)sqlite3_column_text ( stmt, 1 );
 				child_groups.push_back ( result );
+				ret = sqlite3_step ( stmt );
 			}
 
 			ret = sqlite3_finalize ( stmt );
@@ -1422,6 +1515,7 @@ void tidas::indexdb::query_block ( backend_path loc, std::vector < std::string >
 			while ( ret == SQLITE_ROW ) {
 				string result = (char*)sqlite3_column_text ( stmt, 1 );
 				child_intervals.push_back ( result );
+				ret = sqlite3_step ( stmt );
 			}
 
 			ret = sqlite3_finalize ( stmt );

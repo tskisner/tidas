@@ -22,24 +22,23 @@ namespace tidas {
 
 			volume ( volume const & other );
 
+			/// Create a new volume.
 			volume ( std::string const & path, backend_type type, compression_type comp );
 
-			volume ( std::string const & path, access_mode mode, bool use_index = true );
+			/// Open an existing volume.
+			volume ( std::string const & path, access_mode mode );
 			
 			volume ( volume const & other, std::string const & filter, backend_path const & loc );
 
 			// metadata ops
 
-			void relocate ( backend_path const & loc );
-
-			void sync ();
-
-			void flush () const;
-
 			void copy ( volume const & other, std::string const & filter, backend_path const & loc );
 
-			/// Create a link at the specified location.
-			void link ( link_type const & type, std::string const & path, std::string const & filter ) const;
+			/// Export a filtered subset of the volume to a new location.
+			void duplicate ( std::string const & path, backend_type type, compression_type comp, std::string const & filter ) const;
+
+			/// Create a (hard or soft) linked filtered subset of the volume to a new location.
+			void link ( std::string const & path, link_type const & type, std::string const & filter ) const;
 
 			/// Delete the on-disk data and metadata associated with this object.
 			/// In-memory metadata is not modified.
@@ -47,10 +46,10 @@ namespace tidas {
 
 			backend_path location () const;
 
-			void reindex ();
-
+			/// Get the root block of the volume.
 			block & root ();
 
+			/// Get the (const) root block of the volume.
 			block const & root () const;
 
 			template < class P >
@@ -71,6 +70,8 @@ namespace tidas {
 			}
 
 		private :
+
+			void index_setup ();
 
 			void read_props ( backend_path & loc );
 

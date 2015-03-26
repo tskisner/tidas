@@ -392,6 +392,27 @@ TEST( indexdbtest, history ) {
 
 TEST( indexdbtest, serialize ) {
 
+	// test serialization of a std::map
+
+	map < data_type, size_t > inmap;
+	inmap[ data_type::float64 ] = 123;
+	inmap[ data_type::uint16 ] = 456;
+	inmap[ data_type::int64 ] = 789;
+
+	map < data_type, size_t > outmap;
+
+	{
+		ostringstream str;
+		cereal::PortableBinaryOutputArchive outarch ( str );
+		outarch ( inmap );
+
+		istringstream istr( str.str() );
+		cereal::PortableBinaryInputArchive inarch ( istr );
+		inarch ( outmap );
+	}
+
+	EXPECT_EQ( inmap, outmap );
+
 	indexdb idx;
 
 	indexdb_setup( idx );

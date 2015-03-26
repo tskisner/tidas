@@ -31,7 +31,6 @@
 #include <cereal/archives/portable_binary.hpp>
 
 
-
 namespace tidas {
 
 	typedef double time_type;

@@ -273,51 +273,36 @@ void tidas::indexdb::sql_err ( bool err, char const * msg, char const * file, in
 }
 
 
-void tidas::indexdb::duplicate ( std::string const & path ) {
+void tidas::indexdb::duplicate ( std::string const & path ) const {
 
-	// create new sqlite db
-	sql_init ( path );
+	int64_t size = fs_stat ( path.c_str() );
+	if ( size > 0 ) {
+		ostringstream o;
+		o << "cannot duplicate index to \"" << path << "\", file already exists";
+		TIDAS_THROW( o.str().c_str() );
+	}
 
-	// attach export db
+	indexdb dup ( path, access_mode::readwrite );
 
-	string command;
-	char * sqlerr;
+	for ( auto const & b : data_block_ ) {
+		dup.ins_block ( b.first, b.second );
+	}
 
-	command = "ATTACH DATABASE \"" + path + "\" AS external;";
-	int ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-	SQLERR( ret != SQLITE_OK, "attach external DB" );
+	for ( auto const & g : data_group_ ) {
+		dup.ins_group ( g.first, g.second );
+	}
 
-	// copy all tables
+	for ( auto const & t : data_intervals_ ) {
+		dup.ins_intervals ( t.first, t.second );
+	}
 
-	command = "INSERT INTO external.blk SELECT * from main.blk;";
-	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-	SQLERR( ret != SQLITE_OK, "copy block table" );
+	for ( auto const & s : data_schema_ ) {
+		dup.ins_schema ( s.first, s.second );
+	}
 
-	command = "INSERT INTO external.grp SELECT * from main.grp;";
-	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-	SQLERR( ret != SQLITE_OK, "copy group table" );
-
-	command = "INSERT INTO external.intrvl SELECT * from main.intrvl;";
-	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-	SQLERR( ret != SQLITE_OK, "copy intervals table" );
-
-	command = "INSERT INTO external.schm SELECT * from main.schm;";
-	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-	SQLERR( ret != SQLITE_OK, "copy schema table" );
-
-	command = "INSERT INTO external.dct_grp SELECT * from main.dct_grp;";
-	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-	SQLERR( ret != SQLITE_OK, "copy dict group table" );
-
-	command = "INSERT INTO external.dct_intrvl SELECT * from main.dct_intrvl;";
-	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-	SQLERR( ret != SQLITE_OK, "copy dict intervals table" );
-
-	// detach database
-
-	command = "DETACH DATABASE external;";
-	ret = sqlite3_exec ( sql_, command.c_str(), NULL, NULL, &sqlerr );
-	SQLERR( ret != SQLITE_OK, "detach external DB" );
+	for ( auto const & d : data_dict_ ) {
+		dup.ins_dict ( d.first, d.second );
+	}
 
 	return;
 }
@@ -353,17 +338,21 @@ void tidas::indexdb::ins_dict ( string const & path, indexdb_dict const & d ) {
 			SQLERR( ret != SQLITE_OK, "dict prepare" );
 
 			ostringstream datastr;
-			cereal::PortableBinaryOutputArchive outdata ( datastr );
-  			outdata ( d.data );
+			{
+				cereal::PortableBinaryOutputArchive outdata ( datastr );
+  				outdata ( d.data );
+  			}
 
-  			ret = sqlite3_bind_blob ( stmt, 1, (void*)datastr.str().c_str(), datastr.str().size(), SQLITE_TRANSIENT );
+  			ret = sqlite3_bind_blob ( stmt, 1, (void*)datastr.str().c_str(), datastr.str().size() + 1, SQLITE_TRANSIENT );
   			SQLERR( ret != SQLITE_OK, "dict bind data" );
 
   			ostringstream typestr;
-  			cereal::PortableBinaryOutputArchive outtype ( typestr );
-  			outtype ( d.types );
+  			{
+  				cereal::PortableBinaryOutputArchive outtype ( typestr );
+  				outtype ( d.types );
+  			}
 
-  			ret = sqlite3_bind_blob ( stmt, 2, (void*)typestr.str().c_str(), typestr.str().size(), SQLITE_TRANSIENT );
+  			ret = sqlite3_bind_blob ( stmt, 2, (void*)typestr.str().c_str(), typestr.str().size() + 1, SQLITE_TRANSIENT );
   			SQLERR( ret != SQLITE_OK, "dict bind types" );
 
 			ret = sqlite3_step ( stmt );
@@ -457,10 +446,12 @@ void tidas::indexdb::ins_schema ( string const & path, indexdb_schema const & s 
 			SQLERR( ret != SQLITE_OK, "schema prepare" );
 
 			ostringstream fieldstr;
-			cereal::PortableBinaryOutputArchive fielddata ( fieldstr );
-  			fielddata ( s.fields );
+			{
+				cereal::PortableBinaryOutputArchive fielddata ( fieldstr );
+  				fielddata ( s.fields );
+  			}
 
-  			ret = sqlite3_bind_blob ( stmt, 1, (void*)fieldstr.str().c_str(), fieldstr.str().size(), SQLITE_TRANSIENT );
+  			ret = sqlite3_bind_blob ( stmt, 1, (void*)fieldstr.str().c_str(), fieldstr.str().size() + 1, SQLITE_TRANSIENT );
   			SQLERR( ret != SQLITE_OK, "schema bind fields" );
 
 			ret = sqlite3_step ( stmt );
@@ -560,10 +551,12 @@ void tidas::indexdb::ins_group ( string const & path, indexdb_group const & g ) 
 			SQLERR( ret != SQLITE_OK, "group bind stop" );
 
 			ostringstream countstr;
-			cereal::PortableBinaryOutputArchive countdata ( countstr );
-  			countdata ( g.counts );
+			{
+				cereal::PortableBinaryOutputArchive countdata ( countstr );
+  				countdata ( g.counts );
+  			}
 
-  			ret = sqlite3_bind_blob ( stmt, 4, (void*)countstr.str().c_str(), countstr.str().size(), SQLITE_TRANSIENT );
+  			ret = sqlite3_bind_blob ( stmt, 4, (void*)countstr.str().c_str(), countstr.str().size() + 1, SQLITE_TRANSIENT );
   			SQLERR( ret != SQLITE_OK, "group bind counts" );
 
 			ret = sqlite3_step ( stmt );
@@ -908,15 +901,29 @@ void tidas::indexdb::query_dict ( backend_path loc, std::map < std::string, std:
 				d.type = indexdb_object_type::dict;
 				d.path = path;
 
-				string blobstr = (char*)sqlite3_column_blob ( stmt, 1 );
-				istringstream datastr ( blobstr );
-				cereal::PortableBinaryInputArchive indata ( datastr );
-				indata ( d.data );
+				char const * rawstr = reinterpret_cast < char const * > ( sqlite3_column_blob ( stmt, 1 ) );
 
-				blobstr = (char*)sqlite3_column_blob ( stmt, 2 );
-				istringstream typestr ( blobstr );
-				cereal::PortableBinaryInputArchive intypes ( typestr );
-				intypes ( d.types );
+				size_t bytes = sqlite3_column_bytes ( stmt, 1 );
+
+				string datablobstr ( rawstr, bytes );
+
+				istringstream datastr ( datablobstr );
+				{
+					cereal::PortableBinaryInputArchive indata ( datastr );
+					indata ( d.data );
+				}
+
+				rawstr = reinterpret_cast < char const * > ( sqlite3_column_blob ( stmt, 2 ) );
+
+				bytes = sqlite3_column_bytes ( stmt, 2 );
+
+				string typeblobstr ( rawstr, bytes );
+
+				istringstream typestr ( typeblobstr );
+				{
+					cereal::PortableBinaryInputArchive intypes ( typestr );
+					intypes ( d.types );
+				}
 
 				ret = sqlite3_finalize ( stmt );
 				SQLERR( ret != SQLITE_OK, "dict query finalize" );
@@ -1044,10 +1051,17 @@ void tidas::indexdb::query_schema ( backend_path loc, field_list & fields ) {
 				s.type = indexdb_object_type::schema;
 				s.path = path;
 
-				string blobstr = (char*)sqlite3_column_blob ( stmt, 1 );
+				char const * rawstr = reinterpret_cast < char const * > ( sqlite3_column_blob ( stmt, 1 ) );
+
+				size_t bytes = sqlite3_column_bytes ( stmt, 1 );
+
+				string blobstr ( rawstr, bytes );
+
 				istringstream fieldstr ( blobstr );
-				cereal::PortableBinaryInputArchive infields ( fieldstr );
-				infields ( s.fields );
+				{
+					cereal::PortableBinaryInputArchive infields ( fieldstr );
+					infields ( s.fields );
+				}
 
 				ret = sqlite3_finalize ( stmt );
 				SQLERR( ret != SQLITE_OK, "schema query finalize" );
@@ -1183,11 +1197,17 @@ void tidas::indexdb::query_group ( backend_path loc, index_type & nsamp, time_ty
 				g.start = sqlite3_column_double ( stmt, 3 );
 				g.stop = sqlite3_column_double ( stmt, 4 );
 
-				string blobstr = (char*)sqlite3_column_blob ( stmt, 5 );
-				cerr << blobstr << endl;
-				istringstream countstr ( blobstr );
-				cereal::PortableBinaryInputArchive incounts ( countstr );
-				incounts ( g.counts );
+				char const * rawstr = reinterpret_cast < char const * > ( sqlite3_column_blob ( stmt, 5 ) );
+
+				size_t bytes = sqlite3_column_bytes ( stmt, 5 );
+
+				string blobstr ( rawstr, bytes );
+
+				istringstream countstr( blobstr );
+				{
+					cereal::PortableBinaryInputArchive incounts ( countstr );
+					incounts ( g.counts );
+				}
 
 				ret = sqlite3_finalize ( stmt );
 				SQLERR( ret != SQLITE_OK, "group query finalize" );

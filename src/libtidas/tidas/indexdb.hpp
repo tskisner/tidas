@@ -239,13 +239,33 @@ namespace tidas {
 			
 			void query_block ( backend_path loc, std::vector < std::string > & child_blocks, std::vector < std::string > & child_groups, std::vector < std::string > & child_intervals );
 
+			void ins_dict ( std::string const & path, indexdb_dict const & d );
+
+			void rm_dict ( std::string const & path );
+			
+			void ins_schema ( std::string const & path, indexdb_schema const & s );
+			
+			void rm_schema ( std::string const & path );
+			
+			void ins_group ( std::string const & path, indexdb_group const & g );
+			
+			void rm_group ( std::string const & path );
+			
+			void ins_intervals ( std::string const & path, indexdb_intervals const & t );
+			
+			void rm_intervals ( std::string const & path );
+			
+			void ins_block ( std::string const & path, indexdb_block const & b );
+			
+			void rm_block ( std::string const & path );
+
 			//---------------------------
 
 			std::deque < indexdb_transaction > const & history () const;
 			
 			void history_clear();
 
-			void duplicate ( std::string const & path );
+			void duplicate ( std::string const & path ) const;
 			
 			void replay ( std::deque < indexdb_transaction > const & trans );
 
@@ -284,17 +304,6 @@ namespace tidas {
 			void sql_init ( std::string const & path );
 
 			void sql_err ( bool err, char const * msg, char const * file, int line );
-
-			void ins_dict ( std::string const & path, indexdb_dict const & d );
-			void rm_dict ( std::string const & path );
-			void ins_schema ( std::string const & path, indexdb_schema const & s );
-			void rm_schema ( std::string const & path );
-			void ins_group ( std::string const & path, indexdb_group const & g );
-			void rm_group ( std::string const & path );
-			void ins_intervals ( std::string const & path, indexdb_intervals const & t );
-			void rm_intervals ( std::string const & path );
-			void ins_block ( std::string const & path, indexdb_block const & b );
-			void rm_block ( std::string const & path );
 
 			std::string path_;
 			access_mode mode_;

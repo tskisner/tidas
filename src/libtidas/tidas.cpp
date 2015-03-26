@@ -20,7 +20,7 @@ tidas::backend_path::backend_path () {
 	type = backend_type::none;
 	comp = compression_type::none;
 	mode = access_mode::read;
-	//vol = NULL;
+	idx.reset();
 }
 
 
@@ -41,6 +41,9 @@ bool tidas::backend_path::operator== ( const backend_path & other ) const {
 		return false;
 	}
 	if ( mode != other.mode ) {
+		return false;
+	}
+	if ( idx != other.idx ) {
 		return false;
 	}
 	return true;

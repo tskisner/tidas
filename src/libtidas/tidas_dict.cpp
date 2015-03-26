@@ -84,14 +84,17 @@ void tidas::dict::sync () {
 
 	if ( loc_.type != backend_type::none ) {
 
-		// if we have an index, use it!
+		bool found = false;
 
 		if ( loc_.idx ) {
+			found = loc_.idx->query_dict ( loc_, data_, types_ );
+		}
 
-
-
-		} else {
+		if ( ! found ) {
 			backend_->read ( loc_, data_, types_ );
+			if ( loc_.idx ) {
+				loc_.idx->add_dict ( loc_, data_, types_ );
+			}
 		}
 
 	}
@@ -112,9 +115,7 @@ void tidas::dict::flush () const {
 			// update index
 
 			if ( loc_.idx ) {
-
-
-
+				loc_.idx->update_dict ( loc_, data_, types_ );
 			}
 		}
 

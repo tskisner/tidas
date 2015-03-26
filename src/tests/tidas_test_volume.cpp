@@ -75,13 +75,38 @@ TEST_F( volumeTest, HDF5Backend ) {
 
 #ifdef HAVE_HDF5
 
+	// test deep copy
+
 	fs_rm_r ( "test_volume.out" );
+	fs_rm_r ( "test_volume_dup.out" );
 
-	volume vol ( "test_volume.out", backend_type::hdf5, compression_type::gzip );
+	{
+		volume vol ( "test_volume.out", backend_type::hdf5, compression_type::gzip );
 
-	volume_setup ( vol, n_samp, n_intr, n_block );
+		volume_setup ( vol, n_samp, n_intr, n_block );
+		volume_verify ( vol );
 
-	volume_verify ( vol );
+		volume vol2 ( "test_volume_dup.out", backend_type::hdf5, compression_type::gzip );
+
+		data_copy ( vol, vol2 );
+
+		volume_verify ( vol2 );
+	}
+
+	// test deep copy from a read-only volume
+
+	fs_rm_r ( "test_volume_dup_dup.out" );
+
+	{
+		volume vol3 ( "test_volume_dup.out", access_mode::read );
+
+		volume vol4 ( "test_volume_dup_dup.out", backend_type::hdf5, compression_type::gzip );
+
+		data_copy ( vol3, vol4 );
+
+		volume_verify ( vol4 );
+
+	}
 
 #else
 

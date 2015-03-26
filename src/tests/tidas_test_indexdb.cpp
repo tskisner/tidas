@@ -72,12 +72,6 @@ void indexdb_setup ( tidas::indexdb & idx ) {
 
 		for ( size_t g = 0; g < NGROUP; ++g ) {
 
-			field_list flist;
-			schema_setup ( flist );
-
-			dict dct;
-			dict_setup ( dct );
-
 			backend_path grouploc;
 			grouploc.path = loc.path + path_sep + loc.name + path_sep + block_fs_group_dir;
 
@@ -85,6 +79,12 @@ void indexdb_setup ( tidas::indexdb & idx ) {
 			grpname << "grp" << g;
 
 			grouploc.name = grpname.str();
+
+			field_list flist;
+			schema_setup ( flist );
+
+			dict dct;
+			dict_setup ( dct );
 
 			map < data_type, size_t > counts;
 			indexdb_group_counts ( flist, counts );

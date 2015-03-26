@@ -133,22 +133,31 @@ void tidas::group::sync () {
 
 	if ( loc_.type != backend_type::none ) {
 
+		map < data_type, size_t > backend_counts;
+
 		// if we have an index, use it!
 
+		bool found = false;
+
 		if ( loc_.idx ) {
+			found = loc_.idx->query_group ( loc_, size_, start_, stop_, backend_counts );
+		}
 
-
-
-		} else {
-			map < data_type, size_t > backend_counts;
+		if ( ! found ) {
 			backend_->read ( loc_, size_, start_, stop_, backend_counts );
+		}
 
-			for ( auto c : backend_counts ) {
-				if ( c.second != counts_[ c.first ] ) {
-					ostringstream o;
-					o << "group backend counts does not match schema";
-					TIDAS_THROW( o.str().c_str() );
-				}
+		for ( auto c : backend_counts ) {
+			if ( c.second != counts_[ c.first ] ) {
+				ostringstream o;
+				o << "group backend counts does not match schema";
+				TIDAS_THROW( o.str().c_str() );
+			}
+		}
+
+		if ( ! found ) {
+			if ( loc_.idx ) {
+				loc_.idx->add_group ( loc_, size_, start_, stop_, backend_counts );
 			}
 		}
 
@@ -171,9 +180,7 @@ void tidas::group::flush () const {
 			// update index
 
 			if ( loc_.idx ) {
-
-
-
+				loc_.idx->add_group ( loc_, size_, start_, stop_, counts_ );
 			}
 		}
 
@@ -349,7 +356,9 @@ void tidas::group::resize ( index_type const & newsize ) {
 
 			// update index
 
-
+			if ( loc_.idx ) {
+				loc_.idx->update_group ( loc_, size_, start_, stop_, counts_ );
+			}
 			
 		} else {
 			TIDAS_THROW( "cannot resize group in read-only mode" );
@@ -415,9 +424,7 @@ void tidas::group::write_field ( std::string const & field_name, index_type offs
 				backend_->update_range ( loc_, start_, stop_ );
 
 				if ( loc_.idx ) {
-					// update index
-
-
+					loc_.idx->update_group ( loc_, size_, start_, stop_, counts_ );
 				}
 			}
 		}

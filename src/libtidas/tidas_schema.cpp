@@ -135,12 +135,17 @@ void tidas::schema::sync () {
 
 		// if we have an index, use it!
 
+		bool found = false;
+
 		if ( loc_.idx ) {
+			found = loc_.idx->query_schema ( loc_, fields_ );
+		}
 
-
-
-		} else {
+		if ( ! found ) {
 			backend_->read ( loc_, fields_ );
+			if ( loc_.idx ) {
+				loc_.idx->add_schema ( loc_, fields_ );
+			}
 		}
 	}
 
@@ -160,9 +165,7 @@ void tidas::schema::flush () const {
 			// update index
 
 			if ( loc_.idx ) {
-
-
-
+				loc_.idx->update_schema ( loc_, fields_ );
 			}
 		}
 	}

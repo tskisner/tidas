@@ -213,25 +213,68 @@ void tidas::block::sync ( string const & filter ) {
 
 		map < string, string > filts = filter_split ( filt_local );
 
-		// if we have an index, use it!
+		// extract sub-block filter
+
+		string filt_name;
+		string filt_pass;
+
+		filter_sub ( filt_sub, filt_name, filt_pass );
+		regex blockre ( filter_default ( filt_name ), std::regex::extended );
+
+		// extract group filter
+
+		filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
+		regex groupre ( filter_default ( filt_name ), std::regex::extended );		
+
+		// extract intervals filter
+
+		filter_sub ( filts[ intervals_submatch_key ], filt_name, filt_pass );
+		regex intre ( filter_default ( filt_name ), std::regex::extended );
+
+		// check index, otherwise read from filesystem
+
+		bool found = false;
+
+		string fspath = loc_.path + path_sep + loc_.name;
+
+		vector < string > child_blocks;
+		vector < string > child_groups;
+		vector < string > child_intervals;
 
 		if ( loc_.idx ) {
 
+			found = loc_.idx->query_block ( loc_, child_blocks, child_groups, child_intervals );
 
+			if ( ! found ) {
+				loc_.idx->add_block ( loc_ );
+			}
+		}
+
+		if ( found ) {
+
+			for ( auto const & b : child_blocks ) {
+				if ( ! stop ) {
+					if ( regex_match ( b, blockre ) ) {
+						block_data_[ b ] = block ( block_loc ( loc_, b ) );
+					}
+				}
+			}
+
+			for ( auto const & g : child_groups ) {
+				if ( regex_match ( g, groupre ) ) {
+					group_data_[ g ] = group ( group_loc ( loc_, g ) );
+				}
+			}
+
+			for ( auto const & t : child_intervals ) {
+				if ( regex_match ( t, intre ) ) {
+					intervals_data_[ t ] = intervals ( intervals_loc ( loc_, t ) );
+				}
+			}
 
 		} else {
 
-			// extract sub-block filter
-
-			string filt_name;
-			string filt_pass;
-
-			filter_sub ( filt_sub, filt_name, filt_pass );
-			regex blockre ( filter_default ( filt_name ), std::regex::extended );
-
 			// find all sub-blocks
-
-			string fspath = loc_.path + path_sep + loc_.name;
 
 			struct dirent * entry;
 			DIR * dp;
@@ -273,11 +316,6 @@ void tidas::block::sync ( string const & filter ) {
 				TIDAS_THROW( o.str().c_str() );
 			}
 
-			// extract group filter
-
-			filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
-			regex groupre ( filter_default ( filt_name ), std::regex::extended );
-
 			// sync all groups
 
 			string groupdir = fspath + path_sep + block_fs_group_dir;
@@ -299,11 +337,6 @@ void tidas::block::sync ( string const & filter ) {
 
 			closedir ( dp );
 
-			// extract intervals filter
-
-			filter_sub ( filts[ intervals_submatch_key ], filt_name, filt_pass );
-			regex intre ( filter_default ( filt_name ), std::regex::extended );
-
 			// sync all intervals
 
 			string intrdir = fspath + path_sep + block_fs_intervals_dir;
@@ -318,7 +351,9 @@ void tidas::block::sync ( string const & filter ) {
 
 			while ( ( entry = readdir ( dp ) ) ) {
 				string item = entry->d_name;
-				intervals_data_[ item ] = intervals ( intervals_loc ( loc_, item ) );
+				if ( regex_match ( item, intre ) ) {
+					intervals_data_[ item ] = intervals ( intervals_loc ( loc_, item ) );
+				}
 			}
 
 			closedir ( dp );
@@ -349,9 +384,7 @@ void tidas::block::flush () const {
 			// update index
 
 			if ( loc_.idx ) {
-
-
-
+				loc_.idx->update_block ( loc_ );
 			}
 
 		}

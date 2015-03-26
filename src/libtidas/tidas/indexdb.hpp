@@ -197,7 +197,7 @@ namespace tidas {
 
 			void del_dict ( backend_path loc );
 			
-			void query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
+			bool query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
 
 			//---------------------------
 
@@ -207,7 +207,7 @@ namespace tidas {
 			
 			void del_schema ( backend_path loc );
 			
-			void query_schema ( backend_path loc, field_list & fields );
+			bool query_schema ( backend_path loc, field_list & fields );
 
 			//---------------------------
 
@@ -217,7 +217,7 @@ namespace tidas {
 			
 			void del_group ( backend_path loc );
 			
-			void query_group ( backend_path loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts );
+			bool query_group ( backend_path loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts );
 
 			//---------------------------
 
@@ -227,7 +227,7 @@ namespace tidas {
 			
 			void del_intervals ( backend_path loc );
 			
-			void query_intervals ( backend_path loc, size_t & size );
+			bool query_intervals ( backend_path loc, size_t & size );
 
 			//---------------------------
 
@@ -237,7 +237,9 @@ namespace tidas {
 			
 			void del_block ( backend_path loc );
 			
-			void query_block ( backend_path loc, std::vector < std::string > & child_blocks, std::vector < std::string > & child_groups, std::vector < std::string > & child_intervals );
+			bool query_block ( backend_path loc, std::vector < std::string > & child_blocks, std::vector < std::string > & child_groups, std::vector < std::string > & child_intervals );
+
+			//---------------------------
 
 			void ins_dict ( std::string const & path, indexdb_dict const & d );
 
@@ -304,6 +306,8 @@ namespace tidas {
 			void sql_init ( std::string const & path );
 
 			void sql_err ( bool err, char const * msg, char const * file, int line );
+
+			std::string path_base ( std::string const & in );
 
 			std::string path_;
 			access_mode mode_;

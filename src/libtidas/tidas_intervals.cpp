@@ -142,13 +142,19 @@ void tidas::intervals::sync () {
 
 		// if we have an index, use it!
 
+		bool found = false;
+
 		if ( loc_.idx ) {
-
-
-
-		} else {
-			backend_->read ( loc_, size_ );
+			found = loc_.idx->query_intervals ( loc_, size_ );
 		}
+
+		if ( ! found ) {
+			backend_->read ( loc_, size_ );
+			if ( loc_.idx ) {
+				loc_.idx->add_intervals ( loc_, size_ );
+			}
+		}
+
 	}
 
 	return;
@@ -167,9 +173,7 @@ void tidas::intervals::flush () const {
 			// update index
 
 			if ( loc_.idx ) {
-
-
-
+				loc_.idx->update_intervals ( loc_, size_ );
 			}
 		}
 

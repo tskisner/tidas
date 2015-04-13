@@ -232,6 +232,12 @@ void tidas::group::copy ( group const & other, string const & filter, backend_pa
 	dict_loc ( dictloc );
 	dict_.copy ( other.dict_, filts[ dict_submatch_key ], dictloc );
 
+	// update index
+
+	if ( loc_.idx ) {
+		loc_.idx->update_group ( loc_, size_, start_, stop_, counts_ );
+	}
+
 	return;
 }
 

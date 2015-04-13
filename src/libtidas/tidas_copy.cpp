@@ -120,19 +120,19 @@ void tidas::data_copy ( block const & in, block & out ) {
 	vector < string > grps = in.all_groups();
 
 	for ( auto name : grps ) {
-		group & ref = out.group_add ( name, in.group_get ( name ) );
+		data_copy ( in.group_get( name ), out.group_get( name ) );
 	}
 
 	vector < string > intrs = in.all_intervals();
 
 	for ( auto name : intrs ) {
-		intervals & ref = out.intervals_add ( name, in.intervals_get ( name ) );
+		data_copy ( in.intervals_get( name ), out.intervals_get( name ) );
 	}
 
 	vector < string > blks = in.all_blocks();
 
 	for ( auto name : blks ) {
-		block & ref = out.block_add ( name, in.block_get ( name ) );
+		data_copy ( in.block_get( name ), out.block_get( name ) );
 	}
 
 	return;

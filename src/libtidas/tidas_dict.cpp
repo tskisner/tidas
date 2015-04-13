@@ -152,6 +152,12 @@ void tidas::dict::copy ( dict const & other, string const & filter, backend_path
 		}
 	}
 
+	// update index
+
+	if ( loc_.idx ) {
+		loc_.idx->update_dict ( loc_, data_, types_ );
+	}
+
 	return;
 }
 

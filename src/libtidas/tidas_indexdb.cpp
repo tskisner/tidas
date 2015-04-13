@@ -275,7 +275,7 @@ void tidas::indexdb::sql_err ( bool err, char const * msg, char const * file, in
 
 std::string tidas::indexdb::path_base ( std::string const & in ) {
 	size_t pos = in.rfind ( path_sep );
-	return in.substr ( pos );
+	return in.substr ( pos + 1 );
 }
 
 
@@ -700,7 +700,7 @@ void tidas::indexdb::ins_block ( string const & path, indexdb_block const & b ) 
 			size_t plen = path.rfind ( path_sep );
 			if ( plen == string::npos ) {
 				ostringstream o;
-				o << "\"" << path << "\" is not a valid group path";
+				o << "\"" << path << "\" is not a valid block path";
 				TIDAS_THROW( o.str().c_str() );
 			}
 
@@ -711,6 +711,8 @@ void tidas::indexdb::ins_block ( string const & path, indexdb_block const & b ) 
 
 			command.str("");
 			command << "INSERT OR REPLACE INTO blk ( path, parent ) VALUES ( \"" << path << "\", \"" << parent << "\" );";
+
+			cerr << "ins_block:  " << command.str() << endl;
 
 			sqlite3_stmt * stmt;
 			int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
@@ -1412,6 +1414,8 @@ void tidas::indexdb::add_block ( backend_path loc ) {
 	b.type = indexdb_object_type::block;
 	b.path = path;
 
+	cerr << "add_block: " << path << endl;
+
 	ins_block ( path, b );
 
 	if ( path_ == "" ) {
@@ -1437,6 +1441,8 @@ void tidas::indexdb::update_block ( backend_path loc ) {
 	b.path = path;
 
 	ins_block ( path, b );
+
+	cerr << "update_block: " << path << endl;
 
 	if ( path_ == "" ) {
 		// save transaction
@@ -1487,15 +1493,23 @@ bool tidas::indexdb::query_block ( backend_path loc, std::vector < std::string >
 	string path = loc.path + path_sep + loc.name;
 
 	if ( data_block_.count ( path ) == 0 ) {
+
+		cerr << "block_query:  count == 0" << endl;
+
 		if ( path_ != "" ) {
+
 			// fetch it from the DB
 			if ( sql_ ) {
+
+				cerr << "block_query:  sql_ valid" << endl;
 
 				ostringstream command;
 				command.precision(20);
 
+				cerr << "block_query:  select blk" << endl;
 				command.str("");
 				command << "SELECT * FROM blk WHERE path = \"" << path << "\";";
+				cerr << command.str() << endl;
 
 				sqlite3_stmt * bstmt;
 				int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &bstmt, NULL );
@@ -1513,8 +1527,10 @@ bool tidas::indexdb::query_block ( backend_path loc, std::vector < std::string >
 
 					// query direct descendents
 
+					cerr << "block_query:  select intr" << endl;
 					command.str("");
 					command << "SELECT * FROM intrvl WHERE parent = \"" << path << "\";";
+					cerr << command.str() << endl;
 
 					sqlite3_stmt * stmt;
 					ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
@@ -1522,39 +1538,46 @@ bool tidas::indexdb::query_block ( backend_path loc, std::vector < std::string >
 
 					ret = sqlite3_step ( stmt );
 					while ( ret == SQLITE_ROW ) {
-						string result = (char*)sqlite3_column_text ( stmt, 1 );
+						string result = (char*)sqlite3_column_text ( stmt, 0 );
 						child_intervals.push_back ( path_base ( result ) );
+						cerr << "  child_intervals.push_back " << path_base(result) << endl;
 						ret = sqlite3_step ( stmt );
 					}
 
 					ret = sqlite3_finalize ( stmt );
 					SQLERR( ret != SQLITE_OK, "intervals child query finalize" );
 
+					cerr << "block_query:  select grp" << endl;
 					command.str("");
 					command << "SELECT * FROM grp WHERE parent = \"" << path << "\";";
+					cerr << command.str() << endl;
 
 					ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
 					SQLERR( ret != SQLITE_OK, "group child query prepare" );
 
 					ret = sqlite3_step ( stmt );
 					while ( ret == SQLITE_ROW ) {
-						string result = (char*)sqlite3_column_text ( stmt, 1 );
+						string result = (char*)sqlite3_column_text ( stmt, 0 );
 						child_groups.push_back ( path_base ( result ) );
+						cerr << "  child_groups.push_back " << path_base(result) << endl;
 						ret = sqlite3_step ( stmt );
 					}
 
 					ret = sqlite3_finalize ( stmt );
 					SQLERR( ret != SQLITE_OK, "group child query finalize" );
 
+					cerr << "block_query:  select blk child" << endl;
 					command.str("");
 					command << "SELECT * FROM blk WHERE parent = \"" << path << "\";";
+					cerr << command.str() << endl;
 
 					ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
 					SQLERR( ret != SQLITE_OK, "block child query prepare" );
 
 					ret = sqlite3_step ( stmt );
 					while ( ret == SQLITE_ROW ) {
-						string result = (char*)sqlite3_column_text ( stmt, 1 );
+						string result = (char*)sqlite3_column_text ( stmt, 0 );
+						cerr << "SQL block " << path << " has child " << result << " --> " << path_base ( result ) << endl;
 						child_blocks.push_back ( path_base ( result ) );
 						ret = sqlite3_step ( stmt );
 					}
@@ -1582,9 +1605,13 @@ bool tidas::indexdb::query_block ( backend_path loc, std::vector < std::string >
 
 	} else {
 
+		cerr << "block_query:  count != 0" << endl;
+
 		// Find all direct descendants in memory.
 
 		std::map < std::string, indexdb_block > :: const_iterator bit = data_block_.lower_bound ( path );
+
+		cerr << "block " << path << " scanning for descendants" << endl;
 
 		while ( ( bit != data_block_.end() ) && ( bit->first.compare ( 0, path.size(), path ) == 0 ) ) {
 			if ( bit->first.size() > path.size() ) {
@@ -1594,8 +1621,9 @@ bool tidas::indexdb::query_block ( backend_path loc, std::vector < std::string >
 				size_t pos = bit->first.find ( path_sep, off );
 
 				if ( pos == string::npos ) {
+					cerr << "MEM block " << path << " has child " << bit->first << " --> " << path_base ( bit->first ) << endl;
 					// direct descendant
-					child_blocks.push_back( bit->first );
+					child_blocks.push_back( path_base ( bit->first ) );
 				}
 			}
 			++bit;
@@ -1606,7 +1634,7 @@ bool tidas::indexdb::query_block ( backend_path loc, std::vector < std::string >
 		std::map < std::string, indexdb_group > :: const_iterator git = data_group_.lower_bound ( grpdir );
 
 		while ( ( git != data_group_.end() ) && ( git->first.compare ( 0, grpdir.size(), grpdir ) == 0 ) ) {
-			child_groups.push_back ( git->first );
+			child_groups.push_back ( path_base ( git->first ) );
 			++git;
 		}
 
@@ -1615,7 +1643,7 @@ bool tidas::indexdb::query_block ( backend_path loc, std::vector < std::string >
 		std::map < std::string, indexdb_intervals > :: const_iterator it = data_intervals_.lower_bound ( intdir );
 
 		while ( ( it != data_intervals_.end() ) && ( it->first.compare ( 0, intdir.size(), intdir ) == 0 ) ) {
-			child_intervals.push_back ( it->first );
+			child_intervals.push_back ( path_base ( it->first ) );
 			++it;
 		}
 

@@ -86,6 +86,7 @@ tidas::volume::volume ( string const & path, access_mode mode ) {
 	}
 	loc_.name = "";
 	loc_.meta = "";
+	loc_.mode = mode;
 
 	// read properties
 
@@ -138,9 +139,13 @@ void tidas::volume::copy ( volume const & other, string const & filter, backend_
 
 	loc_ = loc;
 
-	if ( loc != other.loc_ ) {
+	if ( loc_ != other.loc_ ) {
 
-		if ( loc.path != "" ) {
+		if ( loc_.mode != access_mode::readwrite ) {
+			TIDAS_THROW( "cannot copy volume to read-only location" );
+		}
+
+		if ( loc_.path != "" ) {
 
 			if ( fs_stat ( loc_.path.c_str() ) >= 0 ) {
 				ostringstream o;
@@ -154,19 +159,23 @@ void tidas::volume::copy ( volume const & other, string const & filter, backend_
 
 		}
 
+		// open index
+
+		index_setup();
+
 	}
-
-	// open index
-
-	index_setup();
 
 	// copy root
 
+	cerr << "volume copy root " << other.root_.location().path << "/" << other.root_.location().name << " --> " << root_loc(loc_).path << "/" << root_loc(loc_).name << endl;
 	root_.copy ( other.root_, filter, root_loc ( loc_ ) );
 
-	// write root block
+	if ( loc_ != other.loc_ ) {
+		// write root block
 
-	root_.flush();
+		cerr << "volume flush root" << endl;
+		root_.flush();
+	}
 
 	return;
 }

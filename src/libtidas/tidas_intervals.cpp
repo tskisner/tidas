@@ -215,6 +215,12 @@ void tidas::intervals::copy ( intervals const & other, string const & filter, ba
 
 	dict_.copy ( other.dict_, filts[ dict_submatch_key ], dloc );
 
+	// update index
+
+	if ( loc_.idx ) {
+		loc_.idx->update_intervals ( loc_, size_ );
+	}
+
 	return;
 }
 

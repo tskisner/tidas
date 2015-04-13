@@ -82,8 +82,8 @@ namespace tidas {
 	};
 
 
-	/// Class representing the metadata location of a single object.
-	/// This includes the path on disk, the backend type, etc.
+	// Class representing the metadata location of a single object.
+	// This includes the path on disk, the backend type, etc.
 
 	class indexdb;
 
@@ -96,22 +96,22 @@ namespace tidas {
 			bool operator== ( const backend_path & other ) const;
 			bool operator!= ( const backend_path & other ) const;
 
-			/// Backend type.
+			// Backend type.
 			backend_type type;
 
-			/// Compression used.
+			// Compression used.
 			compression_type comp;
 
-			/// Access mode.
+			// Access mode.
 			access_mode mode;
 
-			/// Parent directory.
+			// Parent directory.
 			std::string path;
 
-			/// Name of on-disk object.
+			// Name of on-disk object.
 			std::string name;
 
-			/// Metadata path inside object (backend-specific).
+			// Metadata path inside object (backend-specific).
 			std::string meta;
 
 			std::shared_ptr < indexdb > idx;

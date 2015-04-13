@@ -201,6 +201,12 @@ void tidas::schema::copy ( schema const & other, string const & filter, backend_
 		}
 	}
 
+	// update index
+
+	if ( loc_.idx ) {
+		loc_.idx->update_schema ( loc_, fields_ );
+	}
+
 	return;
 }
 

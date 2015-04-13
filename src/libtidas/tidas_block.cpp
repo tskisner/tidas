@@ -235,25 +235,36 @@ void tidas::block::sync ( string const & filter ) {
 
 		bool found = false;
 
-		string fspath = loc_.path + path_sep + loc_.name;
-
 		vector < string > child_blocks;
 		vector < string > child_groups;
 		vector < string > child_intervals;
 
 		if ( loc_.idx ) {
+			cerr << "block_sync: we have index" << endl;
 
 			found = loc_.idx->query_block ( loc_, child_blocks, child_groups, child_intervals );
-
-			if ( ! found ) {
-				loc_.idx->add_block ( loc_ );
+			cerr << "block_sync: found " << loc_.path << "/" << loc_.name << endl;
+			cerr << "block_sync:  child blocks:" << endl;
+			for ( auto const & b : child_blocks ) {
+				cerr << "block_sync:   " << b << endl;
 			}
+			cerr << "block_sync:  child groups:" << endl;
+			for ( auto const & g : child_groups ) {
+				cerr << "block_sync:   " << g << endl;
+			}
+			cerr << "block_sync:  child intervals:" << endl;
+			for ( auto const & t : child_intervals ) {
+				cerr << "block_sync:   " << t << endl;
+			}
+		} else {
+			cerr << "block_sync: no index" << endl;
 		}
 
 		if ( found ) {
 
 			for ( auto const & b : child_blocks ) {
 				if ( ! stop ) {
+					cerr << "block_sync:  idx query " << loc_.path << " : " << loc_.name << " child " << b << endl;
 					if ( regex_match ( b, blockre ) ) {
 						block_data_[ b ] = block ( block_loc ( loc_, b ) );
 					}
@@ -274,7 +285,14 @@ void tidas::block::sync ( string const & filter ) {
 
 		} else {
 
+			if ( loc_.idx ) {
+				cerr << "block_sync: not found, adding " << loc_.path << "/" << loc_.name << " to index" << endl;
+				loc_.idx->add_block ( loc_ );
+			}
+
 			// find all sub-blocks
+
+			string fspath = loc_.path + path_sep + loc_.name;
 
 			struct dirent * entry;
 			DIR * dp;
@@ -299,11 +317,16 @@ void tidas::block::sync ( string const & filter ) {
 					found_intervals = true;
 				} else {
 					// this must be a block!
-
+					cerr << "block_sync: child directory " << item << endl;
 					if ( ! stop ) {
 						if ( regex_match ( item, blockre ) ) {
+							cerr << "block_sync: child directory " << item << " matches regex" << endl;
 							block_data_[ item ] = block ( block_loc ( loc_, item ) );
+						} else {
+							cerr << "block_sync: child directory " << item << " does not match regex" << endl;
 						}
+					} else {
+						cerr << "block_sync: child directory " << item << " ignored due to stop" << endl;
 					}
 				}
 			}
@@ -370,7 +393,10 @@ void tidas::block::flush () const {
 
 	if ( loc_.type != backend_type::none ) {
 
+		cerr << "calling block::flush " << loc_.path << "/" << loc_.name << endl;
+
 		if ( loc_.mode == access_mode::readwrite ) {
+			cerr << "  readwrite:  mkdir" << endl;
 
 			string dir = loc_.path + path_sep + loc_.name;
 			fs_mkdir ( dir.c_str() );
@@ -387,6 +413,8 @@ void tidas::block::flush () const {
 				loc_.idx->update_block ( loc_ );
 			}
 
+		} else {
+			cerr << "  readonly:  skipping" << endl;
 		}
 
 	}
@@ -437,6 +465,12 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	loc_ = loc;
 
+	// update index
+
+	if ( loc_.idx ) {
+		loc_.idx->update_block ( loc_ );
+	}
+
 	// copy groups
 
 	string filt_name;
@@ -450,7 +484,7 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	group_data_.clear();
 
-	for ( auto & gr : group_data_ ) {
+	for ( auto & gr : other.group_data_ ) {
 		if ( regex_match ( gr.first, groupre ) ) {
 			group_data_[ gr.first ].copy ( gr.second, filt_pass, group_loc ( loc_, gr.first ) );
 		}
@@ -466,7 +500,7 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	intervals_data_.clear();
 
-	for ( auto & inv : intervals_data_ ) {
+	for ( auto & inv : other.intervals_data_ ) {
 		if ( regex_match ( inv.first, intre ) ) {
 			intervals_data_[ inv.first ].copy ( inv.second, filt_pass, intervals_loc ( loc_, inv.first ) );
 		}
@@ -485,8 +519,10 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 		block_data_.clear();
 
-		for ( auto & blk : block_data_ ) {
+		for ( auto & blk : other.block_data_ ) {
+			cerr << "block_copy:  check subblock " << blk.first << endl;
 			if ( regex_match ( blk.first, blockre ) ) {
+				cerr << "block_copy:    match" << endl;
 				block_data_[ blk.first ].copy ( blk.second, filt_pass, block_loc ( loc_, blk.first ) );
 			}
 		}

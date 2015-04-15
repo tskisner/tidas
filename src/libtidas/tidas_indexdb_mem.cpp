@@ -16,9 +16,16 @@ using namespace tidas;
 
 
 
-string tidas::indexdb_path_base ( string const & in ) {
+void tidas::indexdb_path_split ( string const & in, string & dir, string & base ) {
 	size_t pos = in.rfind ( path_sep );
-	return in.substr ( pos + 1 );
+	if ( ( pos == 0 ) || ( pos == string::npos ) ) {
+		dir = "";
+		base = in;
+	} else {
+		dir = in.substr ( 0, pos );
+		base = in.substr ( pos + 1 );
+	}
+	return;
 }
 
 
@@ -434,6 +441,9 @@ bool tidas::indexdb_mem::query_block ( backend_path loc, vector < string > & chi
 
 		cerr << "block " << path << " scanning for descendants" << endl;
 
+		string dir;
+		string base;
+
 		while ( ( bit != data_block_.end() ) && ( bit->first.compare ( 0, path.size(), path ) == 0 ) ) {
 			if ( bit->first.size() > path.size() ) {
 				//(we don't want the parent itself)
@@ -442,9 +452,10 @@ bool tidas::indexdb_mem::query_block ( backend_path loc, vector < string > & chi
 				size_t pos = bit->first.find ( path_sep, off );
 
 				if ( pos == string::npos ) {
-					cerr << "MEM block " << path << " has child " << bit->first << " --> " << indexdb_path_base ( bit->first ) << endl;
+					indexdb_path_split ( bit->first, dir, base );
+					cerr << "MEM block " << path << " has child " << bit->first << " --> " << base << endl;
 					// direct descendant
-					child_blocks.push_back( indexdb_path_base ( bit->first ) );
+					child_blocks.push_back( base );
 				}
 			}
 			++bit;
@@ -455,7 +466,8 @@ bool tidas::indexdb_mem::query_block ( backend_path loc, vector < string > & chi
 		map < string, indexdb_group > :: const_iterator git = data_group_.lower_bound ( grpdir );
 
 		while ( ( git != data_group_.end() ) && ( git->first.compare ( 0, grpdir.size(), grpdir ) == 0 ) ) {
-			child_groups.push_back ( indexdb_path_base ( git->first ) );
+			indexdb_path_split ( git->first, dir, base );
+			child_groups.push_back ( base );
 			++git;
 		}
 
@@ -464,7 +476,8 @@ bool tidas::indexdb_mem::query_block ( backend_path loc, vector < string > & chi
 		map < string, indexdb_intervals > :: const_iterator it = data_intervals_.lower_bound ( intdir );
 
 		while ( ( it != data_intervals_.end() ) && ( it->first.compare ( 0, intdir.size(), intdir ) == 0 ) ) {
-			child_intervals.push_back ( indexdb_path_base ( it->first ) );
+			indexdb_path_split ( it->first, dir, base );
+			child_intervals.push_back ( base );
 			++it;
 		}
 

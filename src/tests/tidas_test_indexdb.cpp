@@ -396,7 +396,7 @@ TEST( indexdbtest, addquery_mem ) {
 TEST( indexdbtest, addquery_sql ) {
 
 	fs_rm ( "./indexdb_sql.out" );
-	indexdb_sql idx( "./indexdb_sql.out", access_mode::readwrite );
+	indexdb_sql idx( "./indexdb_sql.out", "", access_mode::readwrite );
 
 	indexdb_setup( &idx );
 
@@ -426,7 +426,7 @@ TEST( indexdbtest, commit ) {
 	indexdb_setup( &idx );
 
 	fs_rm ( "./indexdb_sql_commit.out" );
-	indexdb_sql check( "./indexdb_sql_commit.out", access_mode::readwrite );
+	indexdb_sql check( "./indexdb_sql_commit.out", "", access_mode::readwrite );
 
 	check.commit ( idx.history() );
 
@@ -439,8 +439,8 @@ TEST( indexdbtest, treecommit ) {
 
 	fs_rm ( "./indexdb_sql_tree.out" );
 	fs_rm ( "./indexdb_sql_tree_check.out" );
-	indexdb_sql idx( "./indexdb_sql_tree.out", access_mode::readwrite );
-	indexdb_sql check( "./indexdb_sql_tree_check.out", access_mode::readwrite );
+	indexdb_sql idx( "./indexdb_sql_tree.out", "", access_mode::readwrite );
+	indexdb_sql check( "./indexdb_sql_tree_check.out", "", access_mode::readwrite );
 
 	indexdb_setup( &idx );
 
@@ -515,7 +515,7 @@ TEST( indexdbtest, sqlite ) {
 	string dbfile = "./indexdb_sql.out";
 	fs_rm ( dbfile.c_str() );
 
-	indexdb_sql idx ( dbfile, access_mode::readwrite );
+	indexdb_sql idx ( dbfile, "", access_mode::readwrite );
 
 	indexdb_setup( &idx );
 

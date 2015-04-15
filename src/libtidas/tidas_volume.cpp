@@ -26,19 +26,23 @@ tidas::volume::volume ( string const & path, backend_type type, compression_type
 
 	// set up location
 
-	loc_.path = path;
-	if ( loc_.path[ loc_.path.size() - 1 ] == '/' ) {
-		loc_.path[ loc_.path.size() - 1 ] = '\0';
+	string relpath = path;
+	if ( relpath[ relpath.size() - 1 ] == '/' ) {
+		relpath[ relpath.size() - 1 ] = '\0';
 	}
+
+	string fspath = fs_fullpath ( relpath.c_str() );
+
+	loc_.path = fspath;
 	loc_.name = "";
 	loc_.meta = "";
 	loc_.type = type;
 	loc_.comp = comp;
 	loc_.mode = access_mode::readwrite;
 
-	if ( fs_stat ( path.c_str() ) >= 0 ) {
+	if ( fs_stat ( fspath.c_str() ) >= 0 ) {
 		ostringstream o;
-		o << "cannot create volume \"" << path << "\", a file or directory already exists";
+		o << "cannot create volume \"" << fspath << "\", a file or directory already exists";
 		TIDAS_THROW( o.str().c_str() );
 	}
 
@@ -80,10 +84,14 @@ tidas::volume::volume ( volume const & other ) {
 
 tidas::volume::volume ( string const & path, access_mode mode ) {
 
-	loc_.path = path;
-	if ( loc_.path[ loc_.path.size() - 1 ] == '/' ) {
-		loc_.path[ loc_.path.size() - 1 ] = '\0';
+	string relpath = path;
+	if ( relpath[ relpath.size() - 1 ] == '/' ) {
+		relpath[ relpath.size() - 1 ] = '\0';
 	}
+
+	string fspath = fs_fullpath ( relpath.c_str() );
+
+	loc_.path = fspath;
 	loc_.name = "";
 	loc_.meta = "";
 	loc_.mode = mode;
@@ -119,7 +127,7 @@ void tidas::volume::index_setup () {
 	if ( loc_.path != "" ) {
 		string indxpath = loc_.path + path_sep + volume_fs_index;
 		cerr << "volume::index_setup:  sql at " << indxpath << endl;
-		db_.reset ( new indexdb_sql( indxpath, loc_.mode ) );
+		db_.reset ( new indexdb_sql( indxpath, loc_.path, loc_.mode ) );
 	} else {
 		cerr << "volume::index_setup:  mem " << endl;
 		db_.reset ( new indexdb_mem() );
@@ -225,7 +233,7 @@ void tidas::volume::link ( std::string const & path, link_type const & ltype, st
 	// make a copy of the index, so that we can add new objects
 
 	string newdb = lpath + path_sep + volume_fs_index;
-	indexdb_sql sqldb ( newdb, access_mode::readwrite );
+	indexdb_sql sqldb ( newdb, lpath, access_mode::readwrite );
 
 	if ( loc_.path != "" ) {
 		indexdb_sql * orig = dynamic_cast < indexdb_sql * > ( db_.get() );
@@ -253,10 +261,15 @@ void tidas::volume::duplicate ( std::string const & path, backend_type type, com
 	// construct new volume
 
 	backend_path exploc;
-	exploc.path = path;
-	if ( exploc.path[ exploc.path.size() - 1 ] == '/' ) {
-		exploc.path[ exploc.path.size() - 1 ] = '\0';
+
+	string relpath = path;
+	if ( relpath[ relpath.size() - 1 ] == '/' ) {
+		relpath[ relpath.size() - 1 ] = '\0';
 	}
+
+	string fspath = fs_fullpath ( relpath.c_str() );
+
+	exploc.path = fspath;
 	exploc.name = "";
 	exploc.meta = "";
 	exploc.type = type;

@@ -16,6 +16,7 @@ extern "C" {
 	#include <unistd.h>
 	#include <sys/stat.h>
 	#include <sys/types.h>
+	#include <limits.h>
 }
 
 using namespace std;
@@ -182,6 +183,25 @@ void tidas::fs_link_r ( char const * target, char const * path, bool hard ) {
     	::perror ( target );
     }
     return;
+}
+
+
+std::string tidas::fs_fullpath ( char const * relpath ) {
+
+	char * ptr;
+	string ret = "";
+	size_t max = 10000;
+
+	#ifdef PATH_MAX
+	// use this constant from the C header
+	max = PATH_MAX;
+	#endif
+
+	char path [ max + 1 ];
+	ptr = realpath ( relpath, path );
+	ret = path;
+
+	return ret;
 }
 
 

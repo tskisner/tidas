@@ -91,6 +91,9 @@ namespace tidas {
 	/// Recursively make directories and link files
 	void fs_link_r ( char const * target, char const * path, bool hard );
 
+	/// Get the full path of the specified file
+	std::string fs_fullpath ( char const * relpath );
+
 
 	// data types
 

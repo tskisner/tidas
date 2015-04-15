@@ -21,6 +21,7 @@ sql_err( err, msg, __FILE__, __LINE__ )
 
 tidas::indexdb_sql::indexdb_sql () : indexdb() {
 	path_ = "";
+	volpath_ = "";
 	mode_ = access_mode::readwrite;
 	sql_ = NULL;
 }
@@ -51,6 +52,7 @@ void tidas::indexdb_sql::copy ( indexdb_sql const & other ) {
 	sql_ = NULL;
 
 	path_ = other.path_;
+	volpath_ = other.volpath_;
 	mode_ = other.mode_;
 
 	open();
@@ -59,11 +61,25 @@ void tidas::indexdb_sql::copy ( indexdb_sql const & other ) {
 }
 
 
-tidas::indexdb_sql::indexdb_sql ( string const & path, access_mode mode ) {
+tidas::indexdb_sql::indexdb_sql ( string const & path, string const & volpath, access_mode mode ) {
 	path_ = path;
+	volpath_ = volpath;
 	mode_ = mode;
 	sql_ = NULL;
 	open();
+}
+
+
+string tidas::indexdb_sql::dbpath ( string const & fullpath ) {
+	string ret;
+	if ( volpath_ != "" ) {
+		size_t pos = fullpath.find ( volpath_ );
+		ret = fullpath.substr ( pos + volpath_.size() + 1 );
+	} else {
+		ret = fullpath;
+	}
+	cerr << "dbpath:  " << fullpath << " --> " << ret << endl;
+	return ret;
 }
 
 
@@ -229,20 +245,22 @@ void tidas::indexdb_sql::ops_dict ( backend_path loc, indexdb_op op, map < strin
 
 	string path = loc.path + path_sep + loc.name;
 
+	string dpath = dbpath ( path );
+
 	ostringstream command;
 	command.precision(20);
 
 	if ( ( op == indexdb_op::add ) || ( op == indexdb_op::update ) ) {
 
-		size_t pos = path.find( block_fs_group_dir );
+		size_t pos = dpath.find( block_fs_group_dir );
 		if ( pos != string::npos ) {
 			command.str("");
-			command << "INSERT OR REPLACE INTO dct_grp ( parent, data, types ) VALUES ( \"" << path << "\", ?, ? );";
+			command << "INSERT OR REPLACE INTO dct_grp ( parent, data, types ) VALUES ( \"" << dpath << "\", ?, ? );";
 		} else {
-			pos = path.find( block_fs_intervals_dir );
+			pos = dpath.find( block_fs_intervals_dir );
 			if ( pos != string::npos ) {
 				command.str("");
-				command << "INSERT OR REPLACE INTO dct_intrvl ( parent, data, types ) VALUES ( \"" << path << "\", ?, ? );";
+				command << "INSERT OR REPLACE INTO dct_intrvl ( parent, data, types ) VALUES ( \"" << dpath << "\", ?, ? );";
 			} else {
 				TIDAS_THROW( "dictionary path not associated with group or intervals" );
 			}
@@ -278,15 +296,15 @@ void tidas::indexdb_sql::ops_dict ( backend_path loc, indexdb_op op, map < strin
 
 	} else if ( op == indexdb_op::del ) {
 
-		size_t pos = path.find( block_fs_group_dir );
+		size_t pos = dpath.find( block_fs_group_dir );
 		if ( pos != string::npos ) {
 			command.str("");
-			command << "DELETE FROM dct_grp WHERE parent = \"" << path << "\";";
+			command << "DELETE FROM dct_grp WHERE parent = \"" << dpath << "\";";
 		} else {
-			pos = path.find( block_fs_intervals_dir );
+			pos = dpath.find( block_fs_intervals_dir );
 			if ( pos != string::npos ) {
 				command.str("");
-				command << "DELETE FROM dct_intrvl WHERE parent = \"" << path << "\";";
+				command << "DELETE FROM dct_intrvl WHERE parent = \"" << dpath << "\";";
 			} else {
 				TIDAS_THROW( "dictionary path not associated with group or intervals" );
 			}
@@ -319,13 +337,15 @@ void tidas::indexdb_sql::ops_schema ( backend_path loc, indexdb_op op, field_lis
 
 	string path = loc.path + path_sep + loc.name;
 
+	string dpath = dbpath ( path );
+
 	ostringstream command;
 	command.precision(20);
 
 	if ( ( op == indexdb_op::add ) || ( op == indexdb_op::update ) ) {
 
 		command.str("");
-		command << "INSERT OR REPLACE INTO schm ( parent, fields ) VALUES ( \"" << path << "\", ? );";
+		command << "INSERT OR REPLACE INTO schm ( parent, fields ) VALUES ( \"" << dpath << "\", ? );";
 
 		sqlite3_stmt * stmt;
 		int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
@@ -349,7 +369,7 @@ void tidas::indexdb_sql::ops_schema ( backend_path loc, indexdb_op op, field_lis
 	} else if ( op == indexdb_op::del ) {
 
 		command.str("");
-		command << "DELETE FROM schm WHERE parent = \"" << path << "\";";
+		command << "DELETE FROM schm WHERE parent = \"" << dpath << "\";";
 
 		char * sqlerr;
 
@@ -378,22 +398,24 @@ void tidas::indexdb_sql::ops_group ( backend_path loc, indexdb_op op, index_type
 
 	string path = loc.path + path_sep + loc.name;
 
+	string dpath = dbpath ( path );
+
 	ostringstream command;
 	command.precision(20);
 
 	if ( ( op == indexdb_op::add ) || ( op == indexdb_op::update ) ) {
 
-		size_t plen = path.find ( path_sep + block_fs_group_dir + path_sep );
+		size_t plen = dpath.find ( path_sep + block_fs_group_dir + path_sep );
 		if ( plen == string::npos ) {
 			ostringstream o;
-			o << "\"" << path << "\" is not a valid group path";
+			o << "\"" << dpath << "\" is not a valid group path";
 			TIDAS_THROW( o.str().c_str() );
 		}
 
-		string parent = path.substr ( 0, plen );
+		string parent = dpath.substr ( 0, plen );
 
 		command.str("");
-		command << "INSERT OR REPLACE INTO grp ( path, parent, nsamp, start, stop, counts ) VALUES ( \"" << path << "\", \"" << parent << "\", ?, ?, ?, ? );";
+		command << "INSERT OR REPLACE INTO grp ( path, parent, nsamp, start, stop, counts ) VALUES ( \"" << dpath << "\", \"" << parent << "\", ?, ?, ?, ? );";
 
 		sqlite3_stmt * stmt;
 		int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
@@ -426,7 +448,7 @@ void tidas::indexdb_sql::ops_group ( backend_path loc, indexdb_op op, index_type
 	} else if ( op == indexdb_op::del ) {
 		
 		command.str("");
-		command << "DELETE FROM grp WHERE path = \"" << path << "\";";
+		command << "DELETE FROM grp WHERE path = \"" << dpath << "\";";
 
 		char * sqlerr;
 
@@ -455,22 +477,24 @@ void tidas::indexdb_sql::ops_intervals ( backend_path loc, indexdb_op op, size_t
 
 	string path = loc.path + path_sep + loc.name;
 
+	string dpath = dbpath ( path );
+
 	ostringstream command;
 	command.precision(20);
 
 	if ( ( op == indexdb_op::add ) || ( op == indexdb_op::update ) ) {
 
-		size_t plen = path.find ( path_sep + block_fs_intervals_dir + path_sep );
+		size_t plen = dpath.find ( path_sep + block_fs_intervals_dir + path_sep );
 		if ( plen == string::npos ) {
 			ostringstream o;
-			o << "\"" << path << "\" is not a valid intervals path";
+			o << "\"" << dpath << "\" is not a valid intervals path";
 			TIDAS_THROW( o.str().c_str() );
 		}
 
-		string parent = path.substr ( 0, plen );
+		string parent = dpath.substr ( 0, plen );
 
 		command.str("");
-		command << "INSERT OR REPLACE INTO intrvl ( path, parent, size ) VALUES ( \"" << path << "\", \"" << parent << "\", ? );";
+		command << "INSERT OR REPLACE INTO intrvl ( path, parent, size ) VALUES ( \"" << dpath << "\", \"" << parent << "\", ? );";
 
 		sqlite3_stmt * stmt;
 		int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
@@ -488,7 +512,7 @@ void tidas::indexdb_sql::ops_intervals ( backend_path loc, indexdb_op op, size_t
 	} else if ( op == indexdb_op::del ) {
 
 		command.str("");
-		command << "DELETE FROM intrvl WHERE path = \"" << path << "\";";
+		command << "DELETE FROM intrvl WHERE path = \"" << dpath << "\";";
 
 		char * sqlerr;
 
@@ -517,22 +541,21 @@ void tidas::indexdb_sql::ops_block ( backend_path loc, indexdb_op op ) {
 
 	string path = loc.path + path_sep + loc.name;
 
+	string dpath = dbpath ( path );
+
 	ostringstream command;
 	command.precision(20);
 
 	if ( ( op == indexdb_op::add ) || ( op == indexdb_op::update ) ) {
 
-		size_t plen = path.rfind ( path_sep );
-		if ( plen == string::npos ) {
-			ostringstream o;
-			o << "\"" << path << "\" is not a valid block path";
-			TIDAS_THROW( o.str().c_str() );
+		string parent = "";
+		size_t plen = dpath.rfind ( path_sep );
+		if ( plen != string::npos ) {
+			parent = dpath.substr ( 0, plen );
 		}
 
-		string parent = path.substr ( 0, plen );
-
 		command.str("");
-		command << "INSERT OR REPLACE INTO blk ( path, parent ) VALUES ( \"" << path << "\", \"" << parent << "\" );";
+		command << "INSERT OR REPLACE INTO blk ( path, parent ) VALUES ( \"" << dpath << "\", \"" << parent << "\" );";
 
 		cerr << "ins_block:  " << command.str() << endl;
 
@@ -549,7 +572,7 @@ void tidas::indexdb_sql::ops_block ( backend_path loc, indexdb_op op ) {
 	} else if ( op == indexdb_op::del ) {
 		
 		command.str("");
-		command << "DELETE FROM blk WHERE path = \"" << path << "\";";
+		command << "DELETE FROM blk WHERE path = \"" << dpath << "\";";
 
 		char * sqlerr;
 
@@ -668,18 +691,20 @@ bool tidas::indexdb_sql::query_dict ( backend_path loc, map < string, string > &
 
 	string path = loc.path + path_sep + loc.name;
 
+	string dpath = dbpath ( path );
+
 	ostringstream command;
 	command.precision(20);
 
-	size_t pos = path.find( block_fs_group_dir );
+	size_t pos = dpath.find( block_fs_group_dir );
 	if ( pos != string::npos ) {
 		command.str("");
-		command << "SELECT * FROM dct_grp WHERE parent = \"" << path << "\";";
+		command << "SELECT * FROM dct_grp WHERE parent = \"" << dpath << "\";";
 	} else {
-		pos = path.find( block_fs_intervals_dir );
+		pos = dpath.find( block_fs_intervals_dir );
 		if ( pos != string::npos ) {
 			command.str("");
-			command << "SELECT * FROM dct_intrvl WHERE parent = \"" << path << "\";";
+			command << "SELECT * FROM dct_intrvl WHERE parent = \"" << dpath << "\";";
 		} else {
 			TIDAS_THROW( "dictionary path not associated with group or intervals" );
 		}
@@ -737,11 +762,13 @@ bool tidas::indexdb_sql::query_schema ( backend_path loc, field_list & fields ) 
 
 	string path = loc.path + path_sep + loc.name;
 
+	string dpath = dbpath ( path );
+
 	ostringstream command;
 	command.precision(20);
 
 	command.str("");
-	command << "SELECT * FROM schm WHERE parent = \"" << path << "\";";
+	command << "SELECT * FROM schm WHERE parent = \"" << dpath << "\";";
 
 	sqlite3_stmt * stmt;
 	int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
@@ -783,11 +810,13 @@ bool tidas::indexdb_sql::query_group ( backend_path loc, index_type & nsamp, tim
 
 	string path = loc.path + path_sep + loc.name;
 
+	string dpath = dbpath ( path );
+
 	ostringstream command;
 	command.precision(20);
 
 	command.str("");
-	command << "SELECT * FROM grp WHERE path = \"" << path << "\";";
+	command << "SELECT * FROM grp WHERE path = \"" << dpath << "\";";
 
 	sqlite3_stmt * stmt;
 	int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
@@ -832,11 +861,13 @@ bool tidas::indexdb_sql::query_intervals ( backend_path loc, size_t & size ) {
 
 	string path = loc.path + path_sep + loc.name;
 
+	string dpath = dbpath ( path );
+
 	ostringstream command;
 	command.precision(20);
 
 	command.str("");
-	command << "SELECT * FROM intrvl WHERE path = \"" << path << "\";";
+	command << "SELECT * FROM intrvl WHERE path = \"" << dpath << "\";";
 
 	sqlite3_stmt * stmt;
 	int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
@@ -870,12 +901,14 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 
 	string path = loc.path + path_sep + loc.name;
 
+	string dpath = dbpath ( path );
+
 	ostringstream command;
 	command.precision(20);
 
 	cerr << "block_query:  select blk" << endl;
 	command.str("");
-	command << "SELECT * FROM blk WHERE path = \"" << path << "\";";
+	command << "SELECT * FROM blk WHERE path = \"" << dpath << "\";";
 	cerr << command.str() << endl;
 
 	sqlite3_stmt * bstmt;
@@ -886,10 +919,13 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 
 	if ( ret == SQLITE_ROW ) {
 
+		string dir;
+		string base;
+
 		// query direct descendents
 
 		command.str("");
-		command << "SELECT * FROM intrvl WHERE parent = \"" << path << "\";";
+		command << "SELECT * FROM intrvl WHERE parent = \"" << dpath << "\";";
 		cerr << command.str() << endl;
 
 		sqlite3_stmt * stmt;
@@ -899,8 +935,9 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 		ret = sqlite3_step ( stmt );
 		while ( ret == SQLITE_ROW ) {
 			string result = (char*)sqlite3_column_text ( stmt, 0 );
-			cerr << "  child interval " << result << " (" << indexdb_path_base ( result ) << ")" << endl;
-			child_intervals.push_back ( indexdb_path_base ( result ) );
+			indexdb_path_split ( result, dir, base );
+			cerr << "  child interval " << result << " (" << base << ")" << endl;
+			child_intervals.push_back ( base );
 			ret = sqlite3_step ( stmt );
 		}
 
@@ -908,7 +945,7 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 		SQLERR( ret != SQLITE_OK, "intervals child query finalize" );
 
 		command.str("");
-		command << "SELECT * FROM grp WHERE parent = \"" << path << "\";";
+		command << "SELECT * FROM grp WHERE parent = \"" << dpath << "\";";
 		cerr << command.str() << endl;
 
 		ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
@@ -917,8 +954,9 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 		ret = sqlite3_step ( stmt );
 		while ( ret == SQLITE_ROW ) {
 			string result = (char*)sqlite3_column_text ( stmt, 0 );
-			cerr << "  child group " << result << " (" << indexdb_path_base ( result ) << ")" << endl;
-			child_groups.push_back ( indexdb_path_base ( result ) );
+			indexdb_path_split ( result, dir, base );
+			cerr << "  child group " << result << " (" << base << ")" << endl;
+			child_groups.push_back ( base );
 			ret = sqlite3_step ( stmt );
 		}
 
@@ -926,7 +964,7 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 		SQLERR( ret != SQLITE_OK, "group child query finalize" );
 
 		command.str("");
-		command << "SELECT * FROM blk WHERE parent = \"" << path << "\";";
+		command << "SELECT * FROM blk WHERE parent = \"" << dpath << "\";";
 		cerr << command.str() << endl;
 
 		ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
@@ -935,8 +973,9 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 		ret = sqlite3_step ( stmt );
 		while ( ret == SQLITE_ROW ) {
 			string result = (char*)sqlite3_column_text ( stmt, 0 );
-			cerr << "  child block " << result << " (" << indexdb_path_base ( result ) << ")" << endl;
-			child_blocks.push_back ( indexdb_path_base ( result ) );
+			indexdb_path_split ( result, dir, base );
+			cerr << "  child block " << result << " (" << base << ")" << endl;
+			child_blocks.push_back ( base );
 			ret = sqlite3_step ( stmt );
 		}
 
@@ -957,7 +996,14 @@ void tidas::indexdb_sql::commit ( deque < indexdb_transaction > const & trans ) 
 
 	for ( auto tr : trans ) {
 
-		string fullpath = tr.obj->path;
+		// we need to add our full volume path before calling the ops methods.
+
+		string fullpath;
+		if ( volpath_ == "" ) {
+			fullpath = tr.obj->path;
+		} else {
+			fullpath = volpath_ + path_sep + tr.obj->path;
+		}
 
 		backend_path loc;
 
@@ -1007,6 +1053,9 @@ void tidas::indexdb_sql::commit ( deque < indexdb_transaction > const & trans ) 
 void tidas::indexdb_sql::tree ( backend_path root, std::string const & filter, std::deque < indexdb_transaction > & result ) {
 
 	result.clear();
+
+
+	// create transactions for adding all children
 
 
 	return;

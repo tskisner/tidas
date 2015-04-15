@@ -175,9 +175,9 @@ namespace tidas {
 	};
 
 
-	// utility for extracting basename
+	// utility for extracting dirname / basename
 
-	std::string indexdb_path_base ( std::string const & in );
+	void indexdb_path_split ( std::string const & in, std::string & dir, std::string & base );
 
 
 	// base class for indices
@@ -236,7 +236,7 @@ namespace tidas {
 			~indexdb_sql ();
 			indexdb_sql & operator= ( indexdb_sql const & other );
 			indexdb_sql ( indexdb_sql const & other );
-			indexdb_sql ( std::string const & path, access_mode mode );
+			indexdb_sql ( std::string const & path, std::string const & volpath, access_mode mode );
 
 			void copy ( indexdb_sql const & other );
 
@@ -273,6 +273,7 @@ namespace tidas {
 			void save ( Archive & ar ) const {
 				ar ( cereal::base_class < indexdb > ( this ) );
 				ar ( CEREAL_NVP( path_ ) );
+				ar ( CEREAL_NVP( volpath_ ) );
 				ar ( CEREAL_NVP( mode_ ) );
 				return;
 			}
@@ -281,6 +282,7 @@ namespace tidas {
 			void load ( Archive & ar ) {
 				ar ( cereal::base_class < indexdb > ( this ) );
 				ar ( CEREAL_NVP( path_ ) );
+				ar ( CEREAL_NVP( volpath_ ) );
 				ar ( CEREAL_NVP( mode_ ) );
 				sql_ = NULL;
 				open();
@@ -299,12 +301,15 @@ namespace tidas {
 
 			void ops_block ( backend_path loc, indexdb_op op );
 
+			std::string dbpath ( std::string const & fullpath );
+
 			void open ();
 			void close ();
 			void init ( std::string const & path );
 			void sql_err ( bool err, char const * msg, char const * file, int line );
 
 			std::string path_;
+			std::string volpath_;
 			access_mode mode_;
 
 			sqlite3 * sql_;

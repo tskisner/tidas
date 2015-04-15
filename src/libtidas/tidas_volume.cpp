@@ -126,10 +126,8 @@ void tidas::volume::index_setup () {
 
 	if ( loc_.path != "" ) {
 		string indxpath = loc_.path + path_sep + volume_fs_index;
-		cerr << "volume::index_setup:  sql at " << indxpath << endl;
 		db_.reset ( new indexdb_sql( indxpath, loc_.path, loc_.mode ) );
 	} else {
-		cerr << "volume::index_setup:  mem " << endl;
 		db_.reset ( new indexdb_mem() );
 	}
 
@@ -177,13 +175,10 @@ void tidas::volume::copy ( volume const & other, string const & filter, backend_
 
 	// copy root
 
-	cerr << "volume copy root " << other.root_.location().path << "/" << other.root_.location().name << " --> " << root_loc(loc_).path << "/" << root_loc(loc_).name << endl;
 	root_.copy ( other.root_, filter, root_loc ( loc_ ) );
 
 	if ( loc_ != other.loc_ ) {
 		// write root block
-
-		cerr << "volume flush root" << endl;
 		root_.flush();
 	}
 

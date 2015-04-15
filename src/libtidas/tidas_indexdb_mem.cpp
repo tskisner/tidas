@@ -439,8 +439,6 @@ bool tidas::indexdb_mem::query_block ( backend_path loc, vector < string > & chi
 
 		map < string, indexdb_block > :: const_iterator bit = data_block_.lower_bound ( path );
 
-		cerr << "block " << path << " scanning for descendants" << endl;
-
 		string dir;
 		string base;
 
@@ -453,8 +451,6 @@ bool tidas::indexdb_mem::query_block ( backend_path loc, vector < string > & chi
 
 				if ( pos == string::npos ) {
 					indexdb_path_split ( bit->first, dir, base );
-					cerr << "MEM block " << path << " has child " << bit->first << " --> " << base << endl;
-					// direct descendant
 					child_blocks.push_back( base );
 				}
 			}

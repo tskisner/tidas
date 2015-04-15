@@ -10,6 +10,8 @@
 
 #include <cstdio>
 
+#include <regex>
+
 
 using namespace std;
 using namespace tidas;
@@ -78,7 +80,6 @@ string tidas::indexdb_sql::dbpath ( string const & fullpath ) {
 	} else {
 		ret = fullpath;
 	}
-	cerr << "dbpath:  " << fullpath << " --> " << ret << endl;
 	return ret;
 }
 
@@ -557,8 +558,6 @@ void tidas::indexdb_sql::ops_block ( backend_path loc, indexdb_op op ) {
 		command.str("");
 		command << "INSERT OR REPLACE INTO blk ( path, parent ) VALUES ( \"" << dpath << "\", \"" << parent << "\" );";
 
-		cerr << "ins_block:  " << command.str() << endl;
-
 		sqlite3_stmt * stmt;
 		int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
 		SQLERR( ret != SQLITE_OK, "block prepare" );
@@ -906,10 +905,8 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 	ostringstream command;
 	command.precision(20);
 
-	cerr << "block_query:  select blk" << endl;
 	command.str("");
 	command << "SELECT * FROM blk WHERE path = \"" << dpath << "\";";
-	cerr << command.str() << endl;
 
 	sqlite3_stmt * bstmt;
 	int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &bstmt, NULL );
@@ -926,7 +923,6 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 
 		command.str("");
 		command << "SELECT * FROM intrvl WHERE parent = \"" << dpath << "\";";
-		cerr << command.str() << endl;
 
 		sqlite3_stmt * stmt;
 		ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
@@ -936,7 +932,6 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 		while ( ret == SQLITE_ROW ) {
 			string result = (char*)sqlite3_column_text ( stmt, 0 );
 			indexdb_path_split ( result, dir, base );
-			cerr << "  child interval " << result << " (" << base << ")" << endl;
 			child_intervals.push_back ( base );
 			ret = sqlite3_step ( stmt );
 		}
@@ -946,7 +941,6 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 
 		command.str("");
 		command << "SELECT * FROM grp WHERE parent = \"" << dpath << "\";";
-		cerr << command.str() << endl;
 
 		ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
 		SQLERR( ret != SQLITE_OK, "group child query prepare" );
@@ -955,7 +949,6 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 		while ( ret == SQLITE_ROW ) {
 			string result = (char*)sqlite3_column_text ( stmt, 0 );
 			indexdb_path_split ( result, dir, base );
-			cerr << "  child group " << result << " (" << base << ")" << endl;
 			child_groups.push_back ( base );
 			ret = sqlite3_step ( stmt );
 		}
@@ -965,7 +958,6 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 
 		command.str("");
 		command << "SELECT * FROM blk WHERE parent = \"" << dpath << "\";";
-		cerr << command.str() << endl;
 
 		ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &stmt, NULL );
 		SQLERR( ret != SQLITE_OK, "block child query prepare" );
@@ -974,7 +966,6 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 		while ( ret == SQLITE_ROW ) {
 			string result = (char*)sqlite3_column_text ( stmt, 0 );
 			indexdb_path_split ( result, dir, base );
-			cerr << "  child block " << result << " (" << base << ")" << endl;
 			child_blocks.push_back ( base );
 			ret = sqlite3_step ( stmt );
 		}
@@ -1050,19 +1041,242 @@ void tidas::indexdb_sql::commit ( deque < indexdb_transaction > const & trans ) 
 }
 
 
-void tidas::indexdb_sql::tree ( backend_path root, std::string const & filter, std::deque < indexdb_transaction > & result ) {
+void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filter, std::deque < indexdb_transaction > & trans ) {
 
-	result.clear();
+	string path = loc.path + path_sep + loc.name;
 
+	string dpath = dbpath ( path );
 
-	// create transactions for adding all children
+	vector < string > child_blocks;
+	vector < string > child_groups;
+	vector < string > child_intervals;
 
+	bool bfound = query_block ( loc, child_blocks, child_groups, child_intervals );
+
+	if ( ! bfound ) {
+		ostringstream o;
+		o << "cannot find block \"" << (loc.path + path_sep + loc.name) << "\" when exporting tree";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	// add transaction for this block
+
+	indexdb_block b;
+	b.type = indexdb_object_type::block;
+	b.path = dpath;
+
+	indexdb_transaction tr;
+	tr.op = indexdb_op::add;
+	tr.obj.reset ( b.clone() );
+
+	trans.push_back ( tr );
+
+	// split filter into local and sub blocks:  [XX=XX,XX=XX]/XXXX[XX=XX]/XXX[X=X]/ ---> [XX=XX,XX=XX] XXXX[XX=XX]/XXX[X=X]/
+
+	string filt_local;
+	string filt_sub;
+	bool stop;
+
+	filter_block ( filter, filt_local, filt_sub, stop );
+
+	// split local filter string:  [XX=XX,XX=XX]
+
+	map < string, string > filts = filter_split ( filt_local );
+
+	// select groups.  Since we are not copying objects to a
+	// new location, we strip off any sub-object filters.
+
+	string filt_name;
+	string filt_pass;
+
+	// XXX[schm=XXX,dict=XXX] ---> XXX [schm=XXX,dict=XXX]
+
+	filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
+
+	regex groupre ( filter_default ( filt_name ), std::regex::extended );
+
+	backend_path chloc;
+
+	for ( auto const & c : child_groups ) {
+		if ( regex_match ( c, groupre ) ) {
+			chloc = loc;
+			chloc.path = chloc.path + path_sep + chloc.name + path_sep + block_fs_group_dir;
+			chloc.name = c;
+
+			string child_path = chloc.path + path_sep + chloc.name;
+
+			index_type nsamp;
+			time_type start;
+			time_type stop;
+			map < data_type, size_t > counts;
+
+			bool found = query_group ( chloc, nsamp, start, stop, counts );
+
+			if ( ! found ) {
+				ostringstream o;
+				o << "inconsistency in group \"" << child_path << "\" when exporting tree";
+				TIDAS_THROW( o.str().c_str() );
+			}
+
+			indexdb_group g;
+			g.type = indexdb_object_type::group;
+			g.path = child_path;
+			g.nsamp = nsamp;
+			g.counts = counts;
+			g.start = start;
+			g.stop = stop;
+
+			indexdb_transaction tr;
+			tr.op = indexdb_op::add;
+			tr.obj.reset ( g.clone() );
+
+			trans.push_back ( tr );
+
+			// now get the schema and dict
+
+			field_list fields;
+
+			found = query_schema ( chloc, fields );
+
+			if ( ! found ) {
+				ostringstream o;
+				o << "inconsistency in schema \"" << child_path << "\" when exporting tree";
+				TIDAS_THROW( o.str().c_str() );
+			}
+
+			indexdb_schema s;
+			s.type = indexdb_object_type::schema;
+			s.path = child_path;
+			s.fields = fields;
+
+			tr.op = indexdb_op::add;
+			tr.obj.reset ( s.clone() );
+
+			trans.push_back ( tr );
+
+			map < string, string > data;
+			map < string, data_type > types;
+
+			found = query_dict ( chloc, data, types );
+
+			if ( ! found ) {
+				ostringstream o;
+				o << "inconsistency in dict \"" << child_path << "\" when exporting tree";
+				TIDAS_THROW( o.str().c_str() );
+			}
+
+			indexdb_dict d;
+			d.type = indexdb_object_type::dict;
+			d.path = child_path;
+			d.data = data;
+			d.types = types;
+
+			tr.op = indexdb_op::add;
+			tr.obj.reset ( d.clone() );
+
+			trans.push_back ( tr );
+
+		}
+	}
+
+	// select intervals.  Again, we strip off sub-filters.
+
+	// XXX[dict=XXX] ---> XXX [dict=XXX]
+
+	filter_sub ( filts[ intervals_submatch_key ], filt_name, filt_pass );
+
+	regex intre ( filter_default ( filt_name ), std::regex::extended );
+
+	for ( auto const & c : child_intervals ) {
+		if ( regex_match ( c, intre ) ) {
+			chloc = loc;
+			chloc.path = chloc.path + path_sep + chloc.name + path_sep + block_fs_intervals_dir;
+			chloc.name = c;
+
+			string child_path = chloc.path + path_sep + chloc.name;
+
+			size_t size;
+
+			bool found = query_intervals ( chloc, size );
+
+			if ( ! found ) {
+				ostringstream o;
+				o << "inconsistency in intervals \"" << child_path << "\" when exporting tree";
+				TIDAS_THROW( o.str().c_str() );
+			}
+
+			indexdb_intervals t;
+			t.type = indexdb_object_type::intervals;
+			t.path = child_path;
+			t.size = size;
+
+			indexdb_transaction tr;
+			tr.op = indexdb_op::add;
+			tr.obj.reset ( t.clone() );
+
+			trans.push_back ( tr );
+
+			// now get the dict
+
+			map < string, string > data;
+			map < string, data_type > types;
+
+			found = query_dict ( chloc, data, types );
+
+			if ( ! found ) {
+				ostringstream o;
+				o << "inconsistency in dict \"" << child_path << "\" when exporting tree";
+				TIDAS_THROW( o.str().c_str() );
+			}
+
+			indexdb_dict d;
+			d.type = indexdb_object_type::dict;
+			d.path = child_path;
+			d.data = data;
+			d.types = types;
+
+			tr.op = indexdb_op::add;
+			tr.obj.reset ( d.clone() );
+
+			trans.push_back ( tr );
+
+		}
+	}
+
+	// select sub-blocks
+
+	// extract sub-block name match and filter to pass on:  XXXX[XX=XX]/XXX ---> XXXX [XX=XX]/XXX
+	// check if we have reached a hard stop at this depth, and in this case ignore all sub-blocks.
+
+	if ( ! stop ) {
+
+		filter_sub ( filt_sub, filt_name, filt_pass );
+
+		regex blockre ( filter_default ( filt_name ), std::regex::extended );
+
+		for ( auto const & c : child_blocks ) {
+			if ( regex_match ( c, blockre ) ) {
+				chloc = loc;
+				chloc.path = chloc.path + path_sep + chloc.name;
+				chloc.name = c;
+				
+				tree_node( chloc, filt_pass, trans );
+			}
+		}
+
+	}
 
 	return;
 }
 
 
+void tidas::indexdb_sql::tree ( backend_path root, std::string const & filter, std::deque < indexdb_transaction > & result ) {
 
+	result.clear();
 
+	tree_node ( root, filter, result );
+
+	return;
+}
 
 

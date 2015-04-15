@@ -291,6 +291,8 @@ namespace tidas {
 
 		private :
 
+			void tree_node ( backend_path loc, std::string const & filter, std::deque < indexdb_transaction > & trans );
+
 			void ops_dict ( backend_path loc, indexdb_op op, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
 
 			void ops_schema ( backend_path loc, indexdb_op op, field_list const & fields );

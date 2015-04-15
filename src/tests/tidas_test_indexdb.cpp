@@ -117,6 +117,11 @@ void indexdb_setup ( tidas::indexdb * idx ) {
 
 			idx->add_intervals ( intrloc, inv.size() );
 
+			dict dct;
+			dict_setup ( dct );
+
+			idx->add_dict ( intrloc, dct.data(), dct.types() );
+
 		}
 
 	}
@@ -222,6 +227,9 @@ void indexdb_verify ( tidas::indexdb * idx ) {
 
 		for ( size_t n = 0; n < NINTERVAL; ++n ) {
 
+			dict dct;
+			dict_setup ( dct );
+
 			interval_list inv;
 			intervals_setup ( inv );
 
@@ -238,6 +246,22 @@ void indexdb_verify ( tidas::indexdb * idx ) {
 			idx->query_intervals ( intrloc, check_size );
 
 			EXPECT_EQ( inv.size(), check_size );
+
+			map < string, string > ddata;
+			map < string, data_type > dtypes;
+
+			idx->query_dict ( intrloc, ddata, dtypes );
+
+			EXPECT_EQ( dct.data().size(), ddata.size() );
+			EXPECT_EQ( dct.types().size(), dtypes.size() );
+
+			map < string, string > temp_data = dct.data();
+			map < string, data_type > temp_types = dct.types();
+
+			for ( auto d : ddata ) {
+				EXPECT_EQ( temp_data[ d.first ], d.second );
+				EXPECT_EQ( temp_types[ d.first ], dtypes[ d.first ] );
+			}
 
 		}
 

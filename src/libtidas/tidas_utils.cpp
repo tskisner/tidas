@@ -430,7 +430,6 @@ void tidas::filter_block ( string const & filter, string & local, string & subfi
 
 		if ( pos == filter.size() - 1 ) {
 			stop = true;
-			cerr << "filter_block:  STOP at " << filter << endl;
 		} else {
 			subfilter = filter.substr ( (pos + 1), (filter.size() - pos) );
 		}

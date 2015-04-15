@@ -240,31 +240,13 @@ void tidas::block::sync ( string const & filter ) {
 		vector < string > child_intervals;
 
 		if ( loc_.idx ) {
-			cerr << "block_sync: we have index" << endl;
-
 			found = loc_.idx->query_block ( loc_, child_blocks, child_groups, child_intervals );
-			cerr << "block_sync: found " << loc_.path << "/" << loc_.name << endl;
-			cerr << "block_sync:  child blocks:" << endl;
-			for ( auto const & b : child_blocks ) {
-				cerr << "block_sync:   " << b << endl;
-			}
-			cerr << "block_sync:  child groups:" << endl;
-			for ( auto const & g : child_groups ) {
-				cerr << "block_sync:   " << g << endl;
-			}
-			cerr << "block_sync:  child intervals:" << endl;
-			for ( auto const & t : child_intervals ) {
-				cerr << "block_sync:   " << t << endl;
-			}
-		} else {
-			cerr << "block_sync: no index" << endl;
 		}
 
 		if ( found ) {
 
 			for ( auto const & b : child_blocks ) {
 				if ( ! stop ) {
-					cerr << "block_sync:  idx query " << loc_.path << " : " << loc_.name << " child " << b << endl;
 					if ( regex_match ( b, blockre ) ) {
 						block_data_[ b ] = block ( block_loc ( loc_, b ) );
 					}
@@ -284,11 +266,6 @@ void tidas::block::sync ( string const & filter ) {
 			}
 
 		} else {
-
-			if ( loc_.idx ) {
-				cerr << "block_sync: not found, adding " << loc_.path << "/" << loc_.name << " to index" << endl;
-				loc_.idx->add_block ( loc_ );
-			}
 
 			// find all sub-blocks
 
@@ -317,16 +294,10 @@ void tidas::block::sync ( string const & filter ) {
 					found_intervals = true;
 				} else {
 					// this must be a block!
-					cerr << "block_sync: child directory " << item << endl;
 					if ( ! stop ) {
 						if ( regex_match ( item, blockre ) ) {
-							cerr << "block_sync: child directory " << item << " matches regex" << endl;
 							block_data_[ item ] = block ( block_loc ( loc_, item ) );
-						} else {
-							cerr << "block_sync: child directory " << item << " does not match regex" << endl;
 						}
-					} else {
-						cerr << "block_sync: child directory " << item << " ignored due to stop" << endl;
 					}
 				}
 			}
@@ -337,6 +308,10 @@ void tidas::block::sync ( string const & filter ) {
 				ostringstream o;
 				o << "block \"" << fspath << "\" is missing the group or intervals subdirectories!";
 				TIDAS_THROW( o.str().c_str() );
+			}
+
+			if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
+				loc_.idx->add_block ( loc_ );
 			}
 
 			// sync all groups
@@ -393,10 +368,7 @@ void tidas::block::flush () const {
 
 	if ( loc_.type != backend_type::none ) {
 
-		cerr << "calling block::flush " << loc_.path << "/" << loc_.name << endl;
-
 		if ( loc_.mode == access_mode::readwrite ) {
-			cerr << "  readwrite:  mkdir" << endl;
 
 			string dir = loc_.path + path_sep + loc_.name;
 			fs_mkdir ( dir.c_str() );
@@ -413,8 +385,6 @@ void tidas::block::flush () const {
 				loc_.idx->update_block ( loc_ );
 			}
 
-		} else {
-			cerr << "  readonly:  skipping" << endl;
 		}
 
 	}
@@ -520,9 +490,7 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 		block_data_.clear();
 
 		for ( auto & blk : other.block_data_ ) {
-			cerr << "block_copy:  check subblock " << blk.first << endl;
 			if ( regex_match ( blk.first, blockre ) ) {
-				cerr << "block_copy:    match" << endl;
 				block_data_[ blk.first ].copy ( blk.second, filt_pass, block_loc ( loc_, blk.first ) );
 			}
 		}

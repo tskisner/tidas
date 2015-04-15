@@ -467,7 +467,7 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	// update index
 
-	if ( loc_.idx ) {
+	if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
 		loc_.idx->update_block ( loc_ );
 	}
 

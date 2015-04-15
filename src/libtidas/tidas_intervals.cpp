@@ -150,7 +150,7 @@ void tidas::intervals::sync () {
 
 		if ( ! found ) {
 			backend_->read ( loc_, size_ );
-			if ( loc_.idx ) {
+			if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
 				loc_.idx->add_intervals ( loc_, size_ );
 			}
 		}
@@ -217,7 +217,7 @@ void tidas::intervals::copy ( intervals const & other, string const & filter, ba
 
 	// update index
 
-	if ( loc_.idx ) {
+	if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
 		loc_.idx->update_intervals ( loc_, size_ );
 	}
 

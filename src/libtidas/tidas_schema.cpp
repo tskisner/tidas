@@ -143,7 +143,7 @@ void tidas::schema::sync () {
 
 		if ( ! found ) {
 			backend_->read ( loc_, fields_ );
-			if ( loc_.idx ) {
+			if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
 				loc_.idx->add_schema ( loc_, fields_ );
 			}
 		}
@@ -203,7 +203,7 @@ void tidas::schema::copy ( schema const & other, string const & filter, backend_
 
 	// update index
 
-	if ( loc_.idx ) {
+	if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
 		loc_.idx->update_schema ( loc_, fields_ );
 	}
 

@@ -58,17 +58,22 @@ void indexdb_group_counts ( field_list const & fields, map < data_type, size_t >
 }
 
 
-void indexdb_setup ( tidas::indexdb & idx ) {
+void indexdb_setup ( tidas::indexdb * idx ) {
 
 	backend_path loc;
-	loc.path = "root";
+	loc.path = "vol";
+	loc.name = "root";
+
+	idx->add_block ( loc );
+
+	loc.path = "vol/root";
 
 	for ( size_t b = 0; b < NBLOCK; ++b ) {
 		ostringstream blkname;
 		blkname << "blk" << b;
 
 		loc.name = blkname.str();
-		idx.add_block ( loc );
+		idx->add_block ( loc );
 
 		for ( size_t g = 0; g < NGROUP; ++g ) {
 
@@ -89,11 +94,11 @@ void indexdb_setup ( tidas::indexdb & idx ) {
 			map < data_type, size_t > counts;
 			indexdb_group_counts ( flist, counts );
 
-			idx.add_group ( grouploc, GNSAMP, GSTART, GSTOP, counts );
+			idx->add_group ( grouploc, GNSAMP, GSTART, GSTOP, counts );
 
-			idx.add_schema ( grouploc, flist );
+			idx->add_schema ( grouploc, flist );
 
-			idx.add_dict ( grouploc, dct.data(), dct.types() );
+			idx->add_dict ( grouploc, dct.data(), dct.types() );
 
 		}
 
@@ -110,7 +115,7 @@ void indexdb_setup ( tidas::indexdb & idx ) {
 
 			intrloc.name = intrname.str();
 
-			idx.add_intervals ( intrloc, inv.size() );
+			idx->add_intervals ( intrloc, inv.size() );
 
 		}
 
@@ -121,10 +126,23 @@ void indexdb_setup ( tidas::indexdb & idx ) {
 
 
 
-void indexdb_verify ( tidas::indexdb & idx ) {
+void indexdb_verify ( tidas::indexdb * idx ) {
 
 	backend_path loc;
-	loc.path = "root";
+	loc.path = "vol";
+	loc.name = "root";
+
+	vector < string > root_child_blocks;
+	vector < string > root_child_groups;
+	vector < string > root_child_intervals;
+
+	idx->query_block ( loc, root_child_blocks, root_child_groups, root_child_intervals );
+
+	EXPECT_EQ( NBLOCK, root_child_blocks.size() );
+	EXPECT_EQ( 0, root_child_groups.size() );
+	EXPECT_EQ( 0, root_child_intervals.size() );
+
+	loc.path = "vol/root";
 
 	for ( size_t b = 0; b < NBLOCK; ++b ) {
 		ostringstream blkname;
@@ -136,7 +154,7 @@ void indexdb_verify ( tidas::indexdb & idx ) {
 		vector < string > child_groups;
 		vector < string > child_intervals;
 
-		idx.query_block ( loc, child_blocks, child_groups, child_intervals );
+		idx->query_block ( loc, child_blocks, child_groups, child_intervals );
 
 		EXPECT_EQ( 0, child_blocks.size() );
 		EXPECT_EQ( NGROUP, child_groups.size() );
@@ -167,7 +185,7 @@ void indexdb_verify ( tidas::indexdb & idx ) {
 
 			map < data_type, size_t > check_counts;
 
-			idx.query_group ( grouploc, check_nsamp, check_start, check_stop, check_counts );
+			idx->query_group ( grouploc, check_nsamp, check_start, check_stop, check_counts );
 
 			EXPECT_EQ( GNSAMP, check_nsamp );
 			EXPECT_EQ( GSTART, check_start );
@@ -181,13 +199,13 @@ void indexdb_verify ( tidas::indexdb & idx ) {
 
 			field_list check_fields;
 
-			idx.query_schema ( grouploc, check_fields );
+			idx->query_schema ( grouploc, check_fields );
 			schema_verify ( check_fields );
 
 			map < string, string > ddata;
 			map < string, data_type > dtypes;
 
-			idx.query_dict ( grouploc, ddata, dtypes );
+			idx->query_dict ( grouploc, ddata, dtypes );
 
 			EXPECT_EQ( dct.data().size(), ddata.size() );
 			EXPECT_EQ( dct.types().size(), dtypes.size() );
@@ -217,7 +235,7 @@ void indexdb_verify ( tidas::indexdb & idx ) {
 
 			size_t check_size;
 
-			idx.query_intervals ( intrloc, check_size );
+			idx->query_intervals ( intrloc, check_size );
 
 			EXPECT_EQ( inv.size(), check_size );
 
@@ -364,28 +382,78 @@ TEST( indexdbtest, pathsearch ) {
 }
 
 
-TEST( indexdbtest, addquery ) {
+TEST( indexdbtest, addquery_mem ) {
 
-	indexdb idx;
+	indexdb_mem idx;
 
-	indexdb_setup( idx );
+	indexdb_setup( &idx );
 
-	indexdb_verify( idx );
+	indexdb_verify( &idx );
+
+}
+
+
+TEST( indexdbtest, addquery_sql ) {
+
+	fs_rm ( "./indexdb_sql.out" );
+	indexdb_sql idx( "./indexdb_sql.out", access_mode::readwrite );
+
+	indexdb_setup( &idx );
+
+	indexdb_verify( &idx );
 
 }
 
 
 TEST( indexdbtest, history ) {
 
-	indexdb idx;
+	indexdb_mem idx;
+	indexdb_mem check;
 
-	indexdb_setup( idx );
-
-	indexdb check;
+	indexdb_setup( &idx );
 
 	check.replay ( idx.history() );
 
-	indexdb_verify( check );
+	indexdb_verify( &check );
+
+}
+
+
+TEST( indexdbtest, commit ) {
+
+	indexdb_mem idx;
+
+	indexdb_setup( &idx );
+
+	fs_rm ( "./indexdb_sql_commit.out" );
+	indexdb_sql check( "./indexdb_sql_commit.out", access_mode::readwrite );
+
+	check.commit ( idx.history() );
+
+	indexdb_verify( &check );
+
+}
+
+
+TEST( indexdbtest, treecommit ) {
+
+	fs_rm ( "./indexdb_sql_tree.out" );
+	fs_rm ( "./indexdb_sql_tree_check.out" );
+	indexdb_sql idx( "./indexdb_sql_tree.out", access_mode::readwrite );
+	indexdb_sql check( "./indexdb_sql_tree_check.out", access_mode::readwrite );
+
+	indexdb_setup( &idx );
+
+	std::deque < indexdb_transaction > data;
+
+	backend_path root;
+	root.path = "vol";
+	root.name = "root";
+	idx.tree ( root, "", data );
+
+	check.commit ( data );
+
+	indexdb_verify( &check );
 
 }
 
@@ -413,13 +481,13 @@ TEST( indexdbtest, serialize ) {
 
 	EXPECT_EQ( inmap, outmap );
 
-	indexdb idx;
+	indexdb_mem idx;
 
-	indexdb_setup( idx );
+	indexdb_setup( &idx );
 
 	// serialize
 
-	string outfile = "./indexdb_serialized.out";
+	string outfile = "./indexdb_mem_serialized.out";
 
 	{
 		ofstream os( outfile, ios::binary );
@@ -433,11 +501,11 @@ TEST( indexdbtest, serialize ) {
   		is.close();
 	}
 
-	indexdb check;
+	indexdb_mem check;
 
 	check.replay ( idx.history() );
 
-	indexdb_verify( check );
+	indexdb_verify( &check );
 
 }
 
@@ -447,20 +515,20 @@ TEST( indexdbtest, sqlite ) {
 	string dbfile = "./indexdb_sql.out";
 	fs_rm ( dbfile.c_str() );
 
-	indexdb idx ( dbfile, access_mode::readwrite );
+	indexdb_sql idx ( dbfile, access_mode::readwrite );
 
-	indexdb_setup( idx );
+	indexdb_setup( &idx );
 
 	// copy constructor
 
-	indexdb check ( idx );
-	indexdb_verify ( check );
+	indexdb_sql check ( idx );
+	indexdb_verify ( &check );
 
 	// serialize to file
 
 	string outfile = "./indexdb_sql_serialized.out";
 
-	indexdb check2;
+	indexdb_sql check2;
 
 	{
 		ofstream os( outfile, ios::binary );
@@ -474,11 +542,11 @@ TEST( indexdbtest, sqlite ) {
   		is.close();
 	}
 
-	indexdb_verify ( check2 );
+	indexdb_verify ( &check2 );
 
 	// serialize to string
 
-	indexdb check3;
+	indexdb_sql check3;
 
 	{
   		stringstream istr;
@@ -491,10 +559,10 @@ TEST( indexdbtest, sqlite ) {
 		inarch ( check3 );
 	}
 
-	indexdb_verify ( check3 );
+	indexdb_verify ( &check3 );
 
 	// duplicate
-
+	/*
 	string dupfile = "./indexdb_sql_dup.out";
 	fs_rm ( dupfile.c_str() );
 
@@ -503,7 +571,7 @@ TEST( indexdbtest, sqlite ) {
 	indexdb check4 ( dupfile, access_mode::read );
 
 	indexdb_verify ( check4 );
-
+	*/
 }
 
 

@@ -77,7 +77,7 @@ namespace tidas {
 
 			void write_props ( backend_path const & loc ) const;
 
-			backend_path root_loc ( backend_path const & loc );
+			backend_path root_loc ( backend_path const & loc ) const;
 
 			backend_path loc_;
 

@@ -35,8 +35,10 @@ namespace tidas {
 	class indexdb_object {
 
 		public :
+			
+			virtual ~indexdb_object ();
 
-			virtual indexdb_object * clone () = 0;
+			virtual indexdb_object * clone () const = 0;
 
 			indexdb_object_type type;
 			std::string path;
@@ -55,7 +57,7 @@ namespace tidas {
 
 		public :
 
-			indexdb_object * clone ();
+			indexdb_object * clone () const;
 
 			std::map < std::string, std::string > data;
 			std::map < std::string, data_type > types;
@@ -75,7 +77,7 @@ namespace tidas {
 
 		public :
 
-			indexdb_object * clone ();
+			indexdb_object * clone () const;
 
 			field_list fields;
 
@@ -93,7 +95,7 @@ namespace tidas {
 
 		public :
 
-			indexdb_object * clone ();
+			indexdb_object * clone () const;
 
 			index_type nsamp;
 			time_type start;
@@ -117,7 +119,7 @@ namespace tidas {
 
 		public :
 
-			indexdb_object * clone ();
+			indexdb_object * clone () const;
 
 			size_t size;
 
@@ -135,7 +137,7 @@ namespace tidas {
 
 		public :
 
-			indexdb_object * clone ();
+			indexdb_object * clone () const;
 
 			template < class Archive >
 			void serialize ( Archive & ar ) {
@@ -173,107 +175,190 @@ namespace tidas {
 	};
 
 
-	// class for object index
+	// utility for extracting basename
+
+	std::string indexdb_path_base ( std::string const & in );
+
+
+	// base class for indices
 
 	class indexdb {
 
 		public :
 
-			indexdb ();
-			~indexdb ();
-			indexdb & operator= ( indexdb const & other );
+			virtual ~indexdb ();
 
-			indexdb ( indexdb const & other );
+			virtual void add_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) = 0;
+			virtual void update_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) = 0;
+			virtual void del_dict ( backend_path loc ) = 0;
+			virtual bool query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) = 0;
 
-			indexdb ( std::string const & path, access_mode mode );
+			virtual void add_schema ( backend_path loc, field_list const & fields ) = 0;
+			virtual void update_schema ( backend_path loc, field_list const & fields ) = 0;
+			virtual void del_schema ( backend_path loc ) = 0;
+			virtual bool query_schema ( backend_path loc, field_list & fields ) = 0;
 
-			void copy ( indexdb const & other );
+			virtual void add_group ( backend_path loc, index_type const & nsamp, time_type const & start, time_type const & stop, std::map < data_type, size_t > const & counts ) = 0;
+			virtual void update_group ( backend_path loc, index_type const & nsamp, time_type const & start, time_type const & stop, std::map < data_type, size_t > const & counts ) = 0;
+			virtual void del_group ( backend_path loc ) = 0;
+			virtual bool query_group ( backend_path loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts ) = 0;
 
-			//---------------------------
+			virtual void add_intervals ( backend_path loc, size_t const & size ) = 0;
+			virtual void update_intervals ( backend_path loc, size_t const & size ) = 0;
+			virtual void del_intervals ( backend_path loc ) = 0;
+			virtual bool query_intervals ( backend_path loc, size_t & size ) = 0;
+
+			virtual void add_block ( backend_path loc ) = 0;
+			virtual void update_block ( backend_path loc ) = 0;
+			virtual void del_block ( backend_path loc ) = 0;
+			virtual bool query_block ( backend_path loc, std::vector < std::string > & child_blocks, std::vector < std::string > & child_groups, std::vector < std::string > & child_intervals ) = 0;
+
+			template < class Archive >
+			void save ( Archive & ar ) const {
+				return;
+			}
+
+			template < class Archive >
+			void load ( Archive & ar ) {
+				return;
+			}
+
+	};
+
+
+	// class for SQLite object index
+
+	class indexdb_sql : public indexdb {
+
+		public :
+
+			indexdb_sql ();
+			~indexdb_sql ();
+			indexdb_sql & operator= ( indexdb_sql const & other );
+			indexdb_sql ( indexdb_sql const & other );
+			indexdb_sql ( std::string const & path, access_mode mode );
+
+			void copy ( indexdb_sql const & other );
 
 			void add_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
-
 			void update_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
-
 			void del_dict ( backend_path loc );
-			
 			bool query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
 
-			//---------------------------
-
 			void add_schema ( backend_path loc, field_list const & fields );
-
 			void update_schema ( backend_path loc, field_list const & fields );
-			
 			void del_schema ( backend_path loc );
-			
 			bool query_schema ( backend_path loc, field_list & fields );
 
-			//---------------------------
-
 			void add_group ( backend_path loc, index_type const & nsamp, time_type const & start, time_type const & stop, std::map < data_type, size_t > const & counts );
-
 			void update_group ( backend_path loc, index_type const & nsamp, time_type const & start, time_type const & stop, std::map < data_type, size_t > const & counts );
-			
 			void del_group ( backend_path loc );
-			
 			bool query_group ( backend_path loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts );
 
-			//---------------------------
-
 			void add_intervals ( backend_path loc, size_t const & size );
-
 			void update_intervals ( backend_path loc, size_t const & size );
-			
 			void del_intervals ( backend_path loc );
-			
 			bool query_intervals ( backend_path loc, size_t & size );
 
-			//---------------------------
+			void add_block ( backend_path loc );
+			void update_block ( backend_path loc );
+			void del_block ( backend_path loc );
+			bool query_block ( backend_path loc, std::vector < std::string > & child_blocks, std::vector < std::string > & child_groups, std::vector < std::string > & child_intervals );
+			
+			void commit ( std::deque < indexdb_transaction > const & trans );
+
+			void tree ( backend_path root, std::string const & filter, std::deque < indexdb_transaction > & result );
+
+			template < class Archive >
+			void save ( Archive & ar ) const {
+				ar ( cereal::base_class < indexdb > ( this ) );
+				ar ( CEREAL_NVP( path_ ) );
+				ar ( CEREAL_NVP( mode_ ) );
+				return;
+			}
+
+			template < class Archive >
+			void load ( Archive & ar ) {
+				ar ( cereal::base_class < indexdb > ( this ) );
+				ar ( CEREAL_NVP( path_ ) );
+				ar ( CEREAL_NVP( mode_ ) );
+				sql_ = NULL;
+				open();
+				return;
+			}
+
+		private :
+
+			void ops_dict ( backend_path loc, indexdb_op op, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
+
+			void ops_schema ( backend_path loc, indexdb_op op, field_list const & fields );
+
+			void ops_group ( backend_path loc, indexdb_op op, index_type const & nsamp, time_type const & start, time_type const & stop, std::map < data_type, size_t > const & counts );
+
+			void ops_intervals ( backend_path loc, indexdb_op op, size_t const & size );
+
+			void ops_block ( backend_path loc, indexdb_op op );
+
+			void open ();
+			void close ();
+			void init ( std::string const & path );
+			void sql_err ( bool err, char const * msg, char const * file, int line );
+
+			std::string path_;
+			access_mode mode_;
+
+			sqlite3 * sql_;
+
+	};
+
+
+	// class for object index in memory
+
+	class indexdb_mem : public indexdb {
+
+		public :
+
+			indexdb_mem ();
+			~indexdb_mem ();
+			indexdb_mem & operator= ( indexdb_mem const & other );
+			indexdb_mem ( indexdb_mem const & other );
+
+			void copy ( indexdb_mem const & other );
+
+			void add_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
+			void update_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
+			void del_dict ( backend_path loc );			
+			bool query_dict ( backend_path loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
+
+			void add_schema ( backend_path loc, field_list const & fields );
+			void update_schema ( backend_path loc, field_list const & fields );
+			void del_schema ( backend_path loc );			
+			bool query_schema ( backend_path loc, field_list & fields );
+
+			void add_group ( backend_path loc, index_type const & nsamp, time_type const & start, time_type const & stop, std::map < data_type, size_t > const & counts );
+			void update_group ( backend_path loc, index_type const & nsamp, time_type const & start, time_type const & stop, std::map < data_type, size_t > const & counts );
+			void del_group ( backend_path loc );			
+			bool query_group ( backend_path loc, index_type & nsamp, time_type & start, time_type & stop, std::map < data_type, size_t > & counts );
+
+			void add_intervals ( backend_path loc, size_t const & size );
+			void update_intervals ( backend_path loc, size_t const & size );
+			void del_intervals ( backend_path loc );			
+			bool query_intervals ( backend_path loc, size_t & size );
 
 			void add_block ( backend_path loc );
-
 			void update_block ( backend_path loc );
-			
 			void del_block ( backend_path loc );
-			
 			bool query_block ( backend_path loc, std::vector < std::string > & child_blocks, std::vector < std::string > & child_groups, std::vector < std::string > & child_intervals );
-
-			//---------------------------
-
-			void ins_dict ( std::string const & path, indexdb_dict const & d );
-
-			void rm_dict ( std::string const & path );
-			
-			void ins_schema ( std::string const & path, indexdb_schema const & s );
-			
-			void rm_schema ( std::string const & path );
-			
-			void ins_group ( std::string const & path, indexdb_group const & g );
-			
-			void rm_group ( std::string const & path );
-			
-			void ins_intervals ( std::string const & path, indexdb_intervals const & t );
-			
-			void rm_intervals ( std::string const & path );
-			
-			void ins_block ( std::string const & path, indexdb_block const & b );
-			
-			void rm_block ( std::string const & path );
-
-			//---------------------------
 
 			std::deque < indexdb_transaction > const & history () const;
 			
 			void history_clear();
-
-			void duplicate ( std::string const & path ) const;
 			
 			void replay ( std::deque < indexdb_transaction > const & trans );
 
 			template < class Archive >
 			void save ( Archive & ar ) const {
-				ar ( CEREAL_NVP( path_ ) );
+				ar ( cereal::base_class < indexdb > ( this ) );
 				ar ( CEREAL_NVP( history_ ) );
 				ar ( CEREAL_NVP( data_dict_ ) );
 				ar ( CEREAL_NVP( data_schema_ ) );
@@ -285,34 +370,27 @@ namespace tidas {
 
 			template < class Archive >
 			void load ( Archive & ar ) {
-				ar ( CEREAL_NVP( path_ ) );
+				ar ( cereal::base_class < indexdb > ( this ) );
 				ar ( CEREAL_NVP( history_ ) );
 				ar ( CEREAL_NVP( data_dict_ ) );
 				ar ( CEREAL_NVP( data_schema_ ) );
 				ar ( CEREAL_NVP( data_group_ ) );
 				ar ( CEREAL_NVP( data_intervals_ ) );
 				ar ( CEREAL_NVP( data_block_ ) );
-				sql_ = NULL;
-				sql_open();
 				return;
 			}
 
 		private :
 
-			void sql_open ();
+			void ops_dict ( backend_path loc, indexdb_op op, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
 
-			void sql_close ();
+			void ops_schema ( backend_path loc, indexdb_op op, field_list const & fields );
 
-			void sql_init ( std::string const & path );
+			void ops_group ( backend_path loc, indexdb_op op, index_type const & nsamp, time_type const & start, time_type const & stop, std::map < data_type, size_t > const & counts );
 
-			void sql_err ( bool err, char const * msg, char const * file, int line );
+			void ops_intervals ( backend_path loc, indexdb_op op, size_t const & size );
 
-			std::string path_base ( std::string const & in );
-
-			std::string path_;
-			access_mode mode_;
-
-			sqlite3 * sql_;
+			void ops_block ( backend_path loc, indexdb_op op );
 
 			std::deque < indexdb_transaction > history_;
 

@@ -69,7 +69,8 @@ tidas_group_getdata.cpp \
 tidas_block.cpp \
 tidas_volume.cpp \
 tidas_copy.cpp \
-tidas_indexdb.cpp \
+tidas_indexdb_mem.cpp \
+tidas_indexdb_sql.cpp \
 ctidas.cpp
 
 

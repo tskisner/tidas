@@ -92,7 +92,7 @@ void tidas::dict::sync () {
 
 		if ( ! found ) {
 			backend_->read ( loc_, data_, types_ );
-			if ( loc_.idx ) {
+			if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
 				loc_.idx->add_dict ( loc_, data_, types_ );
 			}
 		}
@@ -154,7 +154,7 @@ void tidas::dict::copy ( dict const & other, string const & filter, backend_path
 
 	// update index
 
-	if ( loc_.idx ) {
+	if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
 		loc_.idx->update_dict ( loc_, data_, types_ );
 	}
 

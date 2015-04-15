@@ -156,7 +156,7 @@ void tidas::group::sync () {
 		}
 
 		if ( ! found ) {
-			if ( loc_.idx ) {
+			if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
 				loc_.idx->add_group ( loc_, size_, start_, stop_, backend_counts );
 			}
 		}
@@ -234,7 +234,7 @@ void tidas::group::copy ( group const & other, string const & filter, backend_pa
 
 	// update index
 
-	if ( loc_.idx ) {
+	if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
 		loc_.idx->update_group ( loc_, size_, start_, stop_, counts_ );
 	}
 

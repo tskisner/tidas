@@ -118,9 +118,11 @@ void tidas::volume::index_setup () {
 
 	if ( loc_.path != "" ) {
 		string indxpath = loc_.path + path_sep + volume_fs_index;
-		db_.reset ( new indexdb( indxpath, loc_.mode ) );
+		cerr << "volume::index_setup:  sql at " << indxpath << endl;
+		db_.reset ( new indexdb_sql( indxpath, loc_.mode ) );
 	} else {
-		db_.reset ( new indexdb() );
+		cerr << "volume::index_setup:  mem " << endl;
+		db_.reset ( new indexdb_mem() );
 	}
 
 	loc_.idx = db_;
@@ -223,7 +225,18 @@ void tidas::volume::link ( std::string const & path, link_type const & ltype, st
 	// make a copy of the index, so that we can add new objects
 
 	string newdb = lpath + path_sep + volume_fs_index;
-	db_->duplicate ( newdb );
+	indexdb_sql sqldb ( newdb, access_mode::readwrite );
+
+	if ( loc_.path != "" ) {
+		indexdb_sql * orig = dynamic_cast < indexdb_sql * > ( db_.get() );
+		backend_path rootloc = root_loc ( loc_ );
+		std::deque < indexdb_transaction > result;
+		orig->tree( rootloc, "", result );
+		sqldb.commit ( result );
+	} else {
+		indexdb_mem * orig = dynamic_cast < indexdb_mem * > ( db_.get() );
+		sqldb.commit ( orig->history() );
+	}
 
 	return;
 }
@@ -280,7 +293,7 @@ backend_path tidas::volume::location () const {
 }
 
 
-backend_path tidas::volume::root_loc ( backend_path const & loc ) {
+backend_path tidas::volume::root_loc ( backend_path const & loc ) const {
 	backend_path ret = loc;
 
 	ret.name = volume_fs_data_dir;

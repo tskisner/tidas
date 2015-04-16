@@ -162,6 +162,8 @@ namespace tidas {
 
 			void copy ( indexdb_transaction const & other );
 
+			void print ( std::ostream & out ) const;
+
 			indexdb_op op;
 			std::unique_ptr < indexdb_object > obj;
 

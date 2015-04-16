@@ -121,6 +121,8 @@ TEST_F( volumeTest, HDF5Backend ) {
 		volume_verify ( vol );
 	}
 
+	
+
 #else
 
 	cout << "  skipping (not compiled with HDF5 support)" << endl;

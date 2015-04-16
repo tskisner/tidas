@@ -88,6 +88,71 @@ void tidas::indexdb_transaction::copy ( indexdb_transaction const & other ) {
 }
 
 
+void tidas::indexdb_transaction::print ( ostream & out ) const {
+
+	switch ( op ) {
+		case indexdb_op::add :
+			out << "TR: ADD" << endl;
+			break;
+		case indexdb_op::update :
+			out << "TR: UPDATE" << endl;
+			break;
+		case indexdb_op::del :
+			out << "TR: DEL" << endl;
+			break;
+		default :
+			TIDAS_THROW( "unknown indexdb transaction operator" );
+			break;
+	}
+
+	indexdb_dict * dp;
+	indexdb_schema * sp;
+	indexdb_group * gp;
+	indexdb_intervals * tp;
+	indexdb_block * bp;
+
+	switch ( obj->type ) {
+		case indexdb_object_type::dict :
+			dp = dynamic_cast < indexdb_dict * > ( obj.get() );
+			out << "TR:   dict " << dp->path << endl;
+			for ( auto d : dp->data ) {
+				out << "TR:     " << d.first << " = " << d.second << " (" << data_type_to_string( dp->types[ d.first ] ) << ")" << endl;
+			}
+			break;
+		case indexdb_object_type::schema :
+			sp = dynamic_cast < indexdb_schema * > ( obj.get() );
+			out << "TR:   schema " << sp->path << endl;
+			for ( auto f : sp->fields ) {
+				out << "TR:     " << f.name << " : " << f.units << " : " << data_type_to_string( f.type ) << endl;
+			}
+			break;
+		case indexdb_object_type::group :
+			gp = dynamic_cast < indexdb_group * > ( obj.get() );
+			out << "TR:   group " << gp->path << endl;
+			out << "TR:     " << gp->nsamp << " samples, " << gp->start << " - " << gp->stop << endl;
+			out << "TR:     counts:" << endl;
+			for ( auto g : gp->counts ) {
+				out << "TR:       " << data_type_to_string( g.first ) << " = " << g.second << endl;
+			}
+			break;
+		case indexdb_object_type::intervals :
+			tp = dynamic_cast < indexdb_intervals * > ( obj.get() );
+			out << "TR:   intervals " << tp->path << endl;
+			out << "TR:     " << tp->size << " regions" << endl;
+			break;
+		case indexdb_object_type::block :
+			bp = dynamic_cast < indexdb_block * > ( obj.get() );
+			out << "TR:   block " << bp->path << endl;
+			break;
+		default :
+			TIDAS_THROW( "unknown indexdb object type" );
+			break;
+	}
+
+	return;
+}
+
+
 tidas::indexdb::~indexdb () {
 
 }

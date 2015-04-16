@@ -58,6 +58,61 @@ void indexdb_group_counts ( field_list const & fields, map < data_type, size_t >
 }
 
 
+void indexdb_setup_block ( tidas::indexdb * idx, backend_path const & loc ) {
+
+	for ( size_t g = 0; g < NGROUP; ++g ) {
+
+		backend_path grouploc;
+		grouploc.path = loc.path + path_sep + loc.name + path_sep + block_fs_group_dir;
+
+		ostringstream grpname;
+		grpname << "grp" << g;
+
+		grouploc.name = grpname.str();
+
+		field_list flist;
+		schema_setup ( flist );
+
+		dict dct;
+		dict_setup ( dct );
+
+		map < data_type, size_t > counts;
+		indexdb_group_counts ( flist, counts );
+
+		idx->add_group ( grouploc, GNSAMP, GSTART, GSTOP, counts );
+
+		idx->add_schema ( grouploc, flist );
+
+		idx->add_dict ( grouploc, dct.data(), dct.types() );
+
+	}
+
+	for ( size_t n = 0; n < NINTERVAL; ++n ) {
+
+		interval_list inv;
+		intervals_setup ( inv );
+
+		backend_path intrloc;
+		intrloc.path = loc.path + path_sep + loc.name + path_sep + block_fs_intervals_dir;
+
+		ostringstream intrname;
+		intrname << "intr" << n;
+
+		intrloc.name = intrname.str();
+
+		idx->add_intervals ( intrloc, inv.size() );
+
+		dict dct;
+		dict_setup ( dct );
+
+		idx->add_dict ( intrloc, dct.data(), dct.types() );
+
+	}
+
+	return;
+}
+
+
 void indexdb_setup ( tidas::indexdb * idx ) {
 
 	backend_path loc;
@@ -75,53 +130,127 @@ void indexdb_setup ( tidas::indexdb * idx ) {
 		loc.name = blkname.str();
 		idx->add_block ( loc );
 
-		for ( size_t g = 0; g < NGROUP; ++g ) {
+		indexdb_setup_block ( idx, loc );
 
-			backend_path grouploc;
-			grouploc.path = loc.path + path_sep + loc.name + path_sep + block_fs_group_dir;
+		for ( size_t s = 0; s < NBLOCK; ++s ) {
 
-			ostringstream grpname;
-			grpname << "grp" << g;
+			backend_path subloc;
+			subloc.path = loc.path + path_sep + loc.name;
 
-			grouploc.name = grpname.str();
+			ostringstream subname;
+			subname << "sublk" << s;
+			subloc.name = subname.str();
 
-			field_list flist;
-			schema_setup ( flist );
+			idx->add_block ( subloc );
 
-			dict dct;
-			dict_setup ( dct );
-
-			map < data_type, size_t > counts;
-			indexdb_group_counts ( flist, counts );
-
-			idx->add_group ( grouploc, GNSAMP, GSTART, GSTOP, counts );
-
-			idx->add_schema ( grouploc, flist );
-
-			idx->add_dict ( grouploc, dct.data(), dct.types() );
+			indexdb_setup_block ( idx, subloc );
 
 		}
 
-		for ( size_t n = 0; n < NINTERVAL; ++n ) {
+	}
 
-			interval_list inv;
-			intervals_setup ( inv );
+	return;
+}
 
-			backend_path intrloc;
-			intrloc.path = loc.path + path_sep + loc.name + path_sep + block_fs_intervals_dir;
 
-			ostringstream intrname;
-			intrname << "intr" << n;
+void indexdb_verify_block ( tidas::indexdb * idx, backend_path const & loc ) {
 
-			intrloc.name = intrname.str();
+	for ( size_t g = 0; g < NGROUP; ++g ) {
 
-			idx->add_intervals ( intrloc, inv.size() );
+		field_list flist;
+		schema_setup ( flist );
 
-			dict dct;
-			dict_setup ( dct );
+		dict dct;
+		dict_setup ( dct );
 
-			idx->add_dict ( intrloc, dct.data(), dct.types() );
+		backend_path grouploc;
+		grouploc.path = loc.path + path_sep + loc.name + path_sep + block_fs_group_dir;
 
+		ostringstream grpname;
+		grpname << "grp" << g;
+
+		grouploc.name = grpname.str();
+
+		map < data_type, size_t > counts;
+		indexdb_group_counts ( flist, counts );
+
+		index_type check_nsamp;
+		time_type check_start;
+		time_type check_stop;
+
+		map < data_type, size_t > check_counts;
+
+		idx->query_group ( grouploc, check_nsamp, check_start, check_stop, check_counts );
+
+		EXPECT_EQ( GNSAMP, check_nsamp );
+		EXPECT_EQ( GSTART, check_start );
+		EXPECT_EQ( GSTOP, check_stop );
+
+		EXPECT_EQ( counts.size(), check_counts.size() );
+
+		for ( auto t : counts ) {
+			EXPECT_EQ( t.second, check_counts[ t.first ] );
+		}
+
+		field_list check_fields;
+
+		idx->query_schema ( grouploc, check_fields );
+		schema_verify ( check_fields );
+
+		map < string, string > ddata;
+		map < string, data_type > dtypes;
+
+		idx->query_dict ( grouploc, ddata, dtypes );
+
+		EXPECT_EQ( dct.data().size(), ddata.size() );
+		EXPECT_EQ( dct.types().size(), dtypes.size() );
+
+		map < string, string > temp_data = dct.data();
+		map < string, data_type > temp_types = dct.types();
+
+		for ( auto d : ddata ) {
+			EXPECT_EQ( temp_data[ d.first ], d.second );
+			EXPECT_EQ( temp_types[ d.first ], dtypes[ d.first ] );
+		}
+
+	}
+
+	for ( size_t n = 0; n < NINTERVAL; ++n ) {
+
+		dict dct;
+		dict_setup ( dct );
+
+		interval_list inv;
+		intervals_setup ( inv );
+
+		backend_path intrloc;
+		intrloc.path = loc.path + path_sep + loc.name + path_sep + block_fs_intervals_dir;
+
+		ostringstream intrname;
+		intrname << "intr" << n;
+
+		intrloc.name = intrname.str();
+
+		size_t check_size;
+
+		idx->query_intervals ( intrloc, check_size );
+
+		EXPECT_EQ( inv.size(), check_size );
+
+		map < string, string > ddata;
+		map < string, data_type > dtypes;
+
+		idx->query_dict ( intrloc, ddata, dtypes );
+
+		EXPECT_EQ( dct.data().size(), ddata.size() );
+		EXPECT_EQ( dct.types().size(), dtypes.size() );
+
+		map < string, string > temp_data = dct.data();
+		map < string, data_type > temp_types = dct.types();
+
+		for ( auto d : ddata ) {
+			EXPECT_EQ( temp_data[ d.first ], d.second );
+			EXPECT_EQ( temp_types[ d.first ], dtypes[ d.first ] );
 		}
 
 	}
@@ -161,107 +290,28 @@ void indexdb_verify ( tidas::indexdb * idx ) {
 
 		idx->query_block ( loc, child_blocks, child_groups, child_intervals );
 
-		EXPECT_EQ( 0, child_blocks.size() );
+		EXPECT_EQ( NBLOCK, child_blocks.size() );
 		EXPECT_EQ( NGROUP, child_groups.size() );
 		EXPECT_EQ( NINTERVAL, child_intervals.size() );
 
-		for ( size_t g = 0; g < NGROUP; ++g ) {
+		indexdb_verify_block ( idx, loc );
 
-			field_list flist;
-			schema_setup ( flist );
+		for ( size_t s = 0; s < NBLOCK; ++s ) {
 
-			dict dct;
-			dict_setup ( dct );
+			backend_path subloc;
+			subloc.path = loc.path + path_sep + loc.name;
 
-			backend_path grouploc;
-			grouploc.path = loc.path + path_sep + loc.name + path_sep + block_fs_group_dir;
+			ostringstream subname;
+			subname << "sublk" << s;
+			subloc.name = subname.str();
 
-			ostringstream grpname;
-			grpname << "grp" << g;
+			idx->query_block ( subloc, child_blocks, child_groups, child_intervals );
 
-			grouploc.name = grpname.str();
+			EXPECT_EQ( 0, child_blocks.size() );
+			EXPECT_EQ( NGROUP, child_groups.size() );
+			EXPECT_EQ( NINTERVAL, child_intervals.size() );
 
-			map < data_type, size_t > counts;
-			indexdb_group_counts ( flist, counts );
-
-			index_type check_nsamp;
-			time_type check_start;
-			time_type check_stop;
-
-			map < data_type, size_t > check_counts;
-
-			idx->query_group ( grouploc, check_nsamp, check_start, check_stop, check_counts );
-
-			EXPECT_EQ( GNSAMP, check_nsamp );
-			EXPECT_EQ( GSTART, check_start );
-			EXPECT_EQ( GSTOP, check_stop );
-
-			EXPECT_EQ( counts.size(), check_counts.size() );
-
-			for ( auto t : counts ) {
-				EXPECT_EQ( t.second, check_counts[ t.first ] );
-			}
-
-			field_list check_fields;
-
-			idx->query_schema ( grouploc, check_fields );
-			schema_verify ( check_fields );
-
-			map < string, string > ddata;
-			map < string, data_type > dtypes;
-
-			idx->query_dict ( grouploc, ddata, dtypes );
-
-			EXPECT_EQ( dct.data().size(), ddata.size() );
-			EXPECT_EQ( dct.types().size(), dtypes.size() );
-
-			map < string, string > temp_data = dct.data();
-			map < string, data_type > temp_types = dct.types();
-
-			for ( auto d : ddata ) {
-				EXPECT_EQ( temp_data[ d.first ], d.second );
-				EXPECT_EQ( temp_types[ d.first ], dtypes[ d.first ] );
-			}
-
-		}
-
-		for ( size_t n = 0; n < NINTERVAL; ++n ) {
-
-			dict dct;
-			dict_setup ( dct );
-
-			interval_list inv;
-			intervals_setup ( inv );
-
-			backend_path intrloc;
-			intrloc.path = loc.path + path_sep + loc.name + path_sep + block_fs_intervals_dir;
-
-			ostringstream intrname;
-			intrname << "intr" << n;
-
-			intrloc.name = intrname.str();
-
-			size_t check_size;
-
-			idx->query_intervals ( intrloc, check_size );
-
-			EXPECT_EQ( inv.size(), check_size );
-
-			map < string, string > ddata;
-			map < string, data_type > dtypes;
-
-			idx->query_dict ( intrloc, ddata, dtypes );
-
-			EXPECT_EQ( dct.data().size(), ddata.size() );
-			EXPECT_EQ( dct.types().size(), dtypes.size() );
-
-			map < string, string > temp_data = dct.data();
-			map < string, data_type > temp_types = dct.types();
-
-			for ( auto d : ddata ) {
-				EXPECT_EQ( temp_data[ d.first ], d.second );
-				EXPECT_EQ( temp_types[ d.first ], dtypes[ d.first ] );
-			}
+			indexdb_verify_block ( idx, subloc );
 
 		}
 
@@ -597,5 +647,66 @@ TEST( indexdbtest, sqlite ) {
 	indexdb_verify ( check4 );
 	*/
 }
+
+
+TEST( indexdbtest, treeselect ) {
+
+	string dbfile = "./indexdb_sql_select.out";
+	string checkfile = "./indexdb_sql_select_check.out";
+	fs_rm ( dbfile.c_str() );
+	fs_rm ( checkfile.c_str() );
+
+	indexdb_sql idx ( dbfile, "", access_mode::readwrite );
+
+	indexdb_setup( &idx );
+
+	indexdb_sql check ( checkfile, "", access_mode::readwrite );
+
+	std::deque < indexdb_transaction > data;
+
+	// root block
+
+	data.clear();
+	backend_path loc;
+	loc.path = "vol";
+	loc.name = "root";
+	idx.tree ( loc, "/.*/", data );
+
+	//cerr << "SELECT /.*/ :" << endl;
+	//for ( auto const & d : data ) {
+	//	d.print( cerr );
+	//}
+
+	check.commit ( data );
+
+	// each subblock
+	
+	loc.path = "vol/root";
+
+	for ( size_t b = 0; b < NBLOCK; ++b ) {
+		ostringstream blkname;
+		blkname << "blk" << b;
+
+		loc.name = blkname.str();
+
+		data.clear();
+
+		idx.tree( loc, "/.*", data );
+
+		//cerr << "SELECT /.* :" << endl;
+		//for ( auto const & d : data ) {
+		//	d.print( cerr );
+		//}
+
+		check.commit( data );
+	}
+
+	indexdb_verify ( &check );
+
+}
+
+
+
+
 
 

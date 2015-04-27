@@ -10,6 +10,86 @@
 #define TIDAS_MPI_VOLUME_HPP
 
 
+namespace tidas {
+
+	class mpi_volume {
+
+		public :
+
+			mpi_volume ();
+			~mpi_volume ();
+			mpi_volume & operator= ( mpi_volume const & other );
+
+			mpi_volume ( mpi_volume const & other );
+
+			/// Create a new volume.
+			mpi_volume ( MPI_Comm comm, std::string const & path, backend_type type, compression_type comp );
+
+			/// Open an existing volume.
+			mpi_volume ( MPI_Comm comm, std::string const & path, access_mode mode, std::string const & dist = "" );
+			
+			mpi_volume ( mpi_volume const & other, std::string const & filter, backend_path const & loc );
+
+			// metadata ops
+
+			void copy ( mpi_volume const & other, std::string const & filter, backend_path const & loc );
+
+			backend_path location () const;
+
+			/// Get the root block of the volume.
+			block & root ();
+
+			/// Get the (const) root block of the volume.
+			block const & root () const;
+
+			template < class P >
+			void exec ( P & op, exec_order order, std::string const & filter = "" ) {
+
+				if ( filter == "" ) {
+
+					root_.exec ( op, order );
+				
+				} else {
+				
+					block selected = root_.select ( filter );
+					selected.exec ( op, order );
+				
+				}
+
+				return;
+			}
+
+		private :
+
+			void index_setup ();
+
+			void read_props ( backend_path & loc );
+
+			void write_props ( backend_path const & loc ) const;
+
+			backend_path root_loc ( backend_path const & loc ) const;
+
+			backend_path loc_;
+
+			block root_;
+
+			MPI_Comm comm_;
+			int nproc_;
+			int rank_;
+
+			std::string dist_;
+
+			std::shared_ptr < indexdb > localdb_;
+			std::shared_ptr < indexdb > masterdb_;
+
+	};
+
+}
+
+
+
+
+
 Notes:
 
 - root process has indexdb on on-disk

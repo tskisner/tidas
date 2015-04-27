@@ -67,10 +67,8 @@ typedef enum {
 
 /* Dictionary */
 
-
-typedef struct {
-	void * handle;
-} ctidas_dict;
+struct ctidas_dict_;
+typedef struct ctidas_dict_ ctidas_dict;
 
 ctidas_dict * ctidas_dict_alloc ( );
 
@@ -131,10 +129,8 @@ char * ctidas_dict_get_string ( ctidas_dict * dct, char const * key );
 
 /* Schema Field */
 
-
-typedef struct {
-	void * handle;
-} ctidas_field;
+struct ctidas_field_;
+typedef struct ctidas_field_ ctidas_field;
 
 ctidas_field * ctidas_field_alloc ( );
 

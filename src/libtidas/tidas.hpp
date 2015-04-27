@@ -116,6 +116,18 @@ namespace tidas {
 
 			std::shared_ptr < indexdb > idx;
 
+			template < class Archive >
+			void serialize ( Archive & ar ) {
+				ar ( CEREAL_NVP( type ) );
+				ar ( CEREAL_NVP( comp ) );
+				ar ( CEREAL_NVP( mode ) );
+				ar ( CEREAL_NVP( path ) );
+				ar ( CEREAL_NVP( name ) );
+				ar ( CEREAL_NVP( meta ) );
+				// indexdb pointer is NOT serialized!
+				return;
+			}
+
 	};
 
 

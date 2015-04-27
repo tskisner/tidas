@@ -14,11 +14,6 @@ if USE_AM_ALLSTATIC
   AM_LDFLAGS += -all-static
 endif
 
-# sqlite
-
-AM_CPPFLAGS += $(SQLITE_CFLAGS)
-AM_LIBS += $(SQLITE_LDFLAGS)
-
 if HAVE_AM_PYTHON
   AM_CPPFLAGS += \
   $(PYTHON_CPPFLAGS) \

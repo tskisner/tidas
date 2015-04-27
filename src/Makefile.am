@@ -1,4 +1,4 @@
-SUBDIRS = libtidas tests
+SUBDIRS = libtidas tests #libtidas-mpi
 
 #if HAVE_AM_PYTHON
 #  SUBDIRS += python tests-python

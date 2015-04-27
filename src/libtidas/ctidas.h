@@ -78,9 +78,9 @@ void ctidas_dict_clear ( ctidas_dict * dct );
 
 size_t ctidas_dict_nkeys ( ctidas_dict * dct );
 
-char * ctidas_dict_key ( ctidas_dict * dct, size_t index );
+char ** ctidas_dict_keys ( ctidas_dict * dct, size_t * nkeys );
 
-ctidas_data_type ctidas_dict_type ( ctidas_dict * dct, size_t index );
+ctidas_data_type ctidas_dict_type ( ctidas_dict * dct, char const * key );
 
 void ctidas_dict_put_int8 ( ctidas_dict * dct, char const * key, int8_t val );
 
@@ -129,6 +129,7 @@ char * ctidas_dict_get_string ( ctidas_dict * dct, char const * key );
 
 /* Schema Field */
 
+/*
 struct ctidas_field_;
 typedef struct ctidas_field_ ctidas_field;
 
@@ -147,11 +148,11 @@ char * ctidas_field_name_get ( ctidas_field * field );
 void ctidas_field_units_set ( ctidas_field * field, char const * units );
 
 char * ctidas_field_units_get ( ctidas_field * field );
-
+*/
 
 /* Schema */
 
-
+/*
 typedef struct {
   void * handle;
 } ctidas_schema;
@@ -171,11 +172,11 @@ void ctidas_schema_field_del ( ctidas_schema * schm, char const * name );
 ctidas_field * ctidas_schema_field_get_byname ( ctidas_schema * schm, char const * name );
 
 ctidas_field * ctidas_schema_field_get_byindex ( ctidas_schema * schm, size_t index );
-
+*/
 
 /* Single interval */
 
-
+/*
 typedef struct {
   void * handle;
 } ctidas_intrvl;
@@ -199,11 +200,11 @@ int64_t ctidas_intrvl_first_get ( ctidas_intrvl * intrvl );
 void ctidas_intrvl_last_set ( ctidas_intrvl * intrvl, int64_t last );
 
 int64_t ctidas_intrvl_last_get ( ctidas_intrvl * intrvl );
-
+*/
 
 /* Intervals */
 
-
+/*
 typedef struct {
   void * handle;
 } ctidas_intervals;
@@ -217,7 +218,7 @@ void ctidas_intervals_wipe ( ctidas_intervals * intr );
 size_t ctidas_intervals_size ( ctidas_intervals * intr );
 
 ctidas_dict * ctidas_intervals_dict ( ctidas_intervals * intr );
-
+*/
 
 /*
 

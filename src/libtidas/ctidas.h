@@ -129,26 +129,26 @@ char * ctidas_dict_get_string ( ctidas_dict * dct, char const * key );
 
 /* Schema Field */
 
-/*
+
 struct ctidas_field_;
 typedef struct ctidas_field_ ctidas_field;
 
 ctidas_field * ctidas_field_alloc ( );
 
-void ctidas_field_free ( ctidas_field * field );
+void ctidas_field_free ( ctidas_field * fld );
 
-void ctidas_field_type_set ( ctidas_field * field, ctidas_data_type type );
+void ctidas_field_type_set ( ctidas_field * fld, ctidas_data_type type );
 
-ctidas_data_type ctidas_field_type_get ( ctidas_field * field );
+ctidas_data_type ctidas_field_type_get ( ctidas_field * fld );
 
-void ctidas_field_name_set ( ctidas_field * field, char const * name );
+void ctidas_field_name_set ( ctidas_field * fld, char const * name );
 
-char * ctidas_field_name_get ( ctidas_field * field );
+char * ctidas_field_name_get ( ctidas_field * fld );
 
-void ctidas_field_units_set ( ctidas_field * field, char const * units );
+void ctidas_field_units_set ( ctidas_field * fld, char const * units );
 
-char * ctidas_field_units_get ( ctidas_field * field );
-*/
+char * ctidas_field_units_get ( ctidas_field * fld );
+
 
 /* Schema */
 

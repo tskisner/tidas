@@ -282,6 +282,58 @@ char * ctidas_dict_get_string ( ctidas_dict * dct, char const * key ) {
 }
 
 
+ctidas_field * ctidas_field_alloc ( ) {
+	return reinterpret_cast < ctidas_field * > ( new field() );
+}
 
+void ctidas_field_free ( ctidas_field * fld ) {
+	delete reinterpret_cast < field * > ( fld );
+	return;
+}
+
+void ctidas_field_type_set ( ctidas_field * fld, ctidas_data_type type ) {
+	field * f = reinterpret_cast < field * > ( fld );
+	f->type = ctidas::convert_from_c( type );
+	return;
+}
+
+ctidas_data_type ctidas_field_type_get ( ctidas_field * fld ) {
+	field * f = reinterpret_cast < field * > ( fld );
+	return ctidas::convert_to_c( f->type );
+}
+
+void ctidas_field_name_set ( ctidas_field * fld, char const * name ) {
+	field * f = reinterpret_cast < field * > ( fld );
+	f->name = string(name);
+	return;
+}
+
+char * ctidas_field_name_get ( ctidas_field * fld ) {
+	field * f = reinterpret_cast < field * > ( fld );
+	char * ret = (char*)malloc( f->name.size() + 1 );
+	if ( ! ret ) {
+		fprintf(stderr, "failed to allocate field name string\n");
+		exit(1);
+	}
+	strncpy( ret, f->name.c_str(), f->name.size() );
+	return ret;
+}
+
+void ctidas_field_units_set ( ctidas_field * fld, char const * units ) {
+	field * f = reinterpret_cast < field * > ( fld );
+	f->units = string(units);
+	return;
+}
+
+char * ctidas_field_units_get ( ctidas_field * fld ) {
+	field * f = reinterpret_cast < field * > ( fld );
+	char * ret = (char*)malloc( f->units.size() + 1 );
+	if ( ! ret ) {
+		fprintf(stderr, "failed to allocate field units string\n");
+		exit(1);
+	}
+	strncpy( ret, f->units.c_str(), f->units.size() );
+	return ret;
+}
 
 

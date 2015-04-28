@@ -146,6 +146,7 @@ char ** ctidas_dict_keys ( ctidas_dict * dct, size_t * nkeys ) {
 		strncpy(ret[cur], k.first.c_str(), k.first.size());
 		++cur;
 	}
+	return ret;
 }
 
 ctidas_data_type ctidas_dict_type ( ctidas_dict * dct, char const * key ) {
@@ -335,5 +336,64 @@ char * ctidas_field_units_get ( ctidas_field * fld ) {
 	strncpy( ret, f->units.c_str(), f->units.size() );
 	return ret;
 }
+
+
+ctidas_schema * ctidas_schema_alloc ( ) {
+	return reinterpret_cast < ctidas_schema * > ( new schema() );
+}
+
+void ctidas_schema_free ( ctidas_schema * schm ) {
+	delete reinterpret_cast < schema * > ( schm );
+	return;
+}
+
+void ctidas_schema_clear ( ctidas_schema * schm ) {
+	schema * s = reinterpret_cast < schema * > ( schm );
+	s->clear();
+}
+
+char ** ctidas_schema_fields ( ctidas_schema * schm, size_t * nfields ) {
+	schema * s = reinterpret_cast < schema * > ( schm );
+	size_t n = s->fields().size();
+	char ** ret = (char**)malloc(n * sizeof(char*));
+	if ( ! ret ) {
+		fprintf(stderr, "failed to allocate vector of schema fields\n");
+		exit(1);
+	}
+	size_t cur = 0;
+	for ( auto const & f : s->fields() ) {
+		ret[cur] = (char*)malloc(f.name.size() + 1);
+		if ( ! ret[cur] ) {
+			fprintf(stderr, "failed to allocate schema field %d\n", (int)cur);
+			exit(1);
+		}
+		strncpy(ret[cur], f.name.c_str(), f.name.size());
+		++cur;
+	}
+	return ret;
+}
+
+void ctidas_schema_field_add ( ctidas_schema * schm, ctidas_field const * fld ) {
+	schema * s = reinterpret_cast < schema * > ( schm );
+	field const * f = reinterpret_cast < field const * > ( fld );
+	s->field_add( *f );
+	return;
+}
+
+void ctidas_schema_field_del ( ctidas_schema * schm, char const * name ) {
+	schema * s = reinterpret_cast < schema * > ( schm );
+	s->field_del( name );
+	return;
+}
+
+ctidas_field * ctidas_schema_field_get ( ctidas_schema * schm, char const * name ) {
+	schema * s = reinterpret_cast < schema * > ( schm );
+	ctidas_field * ret = ctidas_field_alloc();
+	field * f = reinterpret_cast < field * > ( ret );
+	(*f) = s->field_get( name );
+	return ret;
+}
+
+
 
 

@@ -152,10 +152,9 @@ char * ctidas_field_units_get ( ctidas_field * fld );
 
 /* Schema */
 
-/*
-typedef struct {
-  void * handle;
-} ctidas_schema;
+
+struct ctidas_schema_;
+typedef struct ctidas_schema_ ctidas_schema;
 
 ctidas_schema * ctidas_schema_alloc ( );
 
@@ -163,16 +162,14 @@ void ctidas_schema_free ( ctidas_schema * schm );
 
 void ctidas_schema_clear ( ctidas_schema * schm );
 
-size_t ctidas_schema_nfields ( ctidas_schema * schm );
+char ** ctidas_schema_fields ( ctidas_schema * schm, size_t * nfields );
 
 void ctidas_schema_field_add ( ctidas_schema * schm, ctidas_field const * fld );
 
 void ctidas_schema_field_del ( ctidas_schema * schm, char const * name );
 
-ctidas_field * ctidas_schema_field_get_byname ( ctidas_schema * schm, char const * name );
+ctidas_field * ctidas_schema_field_get ( ctidas_schema * schm, char const * name );
 
-ctidas_field * ctidas_schema_field_get_byindex ( ctidas_schema * schm, size_t index );
-*/
 
 /* Single interval */
 

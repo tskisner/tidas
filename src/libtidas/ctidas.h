@@ -173,67 +173,59 @@ ctidas_field * ctidas_schema_field_get ( ctidas_schema * schm, char const * name
 
 /* Single interval */
 
-/*
-typedef struct {
-  void * handle;
-} ctidas_intrvl;
+
+struct ctidas_intrvl_;
+typedef struct ctidas_intrvl_ ctidas_intrvl;
 
 ctidas_intrvl * ctidas_intrvl_alloc ( );
 
-void ctidas_intrvl_free ( ctidas_intrvl * intrvl );
+void ctidas_intrvl_free ( ctidas_intrvl * intr );
 
-void ctidas_intrvl_start_set ( ctidas_intrvl * intrvl, double start );
+void ctidas_intrvl_start_set ( ctidas_intrvl * intr, double start );
 
-double ctidas_intrvl_start_get ( ctidas_intrvl * intrvl );
+double ctidas_intrvl_start_get ( ctidas_intrvl * intr );
 
-void ctidas_intrvl_stop_set ( ctidas_intrvl * intrvl, double stop );
+void ctidas_intrvl_stop_set ( ctidas_intrvl * intr, double stop );
 
-double ctidas_intrvl_stop_get ( ctidas_intrvl * intrvl );
+double ctidas_intrvl_stop_get ( ctidas_intrvl * intr );
 
-void ctidas_intrvl_first_set ( ctidas_intrvl * intrvl, int64_t first );
+void ctidas_intrvl_first_set ( ctidas_intrvl * intr, int64_t first );
 
-int64_t ctidas_intrvl_first_get ( ctidas_intrvl * intrvl );
+int64_t ctidas_intrvl_first_get ( ctidas_intrvl * intr );
 
-void ctidas_intrvl_last_set ( ctidas_intrvl * intrvl, int64_t last );
+void ctidas_intrvl_last_set ( ctidas_intrvl * intr, int64_t last );
 
-int64_t ctidas_intrvl_last_get ( ctidas_intrvl * intrvl );
-*/
+int64_t ctidas_intrvl_last_get ( ctidas_intrvl * intr );
+
 
 /* Intervals */
 
-/*
-typedef struct {
-  void * handle;
-} ctidas_intervals;
+
+struct ctidas_intervals_;
+typedef struct ctidas_intervals_ ctidas_intervals;
 
 ctidas_intervals * ctidas_intervals_alloc ( );
 
-void ctidas_intervals_free ( ctidas_intervals * intr );
+void ctidas_intervals_free ( ctidas_intervals * inv );
 
-void ctidas_intervals_wipe ( ctidas_intervals * intr );
+size_t ctidas_intervals_size ( ctidas_intervals * inv );
 
-size_t ctidas_intervals_size ( ctidas_intervals * intr );
+ctidas_dict * ctidas_intervals_dict ( ctidas_intervals * inv );
 
-ctidas_dict * ctidas_intervals_dict ( ctidas_intervals * intr );
-*/
+void ctidas_intervals_read ( ctidas_intervals * inv, ctidas_intrvl * intrl, size_t n );
 
-/*
+void ctidas_intervals_write ( ctidas_intervals * inv, ctidas_intrvl * intrl, size_t n );
 
+ctidas_index_type ctidas_intervals_samples ( ctidas_intrvl * intrl, size_t n );
 
-      void read_data ( interval_list & intr ) const;
+ctidas_time_type ctidas_intervals_time ( ctidas_intrvl * intrl, size_t n );
 
-      void write_data ( interval_list const & intr );
+ctidas_intrvl * ctidas_intervals_seek ( ctidas_intrvl * intrl, size_t n, time_type time );
 
-      static index_type total_samples ( interval_list const & intr );
+ctidas_intrvl * ctidas_intervals_seek_ceil ( ctidas_intrvl * intr, size_t n, ctidas_time_type time );
 
-      static time_type total_time ( interval_list const & intr );
+ctidas_intrvl * ctidas_intervals_seek_floor ( ctidas_intrvl * intr, size_t n, ctidas_time_type time );
 
-      static intrvl seek ( interval_list const & intr, time_type time );
-
-      static intrvl seek_ceil ( interval_list const & intr, time_type time );
-      
-      static intrvl seek_floor ( interval_list const & intr, time_type time );
-*/
 
 
 #ifdef __cplusplus

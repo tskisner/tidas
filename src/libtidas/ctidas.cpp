@@ -130,8 +130,8 @@ size_t ctidas_dict_nkeys ( ctidas_dict * dct ) {
 
 char ** ctidas_dict_keys ( ctidas_dict * dct, size_t * nkeys ) {
 	dict * d = reinterpret_cast < dict * > ( dct );
-	size_t n = d->data().size();
-	char ** ret = (char**)malloc(n * sizeof(char*));
+	(*nkeys) = d->data().size();
+	char ** ret = (char**)malloc((*nkeys) * sizeof(char*));
 	if ( ! ret ) {
 		fprintf(stderr, "failed to allocate vector of dict keys\n");
 		exit(1);
@@ -354,8 +354,8 @@ void ctidas_schema_clear ( ctidas_schema * schm ) {
 
 char ** ctidas_schema_fields ( ctidas_schema * schm, size_t * nfields ) {
 	schema * s = reinterpret_cast < schema * > ( schm );
-	size_t n = s->fields().size();
-	char ** ret = (char**)malloc(n * sizeof(char*));
+	(*nfields) = s->fields().size();
+	char ** ret = (char**)malloc((*nfields) * sizeof(char*));
 	if ( ! ret ) {
 		fprintf(stderr, "failed to allocate vector of schema fields\n");
 		exit(1);
@@ -394,6 +394,131 @@ ctidas_field * ctidas_schema_field_get ( ctidas_schema * schm, char const * name
 	return ret;
 }
 
+
+ctidas_intrvl * ctidas_intrvl_alloc ( ) {
+	return reinterpret_cast < ctidas_intrvl * > ( new intrvl() );
+}
+
+void ctidas_intrvl_free ( ctidas_intrvl * intr ) {
+	delete reinterpret_cast < intrvl * > ( intr );
+	return;
+}
+
+void ctidas_intrvl_start_set ( ctidas_intrvl * intr, double start ) {
+	intrvl * t = reinterpret_cast < intrvl * > ( intr );
+	t->start = start;
+	return;
+}
+
+double ctidas_intrvl_start_get ( ctidas_intrvl * intr ) {
+	intrvl * t = reinterpret_cast < intrvl * > ( intr );
+	return t->start;
+}
+
+void ctidas_intrvl_stop_set ( ctidas_intrvl * intr, double stop ) {
+	intrvl * t = reinterpret_cast < intrvl * > ( intr );
+	t->stop = stop;
+	return;	
+}
+
+double ctidas_intrvl_stop_get ( ctidas_intrvl * intr ) {
+	intrvl * t = reinterpret_cast < intrvl * > ( intr );
+	return t->stop;
+}
+
+void ctidas_intrvl_first_set ( ctidas_intrvl * intr, int64_t first ) {
+	intrvl * t = reinterpret_cast < intrvl * > ( intr );
+	t->first = first;
+	return;
+}
+
+int64_t ctidas_intrvl_first_get ( ctidas_intrvl * intr ) {
+	intrvl * t = reinterpret_cast < intrvl * > ( intr );
+	return t->first;
+}
+
+void ctidas_intrvl_last_set ( ctidas_intrvl * intr, int64_t last ) {
+	intrvl * t = reinterpret_cast < intrvl * > ( intr );
+	t->last = last;
+	return;
+}
+
+int64_t ctidas_intrvl_last_get ( ctidas_intrvl * intr ) {
+	intrvl * t = reinterpret_cast < intrvl * > ( intr );
+	return t->last;
+}
+
+
+ctidas_intrvl ** ctidas_intrvl_list_alloc ( size_t n ) {
+	ctidas_intrvl ** ret = (ctidas_intrvl **)malloc( n * sizeof(ctidas_intrvl *));
+	for ( size_t i = 0; i < n; ++i ) {
+		ret[i] = ctidas_intrvl_alloc();
+	}
+	return ret;
+}
+
+void ctidas_intrvl_list_free ( ctidas_intrvl ** intl, size_t n ) {
+	for ( size_t i = 0; i < n; ++i ) {
+		ctidas_intrvl_free( intl[i] );
+	}
+	free(intl);
+	return;
+}
+
+
+ctidas_intervals * ctidas_intervals_alloc ( ) {
+	return reinterpret_cast < ctidas_intervals * > ( new intervals() );
+}
+
+void ctidas_intervals_free ( ctidas_intervals * inv ) {
+	delete reinterpret_cast < intervals * > ( inv );
+	return;
+}
+
+size_t ctidas_intervals_size ( ctidas_intervals * inv ) {
+	intervals * v = reinterpret_cast < intervals * > ( inv );
+	return v->size();
+}
+
+ctidas_dict * ctidas_intervals_dict ( ctidas_intervals * inv ) {
+	intervals * v = reinterpret_cast < intervals * > ( inv );
+	ctidas_dict * ret = ctidas_dict_alloc();
+	dict * d = reinterpret_cast < dict * > ( ret );
+	(*d) = v->dictionary();
+	return ret;
+}
+
+ctidas_intrvl **  ctidas_intervals_read ( ctidas_intervals * inv, size_t * n ) {
+	interval_list il;
+	intervals * v = reinterpret_cast < intervals * > ( inv );
+	v->read_data( il );
+	(*n) = il.size();
+
+	ctidas_intrvl ** ret = ctidas_intrvl_list_alloc ( *n );
+	
+	for ( size_t i = 0; i < (*n); ++i ) {
+		intrvl * t = reinterpret_cast < intrvl * > ( ret[i] );
+		(*t) = il[i];
+	}
+
+	return ret;
+}
+
+void ctidas_intervals_write ( ctidas_intervals * inv, ctidas_intrvl ** intrl, size_t n ) {
+
+
+	return;
+}
+
+ctidas_index_type ctidas_intervals_samples ( ctidas_intrvl ** intrl, size_t n );
+
+ctidas_time_type ctidas_intervals_time ( ctidas_intrvl ** intrl, size_t n );
+
+ctidas_intrvl * ctidas_intervals_seek ( ctidas_intrvl ** intrl, size_t n, time_type time );
+
+ctidas_intrvl * ctidas_intervals_seek_ceil ( ctidas_intrvl ** intr, size_t n, ctidas_time_type time );
+
+ctidas_intrvl * ctidas_intervals_seek_floor ( ctidas_intrvl ** intr, size_t n, ctidas_time_type time );
 
 
 

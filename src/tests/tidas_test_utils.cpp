@@ -97,7 +97,7 @@ TEST( utilstest, datatype ) {
 	uint64_t vuint64;
 	float vfloat32;
 	double vfloat64;
-	string vstring;
+	char * vstring;
 
 	std::vector < int > bad;
 

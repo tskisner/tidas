@@ -382,34 +382,91 @@ void tidas::group::range ( time_type & start, time_type & stop ) const {
 }
 
 
-void tidas::group::read_times ( vector < time_type > & data ) const {
-	data.resize ( size_ );
-	read_field ( group_time_field, 0, data );
+void tidas::group::read_field ( std::string const & field_name, index_type offset, index_type ndata, char ** data ) const {
+	field check = schm_.field_get ( field_name );
+	if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
+		std::ostringstream o;
+		o << "cannot read non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
+		TIDAS_THROW( o.str().c_str() );
+	}
+	if ( offset + ndata > size_ ) {
+		std::ostringstream o;
+		o << "cannot read field " << field_name << ", samples " << offset << " - " << (offset+ndata-1) << " from group " << loc_.name << " (" << size_ << " samples)";
+		TIDAS_THROW( o.str().c_str() );
+	}
+	if ( loc_.type != backend_type::none ) {
+		backend_->read_field ( loc_, field_name, type_indx_.at( field_name ), offset, ndata, data );
+	} else {
+		TIDAS_THROW( "cannot read field- backend not assigned" );
+	}
 	return;
 }
 
 
-void tidas::group::write_times ( vector < time_type > const & data ) {
-	write_field ( group_time_field, 0, data );
-	return;
-}
-
-
-void tidas::group::write_field ( std::string const & field_name, index_type offset, std::vector < time_type > const & data ) {
+void tidas::group::write_field ( std::string const & field_name, index_type offset, index_type ndata, char * const * data ) {
 	field check = schm_.field_get ( field_name );
 	if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
 		std::ostringstream o;
 		o << "cannot write non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
 		TIDAS_THROW( o.str().c_str() );
 	}
-	index_type n = data.size();
-	if ( offset + n > size_ ) {
+	if ( offset + ndata > size_ ) {
 		std::ostringstream o;
-		o << "cannot write field " << field_name << ", samples " << offset << " - " << (offset+n-1) << " to group " << loc_.name << " (" << size_ << " samples)";
+		o << "cannot write field " << field_name << ", samples " << offset << " - " << (offset+ndata-1) << " to group " << loc_.name << " (" << size_ << " samples)";
 		TIDAS_THROW( o.str().c_str() );
 	}
 	if ( loc_.type != backend_type::none ) {
-		backend_->write_field ( loc_, field_name, type_indx_.at( field_name ), offset, data );
+		backend_->write_field ( loc_, field_name, type_indx_.at( field_name ), offset, ndata, data );
+	} else {
+		TIDAS_THROW( "cannot write field- backend not assigned" );
+	}
+	return;
+}
+
+
+void tidas::group::read_field ( std::string const & field_name, index_type offset, std::vector < std::string > & data ) const {
+	// create string buffer for read
+	char ** buffer = c_string_alloc ( data.size(), backend_string_size );
+	read_field ( field_name, offset, data.size(), buffer );
+	for ( size_t i = 0; i < data.size(); ++i ) {
+		data[i] = buffer[i];
+	}
+	c_string_free ( data.size(), buffer );
+	return;
+}
+
+
+void tidas::group::write_field ( std::string const & field_name, index_type offset, std::vector < std::string > const & data ) {
+	// create and populate string buffer for write
+	char ** buffer = c_string_alloc ( data.size(), backend_string_size );
+	for ( size_t i = 0; i < data.size(); ++i ) {
+		if ( data[i].size() > backend_string_size ) {
+			std::ostringstream o;
+			o << "cannot write string \"" << data[i] << "\" to field " << field_name << ".  Maximum data string length is " << backend_string_size;
+			TIDAS_THROW( o.str().c_str() );
+		}
+		strncpy ( buffer[i], data[i].c_str(), backend_string_size );
+	}
+	write_field ( field_name, offset, data.size(), buffer );
+	c_string_free ( data.size(), buffer );
+	return;
+}
+
+
+void tidas::group::write_field ( std::string const & field_name, index_type offset, index_type ndata, time_type const * data ) {
+	field check = schm_.field_get ( field_name );
+	if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
+		std::ostringstream o;
+		o << "cannot write non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
+		TIDAS_THROW( o.str().c_str() );
+	}
+	if ( offset + ndata > size_ ) {
+		std::ostringstream o;
+		o << "cannot write field " << field_name << ", samples " << offset << " - " << (offset+ndata-1) << " to group " << loc_.name << " (" << size_ << " samples)";
+		TIDAS_THROW( o.str().c_str() );
+	}
+	if ( loc_.type != backend_type::none ) {
+		backend_->write_field ( loc_, field_name, type_indx_.at( field_name ), offset, ndata, data );
 
 		// if we are writing to the time field, update group range
 
@@ -421,8 +478,8 @@ void tidas::group::write_field ( std::string const & field_name, index_type offs
 				update = true;
 			}
 
-			if ( data[ data.size() - 1 ] > stop_ ) {
-				stop_ = data[ data.size() - 1 ];
+			if ( data[ ndata - 1 ] > stop_ ) {
+				stop_ = data[ ndata - 1 ];
 				update = true;
 			}
 			
@@ -441,4 +498,43 @@ void tidas::group::write_field ( std::string const & field_name, index_type offs
 	return;
 }
 
+
+void tidas::group::write_field ( std::string const & field_name, index_type offset, std::vector < time_type > const & data ) {
+	write_field ( field_name, offset, data.size(), data.data() );
+	return;
+}
+
+
+void tidas::group::read_times ( index_type ndata, time_type * data ) const {
+	if ( ndata != size_ ) {
+		std::ostringstream o;
+		o << "read_times length " << ndata << " in group " << loc_.name << " differs from size (" << size_ << " samples)";
+		TIDAS_THROW( o.str().c_str() );
+	}
+	read_field ( group_time_field, 0, size_, data );
+	return;
+}
+
+
+void tidas::group::read_times ( std::vector < time_type > & data ) const {
+	read_times ( data.size(), data.data() );
+	return;
+}
+
+
+void tidas::group::write_times ( index_type ndata, time_type const * data ) {
+	if ( ndata != size_ ) {
+		std::ostringstream o;
+		o << "write_times length " << ndata << " in group " << loc_.name << " differs from size (" << size_ << " samples)";
+		TIDAS_THROW( o.str().c_str() );
+	}
+	write_field ( group_time_field, 0, size_, data );
+	return;
+}
+
+
+void tidas::group::write_times ( std::vector < time_type > const & data ) {
+	write_times ( data.size(), data.data() );
+	return;
+}
 

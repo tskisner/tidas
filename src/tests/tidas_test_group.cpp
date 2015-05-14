@@ -315,14 +315,9 @@ TEST_F( groupTest, HDF5Backend ) {
 	data_copy ( grp2, grp5 );
 
 	grp5.resize ( 2 * gnsamp );
-	group_setup ( grp5, gnsamp, gnsamp );
+	group_setup ( grp5, 0, 2 * gnsamp );
 
-	grp5.resize ( 3 * gnsamp );
-	group_setup ( grp5, (2 * gnsamp), gnsamp );
-
-	group_setup ( grp5, 0, (3 * gnsamp) );
-
-	group_verify ( grp5, 0, (3 * gnsamp) );
+	group_verify ( grp5, 0, (2 * gnsamp) );
 
 #else
 

@@ -197,6 +197,10 @@ void ctidas_intrvl_last_set ( ctidas_intrvl * intr, int64_t last );
 
 int64_t ctidas_intrvl_last_get ( ctidas_intrvl * intr );
 
+ctidas_intrvl ** ctidas_intrvl_list_alloc ( size_t n );
+
+void ctidas_intrvl_list_free ( ctidas_intrvl ** intrl, size_t n );
+
 
 /* Intervals */
 
@@ -204,7 +208,7 @@ int64_t ctidas_intrvl_last_get ( ctidas_intrvl * intr );
 struct ctidas_intervals_;
 typedef struct ctidas_intervals_ ctidas_intervals;
 
-ctidas_intervals * ctidas_intervals_alloc ( );
+ctidas_intervals * ctidas_intervals_alloc ( ctidas_dict * dct, size_t size );
 
 void ctidas_intervals_free ( ctidas_intervals * inv );
 
@@ -212,21 +216,98 @@ size_t ctidas_intervals_size ( ctidas_intervals * inv );
 
 ctidas_dict * ctidas_intervals_dict ( ctidas_intervals * inv );
 
-void ctidas_intervals_read ( ctidas_intervals * inv, ctidas_intrvl * intrl, size_t n );
+ctidas_intrvl ** ctidas_intervals_read ( ctidas_intervals * inv, size_t * n );
 
-void ctidas_intervals_write ( ctidas_intervals * inv, ctidas_intrvl * intrl, size_t n );
+void ctidas_intervals_write ( ctidas_intervals * inv, ctidas_intrvl ** intrl, size_t n );
 
-ctidas_index_type ctidas_intervals_samples ( ctidas_intrvl * intrl, size_t n );
+ctidas_index_type ctidas_intervals_samples ( ctidas_intrvl ** intrl, size_t n );
 
-ctidas_time_type ctidas_intervals_time ( ctidas_intrvl * intrl, size_t n );
+ctidas_time_type ctidas_intervals_time ( ctidas_intrvl ** intrl, size_t n );
 
-ctidas_intrvl * ctidas_intervals_seek ( ctidas_intrvl * intrl, size_t n, time_type time );
+ctidas_intrvl * ctidas_intervals_seek ( ctidas_intrvl ** intrl, size_t n, ctidas_time_type time );
 
-ctidas_intrvl * ctidas_intervals_seek_ceil ( ctidas_intrvl * intr, size_t n, ctidas_time_type time );
+ctidas_intrvl * ctidas_intervals_seek_ceil ( ctidas_intrvl ** intrl, size_t n, ctidas_time_type time );
 
-ctidas_intrvl * ctidas_intervals_seek_floor ( ctidas_intrvl * intr, size_t n, ctidas_time_type time );
+ctidas_intrvl * ctidas_intervals_seek_floor ( ctidas_intrvl ** intrl, size_t n, ctidas_time_type time );
 
 
+/* Group */
+
+/*
+struct ctidas_group_;
+typedef struct ctidas_group_ ctidas_group;
+
+ctidas_group * ctidas_group_alloc ( ctidas_schema * schm, ctidas_dict * dct, ctidas_index_type size );
+
+void ctidas_group_free ( ctidas_group * grp );
+
+ctidas_dict * ctidas_group_dict ( ctidas_group * grp );
+
+ctidas_schema * ctidas_group_schema ( ctidas_group * grp );
+
+ctidas_index_type ctidas_group_size ( ctidas_group * grp );
+
+void ctidas_group_resize ( ctidas_group * grp, ctidas_index_type newsize );
+
+void ctidas_group_range ( ctidas_group * grp, ctidas_time_type * start, ctidas_time_type * stop );
+
+void ctidas_group_read_times ( ctidas_group * grp, ctidas_time_type * data );
+
+void ctidas_group_write_times ( ctidas_group * grp, ctidas_time_type * data );
+
+
+      void read_times ( std::vector < time_type > & data ) const;
+
+      void write_times ( std::vector < time_type > const & data );
+
+      template < class T >
+      void read_field ( std::string const & field_name, index_type offset, std::vector < T > & data ) const {
+        field check = schm_.field_get ( field_name );
+        if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
+          std::ostringstream o;
+          o << "cannot read non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
+          TIDAS_THROW( o.str().c_str() );
+        }
+        index_type n = data.size();
+        if ( offset + n > size_ ) {
+          std::ostringstream o;
+          o << "cannot read field " << field_name << ", samples " << offset << " - " << (offset+n-1) << " from group " << loc_.name << " (" << size_ << " samples)";
+          TIDAS_THROW( o.str().c_str() );
+        }
+        if ( loc_.type != backend_type::none ) {
+          backend_->read_field ( loc_, field_name, type_indx_.at( field_name ), offset, data );
+        } else {
+          TIDAS_THROW( "cannot read field- backend not assigned" );
+        }
+        return;
+      }
+
+      template < class T >
+      void write_field ( std::string const & field_name, index_type offset, std::vector < T > const & data ) {
+        field check = schm_.field_get ( field_name );
+        if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
+          std::ostringstream o;
+          o << "cannot write non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
+          TIDAS_THROW( o.str().c_str() );
+        }
+        index_type n = data.size();
+        if ( offset + n > size_ ) {
+          std::ostringstream o;
+          o << "cannot write field " << field_name << ", samples " << offset << " - " << (offset+n-1) << " to group " << loc_.name << " (" << size_ << " samples)";
+          TIDAS_THROW( o.str().c_str() );
+        }
+        if ( loc_.type != backend_type::none ) {
+          backend_->write_field ( loc_, field_name, type_indx_.at( field_name ), offset, data );
+        } else {
+          TIDAS_THROW( "cannot write field- backend not assigned" );
+        }
+        return;
+      }
+
+      // overload for time_type which updates range
+
+      void write_field ( std::string const & field_name, index_type offset, std::vector < time_type > const & data );
+*/
 
 #ifdef __cplusplus
 }

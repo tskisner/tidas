@@ -39,6 +39,41 @@ const char * tidas::exception::what() const throw() {
 }
 
 
+char ** tidas::c_string_alloc ( size_t nstring, size_t length ) {
+	char ** ret = (char**) malloc( nstring * sizeof(char*) );
+	
+	if ( ! ret ) {
+		std::ostringstream o;
+		o << "failed to allocate array of " << nstring << " C strings";
+		TIDAS_THROW( o.str().c_str() );
+	}
+
+	for ( size_t i = 0; i < nstring; ++i ) {
+		ret[i] = (char*) malloc ( (length + 1) * sizeof(char) );
+		if ( ! ret[i] ) {
+			std::ostringstream o;
+			o << "failed to allocate C string of " << (length+1) << " characters";
+			TIDAS_THROW( o.str().c_str() );
+		}
+	}
+
+	return ret;
+}
+
+
+void tidas::c_string_free ( size_t nstring, char ** str ) {
+	if ( str != NULL ) {
+		for ( size_t i = 0; i < nstring; ++i ) {
+			if ( str[i] != NULL ) {
+				free( str[i] );
+			}
+		}
+		free(str);
+	}
+	return;
+}
+
+
 int64_t tidas::fs_stat ( char const * path ) {
 	int64_t size = -1;
 	struct stat filestat;
@@ -218,7 +253,7 @@ data_type tidas::data_type_get ( type_info const & test ) {
 	uint64_t type_uint64;
 	float type_float;
 	double type_double;
-	string type_string;
+	char * type_string;
 
 	if ( test == typeid ( type_int8 ) ) {
 		ret = data_type::int8;

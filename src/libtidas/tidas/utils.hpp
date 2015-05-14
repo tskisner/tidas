@@ -50,7 +50,7 @@ namespace tidas {
 	}
 
 
-	// simple contiguous buffer allocation
+	// simple, C-style contiguous buffer allocation
 
 	template < class T >
 	T * mem_alloc ( size_t n ) {
@@ -63,6 +63,12 @@ namespace tidas {
 		}
 		return (T*)temp;
 	}
+
+	// array of fixed-length C strings
+
+	char ** c_string_alloc ( size_t nstring, size_t length );
+
+	void c_string_free ( size_t nstring, char ** str );
 
 
 	// common file operations

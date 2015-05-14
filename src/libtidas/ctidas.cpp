@@ -457,17 +457,25 @@ ctidas_intrvl ** ctidas_intrvl_list_alloc ( size_t n ) {
 	return ret;
 }
 
-void ctidas_intrvl_list_free ( ctidas_intrvl ** intl, size_t n ) {
+void ctidas_intrvl_list_free ( ctidas_intrvl ** intrl, size_t n ) {
 	for ( size_t i = 0; i < n; ++i ) {
-		ctidas_intrvl_free( intl[i] );
+		ctidas_intrvl_free( intrl[i] );
 	}
-	free(intl);
+	free(intrl);
 	return;
 }
 
 
-ctidas_intervals * ctidas_intervals_alloc ( ) {
-	return reinterpret_cast < ctidas_intervals * > ( new intervals() );
+ctidas_intervals * ctidas_intervals_alloc ( ctidas_dict * dct, size_t size ) {
+	ctidas_intervals * ret;
+	if ( dct == NULL ) {
+		dict empty;
+		ret = reinterpret_cast < ctidas_intervals * > ( new intervals( empty, size ) );
+	} else {
+		dict * d = reinterpret_cast < dict * > ( dct );
+		ret = reinterpret_cast < ctidas_intervals * > ( new intervals( (*d), size ) );
+	}
+	return ret;
 }
 
 void ctidas_intervals_free ( ctidas_intervals * inv ) {
@@ -488,7 +496,7 @@ ctidas_dict * ctidas_intervals_dict ( ctidas_intervals * inv ) {
 	return ret;
 }
 
-ctidas_intrvl **  ctidas_intervals_read ( ctidas_intervals * inv, size_t * n ) {
+ctidas_intrvl ** ctidas_intervals_read ( ctidas_intervals * inv, size_t * n ) {
 	interval_list il;
 	intervals * v = reinterpret_cast < intervals * > ( inv );
 	v->read_data( il );
@@ -505,20 +513,94 @@ ctidas_intrvl **  ctidas_intervals_read ( ctidas_intervals * inv, size_t * n ) {
 }
 
 void ctidas_intervals_write ( ctidas_intervals * inv, ctidas_intrvl ** intrl, size_t n ) {
+	interval_list il;
 
+	for ( size_t i = 0; i < n; ++i ) {
+		intrvl * t = reinterpret_cast < intrvl * > ( intrl[i] );
+		il.push_back( (*t) );
+	}
+
+	intervals * v = reinterpret_cast < intervals * > ( inv );
+	v->write_data( il );
 
 	return;
 }
 
-ctidas_index_type ctidas_intervals_samples ( ctidas_intrvl ** intrl, size_t n );
+ctidas_index_type ctidas_intervals_samples ( ctidas_intrvl ** intrl, size_t n ) {
+	interval_list il;
 
-ctidas_time_type ctidas_intervals_time ( ctidas_intrvl ** intrl, size_t n );
+	for ( size_t i = 0; i < n; ++i ) {
+		intrvl * t = reinterpret_cast < intrvl * > ( intrl[i] );
+		il.push_back( (*t) );
+	}
 
-ctidas_intrvl * ctidas_intervals_seek ( ctidas_intrvl ** intrl, size_t n, time_type time );
+	return intervals::total_samples( il );
+}
 
-ctidas_intrvl * ctidas_intervals_seek_ceil ( ctidas_intrvl ** intr, size_t n, ctidas_time_type time );
+ctidas_time_type ctidas_intervals_time ( ctidas_intrvl ** intrl, size_t n ) {
+	interval_list il;
 
-ctidas_intrvl * ctidas_intervals_seek_floor ( ctidas_intrvl ** intr, size_t n, ctidas_time_type time );
+	for ( size_t i = 0; i < n; ++i ) {
+		intrvl * t = reinterpret_cast < intrvl * > ( intrl[i] );
+		il.push_back( (*t) );
+	}
+
+	return intervals::total_time( il );
+}
+
+ctidas_intrvl * ctidas_intervals_seek ( ctidas_intrvl ** intrl, size_t n, ctidas_time_type time ) {
+	interval_list il;
+
+	for ( size_t i = 0; i < n; ++i ) {
+		intrvl * t = reinterpret_cast < intrvl * > ( intrl[i] );
+		il.push_back( (*t) );
+	}
+
+	intrvl t = intervals::seek ( il, time );
+
+	ctidas_intrvl * cret = ctidas_intrvl_alloc();
+	intrvl * ret = reinterpret_cast < intrvl * > ( cret );
+
+	(*ret) = t;
+
+	return cret;
+}
+
+ctidas_intrvl * ctidas_intervals_seek_ceil ( ctidas_intrvl ** intrl, size_t n, ctidas_time_type time ) {
+	interval_list il;
+
+	for ( size_t i = 0; i < n; ++i ) {
+		intrvl * t = reinterpret_cast < intrvl * > ( intrl[i] );
+		il.push_back( (*t) );
+	}
+
+	intrvl t = intervals::seek_ceil ( il, time );
+
+	ctidas_intrvl * cret = ctidas_intrvl_alloc();
+	intrvl * ret = reinterpret_cast < intrvl * > ( cret );
+
+	(*ret) = t;
+
+	return cret;
+}
+
+ctidas_intrvl * ctidas_intervals_seek_floor ( ctidas_intrvl ** intrl, size_t n, ctidas_time_type time ) {
+	interval_list il;
+
+	for ( size_t i = 0; i < n; ++i ) {
+		intrvl * t = reinterpret_cast < intrvl * > ( intrl[i] );
+		il.push_back( (*t) );
+	}
+
+	intrvl t = intervals::seek_floor ( il, time );
+
+	ctidas_intrvl * cret = ctidas_intrvl_alloc();
+	intrvl * ret = reinterpret_cast < intrvl * > ( cret );
+
+	(*ret) = t;
+
+	return cret;
+}
 
 
 

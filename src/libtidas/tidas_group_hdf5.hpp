@@ -16,7 +16,7 @@ namespace tidas {
 
 
 	template < typename T >
-	void hdf5_helper_field_read ( backend_path const & loc, size_t type_indx, index_type offset, std::vector < T > & data ) {
+	void hdf5_helper_field_read ( backend_path const & loc, size_t type_indx, index_type offset, index_type ndata, T * data ) {
 
 		T testval;
 		data_type type = data_type_get ( typeid ( testval ) );
@@ -45,7 +45,7 @@ namespace tidas {
 		hid_t file_dataspace = H5Dget_space ( dataset );
 
 		hsize_t dims[1];
-		dims[0] = data.size();
+		dims[0] = ndata;
 
 		hid_t mem_dataspace = H5Screate_simple ( 1, dims, NULL );
 
@@ -58,7 +58,7 @@ namespace tidas {
 		doff[1] = offset;
 
 		dspan[0] = 1;
-		dspan[1] = data.size();
+		dspan[1] = ndata;
 
 		herr_t status = H5Sselect_hyperslab ( file_dataspace, H5S_SELECT_SET, doff, NULL, dspan, NULL );
 
@@ -66,7 +66,7 @@ namespace tidas {
 
 		hid_t mem_datatype = hdf5_data_type ( type );
 
-		status = H5Dread ( dataset, mem_datatype, mem_dataspace, file_dataspace, H5P_DEFAULT, (void *)data.data() );
+		status = H5Dread ( dataset, mem_datatype, mem_dataspace, file_dataspace, H5P_DEFAULT, (void *)data );
 
 		// clean up
 
@@ -81,7 +81,7 @@ namespace tidas {
 
 
 	template < typename T >
-	void hdf5_helper_field_write ( backend_path const & loc, size_t type_indx, index_type offset, std::vector < T > const & data ) {
+	void hdf5_helper_field_write ( backend_path const & loc, size_t type_indx, index_type offset, index_type ndata, T const * data ) {
 
 		T testval;
 		data_type type = data_type_get ( typeid ( testval ) );
@@ -110,7 +110,7 @@ namespace tidas {
 		hid_t file_dataspace = H5Dget_space ( dataset );
 
 		hsize_t dims[1];
-		dims[0] = data.size();
+		dims[0] = ndata;
 
 		hid_t mem_dataspace = H5Screate_simple ( 1, dims, NULL );
 
@@ -123,7 +123,7 @@ namespace tidas {
 		doff[1] = offset;
 
 		dspan[0] = 1;
-		dspan[1] = data.size();
+		dspan[1] = ndata;
 
 		herr_t status = H5Sselect_hyperslab ( file_dataspace, H5S_SELECT_SET, doff, NULL, dspan, NULL );
 
@@ -131,7 +131,7 @@ namespace tidas {
 
 		hid_t mem_datatype = hdf5_data_type ( type );
 
-		status = H5Dwrite ( dataset, mem_datatype, mem_dataspace, file_dataspace, H5P_DEFAULT, (void const *)data.data() );
+		status = H5Dwrite ( dataset, mem_datatype, mem_dataspace, file_dataspace, H5P_DEFAULT, (void const *)data );
 
 		// clean up
 

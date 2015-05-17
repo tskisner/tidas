@@ -65,6 +65,13 @@ typedef enum {
 } ctidas_link_type;
 
 
+typedef enum {
+    order_depth_first,
+    order_depth_last,
+    order_leaf
+} ctidas_exec_order;
+
+
 /* Dictionary */
 
 struct ctidas_dict_;
@@ -233,7 +240,7 @@ ctidas_intrvl * ctidas_intervals_seek_floor ( ctidas_intrvl ** intrl, size_t n, 
 
 /* Group */
 
-/*
+
 struct ctidas_group_;
 typedef struct ctidas_group_ ctidas_group;
 
@@ -251,63 +258,144 @@ void ctidas_group_resize ( ctidas_group * grp, ctidas_index_type newsize );
 
 void ctidas_group_range ( ctidas_group * grp, ctidas_time_type * start, ctidas_time_type * stop );
 
-void ctidas_group_read_times ( ctidas_group * grp, ctidas_time_type * data );
+void ctidas_group_read_times ( ctidas_group * grp, ctidas_index_type ndata, ctidas_time_type * data );
 
-void ctidas_group_write_times ( ctidas_group * grp, ctidas_time_type * data );
+void ctidas_group_write_times ( ctidas_group * grp, ctidas_index_type ndata, ctidas_time_type const * data );
 
 
-      void read_times ( std::vector < time_type > & data ) const;
+void ctidas_group_read_int8 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int8_t * data );
 
-      void write_times ( std::vector < time_type > const & data );
+void ctidas_group_write_int8 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int8_t const * data );
 
-      template < class T >
-      void read_field ( std::string const & field_name, index_type offset, std::vector < T > & data ) const {
-        field check = schm_.field_get ( field_name );
-        if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
-          std::ostringstream o;
-          o << "cannot read non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
-          TIDAS_THROW( o.str().c_str() );
-        }
-        index_type n = data.size();
-        if ( offset + n > size_ ) {
-          std::ostringstream o;
-          o << "cannot read field " << field_name << ", samples " << offset << " - " << (offset+n-1) << " from group " << loc_.name << " (" << size_ << " samples)";
-          TIDAS_THROW( o.str().c_str() );
-        }
-        if ( loc_.type != backend_type::none ) {
-          backend_->read_field ( loc_, field_name, type_indx_.at( field_name ), offset, data );
-        } else {
-          TIDAS_THROW( "cannot read field- backend not assigned" );
-        }
-        return;
-      }
+void ctidas_group_read_int16 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int16_t * data );
 
-      template < class T >
-      void write_field ( std::string const & field_name, index_type offset, std::vector < T > const & data ) {
-        field check = schm_.field_get ( field_name );
-        if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
-          std::ostringstream o;
-          o << "cannot write non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
-          TIDAS_THROW( o.str().c_str() );
-        }
-        index_type n = data.size();
-        if ( offset + n > size_ ) {
-          std::ostringstream o;
-          o << "cannot write field " << field_name << ", samples " << offset << " - " << (offset+n-1) << " to group " << loc_.name << " (" << size_ << " samples)";
-          TIDAS_THROW( o.str().c_str() );
-        }
-        if ( loc_.type != backend_type::none ) {
-          backend_->write_field ( loc_, field_name, type_indx_.at( field_name ), offset, data );
-        } else {
-          TIDAS_THROW( "cannot write field- backend not assigned" );
-        }
-        return;
-      }
+void ctidas_group_write_int16 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int16_t const * data );
 
-      // overload for time_type which updates range
+void ctidas_group_read_int32 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int32_t * data );
 
-      void write_field ( std::string const & field_name, index_type offset, std::vector < time_type > const & data );
-*/
+void ctidas_group_write_int32 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int32_t const * data );
+
+void ctidas_group_read_int64 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int64_t * data );
+
+void ctidas_group_write_int64 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int64_t const * data );
+
+
+void ctidas_group_read_uint8 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint8_t * data );
+
+void ctidas_group_write_uint8 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint8_t const * data );
+
+void ctidas_group_read_uint16 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint16_t * data );
+
+void ctidas_group_write_uint16 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint16_t const * data );
+
+void ctidas_group_read_uint32 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint32_t * data );
+
+void ctidas_group_write_uint32 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint32_t const * data );
+
+void ctidas_group_read_uint64 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint64_t * data );
+
+void ctidas_group_write_uint64 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint64_t const * data );
+
+
+void ctidas_group_read_float ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, float * data );
+
+void ctidas_group_write_float ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, float const * data );
+
+void ctidas_group_read_double ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, double * data );
+
+void ctidas_group_write_double ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, double const * data );
+
+
+void ctidas_group_read_string ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, char ** data );
+
+void ctidas_group_write_string ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, char * const * data );
+
+
+/* Block */
+
+
+struct ctidas_block_;
+typedef struct ctidas_block_ ctidas_block;
+
+ctidas_block * ctidas_block_alloc();
+
+void ctidas_block_free ( ctidas_block * blk );
+
+void ctidas_block_range ( ctidas_block * blk, ctidas_time_type * start, ctidas_time_type * stop );
+
+void ctidas_block_clear ( ctidas_block * blk );
+
+
+ctidas_group * ctidas_block_group_add ( ctidas_block * blk, char const * name, ctidas_group * grp );
+
+ctidas_group * ctidas_block_group_get ( ctidas_block * blk, char const * name );
+
+void ctidas_block_group_del ( ctidas_block * blk, char const * name );
+
+char ** ctidas_block_all_groups ( ctidas_block * blk, size_t * ngroup );
+
+void ctidas_block_clear_groups ( ctidas_block * blk );
+
+
+ctidas_intervals * ctidas_block_intervals_add ( ctidas_block * blk, char const * name, ctidas_intervals * inv );
+
+ctidas_intervals * ctidas_block_intervals_get ( ctidas_block * blk, char const * name );
+
+void ctidas_block_intervals_del ( ctidas_block * blk, char const * name );
+
+char ** ctidas_block_all_intervals ( ctidas_block * blk, size_t * nintervals );
+
+void ctidas_block_clear_intervals ( ctidas_block * blk );
+
+
+ctidas_block * ctidas_block_child_add ( ctidas_block * blk, char const * name, ctidas_block * child );
+
+ctidas_block * ctidas_block_child_get ( ctidas_block * blk, char const * name );
+
+void ctidas_block_child_del ( ctidas_block * blk, char const * name );
+
+char ** ctidas_block_all_children ( ctidas_block * blk, size_t * nchild );
+
+void ctidas_block_clear_children ( ctidas_block * blk );
+
+
+ctidas_block * ctidas_block_select ( ctidas_block * blk, char const * filter );
+
+
+typedef void (*CTIDAS_EXEC_OP) ( ctidas_block * blk, void * aux );
+
+void ctidas_block_exec ( ctidas_block * blk, ctidas_exec_order order, CTIDAS_EXEC_OP op, void * aux );
+
+
+/* Volume */
+
+
+struct ctidas_volume_;
+typedef struct ctidas_volume_ ctidas_volume;
+
+ctidas_volume * ctidas_volume_create ( char const * path, ctidas_backend_type type, ctidas_compression_type comp );
+
+ctidas_volume * ctidas_volume_open ( char const * path, ctidas_access_mode mode );
+
+void ctidas_volume_close ( ctidas_volume * vol );
+
+ctidas_block * ctidas_volume_root ( ctidas_volume * vol );
+
+void ctidas_volume_exec ( ctidas_volume * vol, ctidas_exec_order order, CTIDAS_EXEC_OP op, void * aux );
+
+
+/* Data copy */
+
+
+void ctidas_data_intervals_copy ( ctidas_intervals const * in, ctidas_intervals * out );
+
+void ctidas_data_group_copy ( ctidas_group const * in, ctidas_group * out );
+
+void ctidas_data_block_copy ( ctidas_block const * in, ctidas_block * out );
+
+void ctidas_data_volume_copy ( ctidas_volume const * in, ctidas_volume * out );
+
+
 
 #ifdef __cplusplus
 }

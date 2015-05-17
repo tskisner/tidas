@@ -21,6 +21,19 @@ namespace ctidas {
 
 	ctidas_data_type convert_to_c ( tidas::data_type in );
 
+    // wrapper class for calling a C function pointer
+    // from block::exec
+
+    class block_operator {
+
+        public :
+
+            void operator() ( tidas::block const & blk );
+
+            CTIDAS_EXEC_OP op;
+            void * aux;
+
+    };
 
 }
 

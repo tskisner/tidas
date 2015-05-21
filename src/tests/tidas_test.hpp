@@ -12,41 +12,45 @@
 
 #include <gtest/gtest.h>
 
+#include <ctidas.h>
+
 
 class dictTest : public ::testing::Test {
 
 	public :
 
-		dictTest ();
-		~dictTest () { }
-		virtual void SetUp() { }
-		virtual void TearDown() { }
+		dictTest () {}
+		~dictTest () {}
+		virtual void SetUp();
+		virtual void TearDown();
 
 		tidas::dict dct;
+		ctidas_dict * cdct;
 
 };
 
-void dict_setup ( tidas::dict & dct );
+void dict_setup ( tidas::dict & dct, ctidas_dict * cdct );
 
-void dict_verify ( tidas::dict const & dct );
+void dict_verify ( tidas::dict const & dct, ctidas_dict const * cdct );
 
 
 class intervalsTest : public ::testing::Test {
 
 	public :
 
-		intervalsTest ();
+		intervalsTest () { }
 		~intervalsTest () { }
-		virtual void SetUp() { }
-		virtual void TearDown() { }
+		virtual void SetUp();
+		virtual void TearDown();
 
 		tidas::interval_list intrvls;
+		ctidas_intrvl ** cintrvls;
 
 };
 
-void intervals_setup ( tidas::interval_list & inv );
+void intervals_setup ( tidas::interval_list & inv, ctidas_intrvl ** cinv );
 
-void intervals_verify ( tidas::interval_list const & inv );
+void intervals_verify ( tidas::interval_list const & inv, ctidas_intrvl * const * cinv );
 
 
 class schemaTest : public ::testing::Test {

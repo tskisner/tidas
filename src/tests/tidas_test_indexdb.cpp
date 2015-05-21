@@ -74,7 +74,7 @@ void indexdb_setup_block ( tidas::indexdb * idx, backend_path const & loc ) {
 		schema_setup ( flist );
 
 		dict dct;
-		dict_setup ( dct );
+		dict_setup ( dct, NULL );
 
 		map < data_type, size_t > counts;
 		indexdb_group_counts ( flist, counts );
@@ -90,7 +90,7 @@ void indexdb_setup_block ( tidas::indexdb * idx, backend_path const & loc ) {
 	for ( size_t n = 0; n < NINTERVAL; ++n ) {
 
 		interval_list inv;
-		intervals_setup ( inv );
+		intervals_setup ( inv, NULL );
 
 		backend_path intrloc;
 		intrloc.path = loc.path + path_sep + loc.name + path_sep + block_fs_intervals_dir;
@@ -103,7 +103,7 @@ void indexdb_setup_block ( tidas::indexdb * idx, backend_path const & loc ) {
 		idx->add_intervals ( intrloc, inv.size() );
 
 		dict dct;
-		dict_setup ( dct );
+		dict_setup ( dct, NULL );
 
 		idx->add_dict ( intrloc, dct.data(), dct.types() );
 
@@ -161,7 +161,7 @@ void indexdb_verify_block ( tidas::indexdb * idx, backend_path const & loc ) {
 		schema_setup ( flist );
 
 		dict dct;
-		dict_setup ( dct );
+		dict_setup ( dct, NULL );
 
 		backend_path grouploc;
 		grouploc.path = loc.path + path_sep + loc.name + path_sep + block_fs_group_dir;
@@ -218,10 +218,10 @@ void indexdb_verify_block ( tidas::indexdb * idx, backend_path const & loc ) {
 	for ( size_t n = 0; n < NINTERVAL; ++n ) {
 
 		dict dct;
-		dict_setup ( dct );
+		dict_setup ( dct, NULL );
 
 		interval_list inv;
-		intervals_setup ( inv );
+		intervals_setup ( inv, NULL );
 
 		backend_path intrloc;
 		intrloc.path = loc.path + path_sep + loc.name + path_sep + block_fs_intervals_dir;

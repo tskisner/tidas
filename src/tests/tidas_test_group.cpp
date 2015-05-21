@@ -243,7 +243,7 @@ void groupTest::SetUp () {
 TEST_F( groupTest, MetaOps ) {
 
 	dict dt;
-	dict_setup ( dt );
+	dict_setup ( dt, NULL );
 
 	field_list flist;
 	schema_setup ( flist );
@@ -261,7 +261,7 @@ TEST_F( groupTest, HDF5Backend ) {
 #ifdef HAVE_HDF5
 
 	dict dt;
-	dict_setup ( dt );
+	dict_setup ( dt, NULL );
 
 	field_list flist;
 	schema_setup ( flist );

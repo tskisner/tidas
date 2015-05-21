@@ -18,12 +18,12 @@ void block_setup ( block & blk, size_t n_samp, size_t n_intr ) {
 	blk.clear();
 
 	dict dt;
-	dict_setup ( dt );
+	dict_setup ( dt, NULL );
 
 	intervals intr ( dt, n_intr );
 
 	interval_list inv;
-	intervals_setup ( inv );
+	intervals_setup ( inv, NULL );
 
 	field_list flist;
 	schema_setup ( flist );
@@ -59,11 +59,11 @@ void block_verify ( block & blk ) {
 	
 	intervals intr = blk.intervals_get ( "intr_A" );
 	intr.read_data ( inv );
-	intervals_verify ( inv );
+	intervals_verify ( inv, NULL );
 
 	intr = blk.intervals_get ( "intr_B" );
 	intr.read_data ( inv );
-	intervals_verify ( inv );
+	intervals_verify ( inv, NULL );
 
 	vector < string > blks = blk.all_blocks();
 

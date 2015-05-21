@@ -12,7 +12,7 @@ using namespace std;
 using namespace tidas;
 
 
-void intervals_setup ( interval_list & inv ) {
+void intervals_setup ( interval_list & inv, ctidas_intrvl ** cinv ) {
 
 	inv.clear();
 
@@ -32,11 +32,24 @@ void intervals_setup ( interval_list & inv ) {
 		inv.push_back ( cur );
 	}
 
+	if ( cinv != NULL ) {
+		for ( size_t i = 0; i < nint; ++i ) {
+			time_type start = gap + (double)i * ( span + gap );
+			time_type stop = (double)(i + 1) * ( span + gap );
+			index_type first = gap_samp + i * ( span_samp + gap_samp );
+			index_type last = (i + 1) * ( span_samp + gap_samp );
+			ctidas_intrvl_start_set ( cinv[i], start );
+			ctidas_intrvl_stop_set ( cinv[i], stop );
+			ctidas_intrvl_first_set ( cinv[i], first );
+			ctidas_intrvl_last_set ( cinv[i], last );
+		}
+	}
+
 	return;
 }
 
 
-void intervals_verify ( interval_list const & inv ) {
+void intervals_verify ( interval_list const & inv, ctidas_intrvl * const * cinv ) {
 
 	size_t nint = 10;
 	time_type gap = 1.0;
@@ -58,18 +71,37 @@ void intervals_verify ( interval_list const & inv ) {
 		EXPECT_EQ( cur.last, inv[i].last );
 	}
 
+	if ( cinv != NULL ) {
+		for ( size_t i = 0; i < nint; ++i ) {
+			time_type start = gap + (double)i * ( span + gap );
+			time_type stop = (double)(i + 1) * ( span + gap );
+			index_type first = gap_samp + i * ( span_samp + gap_samp );
+			index_type last = (i + 1) * ( span_samp + gap_samp );
+			EXPECT_EQ( start, ctidas_intrvl_start_get ( cinv[i] ) );
+			EXPECT_EQ( stop, ctidas_intrvl_stop_get ( cinv[i] ) );
+			EXPECT_EQ( first, ctidas_intrvl_first_get ( cinv[i] ) );
+			EXPECT_EQ( last, ctidas_intrvl_last_get ( cinv[i] ) );
+		}
+	}
+
 	return;
 }
 
 
-intervalsTest::intervalsTest () {
-	intervals_setup ( intrvls );
+void intervalsTest::SetUp () {
+	cintrvls = ctidas_intrvl_list_alloc(10);
+	intervals_setup ( intrvls, cintrvls );
+}
+
+
+void intervalsTest::TearDown () {
+	ctidas_intrvl_list_free ( cintrvls, 10 );
 }
 
 
 TEST_F( intervalsTest, MetaOps ) {
 
-	intervals_verify ( intrvls );
+	intervals_verify ( intrvls, cintrvls );
 
 	intervals intr;
 
@@ -90,7 +122,7 @@ TEST_F( intervalsTest, MetaOps ) {
 
 	dict dt;
 
-	dict_setup ( dt );
+	dict_setup ( dt, NULL );
 
 	intervals intr2 ( dt, intrvls.size() );
 
@@ -109,7 +141,7 @@ TEST_F( intervalsTest, HDF5Backend ) {
 
 	dict dt;
 
-	dict_setup ( dt );
+	dict_setup ( dt, NULL );
 
 	intervals test ( dt, intrvls.size() );
 
@@ -140,7 +172,7 @@ TEST_F( intervalsTest, HDF5Backend ) {
 	interval_list check;
 	test3.read_data ( check );
 
-	intervals_verify ( check );
+	intervals_verify ( check, NULL );
 
 #else
 

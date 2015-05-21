@@ -310,7 +310,7 @@ void tidas::block::sync ( string const & filter ) {
 				TIDAS_THROW( o.str().c_str() );
 			}
 
-			if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
+			if ( loc_.idx && ( loc_.mode == access_mode::write ) ) {
 				loc_.idx->add_block ( loc_ );
 			}
 
@@ -368,7 +368,7 @@ void tidas::block::flush () const {
 
 	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == access_mode::readwrite ) {
+		if ( loc_.mode == access_mode::write ) {
 
 			string dir = loc_.path + path_sep + loc_.name;
 			fs_mkdir ( dir.c_str() );
@@ -437,7 +437,7 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	// update index
 
-	if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
+	if ( loc_.idx && ( loc_.mode == access_mode::write ) ) {
 		loc_.idx->update_block ( loc_ );
 	}
 
@@ -597,7 +597,7 @@ void tidas::block::wipe ( ) const {
 
 	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == access_mode::readwrite ) {
+		if ( loc_.mode == access_mode::write ) {
 
 			block_wipe_operator op;
 

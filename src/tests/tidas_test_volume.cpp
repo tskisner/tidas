@@ -89,7 +89,7 @@ TEST_F( volumeTest, HDF5Backend ) {
 	}
 
 	{
-		volume vol ( "test_volume_dup_mem.out", access_mode::readwrite );
+		volume vol ( "test_volume_dup_mem.out", access_mode::write );
 		volume_verify ( vol );
 	}
 
@@ -98,7 +98,7 @@ TEST_F( volumeTest, HDF5Backend ) {
 	fs_rm_r ( "test_volume_dup_rw.out" );
 
 	{
-		volume vol ( "test_volume_dup_mem.out", access_mode::readwrite );
+		volume vol ( "test_volume_dup_mem.out", access_mode::write );
 		vol.duplicate ( "test_volume_dup_rw.out", backend_type::hdf5, compression_type::gzip );
 	}
 

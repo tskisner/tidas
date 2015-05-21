@@ -117,7 +117,7 @@ TEST_F( intervalsTest, HDF5Backend ) {
 
 	backend_path loc;
 	loc.type = backend_type::hdf5;
-	loc.mode = access_mode::readwrite;
+	loc.mode = access_mode::write;
 	loc.path = ".";
 	loc.name = "test_intervals_data.hdf5.out";
 

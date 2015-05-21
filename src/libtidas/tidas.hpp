@@ -66,7 +66,7 @@ namespace tidas {
 
 	enum class access_mode {
 		read, ///< Read-only access.
-		readwrite ///< Read-write access.
+		write ///< Read-write access.
 	};
 
 	enum class link_type {

@@ -24,7 +24,7 @@ sql_err( err, msg, __FILE__, __LINE__ )
 tidas::indexdb_sql::indexdb_sql () : indexdb() {
 	path_ = "";
 	volpath_ = "";
-	mode_ = access_mode::readwrite;
+	mode_ = access_mode::write;
 	sql_ = NULL;
 }
 
@@ -173,7 +173,7 @@ void tidas::indexdb_sql::open () {
 		if ( size > 0 ) {
 			// just open
 			
-			if ( mode_ == access_mode::readwrite ) {
+			if ( mode_ == access_mode::write ) {
 				flags = flags | SQLITE_OPEN_READWRITE;
 			} else {
 				flags = flags | SQLITE_OPEN_READONLY;
@@ -185,7 +185,7 @@ void tidas::indexdb_sql::open () {
 		} else {
 			// create and initialize schema
 
-			if ( mode_ == access_mode::readwrite ) {
+			if ( mode_ == access_mode::write ) {
 
 				init ( path_ );
 
@@ -238,7 +238,7 @@ void tidas::indexdb_sql::ops_dict ( backend_path loc, indexdb_op op, map < strin
 		TIDAS_THROW( "sqlite DB is not open" );
 	}
 
-	if ( mode_ != access_mode::readwrite ) {
+	if ( mode_ != access_mode::write ) {
 		ostringstream o;
 		o << "cannot modify read-only db \"" << path_ << "\"";
 		TIDAS_THROW( o.str().c_str() );
@@ -330,7 +330,7 @@ void tidas::indexdb_sql::ops_schema ( backend_path loc, indexdb_op op, field_lis
 		TIDAS_THROW( "sqlite DB is not open" );
 	}
 
-	if ( mode_ != access_mode::readwrite ) {
+	if ( mode_ != access_mode::write ) {
 		ostringstream o;
 		o << "cannot modify read-only db \"" << path_ << "\"";
 		TIDAS_THROW( o.str().c_str() );
@@ -391,7 +391,7 @@ void tidas::indexdb_sql::ops_group ( backend_path loc, indexdb_op op, index_type
 		TIDAS_THROW( "sqlite DB is not open" );
 	}
 
-	if ( mode_ != access_mode::readwrite ) {
+	if ( mode_ != access_mode::write ) {
 		ostringstream o;
 		o << "cannot modify read-only db \"" << path_ << "\"";
 		TIDAS_THROW( o.str().c_str() );
@@ -470,7 +470,7 @@ void tidas::indexdb_sql::ops_intervals ( backend_path loc, indexdb_op op, size_t
 		TIDAS_THROW( "sqlite DB is not open" );
 	}
 
-	if ( mode_ != access_mode::readwrite ) {
+	if ( mode_ != access_mode::write ) {
 		ostringstream o;
 		o << "cannot modify read-only db \"" << path_ << "\"";
 		TIDAS_THROW( o.str().c_str() );
@@ -534,7 +534,7 @@ void tidas::indexdb_sql::ops_block ( backend_path loc, indexdb_op op ) {
 		TIDAS_THROW( "sqlite DB is not open" );
 	}
 
-	if ( mode_ != access_mode::readwrite ) {
+	if ( mode_ != access_mode::write ) {
 		ostringstream o;
 		o << "cannot modify read-only db \"" << path_ << "\"";
 		TIDAS_THROW( o.str().c_str() );

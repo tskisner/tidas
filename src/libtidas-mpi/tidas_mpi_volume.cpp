@@ -45,7 +45,7 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path, backend_type
 	loc_.meta = "";
 	loc_.type = type;
 	loc_.comp = comp;
-	loc_.mode = access_mode::readwrite;
+	loc_.mode = access_mode::write;
 
 	if ( fs_stat ( fspath.c_str() ) >= 0 ) {
 		ostringstream o;
@@ -164,7 +164,7 @@ void tidas::mpi_volume::copy ( mpi_volume const & other, string const & filter, 
 
 	if ( loc_ != other.loc_ ) {
 
-		if ( loc_.mode != access_mode::readwrite ) {
+		if ( loc_.mode != access_mode::write ) {
 			TIDAS_THROW( "cannot copy volume to read-only location" );
 		}
 

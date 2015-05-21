@@ -38,7 +38,7 @@ tidas::volume::volume ( string const & path, backend_type type, compression_type
 	loc_.meta = "";
 	loc_.type = type;
 	loc_.comp = comp;
-	loc_.mode = access_mode::readwrite;
+	loc_.mode = access_mode::write;
 
 	if ( fs_stat ( fspath.c_str() ) >= 0 ) {
 		ostringstream o;
@@ -149,7 +149,7 @@ void tidas::volume::copy ( volume const & other, string const & filter, backend_
 
 	if ( loc_ != other.loc_ ) {
 
-		if ( loc_.mode != access_mode::readwrite ) {
+		if ( loc_.mode != access_mode::write ) {
 			TIDAS_THROW( "cannot copy volume to read-only location" );
 		}
 
@@ -228,7 +228,7 @@ void tidas::volume::link ( std::string const & path, link_type const & ltype, st
 	// make a copy of the index, so that we can add new objects
 
 	string newdb = lpath + path_sep + volume_fs_index;
-	indexdb_sql sqldb ( newdb, lpath, access_mode::readwrite );
+	indexdb_sql sqldb ( newdb, lpath, access_mode::write );
 
 	if ( loc_.path != "" ) {
 		indexdb_sql * orig = dynamic_cast < indexdb_sql * > ( db_.get() );
@@ -269,7 +269,7 @@ void tidas::volume::duplicate ( std::string const & path, backend_type type, com
 	exploc.meta = "";
 	exploc.type = type;
 	exploc.comp = comp;
-	exploc.mode = access_mode::readwrite;
+	exploc.mode = access_mode::write;
 
 	volume newvol;
 	newvol.copy ( (*this), filter, exploc );
@@ -284,7 +284,7 @@ void tidas::volume::wipe ( string const & filter ) const {
 
 	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == access_mode::readwrite ) {
+		if ( loc_.mode == access_mode::write ) {
 
 
 		} else {

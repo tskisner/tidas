@@ -273,7 +273,7 @@ TEST_F( groupTest, HDF5Backend ) {
 	loc.type = backend_type::hdf5;
 	loc.path = ".";
 	loc.name = "test_group.hdf5.out";
-	loc.mode = access_mode::readwrite;
+	loc.mode = access_mode::write;
 
 	group grp2 ( grp, "", loc );
 	grp2.flush();

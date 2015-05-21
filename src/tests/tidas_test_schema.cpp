@@ -189,7 +189,7 @@ TEST_F( schemaTest, HDF5Backend ) {
 	loc.path = ".";
 	loc.name = "test_schema.hdf5.out";
 	loc.meta = string("/") + schema_hdf5_dataset;
-	loc.mode = access_mode::readwrite;
+	loc.mode = access_mode::write;
 
 	schema schm2 ( schm, ".*", loc );
 	schm2.flush();

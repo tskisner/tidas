@@ -150,7 +150,7 @@ void tidas::intervals::sync () {
 
 		if ( ! found ) {
 			backend_->read ( loc_, size_ );
-			if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
+			if ( loc_.idx && ( loc_.mode == access_mode::write ) ) {
 				loc_.idx->add_intervals ( loc_, size_ );
 			}
 		}
@@ -165,7 +165,7 @@ void tidas::intervals::flush () const {
 
 	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == access_mode::readwrite ) {	
+		if ( loc_.mode == access_mode::write ) {	
 			// write our own metadata
 
 			backend_->write ( loc_, size_ );
@@ -217,7 +217,7 @@ void tidas::intervals::copy ( intervals const & other, string const & filter, ba
 
 	// update index
 
-	if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
+	if ( loc_.idx && ( loc_.mode == access_mode::write ) ) {
 		loc_.idx->update_intervals ( loc_, size_ );
 	}
 
@@ -243,7 +243,7 @@ void tidas::intervals::wipe () const {
 
 	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == access_mode::readwrite ) {
+		if ( loc_.mode == access_mode::write ) {
 			backend_->wipe ( loc_ );
 		} else {
 			TIDAS_THROW( "cannot wipe intervals in read-only mode" );

@@ -156,7 +156,7 @@ void tidas::group::sync () {
 		}
 
 		if ( ! found ) {
-			if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
+			if ( loc_.idx && ( loc_.mode == access_mode::write ) ) {
 				loc_.idx->add_group ( loc_, size_, start_, stop_, backend_counts );
 			}
 		}
@@ -171,7 +171,7 @@ void tidas::group::flush () const {
 
 	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == access_mode::readwrite ) {	
+		if ( loc_.mode == access_mode::write ) {	
 			// write our own metadata
 
 			backend_->write ( loc_, size_, counts_ );
@@ -234,7 +234,7 @@ void tidas::group::copy ( group const & other, string const & filter, backend_pa
 
 	// update index
 
-	if ( loc_.idx && ( loc_.mode == access_mode::readwrite ) ) {
+	if ( loc_.idx && ( loc_.mode == access_mode::write ) ) {
 		loc_.idx->update_group ( loc_, size_, start_, stop_, counts_ );
 	}
 
@@ -260,7 +260,7 @@ void tidas::group::wipe () const {
 
 	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == access_mode::readwrite ) {
+		if ( loc_.mode == access_mode::write ) {
 			backend_->wipe ( loc_ );
 		} else {
 			TIDAS_THROW( "cannot wipe group in read-only mode" );
@@ -356,7 +356,7 @@ void tidas::group::resize ( index_type const & newsize ) {
 
 	if ( loc_.type != backend_type::none ) {
 
-		if ( loc_.mode == access_mode::readwrite ) {
+		if ( loc_.mode == access_mode::write ) {
 			backend_->resize ( loc_, newsize );
 			size_ = newsize;
 

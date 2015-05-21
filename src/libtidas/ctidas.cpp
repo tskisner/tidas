@@ -108,86 +108,198 @@ ctidas_data_type ctidas::convert_to_c ( data_type in ) {
 }
 
 
-backend_type ctidas::convert_from_c ( ctidas_data_type in ) {
-	data_type ret;
+backend_type ctidas::convert_from_c ( ctidas_backend_type in ) {
+	backend_type ret;
 	switch ( in ) {
-		case type_none :
-			ret = data_type::none;
+		case back_none :
+			ret = backend_type::none;
 			break;
-		case type_int8 :
-			ret = data_type::int8;
+		case back_hdf5 :
+			ret = backend_type::hdf5;
 			break;
-		case type_int16 :
-			ret = data_type::int16;
-			break;
-		case type_int32 :
-			ret = data_type::int32;
-			break;
-		case type_int64 :
-			ret = data_type::int64;
-			break;
-		case type_uint8 :
-			ret = data_type::uint8;
-			break;
-		case type_uint16 :
-			ret = data_type::uint16;
-			break;
-		case type_uint32 :
-			ret = data_type::uint32;
-			break;
-		case type_uint64 :
-			ret = data_type::uint64;
-			break;
-		case type_float32 :
-			ret = data_type::float32;
-			break;
-		case type_float64 :
-			ret = data_type::float64;
-			break;
-		case type_string :
-			ret = data_type::string;
+		case back_getdata :
+			ret = backend_type::getdata;
 			break;
 		default :
-			TIDAS_THROW( "invalid ctidas_data_type value" );
+			TIDAS_THROW( "invalid ctidas_backend_type value" );
 			break;
 	}
 	return ret;
 }
 
-typedef enum {
-    back_none,
-    back_hdf5,
-    back_getdata
-} ctidas_backend_type;
+
+ctidas_backend_type ctidas::convert_to_c ( backend_type in ) {
+	ctidas_backend_type ret;
+	switch ( in ) {
+		case backend_type::none :
+			ret = back_none;
+			break;
+		case backend_type::hdf5 :
+			ret = back_hdf5;
+			break;
+		case backend_type::getdata :
+			ret = back_getdata;
+			break;
+		default :
+			TIDAS_THROW( "invalid backend_type value" );
+			break;
+	}
+	return ret;
+}
 
 
-typedef enum {
-    comp_none,
-    comp_gzip,
-    comp_bzip2
-} ctidas_compression_type;
+compression_type ctidas::convert_from_c ( ctidas_compression_type in ) {
+	compression_type ret;
+	switch ( in ) {
+		case comp_none :
+			ret = compression_type::none;
+			break;
+		case comp_gzip :
+			ret = compression_type::gzip;
+			break;
+		case comp_bzip2 :
+			ret = compression_type::bzip2;
+			break;
+		default :
+			TIDAS_THROW( "invalid ctidas_compression_type value" );
+			break;
+	}
+	return ret;
+}
 
 
-typedef enum {
-    acc_read,
-    acc_readwrite
-} ctidas_access_mode;
+ctidas_compression_type ctidas::convert_to_c ( compression_type in ) {
+	ctidas_compression_type ret;
+	switch ( in ) {
+		case compression_type::none :
+			ret = comp_none;
+			break;
+		case compression_type::gzip :
+			ret = comp_gzip;
+			break;
+		case compression_type::bzip2 :
+			ret = comp_bzip2;
+			break;
+		default :
+			TIDAS_THROW( "invalid compression_type value" );
+			break;
+	}
+	return ret;
+}
 
 
-typedef enum {
-    link_none,
-    link_hard,
-    link_soft
-} ctidas_link_type;
+link_type ctidas::convert_from_c ( ctidas_link_type in ) {
+	link_type ret;
+	switch ( in ) {
+		case link_none :
+			ret = link_type::none;
+			break;
+		case link_hard :
+			ret = link_type::hard;
+			break;
+		case link_soft :
+			ret = link_type::soft;
+			break;
+		default :
+			TIDAS_THROW( "invalid ctidas_link_type value" );
+			break;
+	}
+	return ret;
+}
 
 
-typedef enum {
-    order_depth_first,
-    order_depth_last,
-    order_leaf
-} ctidas_exec_order;
+ctidas_link_type ctidas::convert_to_c ( link_type in ) {
+	ctidas_link_type ret;
+	switch ( in ) {
+		case link_type::none :
+			ret = link_none;
+			break;
+		case link_type::hard :
+			ret = link_hard;
+			break;
+		case link_type::soft :
+			ret = link_soft;
+			break;
+		default :
+			TIDAS_THROW( "invalid link_type value" );
+			break;
+	}
+	return ret;
+}
 
 
+access_mode ctidas::convert_from_c ( ctidas_access_mode in ) {
+	access_mode ret;
+	switch ( in ) {
+		case acc_read :
+			ret = access_mode::read;
+			break;
+		case acc_write :
+			ret = access_mode::write;
+			break;
+		default :
+			TIDAS_THROW( "invalid ctidas_access_mode value" );
+			break;
+	}
+	return ret;
+}
+
+
+ctidas_access_mode ctidas::convert_to_c ( access_mode in ) {
+	ctidas_access_mode ret;
+	switch ( in ) {
+		case access_mode::read :
+			ret = acc_read;
+			break;
+		case access_mode::write :
+			ret = acc_write;
+			break;
+		default :
+			TIDAS_THROW( "invalid access_mode value" );
+			break;
+	}
+	return ret;
+}
+
+
+exec_order ctidas::convert_from_c ( ctidas_exec_order in ) {
+	exec_order ret;
+	switch ( in ) {
+		case order_depth_first :
+			ret = exec_order::depth_first;
+			break;
+		case order_depth_last :
+			ret = exec_order::depth_last;
+			break;
+		case order_leaf :
+			ret = exec_order::leaf;
+			break;
+		default :
+			TIDAS_THROW( "invalid ctidas_exec_order value" );
+			break;
+	}
+	return ret;
+}
+
+
+ctidas_exec_order ctidas::convert_to_c ( exec_order in ) {
+	ctidas_exec_order ret;
+	switch ( in ) {
+		case exec_order::depth_first :
+			ret = order_depth_first;
+			break;
+		case exec_order::depth_last :
+			ret = order_depth_last;
+			break;
+		case exec_order::leaf :
+			ret = order_leaf;
+			break;
+		default :
+			TIDAS_THROW( "invalid exec_order value" );
+			break;
+	}
+	return ret;
+}
 
 
 ctidas_dict * ctidas_dict_alloc ( ) {
@@ -205,13 +317,13 @@ void ctidas_dict_clear ( ctidas_dict * dct ) {
 	return;
 }
 
-size_t ctidas_dict_nkeys ( ctidas_dict * dct ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+size_t ctidas_dict_nkeys ( ctidas_dict const * dct ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	return d->data().size();
 }
 
-char ** ctidas_dict_keys ( ctidas_dict * dct, size_t * nkeys ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+char ** ctidas_dict_keys ( ctidas_dict const * dct, size_t * nkeys ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	(*nkeys) = d->data().size();
 	char ** ret = (char**)malloc((*nkeys) * sizeof(char*));
 	if ( ! ret ) {
@@ -231,8 +343,8 @@ char ** ctidas_dict_keys ( ctidas_dict * dct, size_t * nkeys ) {
 	return ret;
 }
 
-ctidas_data_type ctidas_dict_type ( ctidas_dict * dct, char const * key ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+ctidas_data_type ctidas_dict_type ( ctidas_dict const * dct, char const * key ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	return ctidas::convert_to_c( d->types().at(string(key)) );
 }
 
@@ -302,58 +414,58 @@ void ctidas_dict_put_string ( ctidas_dict * dct, char const * key, char const * 
 	return;
 }
 
-int8_t ctidas_dict_get_int8 ( ctidas_dict * dct, char const * key ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+int8_t ctidas_dict_get_int8 ( ctidas_dict const * dct, char const * key ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	return d->get < int8_t > ( key );
 }
 
-int16_t ctidas_dict_get_int16 ( ctidas_dict * dct, char const * key ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+int16_t ctidas_dict_get_int16 ( ctidas_dict const * dct, char const * key ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	return d->get < int16_t > ( key );
 }
 
-int32_t ctidas_dict_get_int32 ( ctidas_dict * dct, char const * key ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+int32_t ctidas_dict_get_int32 ( ctidas_dict const * dct, char const * key ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	return d->get < int32_t > ( key );
 }
 
-int64_t ctidas_dict_get_int64 ( ctidas_dict * dct, char const * key ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+int64_t ctidas_dict_get_int64 ( ctidas_dict const * dct, char const * key ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	return d->get < int64_t > ( key );
 }
 
-uint8_t ctidas_dict_get_uint8 ( ctidas_dict * dct, char const * key ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+uint8_t ctidas_dict_get_uint8 ( ctidas_dict const * dct, char const * key ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	return d->get < uint8_t > ( key );
 }
 
-uint16_t ctidas_dict_get_uint16 ( ctidas_dict * dct, char const * key ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+uint16_t ctidas_dict_get_uint16 ( ctidas_dict const * dct, char const * key ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	return d->get < uint16_t > ( key );
 }
 
-uint32_t ctidas_dict_get_uint32 ( ctidas_dict * dct, char const * key ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+uint32_t ctidas_dict_get_uint32 ( ctidas_dict const * dct, char const * key ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	return d->get < uint32_t > ( key );
 }
 
-uint64_t ctidas_dict_get_uint64 ( ctidas_dict * dct, char const * key ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+uint64_t ctidas_dict_get_uint64 ( ctidas_dict const * dct, char const * key ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	return d->get < uint64_t > ( key );
 }
 
-float ctidas_dict_get_float ( ctidas_dict * dct, char const * key ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+float ctidas_dict_get_float ( ctidas_dict const * dct, char const * key ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	return d->get < float > ( key );
 }
 
-double ctidas_dict_get_double ( ctidas_dict * dct, char const * key ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+double ctidas_dict_get_double ( ctidas_dict const * dct, char const * key ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	return d->get < double > ( key );
 }
 
-char * ctidas_dict_get_string ( ctidas_dict * dct, char const * key ) {
-	dict * d = reinterpret_cast < dict * > ( dct );
+char * ctidas_dict_get_string ( ctidas_dict const * dct, char const * key ) {
+	dict const * d = reinterpret_cast < dict const * > ( dct );
 	string str = d->get < string > ( key );
 	char * ret = (char*)malloc(str.size() + 1);
 	if ( ! ret ) {
@@ -380,8 +492,8 @@ void ctidas_field_type_set ( ctidas_field * fld, ctidas_data_type type ) {
 	return;
 }
 
-ctidas_data_type ctidas_field_type_get ( ctidas_field * fld ) {
-	field * f = reinterpret_cast < field * > ( fld );
+ctidas_data_type ctidas_field_type_get ( ctidas_field const * fld ) {
+	field const * f = reinterpret_cast < field const * > ( fld );
 	return ctidas::convert_to_c( f->type );
 }
 
@@ -391,15 +503,9 @@ void ctidas_field_name_set ( ctidas_field * fld, char const * name ) {
 	return;
 }
 
-char * ctidas_field_name_get ( ctidas_field * fld ) {
-	field * f = reinterpret_cast < field * > ( fld );
-	char * ret = (char*)malloc( f->name.size() + 1 );
-	if ( ! ret ) {
-		fprintf(stderr, "failed to allocate field name string\n");
-		exit(1);
-	}
-	strncpy( ret, f->name.c_str(), f->name.size() );
-	return ret;
+char const * ctidas_field_name_get ( ctidas_field const * fld ) {
+	field const * f = reinterpret_cast < field const * > ( fld );
+	return f->name.c_str();
 }
 
 void ctidas_field_units_set ( ctidas_field * fld, char const * units ) {
@@ -408,15 +514,9 @@ void ctidas_field_units_set ( ctidas_field * fld, char const * units ) {
 	return;
 }
 
-char * ctidas_field_units_get ( ctidas_field * fld ) {
-	field * f = reinterpret_cast < field * > ( fld );
-	char * ret = (char*)malloc( f->units.size() + 1 );
-	if ( ! ret ) {
-		fprintf(stderr, "failed to allocate field units string\n");
-		exit(1);
-	}
-	strncpy( ret, f->units.c_str(), f->units.size() );
-	return ret;
+char const * ctidas_field_units_get ( ctidas_field const * fld ) {
+	field const * f = reinterpret_cast < field const * > ( fld );
+	return f->units.c_str();
 }
 
 
@@ -434,8 +534,8 @@ void ctidas_schema_clear ( ctidas_schema * schm ) {
 	s->clear();
 }
 
-char ** ctidas_schema_fields ( ctidas_schema * schm, size_t * nfields ) {
-	schema * s = reinterpret_cast < schema * > ( schm );
+char ** ctidas_schema_fields ( ctidas_schema const * schm, size_t * nfields ) {
+	schema const * s = reinterpret_cast < schema const * > ( schm );
 	(*nfields) = s->fields().size();
 	char ** ret = (char**)malloc((*nfields) * sizeof(char*));
 	if ( ! ret ) {
@@ -468,8 +568,8 @@ void ctidas_schema_field_del ( ctidas_schema * schm, char const * name ) {
 	return;
 }
 
-ctidas_field * ctidas_schema_field_get ( ctidas_schema * schm, char const * name ) {
-	schema * s = reinterpret_cast < schema * > ( schm );
+ctidas_field * ctidas_schema_field_get ( ctidas_schema const * schm, char const * name ) {
+	schema const * s = reinterpret_cast < schema const * > ( schm );
 	ctidas_field * ret = ctidas_field_alloc();
 	field * f = reinterpret_cast < field * > ( ret );
 	(*f) = s->field_get( name );
@@ -492,8 +592,8 @@ void ctidas_intrvl_start_set ( ctidas_intrvl * intr, double start ) {
 	return;
 }
 
-double ctidas_intrvl_start_get ( ctidas_intrvl * intr ) {
-	intrvl * t = reinterpret_cast < intrvl * > ( intr );
+double ctidas_intrvl_start_get ( ctidas_intrvl const * intr ) {
+	intrvl const * t = reinterpret_cast < intrvl const * > ( intr );
 	return t->start;
 }
 
@@ -503,8 +603,8 @@ void ctidas_intrvl_stop_set ( ctidas_intrvl * intr, double stop ) {
 	return;	
 }
 
-double ctidas_intrvl_stop_get ( ctidas_intrvl * intr ) {
-	intrvl * t = reinterpret_cast < intrvl * > ( intr );
+double ctidas_intrvl_stop_get ( ctidas_intrvl const * intr ) {
+	intrvl const * t = reinterpret_cast < intrvl const * > ( intr );
 	return t->stop;
 }
 
@@ -514,8 +614,8 @@ void ctidas_intrvl_first_set ( ctidas_intrvl * intr, int64_t first ) {
 	return;
 }
 
-int64_t ctidas_intrvl_first_get ( ctidas_intrvl * intr ) {
-	intrvl * t = reinterpret_cast < intrvl * > ( intr );
+int64_t ctidas_intrvl_first_get ( ctidas_intrvl const * intr ) {
+	intrvl const * t = reinterpret_cast < intrvl const * > ( intr );
 	return t->first;
 }
 
@@ -525,8 +625,8 @@ void ctidas_intrvl_last_set ( ctidas_intrvl * intr, int64_t last ) {
 	return;
 }
 
-int64_t ctidas_intrvl_last_get ( ctidas_intrvl * intr ) {
-	intrvl * t = reinterpret_cast < intrvl * > ( intr );
+int64_t ctidas_intrvl_last_get ( ctidas_intrvl const * intr ) {
+	intrvl const * t = reinterpret_cast < intrvl const * > ( intr );
 	return t->last;
 }
 
@@ -548,13 +648,13 @@ void ctidas_intrvl_list_free ( ctidas_intrvl ** intrl, size_t n ) {
 }
 
 
-ctidas_intervals * ctidas_intervals_alloc ( ctidas_dict * dct, size_t size ) {
+ctidas_intervals * ctidas_intervals_alloc ( ctidas_dict const * dct, size_t size ) {
 	ctidas_intervals * ret;
 	if ( dct == NULL ) {
 		dict empty;
 		ret = reinterpret_cast < ctidas_intervals * > ( new intervals( empty, size ) );
 	} else {
-		dict * d = reinterpret_cast < dict * > ( dct );
+		dict const * d = reinterpret_cast < dict const * > ( dct );
 		ret = reinterpret_cast < ctidas_intervals * > ( new intervals( (*d), size ) );
 	}
 	return ret;
@@ -565,22 +665,20 @@ void ctidas_intervals_free ( ctidas_intervals * inv ) {
 	return;
 }
 
-size_t ctidas_intervals_size ( ctidas_intervals * inv ) {
-	intervals * v = reinterpret_cast < intervals * > ( inv );
+size_t ctidas_intervals_size ( ctidas_intervals const * inv ) {
+	intervals const * v = reinterpret_cast < intervals const * > ( inv );
 	return v->size();
 }
 
-ctidas_dict * ctidas_intervals_dict ( ctidas_intervals * inv ) {
-	intervals * v = reinterpret_cast < intervals * > ( inv );
-	ctidas_dict * ret = ctidas_dict_alloc();
-	dict * d = reinterpret_cast < dict * > ( ret );
-	(*d) = v->dictionary();
-	return ret;
+ctidas_dict const * ctidas_intervals_dict ( ctidas_intervals const * inv ) {
+	intervals const * v = reinterpret_cast < intervals const * > ( inv );
+	dict const & d = v->dictionary();
+	return reinterpret_cast < ctidas_dict const * > ( &d );
 }
 
-ctidas_intrvl ** ctidas_intervals_read ( ctidas_intervals * inv, size_t * n ) {
+ctidas_intrvl ** ctidas_intervals_read ( ctidas_intervals const * inv, size_t * n ) {
 	interval_list il;
-	intervals * v = reinterpret_cast < intervals * > ( inv );
+	intervals const * v = reinterpret_cast < intervals const * > ( inv );
 	v->read_data( il );
 	(*n) = il.size();
 
@@ -594,11 +692,11 @@ ctidas_intrvl ** ctidas_intervals_read ( ctidas_intervals * inv, size_t * n ) {
 	return ret;
 }
 
-void ctidas_intervals_write ( ctidas_intervals * inv, ctidas_intrvl ** intrl, size_t n ) {
+void ctidas_intervals_write ( ctidas_intervals * inv, ctidas_intrvl * const * intrl, size_t n ) {
 	interval_list il;
 
 	for ( size_t i = 0; i < n; ++i ) {
-		intrvl * t = reinterpret_cast < intrvl * > ( intrl[i] );
+		intrvl const * t = reinterpret_cast < intrvl const * > ( intrl[i] );
 		il.push_back( (*t) );
 	}
 
@@ -608,33 +706,33 @@ void ctidas_intervals_write ( ctidas_intervals * inv, ctidas_intrvl ** intrl, si
 	return;
 }
 
-ctidas_index_type ctidas_intervals_samples ( ctidas_intrvl ** intrl, size_t n ) {
+ctidas_index_type ctidas_intervals_samples ( ctidas_intrvl * const * intrl, size_t n ) {
 	interval_list il;
 
 	for ( size_t i = 0; i < n; ++i ) {
-		intrvl * t = reinterpret_cast < intrvl * > ( intrl[i] );
+		intrvl const * t = reinterpret_cast < intrvl const * > ( intrl[i] );
 		il.push_back( (*t) );
 	}
 
 	return intervals::total_samples( il );
 }
 
-ctidas_time_type ctidas_intervals_time ( ctidas_intrvl ** intrl, size_t n ) {
+ctidas_time_type ctidas_intervals_time ( ctidas_intrvl * const * intrl, size_t n ) {
 	interval_list il;
 
 	for ( size_t i = 0; i < n; ++i ) {
-		intrvl * t = reinterpret_cast < intrvl * > ( intrl[i] );
+		intrvl const * t = reinterpret_cast < intrvl const * > ( intrl[i] );
 		il.push_back( (*t) );
 	}
 
 	return intervals::total_time( il );
 }
 
-ctidas_intrvl * ctidas_intervals_seek ( ctidas_intrvl ** intrl, size_t n, ctidas_time_type time ) {
+ctidas_intrvl * ctidas_intervals_seek ( ctidas_intrvl * const * intrl, size_t n, ctidas_time_type time ) {
 	interval_list il;
 
 	for ( size_t i = 0; i < n; ++i ) {
-		intrvl * t = reinterpret_cast < intrvl * > ( intrl[i] );
+		intrvl const * t = reinterpret_cast < intrvl const * > ( intrl[i] );
 		il.push_back( (*t) );
 	}
 
@@ -648,11 +746,11 @@ ctidas_intrvl * ctidas_intervals_seek ( ctidas_intrvl ** intrl, size_t n, ctidas
 	return cret;
 }
 
-ctidas_intrvl * ctidas_intervals_seek_ceil ( ctidas_intrvl ** intrl, size_t n, ctidas_time_type time ) {
+ctidas_intrvl * ctidas_intervals_seek_ceil ( ctidas_intrvl * const * intrl, size_t n, ctidas_time_type time ) {
 	interval_list il;
 
 	for ( size_t i = 0; i < n; ++i ) {
-		intrvl * t = reinterpret_cast < intrvl * > ( intrl[i] );
+		intrvl const * t = reinterpret_cast < intrvl const * > ( intrl[i] );
 		il.push_back( (*t) );
 	}
 
@@ -666,11 +764,11 @@ ctidas_intrvl * ctidas_intervals_seek_ceil ( ctidas_intrvl ** intrl, size_t n, c
 	return cret;
 }
 
-ctidas_intrvl * ctidas_intervals_seek_floor ( ctidas_intrvl ** intrl, size_t n, ctidas_time_type time ) {
+ctidas_intrvl * ctidas_intervals_seek_floor ( ctidas_intrvl * const * intrl, size_t n, ctidas_time_type time ) {
 	interval_list il;
 
 	for ( size_t i = 0; i < n; ++i ) {
-		intrvl * t = reinterpret_cast < intrvl * > ( intrl[i] );
+		intrvl const * t = reinterpret_cast < intrvl const * > ( intrl[i] );
 		il.push_back( (*t) );
 	}
 
@@ -685,18 +783,18 @@ ctidas_intrvl * ctidas_intervals_seek_floor ( ctidas_intrvl ** intrl, size_t n, 
 }
 
 
-ctidas_group * ctidas_group_alloc ( ctidas_schema * schm, ctidas_dict * dct, ctidas_index_type size ) {
+ctidas_group * ctidas_group_alloc ( ctidas_schema const * schm, ctidas_dict const * dct, ctidas_index_type size ) {
 	ctidas_group * ret;
 	if ( schm == NULL ) {
 		fprintf(stderr, "You must provide a schema when creating a group\n");
 		exit(1);
 	}
-	schema * s = reinterpret_cast < schema * > ( schm );
+	schema const * s = reinterpret_cast < schema const * > ( schm );
 	if ( dct == NULL ) {
 		dict empty;
 		ret = reinterpret_cast < ctidas_group * > ( new group( (*s), empty, size ) );
 	} else {
-		dict * d = reinterpret_cast < dict * > ( dct );
+		dict const * d = reinterpret_cast < dict const * > ( dct );
 		ret = reinterpret_cast < ctidas_group * > ( new group( (*s), (*d), size ) );
 	}
 	return ret;
@@ -707,24 +805,20 @@ void ctidas_group_free ( ctidas_group * grp ) {
 	return;
 }
 
-ctidas_dict * ctidas_group_dict ( ctidas_group * grp ) {
-	group * g = reinterpret_cast < group * > ( grp );
-	ctidas_dict * ret = ctidas_dict_alloc();
-	dict * d = reinterpret_cast < dict * > ( ret );
-	(*d) = g->dictionary();
-	return ret;
+ctidas_dict const * ctidas_group_dict ( ctidas_group const * grp ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
+	dict const & d = g->dictionary();
+	return reinterpret_cast < ctidas_dict const * > ( &d );
 }
 
-ctidas_schema * ctidas_group_schema ( ctidas_group * grp ) {
-	group * g = reinterpret_cast < group * > ( grp );
-	ctidas_schema * ret = ctidas_schema_alloc();
-	schema * s = reinterpret_cast < schema * > ( ret );
-	(*s) = g->schema_get();
-	return ret;
+ctidas_schema const * ctidas_group_schema ( ctidas_group const * grp ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
+	schema const & s = g->schema_get();
+	return reinterpret_cast < ctidas_schema const * > ( &s );
 }
 
-ctidas_index_type ctidas_group_size ( ctidas_group * grp ) {
-	group * g = reinterpret_cast < group * > ( grp );
+ctidas_index_type ctidas_group_size ( ctidas_group const * grp ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	return g->size();
 }
 
@@ -734,8 +828,8 @@ void ctidas_group_resize ( ctidas_group * grp, ctidas_index_type newsize ) {
 	return;
 }
 
-void ctidas_group_range ( ctidas_group * grp, ctidas_time_type * start, ctidas_time_type * stop ) {
-	group * g = reinterpret_cast < group * > ( grp );
+void ctidas_group_range ( ctidas_group const * grp, ctidas_time_type * start, ctidas_time_type * stop ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	time_type gstart;
 	time_type gstop;
 	g->range( gstart, gstop );
@@ -744,8 +838,8 @@ void ctidas_group_range ( ctidas_group * grp, ctidas_time_type * start, ctidas_t
 	return;
 }
 
-void ctidas_group_read_times ( ctidas_group * grp, ctidas_index_type ndata, ctidas_time_type * data ) {
-	group * g = reinterpret_cast < group * > ( grp );
+void ctidas_group_read_times ( ctidas_group const * grp, ctidas_index_type ndata, ctidas_time_type * data ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	g->read_times( ndata, data );
 	return;
 }
@@ -756,8 +850,8 @@ void ctidas_group_write_times ( ctidas_group * grp, ctidas_index_type ndata, cti
 	return;
 }
 
-void ctidas_group_read_int8 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int8_t * data ) {
-	group * g = reinterpret_cast < group * > ( grp );
+void ctidas_group_read_int8 ( ctidas_group const * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int8_t * data ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	g->read_field ( string(field), offset, ndata, data );
 	return;
 }
@@ -768,8 +862,8 @@ void ctidas_group_write_int8 ( ctidas_group * grp, char const * field, ctidas_in
 	return;
 }
 
-void ctidas_group_read_int16 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int16_t * data ) {
-	group * g = reinterpret_cast < group * > ( grp );
+void ctidas_group_read_int16 ( ctidas_group const * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int16_t * data ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	g->read_field ( string(field), offset, ndata, data );
 	return;
 }
@@ -780,8 +874,8 @@ void ctidas_group_write_int16 ( ctidas_group * grp, char const * field, ctidas_i
 	return;
 }
 
-void ctidas_group_read_int32 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int32_t * data ) {
-	group * g = reinterpret_cast < group * > ( grp );
+void ctidas_group_read_int32 ( ctidas_group const * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int32_t * data ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	g->read_field ( string(field), offset, ndata, data );
 	return;
 }
@@ -792,8 +886,8 @@ void ctidas_group_write_int32 ( ctidas_group * grp, char const * field, ctidas_i
 	return;
 }
 
-void ctidas_group_read_int64 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int64_t * data ) {
-	group * g = reinterpret_cast < group * > ( grp );
+void ctidas_group_read_int64 ( ctidas_group const * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, int64_t * data ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	g->read_field ( string(field), offset, ndata, data );
 	return;
 }
@@ -804,8 +898,8 @@ void ctidas_group_write_int64 ( ctidas_group * grp, char const * field, ctidas_i
 	return;
 }
 
-void ctidas_group_read_uint8 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint8_t * data ) {
-	group * g = reinterpret_cast < group * > ( grp );
+void ctidas_group_read_uint8 ( ctidas_group const * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint8_t * data ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	g->read_field ( string(field), offset, ndata, data );
 	return;
 }
@@ -816,8 +910,8 @@ void ctidas_group_write_uint8 ( ctidas_group * grp, char const * field, ctidas_i
 	return;
 }
 
-void ctidas_group_read_uint16 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint16_t * data ) {
-	group * g = reinterpret_cast < group * > ( grp );
+void ctidas_group_read_uint16 ( ctidas_group const * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint16_t * data ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	g->read_field ( string(field), offset, ndata, data );
 	return;
 }
@@ -828,8 +922,8 @@ void ctidas_group_write_uint16 ( ctidas_group * grp, char const * field, ctidas_
 	return;
 }
 
-void ctidas_group_read_uint32 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint32_t * data ) {
-	group * g = reinterpret_cast < group * > ( grp );
+void ctidas_group_read_uint32 ( ctidas_group const * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint32_t * data ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	g->read_field ( string(field), offset, ndata, data );
 	return;
 }
@@ -840,8 +934,8 @@ void ctidas_group_write_uint32 ( ctidas_group * grp, char const * field, ctidas_
 	return;
 }
 
-void ctidas_group_read_uint64 ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint64_t * data ) {
-	group * g = reinterpret_cast < group * > ( grp );
+void ctidas_group_read_uint64 ( ctidas_group const * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, uint64_t * data ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	g->read_field ( string(field), offset, ndata, data );
 	return;
 }
@@ -852,8 +946,8 @@ void ctidas_group_write_uint64 ( ctidas_group * grp, char const * field, ctidas_
 	return;
 }
 
-void ctidas_group_read_float ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, float * data ) {
-	group * g = reinterpret_cast < group * > ( grp );
+void ctidas_group_read_float ( ctidas_group const * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, float * data ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	g->read_field ( string(field), offset, ndata, data );
 	return;
 }
@@ -864,8 +958,8 @@ void ctidas_group_write_float ( ctidas_group * grp, char const * field, ctidas_i
 	return;
 }
 
-void ctidas_group_read_double ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, double * data ) {
-	group * g = reinterpret_cast < group * > ( grp );
+void ctidas_group_read_double ( ctidas_group const * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, double * data ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	g->read_field ( string(field), offset, ndata, data );
 	return;
 }
@@ -876,8 +970,8 @@ void ctidas_group_write_double ( ctidas_group * grp, char const * field, ctidas_
 	return;
 }
 
-void ctidas_group_read_string ( ctidas_group * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, char ** data ) {
-	group * g = reinterpret_cast < group * > ( grp );
+void ctidas_group_read_string ( ctidas_group const * grp, char const * field, ctidas_index_type offset, ctidas_index_type ndata, char ** data ) {
+	group const * g = reinterpret_cast < group const * > ( grp );
 	g->read_field ( string(field), offset, ndata, data );
 	return;
 }
@@ -898,8 +992,8 @@ void ctidas_block_free ( ctidas_block * blk ) {
 	return;
 }
 
-void ctidas_block_range ( ctidas_block * blk, ctidas_time_type * start, ctidas_time_type * stop ) {
-	block * b = reinterpret_cast < block * > ( blk );
+void ctidas_block_range ( ctidas_block const * blk, ctidas_time_type * start, ctidas_time_type * stop ) {
+	block const * b = reinterpret_cast < block const * > ( blk );
 	time_type bstart;
 	time_type bstop;
 	b->range( bstart, bstop );
@@ -932,16 +1026,22 @@ ctidas_group * ctidas_block_group_get ( ctidas_block * blk, char const * name ) 
 	return reinterpret_cast < ctidas_group * > ( &gref );
 }
 
+ctidas_group const * ctidas_block_group_cget ( ctidas_block const * blk, char const * name ) {
+	block const * b = reinterpret_cast < block const * > ( blk );
+	group const & gref = b->group_get ( string(name) );
+	return reinterpret_cast < ctidas_group const * > ( &gref );
+}
+
 void ctidas_block_group_del ( ctidas_block * blk, char const * name ) {
 	block * b = reinterpret_cast < block * > ( blk );
 	b->group_del ( string(name) );
 	return;
 }
 
-char ** ctidas_block_all_groups ( ctidas_block * blk, size_t * ngroup ) {
-	block * b = reinterpret_cast < block * > ( blk );
+char ** ctidas_block_all_groups ( ctidas_block const * blk, size_t * ngroup ) {
+	block const * b = reinterpret_cast < block const * > ( blk );
 	vector < string > grps = b->all_groups();
-	(*ngroup) = grps().size();
+	(*ngroup) = grps.size();
 	char ** ret = (char**)malloc((*ngroup) * sizeof(char*));
 	if ( ! ret ) {
 		fprintf(stderr, "failed to allocate vector of group names\n");
@@ -954,7 +1054,7 @@ char ** ctidas_block_all_groups ( ctidas_block * blk, size_t * ngroup ) {
 			fprintf(stderr, "failed to allocate group name %d\n", (int)cur);
 			exit(1);
 		}
-		strncpy(ret[cur], g[cur].c_str(), g[cur].size());
+		strncpy(ret[cur], g.c_str(), g.size());
 		++cur;
 	}
 	return ret;
@@ -984,16 +1084,22 @@ ctidas_intervals * ctidas_block_intervals_get ( ctidas_block * blk, char const *
 	return reinterpret_cast < ctidas_intervals * > ( &iref );
 }
 
+ctidas_intervals const * ctidas_block_intervals_cget ( ctidas_block const * blk, char const * name ) {
+	block const * b = reinterpret_cast < block const * > ( blk );
+	intervals const & iref = b->intervals_get ( string(name) );
+	return reinterpret_cast < ctidas_intervals const * > ( &iref );
+}
+
 void ctidas_block_intervals_del ( ctidas_block * blk, char const * name ) {
 	block * b = reinterpret_cast < block * > ( blk );
 	b->intervals_del ( string(name) );
 	return;
 }
 
-char ** ctidas_block_all_intervals ( ctidas_block * blk, size_t * nintervals ) {
-	block * b = reinterpret_cast < block * > ( blk );
+char ** ctidas_block_all_intervals ( ctidas_block const * blk, size_t * nintervals ) {
+	block const * b = reinterpret_cast < block const * > ( blk );
 	vector < string > intr = b->all_intervals();
-	(*nintervals) = intr().size();
+	(*nintervals) = intr.size();
 	char ** ret = (char**)malloc((*nintervals) * sizeof(char*));
 	if ( ! ret ) {
 		fprintf(stderr, "failed to allocate vector of intervals names\n");
@@ -1006,7 +1112,7 @@ char ** ctidas_block_all_intervals ( ctidas_block * blk, size_t * nintervals ) {
 			fprintf(stderr, "failed to allocate intervals name %d\n", (int)cur);
 			exit(1);
 		}
-		strncpy(ret[cur], t[cur].c_str(), t[cur].size());
+		strncpy(ret[cur], t.c_str(), t.size());
 		++cur;
 	}
 	return ret;
@@ -1036,16 +1142,22 @@ ctidas_block * ctidas_block_child_get ( ctidas_block * blk, char const * name ) 
 	return reinterpret_cast < ctidas_block * > ( &bref );
 }
 
+ctidas_block const * ctidas_block_child_cget ( ctidas_block const * blk, char const * name ) {
+	block const * b = reinterpret_cast < block const * > ( blk );
+	block const & bref = b->block_get ( string(name) );
+	return reinterpret_cast < ctidas_block const * > ( &bref );
+}
+
 void ctidas_block_child_del ( ctidas_block * blk, char const * name ) {
 	block * b = reinterpret_cast < block * > ( blk );
 	b->block_del ( string(name) );
 	return;
 }
 
-char ** ctidas_block_all_children ( ctidas_block * blk, size_t * nchild ) {
-	block * b = reinterpret_cast < block * > ( blk );
+char ** ctidas_block_all_children ( ctidas_block const * blk, size_t * nchild ) {
+	block const * b = reinterpret_cast < block const * > ( blk );
 	vector < string > chld = b->all_blocks();
-	(*nchild) = chld().size();
+	(*nchild) = chld.size();
 	char ** ret = (char**)malloc((*nchild) * sizeof(char*));
 	if ( ! ret ) {
 		fprintf(stderr, "failed to allocate vector of child block names\n");
@@ -1058,7 +1170,7 @@ char ** ctidas_block_all_children ( ctidas_block * blk, size_t * nchild ) {
 			fprintf(stderr, "failed to allocate child block name %d\n", (int)cur);
 			exit(1);
 		}
-		strncpy(ret[cur], c[cur].c_str(), c[cur].size());
+		strncpy(ret[cur], c.c_str(), c.size());
 		++cur;
 	}
 	return ret;
@@ -1071,8 +1183,8 @@ void ctidas_block_clear_children ( ctidas_block * blk ) {
 }
 
 
-ctidas_block * ctidas_block_select ( ctidas_block * blk, char const * filter ) {
-	block * b = reinterpret_cast < block * > ( blk );
+ctidas_block * ctidas_block_select ( ctidas_block const * blk, char const * filter ) {
+	block const * b = reinterpret_cast < block const * > ( blk );
 	ctidas_block * ret = ctidas_block_alloc();
 	block * r = reinterpret_cast < block * > ( ret );
 	(*r) = b->select( string(filter) );
@@ -1080,14 +1192,14 @@ ctidas_block * ctidas_block_select ( ctidas_block * blk, char const * filter ) {
 }
 
 
-void ctidas::block_operator::operator() ( block & blk ) {
-	ctidas_block * b = reinterpret_cast < ctidas_block * > ( &blk );
+void ctidas::block_operator::operator() ( block const & blk ) {
+	ctidas_block const * b = reinterpret_cast < ctidas_block const * > ( &blk );
 	op ( b, aux );
 	return;
 }
 
-void ctidas_block_exec ( ctidas_block * blk, ctidas_exec_order order, CTIDAS_EXEC_OP op, void * aux ) {
-	block * b = reinterpret_cast < block * > ( blk );
+void ctidas_block_exec ( ctidas_block const * blk, ctidas_exec_order order, CTIDAS_EXEC_OP op, void * aux ) {
+	block const * b = reinterpret_cast < block const * > ( blk );
 	ctidas::block_operator opcpp;
 	opcpp.op = op;
 	opcpp.aux = aux;
@@ -1096,25 +1208,20 @@ void ctidas_block_exec ( ctidas_block * blk, ctidas_exec_order order, CTIDAS_EXE
 }
 
 
-/* Volume */
-
-
-struct ctidas_volume_;
-typedef struct ctidas_volume_ ctidas_volume;
-
 ctidas_volume * ctidas_volume_create ( char const * path, ctidas_backend_type type, ctidas_compression_type comp ) {
-	ctidas_volume * ret = reinterpret_cast < ctidas_volume * > ( new volume( string(path), ctidas::convert_from_c(type), ctidas::convert_from_c(comp) ) );
-	return ret;
+	return reinterpret_cast < ctidas_volume * > ( new volume( string(path), ctidas::convert_from_c(type), ctidas::convert_from_c(comp) ) );
 }
 
-ctidas_volume * ctidas_volume_open ( char const * path, ctidas_access_mode mode );
+ctidas_volume * ctidas_volume_open ( char const * path, ctidas_access_mode mode ) {
+	return reinterpret_cast < ctidas_volume * > ( new volume( string(path), ctidas::convert_from_c(mode) ) );
+}
 
 void ctidas_volume_close ( ctidas_volume * vol ) {
 	delete reinterpret_cast < volume * > ( vol );
 	return;
 }
 
-ctidas_block * ctidas_volume_root ( ctidas_volume * vol );
+ctidas_block * ctidas_volume_root ( ctidas_volume * vol ) {
 	volume * v = reinterpret_cast < volume * > ( vol );
 	ctidas_block * ret = ctidas_block_alloc();
 	block * b = reinterpret_cast < block * > ( ret );
@@ -1132,16 +1239,33 @@ void ctidas_volume_exec ( ctidas_volume * vol, ctidas_exec_order order, char con
 }
 
 
-/* Data copy */
+void ctidas_data_intervals_copy ( ctidas_intervals const * in, ctidas_intervals * out ) {
+	intervals const * tin = reinterpret_cast < intervals const * > ( in );
+	intervals * tout = reinterpret_cast < intervals * > ( out );
+	data_copy ( (*tin), (*tout) );
+	return;
+}
 
+void ctidas_data_group_copy ( ctidas_group const * in, ctidas_group * out ) {
+	group const * gin = reinterpret_cast < group const * > ( in );
+	group * gout = reinterpret_cast < group * > ( out );
+	data_copy ( (*gin), (*gout) );
+	return;
+}
 
-void ctidas_data_intervals_copy ( ctidas_intervals const * in, ctidas_intervals * out );
+void ctidas_data_block_copy ( ctidas_block const * in, ctidas_block * out ) {
+	block const * bin = reinterpret_cast < block const * > ( in );
+	block * bout = reinterpret_cast < block * > ( out );
+	data_copy ( (*bin), (*bout) );
+	return;
+}
 
-void ctidas_data_group_copy ( ctidas_group const * in, ctidas_group * out );
-
-void ctidas_data_block_copy ( ctidas_block const * in, ctidas_block * out );
-
-void ctidas_data_volume_copy ( ctidas_volume const * in, ctidas_volume * out );
+void ctidas_data_volume_copy ( ctidas_volume const * in, ctidas_volume * out ) {
+	volume const * vin = reinterpret_cast < volume const * > ( in );
+	volume * vout = reinterpret_cast < volume * > ( out );
+	data_copy ( (*vin), (*vout) );
+	return;
+}
 
 
 

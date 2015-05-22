@@ -77,7 +77,7 @@ ctidas.cpp
 libtidas_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@
 
 libtidas_la_LIBADD = \
-$(top_builddir)/src/libtidas/sqlite/libtidas_sqlite.la
+$(top_builddir)/src/libtidas/sqlite/libtidas_sqlite.la $(AM_LIBS)
 
 
 # install / uninstall cereal headers

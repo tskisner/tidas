@@ -302,6 +302,16 @@ ctidas_exec_order ctidas::convert_to_c ( exec_order in ) {
 }
 
 
+char ** ctidas_string_alloc ( size_t nstring, size_t length ) {
+	return c_string_alloc ( nstring, length );
+}
+
+void ctidas_string_free ( size_t nstring, char ** str ) {
+	c_string_free ( nstring, str );
+	return;
+}
+
+
 ctidas_dict * ctidas_dict_alloc ( ) {
 	return reinterpret_cast < ctidas_dict * > ( new dict() );
 }

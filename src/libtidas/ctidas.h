@@ -23,53 +23,58 @@ typedef int64_t ctidas_index_type;
 
 
 typedef enum {
-	type_none,
-	type_int8,
-	type_uint8,
-	type_int16,
-	type_uint16,
-	type_int32,
-	type_uint32,
-	type_int64,
-	type_uint64,
-	type_float32,
-	type_float64,
-	type_string
+	type_none = 0,
+	type_int8 = 1,
+	type_uint8 = 2,
+	type_int16 = 3,
+	type_uint16 = 4,
+	type_int32 = 5,
+	type_uint32 = 6,
+	type_int64 = 7,
+	type_uint64 = 8,
+	type_float32 = 9,
+	type_float64 = 10,
+	type_string = 11
 } ctidas_data_type;
 
 
 typedef enum {
-    back_none,
-    back_hdf5,
-    back_getdata
+    back_none = 0,
+    back_hdf5 = 1,
+    back_getdata = 2
 } ctidas_backend_type;
 
 
 typedef enum {
-    comp_none,
-    comp_gzip,
-    comp_bzip2
+    comp_none = 0,
+    comp_gzip = 1,
+    comp_bzip2 = 2
 } ctidas_compression_type;
 
 
 typedef enum {
-    acc_read,
-    acc_write
+    acc_read = 0,
+    acc_write = 1
 } ctidas_access_mode;
 
 
 typedef enum {
-    link_none,
-    link_hard,
-    link_soft
+    link_none = 0,
+    link_hard = 1,
+    link_soft = 2
 } ctidas_link_type;
 
 
 typedef enum {
-    order_depth_first,
-    order_depth_last,
-    order_leaf
+    order_depth_first = 0,
+    order_depth_last = 1,
+    order_leaf = 2
 } ctidas_exec_order;
+
+
+char ** ctidas_string_alloc ( size_t nstring, size_t length );
+
+void ctidas_string_free ( size_t nstring, char ** str );
 
 
 /* Dictionary */

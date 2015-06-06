@@ -203,7 +203,7 @@ void tidas::schema::copy ( schema const & other, string const & filter, backend_
 
 	// update index
 
-	if ( loc_.idx && ( loc_.mode == access_mode::write ) ) {
+	if ( loc_.idx && ( loc_.mode == access_mode::write ) && ( loc != other.loc_ ) ) {
 		loc_.idx->update_schema ( loc_, fields_ );
 	}
 

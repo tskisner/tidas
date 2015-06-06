@@ -154,7 +154,7 @@ void tidas::dict::copy ( dict const & other, string const & filter, backend_path
 
 	// update index
 
-	if ( loc_.idx && ( loc_.mode == access_mode::write ) ) {
+	if ( loc_.idx && ( loc_.mode == access_mode::write ) && ( loc != other.loc_ ) ) {
 		loc_.idx->update_dict ( loc_, data_, types_ );
 	}
 

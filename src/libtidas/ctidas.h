@@ -76,6 +76,8 @@ char ** ctidas_string_alloc ( size_t nstring, size_t length );
 
 void ctidas_string_free ( size_t nstring, char ** str );
 
+size_t ctidas_backend_string_size ();
+
 
 /* Dictionary */
 
@@ -331,11 +333,9 @@ void ctidas_block_range ( ctidas_block const * blk, ctidas_time_type * start, ct
 void ctidas_block_clear ( ctidas_block * blk );
 
 
-ctidas_group * ctidas_block_group_add ( ctidas_block * blk, char const * name, ctidas_group * grp );
+void ctidas_block_group_add ( ctidas_block * blk, char const * name, ctidas_group * grp );
 
-ctidas_group * ctidas_block_group_get ( ctidas_block * blk, char const * name );
-
-ctidas_group const * ctidas_block_group_cget ( ctidas_block const * blk, char const * name );
+ctidas_group * ctidas_block_group_get ( ctidas_block const * blk, char const * name );
 
 void ctidas_block_group_del ( ctidas_block * blk, char const * name );
 
@@ -344,11 +344,9 @@ char ** ctidas_block_all_groups ( ctidas_block const * blk, size_t * ngroup );
 void ctidas_block_clear_groups ( ctidas_block * blk );
 
 
-ctidas_intervals * ctidas_block_intervals_add ( ctidas_block * blk, char const * name, ctidas_intervals * inv );
+void ctidas_block_intervals_add ( ctidas_block * blk, char const * name, ctidas_intervals * inv );
 
-ctidas_intervals * ctidas_block_intervals_get ( ctidas_block * blk, char const * name );
-
-ctidas_intervals const * ctidas_block_intervals_cget ( ctidas_block const * blk, char const * name );
+ctidas_intervals * ctidas_block_intervals_get ( ctidas_block const * blk, char const * name );
 
 void ctidas_block_intervals_del ( ctidas_block * blk, char const * name );
 
@@ -357,11 +355,9 @@ char ** ctidas_block_all_intervals ( ctidas_block const * blk, size_t * ninterva
 void ctidas_block_clear_intervals ( ctidas_block * blk );
 
 
-ctidas_block * ctidas_block_child_add ( ctidas_block * blk, char const * name, ctidas_block * child );
+void ctidas_block_child_add ( ctidas_block * blk, char const * name, ctidas_block * child );
 
-ctidas_block * ctidas_block_child_get ( ctidas_block * blk, char const * name );
-
-ctidas_block const * ctidas_block_child_cget ( ctidas_block const * blk, char const * name );
+ctidas_block * ctidas_block_child_get ( ctidas_block const * blk, char const * name );
 
 void ctidas_block_child_del ( ctidas_block * blk, char const * name );
 

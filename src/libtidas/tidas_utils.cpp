@@ -254,6 +254,7 @@ data_type tidas::data_type_get ( type_info const & test ) {
 	float type_float;
 	double type_double;
 	char * type_string;
+	char const * type_cstring;
 
 	if ( test == typeid ( type_int8 ) ) {
 		ret = data_type::int8;
@@ -276,6 +277,8 @@ data_type tidas::data_type_get ( type_info const & test ) {
 	} else if ( test == typeid ( type_double ) ) {
 		ret = data_type::float64;
 	} else if ( test == typeid ( type_string ) ) {
+		ret = data_type::string;
+	} else if ( test == typeid ( type_cstring ) ) {
 		ret = data_type::string;
 	} else {
 		ret = data_type::none;

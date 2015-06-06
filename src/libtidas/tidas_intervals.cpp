@@ -217,7 +217,7 @@ void tidas::intervals::copy ( intervals const & other, string const & filter, ba
 
 	// update index
 
-	if ( loc_.idx && ( loc_.mode == access_mode::write ) ) {
+	if ( loc_.idx && ( loc_.mode == access_mode::write ) && ( loc != other.loc_ ) ) {
 		loc_.idx->update_intervals ( loc_, size_ );
 	}
 

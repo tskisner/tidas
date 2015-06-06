@@ -435,9 +435,9 @@ void tidas::block::copy ( block const & other, string const & filter, backend_pa
 
 	loc_ = loc;
 
-	// update index
+	// update index only if this is a new location
 
-	if ( loc_.idx && ( loc_.mode == access_mode::write ) ) {
+	if ( loc_.idx && ( loc_.mode == access_mode::write ) && ( loc != other.loc_ ) ) {
 		loc_.idx->update_block ( loc_ );
 	}
 

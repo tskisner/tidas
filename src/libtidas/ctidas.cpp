@@ -311,6 +311,9 @@ void ctidas_string_free ( size_t nstring, char ** str ) {
 	return;
 }
 
+size_t ctidas_backend_string_size () {
+	return backend_string_size;
+}
 
 ctidas_dict * ctidas_dict_alloc ( ) {
 	return reinterpret_cast < ctidas_dict * > ( new dict() );
@@ -348,6 +351,7 @@ char ** ctidas_dict_keys ( ctidas_dict const * dct, size_t * nkeys ) {
 			exit(1);
 		}
 		strncpy(ret[cur], k.first.c_str(), k.first.size());
+		ret[cur][k.first.size()] = '\0';
 		++cur;
 	}
 	return ret;
@@ -483,6 +487,7 @@ char * ctidas_dict_get_string ( ctidas_dict const * dct, char const * key ) {
 		exit(1);
 	}
 	strncpy( ret, str.c_str(), str.size() );
+	ret[str.size()] = '\0';
 	return ret;
 }
 
@@ -560,6 +565,7 @@ char ** ctidas_schema_fields ( ctidas_schema const * schm, size_t * nfields ) {
 			exit(1);
 		}
 		strncpy(ret[cur], f.name.c_str(), f.name.size());
+		ret[cur][f.name.size()] = '\0';
 		++cur;
 	}
 	return ret;
@@ -1019,7 +1025,7 @@ void ctidas_block_clear ( ctidas_block * blk ) {
 }
 
 
-ctidas_group * ctidas_block_group_add ( ctidas_block * blk, char const * name, ctidas_group * grp ) {
+void ctidas_block_group_add ( ctidas_block * blk, char const * name, ctidas_group * grp ) {
 	block * b = reinterpret_cast < block * > ( blk );
 	if ( grp == NULL ) {
 		fprintf(stderr, "Cannot add a NULL group pointer to block\n");
@@ -1027,19 +1033,14 @@ ctidas_group * ctidas_block_group_add ( ctidas_block * blk, char const * name, c
 	}
 	group * g = reinterpret_cast < group * > ( grp );
 	group & gref = b->group_add ( string(name), (*g) );
-	return reinterpret_cast < ctidas_group * > ( &gref );
+	return;
 }
 
-ctidas_group * ctidas_block_group_get ( ctidas_block * blk, char const * name ) {
-	block * b = reinterpret_cast < block * > ( blk );
-	group & gref = b->group_get ( string(name) );
-	return reinterpret_cast < ctidas_group * > ( &gref );
-}
-
-ctidas_group const * ctidas_block_group_cget ( ctidas_block const * blk, char const * name ) {
+ctidas_group * ctidas_block_group_get ( ctidas_block const * blk, char const * name ) {
 	block const * b = reinterpret_cast < block const * > ( blk );
 	group const & gref = b->group_get ( string(name) );
-	return reinterpret_cast < ctidas_group const * > ( &gref );
+	ctidas_group * ret = reinterpret_cast < ctidas_group * > ( new group( gref ) );
+	return ret;
 }
 
 void ctidas_block_group_del ( ctidas_block * blk, char const * name ) {
@@ -1065,6 +1066,7 @@ char ** ctidas_block_all_groups ( ctidas_block const * blk, size_t * ngroup ) {
 			exit(1);
 		}
 		strncpy(ret[cur], g.c_str(), g.size());
+		ret[cur][g.size()] = '\0';
 		++cur;
 	}
 	return ret;
@@ -1077,7 +1079,7 @@ void ctidas_block_clear_groups ( ctidas_block * blk ) {
 }
 
 
-ctidas_intervals * ctidas_block_intervals_add ( ctidas_block * blk, char const * name, ctidas_intervals * inv ) {
+void ctidas_block_intervals_add ( ctidas_block * blk, char const * name, ctidas_intervals * inv ) {
 	block * b = reinterpret_cast < block * > ( blk );
 	if ( inv == NULL ) {
 		fprintf(stderr, "Cannot add a NULL interval pointer to block\n");
@@ -1085,19 +1087,14 @@ ctidas_intervals * ctidas_block_intervals_add ( ctidas_block * blk, char const *
 	}
 	intervals * t = reinterpret_cast < intervals * > ( inv );
 	intervals & iref = b->intervals_add ( string(name), (*t) );
-	return reinterpret_cast < ctidas_intervals * > ( &iref );
+	return;
 }
 
-ctidas_intervals * ctidas_block_intervals_get ( ctidas_block * blk, char const * name ) {
-	block * b = reinterpret_cast < block * > ( blk );
-	intervals & iref = b->intervals_get ( string(name) );
-	return reinterpret_cast < ctidas_intervals * > ( &iref );
-}
-
-ctidas_intervals const * ctidas_block_intervals_cget ( ctidas_block const * blk, char const * name ) {
+ctidas_intervals * ctidas_block_intervals_get ( ctidas_block const * blk, char const * name ) {
 	block const * b = reinterpret_cast < block const * > ( blk );
 	intervals const & iref = b->intervals_get ( string(name) );
-	return reinterpret_cast < ctidas_intervals const * > ( &iref );
+	ctidas_intervals * ret = reinterpret_cast < ctidas_intervals * > ( new intervals( iref ) );
+	return ret;
 }
 
 void ctidas_block_intervals_del ( ctidas_block * blk, char const * name ) {
@@ -1123,6 +1120,7 @@ char ** ctidas_block_all_intervals ( ctidas_block const * blk, size_t * ninterva
 			exit(1);
 		}
 		strncpy(ret[cur], t.c_str(), t.size());
+		ret[cur][t.size()] = '\0';
 		++cur;
 	}
 	return ret;
@@ -1135,7 +1133,7 @@ void ctidas_block_clear_intervals ( ctidas_block * blk ) {
 }
 
 
-ctidas_block * ctidas_block_child_add ( ctidas_block * blk, char const * name, ctidas_block * child ) {
+void ctidas_block_child_add ( ctidas_block * blk, char const * name, ctidas_block * child ) {
 	block * b = reinterpret_cast < block * > ( blk );
 	if ( child == NULL ) {
 		fprintf(stderr, "Cannot add a NULL block pointer to block\n");
@@ -1143,19 +1141,14 @@ ctidas_block * ctidas_block_child_add ( ctidas_block * blk, char const * name, c
 	}
 	block * c = reinterpret_cast < block * > ( child );
 	block & bref = b->block_add ( string(name), (*c) );
-	return reinterpret_cast < ctidas_block * > ( &bref );
+	return;
 }
 
-ctidas_block * ctidas_block_child_get ( ctidas_block * blk, char const * name ) {
-	block * b = reinterpret_cast < block * > ( blk );
-	block & bref = b->block_get ( string(name) );
-	return reinterpret_cast < ctidas_block * > ( &bref );
-}
-
-ctidas_block const * ctidas_block_child_cget ( ctidas_block const * blk, char const * name ) {
+ctidas_block * ctidas_block_child_get ( ctidas_block const * blk, char const * name ) {
 	block const * b = reinterpret_cast < block const * > ( blk );
 	block const & bref = b->block_get ( string(name) );
-	return reinterpret_cast < ctidas_block const * > ( &bref );
+	ctidas_block * ret = reinterpret_cast < ctidas_block * > ( new block( bref ) );
+	return ret;
 }
 
 void ctidas_block_child_del ( ctidas_block * blk, char const * name ) {
@@ -1181,6 +1174,7 @@ char ** ctidas_block_all_children ( ctidas_block const * blk, size_t * nchild ) 
 			exit(1);
 		}
 		strncpy(ret[cur], c.c_str(), c.size());
+		ret[cur][c.size()] = '\0';
 		++cur;
 	}
 	return ret;

@@ -1,10 +1,18 @@
+##
+##  TImestream DAta Storage (TIDAS)
+##  (c) 2014-2015, The Regents of the University of California, 
+##  through Lawrence Berkeley National Laboratory.  See top
+##  level LICENSE file for details.
+##
 
 import os
 import tempfile
 import numpy.testing as nt
 
 import ctypes as ct
-import ctidas as tds
+
+from .ctidas import *
+from .volume import *
 
 
 def test_dict_setup():
@@ -81,7 +89,7 @@ def test_intervals_setup():
         stop = float(i + 1) * ( span + gap )
         first = gap_samp + long(i) * ( span_samp + gap_samp );
         last = long(i + 1) * ( span_samp + gap_samp );
-        ilist.append(tds.Intrvl(start, stop, first, last))
+        ilist.append(Intrvl(start, stop, first, last))
     return ilist
 
 
@@ -94,14 +102,28 @@ def test_intervals_verify(ilist):
         assert ilist[i].last == comp[i].last
 
 
+def test_group_setup():
+    return
 
 
+def test_group_verify(grp):
+    return
 
 
+def test_block_setup():
+    return
 
 
+def test_block_verify():
+    return
 
 
+def test_volume_setup(vol):
+    return
+
+
+def test_volume_verify(vol):
+    return
 
 
 
@@ -119,9 +141,9 @@ def test(tmpdir=None):
 
     pd = test_dict_setup()
     
-    cd = tds.dict_py2c(pd)
-    check_pd = tds.dict_c2py(cd)
-    tds.lib.ctidas_dict_free(cd)
+    cd = dict_py2c(pd)
+    check_pd = dict_c2py(cd)
+    lib.ctidas_dict_free(cd)
 
     test_dict_verify(check_pd)
 
@@ -131,9 +153,9 @@ def test(tmpdir=None):
 
     ps = test_schema_setup()
 
-    cs = tds.schema_py2c(ps)
-    check_ps = tds.schema_c2py(cs)
-    tds.lib.ctidas_schema_free(cs)
+    cs = schema_py2c(ps)
+    check_ps = schema_c2py(cs)
+    lib.ctidas_schema_free(cs)
 
     test_schema_verify(check_ps)
     
@@ -143,13 +165,21 @@ def test(tmpdir=None):
 
     pt = test_intervals_setup()
 
-    ct = tds.intrvl_list_py2c(pt)
-    check_pt = tds.intrvl_list_c2py(ct, len(pt))
-    tds.lib.ctidas_intrvl_list_free(ct, len(pt))
+    ct = intrvl_list_py2c(pt)
+    check_pt = intrvl_list_c2py(ct, len(pt))
+    lib.ctidas_intrvl_list_free(ct, len(pt))
 
     test_intervals_verify(check_pt)
     
     print("   PASS")
+
+    print("Testing volume operations...")
+
+    volpath = os.path.join(dirpath, "tidas_py_volume")
+
+    with Volume(volpath) as vol:
+        test_volume_setup(vol)
+        test_volume_verify(vol)
 
 
     return

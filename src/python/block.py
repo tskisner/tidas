@@ -25,6 +25,26 @@ class Block(object):
     def __del__(self):
         self.close()
 
+    def groups(self):
+        if self.cp is None:
+            raise RuntimeError("block is not associated with a volume")
+        names = cblock_children(self.cp)
+        ret = {}
+        for n in names:
+            cb = lib.ctidas_block_child_get(self.cp, n)
+            ret[n] = Block(handle=cb)
+        return ret
+
+    def intervals(self):
+        if self.cp is None:
+            raise RuntimeError("block is not associated with a volume")
+        names = cblock_children(self.cp)
+        ret = {}
+        for n in names:
+            cb = lib.ctidas_block_child_get(self.cp, n)
+            ret[n] = Block(handle=cb)
+        return ret
+
     def blocks(self):
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
@@ -32,7 +52,6 @@ class Block(object):
         ret = {}
         for n in names:
             cb = lib.ctidas_block_child_get(self.cp, n)
-            ret[n] = Block()
-            ret[n].open(cb)
+            ret[n] = Block(handle=cb)
         return ret
 

@@ -28,7 +28,6 @@ class Volume(object):
     def __init__(self, path, mode="r", backend="hdf5", comp="none" ):
         self.path = path
         self.cp = ct.POINTER(cVolume)
-        self.root = Block()
         if os.path.isdir(self.path):
             if (mode == "w"):
                 self.mode = "write"
@@ -38,8 +37,6 @@ class Volume(object):
         else:
             self.mode = "write"
             self.cp = lib.ctidas_volume_create(path, backend_type[backend], compression_type[comp])
-        croot = lib.ctidas_volume_root(self.cp)
-        self.root.open(croot)
 
     def close(self):
         if self.cp is not None:
@@ -56,5 +53,6 @@ class Volume(object):
         self.close()
         return False
 
-    def blocks(self):
-        return self.root.blocks()
+    def root(self):
+        croot = lib.ctidas_volume_root(self.cp)
+        return Block(handle=croot)

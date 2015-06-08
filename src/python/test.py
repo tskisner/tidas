@@ -102,7 +102,7 @@ def test_intervals_verify(ilist):
         assert ilist[i].last == comp[i].last
 
 
-def test_group_setup():
+def test_group_setup(grp):
     return
 
 
@@ -110,15 +110,16 @@ def test_group_verify(grp):
     return
 
 
-def test_block_setup():
+def test_block_setup(blk):
     return
 
 
-def test_block_verify():
+def test_block_verify(blk):
     return
 
 
 def test_volume_setup(vol):
+
     return
 
 

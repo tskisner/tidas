@@ -48,6 +48,9 @@ class Intervals(object):
     def size(self):
         return self._sz
 
+    def _handle(self):
+        return self.cp
+
     def read(self):
         data = None
         if self.cp is not None:

@@ -60,6 +60,9 @@ class Group(object):
     def size(self):
         return self._sz
 
+    def _handle(self):
+        return self.cp
+
     def resize(self, newsize):
         if self.cp is not None:
             lib.ctidas_group_resize(self.cp, newsize)

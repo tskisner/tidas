@@ -55,4 +55,4 @@ class Volume(object):
 
     def root(self):
         croot = lib.ctidas_volume_root(self.cp)
-        return Block(handle=croot)
+        return Block(croot)

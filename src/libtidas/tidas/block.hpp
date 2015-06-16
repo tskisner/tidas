@@ -56,6 +56,8 @@ namespace tidas {
 
 			backend_path location () const;
 
+			std::string aux_dir () const;
+
 			// data ops
 
 			void range ( time_type & start, time_type & stop ) const;

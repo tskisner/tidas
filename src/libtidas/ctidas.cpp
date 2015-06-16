@@ -1008,6 +1008,15 @@ void ctidas_block_free ( ctidas_block * blk ) {
 	return;
 }
 
+char * ctidas_block_aux_dir ( ctidas_block * blk ) {
+	block const * b = reinterpret_cast < block const * > ( blk );
+	string dir = b->aux_dir();
+	char * ret = (char*)malloc(dir.size() + 1);
+	strncpy(ret, dir.c_str(), dir.size());
+	ret[dir.size()] = '\0';
+	return ret;
+}
+
 void ctidas_block_range ( ctidas_block const * blk, ctidas_time_type * start, ctidas_time_type * stop ) {
 	block const * b = reinterpret_cast < block const * > ( blk );
 	time_type bstart;

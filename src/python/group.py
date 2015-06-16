@@ -5,6 +5,8 @@
 ##  level LICENSE file for details.
 ##
 
+import sys
+
 import ctypes as ct
 import numpy as np
 
@@ -28,12 +30,15 @@ class Group(object):
         self.cp = handle
         if self.cp is not None:
             # we are constructing from a C pointer
+            #sys.stderr.write("group ctor c pointer {}\n".format(self.cp))
             cs = lib.ctidas_group_schema(self.cp)
+            #sys.stderr.write("group ctor c schema = {}\n".format(cs))
             self._schm = schema_c2py(cs)
-            lib.ctidas_schema_free(cs)
+            #sys.stderr.write("group ctor py schema = {}\n".format(self._schm))
             cd = lib.ctidas_group_dict(self.cp)
+            #sys.stderr.write("group ctor c dict = {}\n".format(cd))
             self._prps = dict_c2py(cd)
-            lib.ctidas_dict_free(cd)
+            #sys.stderr.write("group ctor py dict = {}\n".format(self._prps))
             self._sz = lib.ctidas_group_size(self.cp)
         else:
             self._schm = schema
@@ -42,6 +47,7 @@ class Group(object):
 
     def close(self):
         if self.cp is not None:
+            #sys.stderr.write("group close c pointer {}\n".format(self.cp))
             lib.ctidas_group_free(self.cp)
         self.cp = None
 
@@ -128,10 +134,10 @@ class Group(object):
             elif self._schm[field][0] == "uint64":
                 data = np.zeros(ndata, dtype=np.uint64, order='C')
                 lib.ctidas_group_read_uint64(self.cp, field, offset, ndata, data)
-            elif self._schm[field][0] == "float":
+            elif self._schm[field][0] == "float32":
                 data = np.zeros(ndata, dtype=np.float32, order='C')
                 lib.ctidas_group_read_float(self.cp, field, offset, ndata, data)
-            elif self._schm[field][0] == "double":
+            elif self._schm[field][0] == "float64":
                 data = np.zeros(ndata, dtype=np.float64, order='C')
                 lib.ctidas_group_read_double(self.cp, field, offset, ndata, data)
             elif self._schm[field][0] == "string":
@@ -149,7 +155,7 @@ class Group(object):
         return data
 
     def write(self, field, offset, data):
-        ndata = len(data)
+        ndata = data.shape[0]
         last = offset + ndata
         if last > self._sz:
             raise IndexError("cannot write sample range {} - {} from group with {} samples".format(offset, last-1, self._sz))
@@ -171,9 +177,9 @@ class Group(object):
                 lib.ctidas_group_write_int64(self.cp, field, offset, ndata, data)
             elif self._schm[field][0] == "uint64":
                 lib.ctidas_group_write_uint64(self.cp, field, offset, ndata, data)
-            elif self._schm[field][0] == "float":
+            elif self._schm[field][0] == "float32":
                 lib.ctidas_group_write_float(self.cp, field, offset, ndata, data)
-            elif self._schm[field][0] == "double":
+            elif self._schm[field][0] == "float64":
                 lib.ctidas_group_write_double(self.cp, field, offset, ndata, data)
             elif self._schm[field][0] == "string":
                 backsize = lib.ctidas_backend_string_size()
@@ -183,7 +189,7 @@ class Group(object):
                 lib.ctidas_group_write_string(self.cp, field, offset, ndata, cdata)
                 lib.ctidas_string_free(ndata, cdata)
             else:
-                raise ValueError("cannot write field with unknown data type \"{}\"".format(self.schm[field][0]))
+                raise ValueError("cannot write field with unknown data type \"{}\"".format(self._schm[field][0]))
         else:
             raise RuntimeError("group is not associated with a block- cannot read or write data")
         return

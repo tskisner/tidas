@@ -26,7 +26,6 @@ class Intervals(object):
             # we are constructing from a C pointer
             cd = lib.ctidas_intervals_dict(self.cp)
             self._prps = dict_c2py(cd)
-            lib.ctidas_dict_free(cd)
             self._sz = lib.ctidas_intervals_size(self.cp)
         else:
             self._sz = size

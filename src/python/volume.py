@@ -6,6 +6,7 @@
 ##
 
 import os
+import sys
 
 import ctypes as ct
 
@@ -55,4 +56,5 @@ class Volume(object):
 
     def root(self):
         croot = lib.ctidas_volume_root(self.cp)
+        #sys.stderr.write("return root instance at {}\n".format(croot))
         return Block(croot)

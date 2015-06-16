@@ -332,6 +332,8 @@ void ctidas_block_range ( ctidas_block const * blk, ctidas_time_type * start, ct
 
 void ctidas_block_clear ( ctidas_block * blk );
 
+char * ctidas_block_aux_dir ( ctidas_block * blk );
+
 
 void ctidas_block_group_add ( ctidas_block * blk, char const * name, ctidas_group * grp );
 

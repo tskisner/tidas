@@ -379,6 +379,9 @@ void tidas::block::flush () const {
 			string intrdir = dir + path_sep + block_fs_intervals_dir;
 			fs_mkdir ( intrdir.c_str() );
 
+			string auxdir = dir + path_sep + block_fs_aux_dir;
+			fs_mkdir ( auxdir.c_str() );
+
 			// update index
 
 			if ( loc_.idx ) {
@@ -614,6 +617,12 @@ void tidas::block::wipe ( ) const {
 
 backend_path tidas::block::location () const {
 	return loc_;
+}
+
+
+string tidas::block::aux_dir () const {
+	string ret = loc_.path + path_sep + loc_.name + path_sep + block_fs_aux_dir;
+	return ret;
 }
 
 

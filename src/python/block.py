@@ -5,9 +5,13 @@
 ##  level LICENSE file for details.
 ##
 
+import sys
+
 import ctypes as ct
 
 from .ctidas import *
+from .group import *
+from .intervals import *
 
 
 class Block(object):
@@ -28,6 +32,35 @@ class Block(object):
     def _handle(self):
         return self.cp
 
+    def clear_groups(self):
+        if self.cp is not None:
+            lib.ctidas_block_clear_groups(self.cp)
+        return
+
+    def clear_intervals(self):
+        if self.cp is not None:
+            lib.ctidas_block_clear_intervals(self.cp)
+        return
+
+    def clear_blocks(self):
+        if self.cp is not None:
+            lib.ctidas_block_clear_children(self.cp)
+        return
+
+    def clear(self):
+        #sys.stderr.write("block clear {}\n".format(self.cp))
+        if self.cp is not None:
+            lib.ctidas_block_clear(self.cp)
+        return
+
+    def aux_dir(self):
+        if self.cp is None:
+            raise RuntimeError("block is not associated with a volume")
+        tmpstr = lib.ctidas_block_aux_dir(self.cp)
+        retstr = str(tmpstr.value)
+        libc.free(tmpstr)
+        return retstr
+
     def group_names(self):
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
@@ -43,20 +76,33 @@ class Block(object):
             ret[n] = Group(handle=cp)
         return ret
 
+    def group_get(self, name):
+        if self.cp is None:
+            raise RuntimeError("block is not associated with a volume")
+        cp = lib.ctidas_block_group_get(self.cp, name)
+        #sys.stderr.write("group get c handle = {}\n".format(cp))
+        ret = Group(handle=cp)
+        return ret
+
     def group_add(self, name, grp):
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         cgrp = grp._handle()
+        #sys.stderr.write("group add handle = {}\n".format(cgrp))
         if grp._handle() is None:
-            cschm = lib.schema_py2c(grp.schema)
-            cdict = lib.dict_py2c(grp.props)
+            cschm = schema_py2c(grp.schema)
+            cdict = dict_py2c(grp.props)
+            #sys.stderr.write("group add allocating\n")
             cgrp = lib.ctidas_group_alloc(cschm, cdict, ct.c_longlong(grp.size))
+            #sys.stderr.write("group add temp handle = {}\n".format(cgrp))
             lib.ctidas_schema_free(cschm)
             lib.ctidas_dict_free(cdict)
-        cblkgrp = lib.ctidas_block_group_add(self.cp, name, cgrp)
+            #sys.stderr.write("group add temp schema and dict freed\n")
+        lib.ctidas_block_group_add(self.cp, name, cgrp)
         if grp._handle() is None:
+            #sys.stderr.write("group add free temp handle = {}\n".format(cgrp))
             lib.ctidas_group_free(cgrp)
-        return Group(handle=cblkgrp)
+        return
 
     def group_del(self, name):
         if self.cp is None:
@@ -79,18 +125,24 @@ class Block(object):
             ret[n] = Intervals(handle=cp)
         return ret
 
+    def intervals_get(self, name):
+        if self.cp is None:
+            raise RuntimeError("block is not associated with a volume")
+        cp = lib.ctidas_block_intervals_get(self.cp, name)
+        return Intervals(handle=cp)
+
     def intervals_add(self, name, intr):
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         cintr = intr._handle()
         if intr._handle() is None:
-            cdict = lib.dict_py2c(intr.props)
-            cintr = lib.ctidas_intervals_alloc(cdict, ct.c_longlong(intr.size))
+            cdict = dict_py2c(intr.props)
+            cintr = lib.ctidas_intervals_alloc(cdict, ct.c_ulong(intr.size))
             lib.ctidas_dict_free(cdict)
-        cblkintr = lib.ctidas_block_intervals_add(self.cp, name, cintr)
+        lib.ctidas_block_intervals_add(self.cp, name, cintr)
         if intr._handle() is None:
             lib.ctidas_intervals_free(cintr)
-        return Intervals(handle=cblkintr)
+        return
 
     def intervals_del(self, name):
         if self.cp is None:
@@ -113,13 +165,19 @@ class Block(object):
             ret[n] = Block(cb)
         return ret
 
+    def block_get(self, name):
+        if self.cp is None:
+            raise RuntimeError("block is not associated with a volume")
+        cb = lib.ctidas_block_child_get(self.cp, name)
+        return Block(cb)
+
     def block_add(self, name):
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         cb = lib.ctidas_block_alloc()
-        cblk = lib.ctidas_block_child_add(self.cp, name, cb)
+        lib.ctidas_block_child_add(self.cp, name, cb)
         lib.ctidas_block_free(cb)
-        return Block(cblk)
+        return
 
     def block_del(self, name):
         if self.cp is None:

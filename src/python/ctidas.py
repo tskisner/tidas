@@ -609,13 +609,16 @@ lib.ctidas_block_alloc.argtypes = []
 lib.ctidas_block_free.restype = None
 lib.ctidas_block_free.argtypes = [ ct.POINTER(cBlock) ]
 
+lib.ctidas_block_aux_dir.restype = raw_c_char_p
+lib.ctidas_block_aux_dir.argtypes = [ ct.POINTER(cBlock) ]
+
 lib.ctidas_block_range.restype = None
 lib.ctidas_block_range.argtypes = [ ct.POINTER(cBlock), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double) ]
 
 lib.ctidas_block_clear.restype = None
 lib.ctidas_block_clear.argtypes = [ ct.POINTER(cBlock) ]
 
-lib.ctidas_block_group_add.restype = ct.POINTER(cGroup)
+lib.ctidas_block_group_add.restype = None
 lib.ctidas_block_group_add.argtypes = [ ct.POINTER(cBlock), ct.c_char_p, ct.POINTER(cGroup) ]
 
 lib.ctidas_block_group_get.restype = ct.POINTER(cGroup)
@@ -630,7 +633,7 @@ lib.ctidas_block_all_groups.argtypes = [ ct.POINTER(cBlock), ct.POINTER(ct.c_ulo
 lib.ctidas_block_clear_groups.restype = None
 lib.ctidas_block_clear_groups.argtypes = [ ct.POINTER(cBlock) ]
 
-lib.ctidas_block_intervals_add.restype = ct.POINTER(cIntervals)
+lib.ctidas_block_intervals_add.restype = None
 lib.ctidas_block_intervals_add.argtypes = [ ct.POINTER(cBlock), ct.c_char_p, ct.POINTER(cIntervals) ]
 
 lib.ctidas_block_intervals_get.restype = ct.POINTER(cIntervals)
@@ -645,7 +648,7 @@ lib.ctidas_block_all_intervals.argtypes = [ ct.POINTER(cBlock), ct.POINTER(ct.c_
 lib.ctidas_block_clear_intervals.restype = None
 lib.ctidas_block_clear_intervals.argtypes = [ ct.POINTER(cBlock) ]
 
-lib.ctidas_block_child_add.restype = ct.POINTER(cBlock)
+lib.ctidas_block_child_add.restype = None
 lib.ctidas_block_child_add.argtypes = [ ct.POINTER(cBlock), ct.c_char_p, ct.POINTER(cBlock) ]
 
 lib.ctidas_block_child_get.restype = ct.POINTER(cBlock)

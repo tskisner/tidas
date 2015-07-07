@@ -22,6 +22,11 @@ pkgtidasdir = $(pyexecdir)/tidas
 
 pkgtidas_PYTHON = \
 __init__.py \
-volume.py
+ctidas.py \
+intervals.py \
+group.py \
+block.py \
+volume.py \
+test.py
 
 

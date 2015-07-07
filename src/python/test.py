@@ -359,6 +359,7 @@ def test(tmpdir=None):
     with Volume(volpath, mode="r") as vol:
         test_volume_verify(vol, nblock, nsamp)
 
+    print("   PASS")
 
     return
 

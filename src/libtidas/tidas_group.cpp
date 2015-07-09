@@ -224,6 +224,8 @@ void tidas::group::copy ( group const & other, string const & filter, backend_pa
 	// copy our metadata
 
 	size_ = other.size_;
+	start_ = other.start_;
+	stop_ = other.stop_;
 	compute_counts();
 
 	// copy dict

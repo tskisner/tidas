@@ -122,7 +122,7 @@ def test_group_setup(grp, nsamp):
 
     for i in range(nsamp):
         fi = float(i)
-        time[i] = fi / 10.0
+        time[i] = fi * 0.001
         int8_data[i] = -(i % 128)
         uint8_data[i] = (i % 128)
         int16_data[i] = -(i % 32678)
@@ -134,6 +134,7 @@ def test_group_setup(grp, nsamp):
         float32_data[i] = fi
         float64_data[i] = fi
 
+    grp.write_times(time)
     grp.write("int8", 0, int8_data)
     grp.write("uint8", 0, uint8_data)
     grp.write("int16", 0, int16_data)
@@ -164,7 +165,7 @@ def test_group_verify(grp, nsamp):
 
     for i in range(nsamp):
         fi = float(i)
-        time_check[i] = fi / 10.0
+        time_check[i] = fi * 0.001
         int8_data_check[i] = -(i % 128)
         uint8_data_check[i] = (i % 128)
         int16_data_check[i] = -(i % 32678)
@@ -176,6 +177,7 @@ def test_group_verify(grp, nsamp):
         float32_data_check[i] = fi
         float64_data_check[i] = fi
 
+    time = grp.read_times()
     int8_data = grp.read("int8", 0, nsamp)
     uint8_data = grp.read("uint8", 0, nsamp)
     int16_data = grp.read("int16", 0, nsamp)
@@ -198,6 +200,7 @@ def test_group_verify(grp, nsamp):
 
     nt.assert_almost_equal(float32_data, float32_data_check)
     nt.assert_almost_equal(float64_data, float64_data_check)
+    nt.assert_almost_equal(time, time_check)
 
     return
 
@@ -300,7 +303,7 @@ def test_volume_verify(vol, nblock, nsamp):
 
 
 
-def test(tmpdir=None):
+def test(tmpdir=None, recurse=False):
     dirpath = ""
     if tmpdir is None:
         dirpath = tempfile.mkdtemp()
@@ -358,6 +361,7 @@ def test(tmpdir=None):
 
     with Volume(volpath, mode="r") as vol:
         test_volume_verify(vol, nblock, nsamp)
+        vol.info(recurse=recurse)
 
     print("   PASS")
 

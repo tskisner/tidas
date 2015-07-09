@@ -81,10 +81,10 @@ class Group(object):
         start = ct.c_double(0)
         stop = ct.c_double(0)
         if self.cp is not None:
-            lib.ctidas_group_range(self.cp, start, stop)
+            lib.ctidas_group_range(self.cp, ct.byref(start), ct.byref(stop))
         else:
             raise RuntimeError("group is not associated with a block- cannot read or write data")
-        return (start, stop)
+        return (start.value, stop.value)
 
     def read_times(self):
         data = np.zeros(self._sz, dtype=np.float64, order='C')
@@ -194,6 +194,18 @@ class Group(object):
             raise RuntimeError("group is not associated with a block- cannot read or write data")
         return
             
-
+    def info(self, name, indent=2):
+        prf = "TIDAS:  "
+        for i in range(indent):
+            prf = "{} ".format(prf)
+        start, stop = self.range()
+        print "{}Group \"{}\" ({} samples) start = {}, stop = {}".format(prf, name, self.size, start, stop)
+        p = self.props
+        for key in sorted(p):
+            print "{}  Properties {} = {}".format(prf, key, p[key])
+        s = self.schema
+        for key in sorted(s):
+            print "{}  Field {} ({}, {})".format(prf, key, s[key][0], s[key][1])
+        return
 
 

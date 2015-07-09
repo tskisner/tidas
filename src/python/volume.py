@@ -28,6 +28,8 @@ class Volume(object):
 
     def __init__(self, path, mode="r", backend="hdf5", comp="none" ):
         self.path = path
+        self.backend = backend
+        self.comp = comp
         self.cp = ct.POINTER(cVolume)
         if os.path.isdir(self.path):
             if (mode == "w"):
@@ -53,6 +55,19 @@ class Volume(object):
     def __exit__(self, type, value, tb):
         self.close()
         return False
+
+    def info(self, recurse=True):
+        prf = "TIDAS:  "
+        indent = 0
+        for i in range(indent):
+            prf = "{} ".format(prf)
+        print "{}Volume \"{}\" (mode={}, backend={}, comp={})".format(prf, self.path, self.mode, self.backend, self.comp)
+        b = self.root()
+        if recurse:
+            b.info("/", recurse=True)
+        else:
+            b.info("/", recurse=False)
+        return
 
     def root(self):
         croot = lib.ctidas_volume_root(self.cp)

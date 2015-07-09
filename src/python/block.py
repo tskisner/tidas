@@ -190,3 +190,27 @@ class Block(object):
             raise RuntimeError("block is not associated with a volume")
         cblk = lib.ctidas_block_select(self.cp, filter)
         return Block(cblk)
+
+    def info(self, name="", recurse=True, indent=2):
+        prf = "TIDAS:  "
+        if name == "":
+            indent = 0
+        for i in range(indent):
+            prf = "{} ".format(prf)
+        if name == "":
+            print "{}Block".format(prf)
+        else:
+            print "{}Block \"{}\"".format(prf, name)
+        names = self.group_names()
+        grps = self.groups(names)
+        for nm in sorted(grps):
+            grps[nm].info(nm, indent=(indent+2))
+        names = self.block_names()
+        blks = self.blocks(names)
+        if recurse:    
+            for nm in sorted(blks):
+                blks[nm].info(name=nm, recurse=recurse, indent=(indent+2))
+        else:
+            for nm in sorted(blks):
+                print "{}  Block \"{}\"".format(prf, nm)
+        return

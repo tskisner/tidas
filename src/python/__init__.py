@@ -12,6 +12,8 @@ timestreams.
 
 from __future__ import print_function
 
+import ctypes as ct
+
 from .ctidas import (
     Intrvl
 )

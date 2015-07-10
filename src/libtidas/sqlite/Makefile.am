@@ -30,10 +30,8 @@ libtidas_sqlite_la_SOURCES = \
 libtidas_sqlite_la_LIBADD =
 
 
-bin_PROGRAMS = tidas_sqlite
-
-tidas_sqlite_SOURCES = shell.c
-
-tidas_sqlite_LDADD = $(top_builddir)/src/libtidas/sqlite/libtidas_sqlite.la
+#bin_PROGRAMS = tidas_sqlite
+#tidas_sqlite_SOURCES = shell.c
+#tidas_sqlite_LDADD = $(top_builddir)/src/libtidas/sqlite/libtidas_sqlite.la
 
 

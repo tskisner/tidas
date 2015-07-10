@@ -36,6 +36,26 @@ AC_CANONICAL_HOST
 AC_PROG_INSTALL
 LT_INIT
 dnl +-------------------------
+dnl | Shared library extension
+dnl +-------------------------
+TIDAS_SHARED_EXT=""
+case $host_os in
+  darwin* )
+    TIDAS_SHARED_EXT="dylib"
+    ;;
+  linux*)
+    TIDAS_SHARED_EXT="so"
+    ;;
+  *BSD*)
+    TIDAS_SHARED_EXT="so"
+    ;;
+  *)
+    TIDAS_SHARED_EXT="so"
+    AC_MSG_WARN([Your platform was not detected- using Linux defaults for shared library suffix])
+    ;;
+esac
+AC_SUBST(TIDAS_SHARED_EXT)
+dnl +-------------------------
 dnl | C support
 dnl +-------------------------
 AC_PROG_CC
@@ -107,6 +127,7 @@ if test x"$enable_all_static" = x"yes"; then
   tidas_static=yes
 fi
 AM_CONDITIONAL([USE_AM_ALLSTATIC], [test "$tidas_static" = "yes"])
+dnl
 dnl +-------------------------
 dnl | Should we enable expensive debugging checks?
 dnl +-------------------------
@@ -128,10 +149,6 @@ fi
 if test $tidas_python = yes; then
   AM_PATH_PYTHON
   ACX_PYTHON_DEV
-  ACX_NUMPY
-  if test x"$NUMPY_CPPFLAGS" = x; then
-    tidas_python=no
-  fi
 fi
 AC_LANG_POP([C])
 AM_CONDITIONAL([HAVE_AM_PYTHON], [test $tidas_python = yes])

@@ -17,7 +17,6 @@ AM_LIBS =
 # Append compile and linking flags based on configure variables
 include $(top_srcdir)/src/build_options.am
 
-
 pkgtidasdir = $(pyexecdir)/tidas
 
 pkgtidas_PYTHON = \
@@ -29,4 +28,13 @@ block.py \
 volume.py \
 test.py
 
+
+ctidas.py : ctidas.py.in
+	@./gen_python.sh \
+	"$(DESTDIR)$(libdir)/libtidas.$(TIDAS_SHARED_EXT)"
+
+
+EXTRA_DIST = gen_python.sh ctidas.py.in
+
+CLEANFILES = ctidas.py
 

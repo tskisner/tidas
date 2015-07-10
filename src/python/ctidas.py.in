@@ -107,7 +107,8 @@ exec_order_str = {
 
 # open library
 
-library_path = find_library('tidas')
+#library_path = find_library('tidas')
+library_path = '@LIBTIDAS_PATH@'
 lib = ct.CDLL(library_path, mode=ct.RTLD_GLOBAL)
 
 
@@ -237,8 +238,6 @@ lib.ctidas_dict_get_string.argtypes = [ ct.POINTER(cDict), ct.c_char_p ]
 
 def cdict_put(dct, key, val):
     if type(val) is int:
-        lib.ctidas_dict_put_int32(dct, key, ct.c_int(val))
-    elif type(val) is long:
         lib.ctidas_dict_put_int64(dct, key, ct.c_longlong(val))
     elif type(val) is float:
         lib.ctidas_dict_put_double(dct, key, ct.c_double(val))
@@ -429,7 +428,7 @@ lib.ctidas_intrvl_last_get.argtypes = [ ct.POINTER(cIntrvl) ]
 
 class Intrvl(object):
 
-    def __init__(self, start=0.0, stop=0.0, first=-1L, last=-1L):
+    def __init__(self, start=0.0, stop=0.0, first=-1, last=-1):
         self.start = start
         self.stop = stop
         self.first = first

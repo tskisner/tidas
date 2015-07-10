@@ -199,13 +199,13 @@ class Group(object):
         for i in range(indent):
             prf = "{} ".format(prf)
         start, stop = self.range()
-        print "{}Group \"{}\" ({} samples) start = {}, stop = {}".format(prf, name, self.size, start, stop)
+        print("{}Group \"{}\" ({} samples) start = {}, stop = {}".format(prf, name, self.size, start, stop))
         p = self.props
         for key in sorted(p):
-            print "{}  Properties {} = {}".format(prf, key, p[key])
+            print("{}  Properties {} = {}".format(prf, key, p[key]))
         s = self.schema
         for key in sorted(s):
-            print "{}  Field {} ({}, {})".format(prf, key, s[key][0], s[key][1])
+            print("{}  Field {} ({}, {})".format(prf, key, s[key][0], s[key][1]))
         return
 
 

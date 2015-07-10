@@ -30,8 +30,8 @@ def test_dict_setup():
     ret["uint16"] = 10000
     ret["int32"] = -1000000000
     ret["uint32"] = 1000000000
-    ret["int64"] = -100000000000L
-    ret["uint64"] = 100000000000L
+    ret["int64"] = -100000000000
+    ret["uint64"] = 100000000000
     return ret
 
 
@@ -86,8 +86,8 @@ def test_intervals_setup():
     nint = 10
     gap = 1.0
     span = 123.4
-    gap_samp = 5L
-    span_samp = 617L
+    gap_samp = 5
+    span_samp = 617
     for i in range(nint):
         start = gap + float(i) * ( span + gap )
         stop = float(i + 1) * ( span + gap )

@@ -198,9 +198,9 @@ class Block(object):
         for i in range(indent):
             prf = "{} ".format(prf)
         if name == "":
-            print "{}Block".format(prf)
+            print("{}Block".format(prf))
         else:
-            print "{}Block \"{}\"".format(prf, name)
+            print("{}Block \"{}\"".format(prf, name))
         names = self.group_names()
         grps = self.groups(names)
         for nm in sorted(grps):
@@ -212,5 +212,5 @@ class Block(object):
                 blks[nm].info(name=nm, recurse=recurse, indent=(indent+2))
         else:
             for nm in sorted(blks):
-                print "{}  Block \"{}\"".format(prf, nm)
+                print("{}  Block \"{}\"".format(prf, nm))
         return

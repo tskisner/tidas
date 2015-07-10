@@ -61,7 +61,7 @@ class Volume(object):
         indent = 0
         for i in range(indent):
             prf = "{} ".format(prf)
-        print "{}Volume \"{}\" (mode={}, backend={}, comp={})".format(prf, self.path, self.mode, self.backend, self.comp)
+        print("{}Volume \"{}\" (mode={}, backend={}, comp={})".format(prf, self.path, self.mode, self.backend, self.comp))
         b = self.root()
         if recurse:
             b.info("/", recurse=True)

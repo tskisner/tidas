@@ -53,6 +53,14 @@ class Block(object):
             lib.ctidas_block_clear(self.cp)
         return
 
+    def range(self):
+        if self.cp is None:
+            raise RuntimeError("block is not associated with a volume")
+        start = ct.c_double(0)
+        stop = ct.c_double(0)
+        lib.ctidas_block_range(self.cp, ct.byref(start), ct.byref(stop))
+        return (start.value, stop.value)
+
     def aux_dir(self):
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")

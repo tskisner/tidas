@@ -146,7 +146,7 @@ void tidas::mpi_volume::index_setup () {
 
 	localdb_.reset ( new indexdb_mem() );
 
-	loc_.idx = db_;
+	loc_.idx = localdb_;
 
 	return;
 }
@@ -193,9 +193,10 @@ void tidas::mpi_volume::copy ( mpi_volume const & other, string const & filter, 
 	root_.copy ( other.root_, filter, root_loc ( loc_ ) );
 
 	if ( loc_ != other.loc_ ) {
-		if ( rank_ == 0 )
-		// write root block
-		root_.flush();
+		if ( rank_ == 0 ) {
+			// write root block
+			root_.flush();
+		}
 	}
 
 	return;

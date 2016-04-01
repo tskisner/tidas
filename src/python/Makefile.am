@@ -38,3 +38,6 @@ EXTRA_DIST = gen_python.sh ctidas.py.in
 
 CLEANFILES = ctidas.py
 
+clean-local :
+	@rm -f *.pyc
+

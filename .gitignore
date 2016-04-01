@@ -51,4 +51,8 @@ Makefile.in
 /src/tests/tidas_test.log
 /src/tests/tidas_test.trs
 
+# python files
+
+*.pyc
+
 

@@ -130,7 +130,6 @@ namespace tidas {
 
     };
 
-
     // string constants used for matching and by objects when 
     // writing to filesystem and backend formats.
 
@@ -139,28 +138,16 @@ namespace tidas {
     static const std::string submatch_end = "]";
     static const std::string submatch_sep = ",";
     static const std::string submatch_assign = "=";
-
-    static const std::string dict_hdf5_type_suffix = "_TIDASTYPE";
+    
     static const std::string dict_submatch_key = "dict";
-
-    static const std::string schema_hdf5_dataset = "schema";
-    static const std::string schema_getdata_dir = "schema";
+    
     static const std::string schema_submatch_key = "schm";
 
-    static const std::string intervals_hdf5_dataset_time = "times";
-    static const std::string intervals_hdf5_dataset_index = "indices";
-    static const std::string intervals_getdata_field_start = "start";
-    static const std::string intervals_getdata_field_stop = "stop";
-    static const std::string intervals_getdata_field_first = "first";
-    static const std::string intervals_getdata_field_last = "last";
     static const std::string intervals_submatch_key = "intr";
 
-    static const std::string group_time_field = "TIDAS_TIME";
-    static const std::string group_hdf5_dataset_prefix = "data";
-    static const std::string group_hdf5_range_dataset = "range";
+    static const std::string group_time_field = "TIDAS_TIME";    
     static const std::string group_submatch_key = "grp";
 
-    static const std::string extension_hdf5_dataset_prefix = "data";
     static const std::string extension_submatch_key = "ext";
 
     static const std::string block_fs_group_dir = "_groups";
@@ -171,9 +158,6 @@ namespace tidas {
     static const std::string volume_fs_data_dir = "_data";
     static const std::string volume_fs_index = "index.db";
     static const std::string volume_fs_props = "tidas_volume.txt";
-
-    static const std::string env_hdf5_chunk = "TIDAS_HDF5_CHUNK";
-    static const size_t env_hdf5_chunk_default = 50;
 
 
 }

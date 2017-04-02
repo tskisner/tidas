@@ -9,6 +9,8 @@
 #define TIDAS_TEST_HPP
 
 #include <tidas_internal.hpp>
+#include <tidas_backend_getdata.hpp>
+#include <tidas_backend_hdf5.hpp>
 
 #include <ctidas.h>
 

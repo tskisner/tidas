@@ -17,6 +17,13 @@ extern "C" {
 
 namespace tidas {
 
+    static const std::string schema_getdata_dir = "schema";
+
+    static const std::string intervals_getdata_field_start = "start";
+    static const std::string intervals_getdata_field_stop = "stop";
+    static const std::string intervals_getdata_field_first = "first";
+    static const std::string intervals_getdata_field_last = "last";
+
 
 
 }

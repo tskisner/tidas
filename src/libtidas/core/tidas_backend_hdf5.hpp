@@ -18,6 +18,21 @@ extern "C" {
 
 namespace tidas {
 
+    static const std::string dict_hdf5_type_suffix = "_TIDASTYPE";
+
+    static const std::string schema_hdf5_dataset = "schema";
+
+    static const std::string intervals_hdf5_dataset_time = "times";
+    static const std::string intervals_hdf5_dataset_index = "indices";
+
+    static const std::string group_hdf5_dataset_prefix = "data";
+    static const std::string group_hdf5_range_dataset = "range";
+
+    static const std::string extension_hdf5_dataset_prefix = "data";
+
+    static const std::string env_hdf5_chunk = "TIDAS_HDF5_CHUNK";
+    static const size_t env_hdf5_chunk_default = 50;
+
 #ifdef HAVE_HDF5
 
     hid_t hdf5_data_type ( data_type type );

@@ -9,6 +9,7 @@ AC_CONFIG_SRCDIR([Makefile.am])
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([m4])
+
 dnl +-------------------------
 dnl | If the library source code has changed at all since the last update, 
 dnl | then increment revision (c:r:a becomes c:r+1:a).  If any interfaces 
@@ -19,6 +20,7 @@ dnl | have been removed since the last public release, then set age to 0.
 dnl +-------------------------
 TIDAS_LT_VERSION="1:0:0"
 AC_SUBST(TIDAS_LT_VERSION)
+
 dnl +---------------------
 dnl | Compiler features
 dnl +---------------------
@@ -32,9 +34,11 @@ fi
 if test x"${FCFLAGS}" = x; then
    FCFLAGS="-O3"
 fi
+
 AC_CANONICAL_HOST
 AC_PROG_INSTALL
 LT_INIT
+
 dnl +-------------------------
 dnl | Shared library extension
 dnl +-------------------------
@@ -55,15 +59,22 @@ case $host_os in
     ;;
 esac
 AC_SUBST(TIDAS_SHARED_EXT)
+
 dnl +-------------------------
 dnl | C support
 dnl +-------------------------
 AC_PROG_CC
+
 dnl +-------------------------
 dnl | C++ support
 dnl +-------------------------
 AC_PROG_CXX
-AX_CXX_COMPILE_STDCXX_11([noext], [mandatory])
+
+dnl +------------------------------------------------
+dnl | Check for C++11 language support
+dnl +------------------------------------------------
+AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
+
 dnl +-------------------------
 dnl | Fortran support
 dnl +-------------------------
@@ -81,10 +92,12 @@ if test $tidas_fortran = yes; then
 fi
 AM_CONDITIONAL([HAVE_AM_FC], [test $tidas_fortran = yes])
 AC_SUBST(FCMODEXT)
+
 dnl +------------------------------------------------
 dnl | This is a C++ project...
 dnl +------------------------------------------------
 AC_LANG([C++])
+
 dnl +------------------------------------------------
 dnl | Check for MPI
 dnl +------------------------------------------------
@@ -114,6 +127,7 @@ if test $tidas_mpi = yes; then
 fi
 AM_CONDITIONAL([HAVE_AM_MPI], [test tidas_mpi = yes])
 AM_CONDITIONAL([HAVE_AM_MPI_FC], [test tidas_mpi_fortran = yes])
+
 dnl +-------------------------
 dnl | Option to perform full static linking of executables, not just
 dnl | building of static libraries.
@@ -127,7 +141,7 @@ if test x"$enable_all_static" = x"yes"; then
   tidas_static=yes
 fi
 AM_CONDITIONAL([USE_AM_ALLSTATIC], [test "$tidas_static" = "yes"])
-dnl
+
 dnl +-------------------------
 dnl | Should we enable expensive debugging checks?
 dnl +-------------------------
@@ -137,6 +151,7 @@ if test x"$enable_debug" = x"yes"; then
   tidas_debug=yes
 fi
 AM_CONDITIONAL([ENABLE_AM_DEBUG], [test $tidas_debug = yes])
+
 dnl +------------------------------------------------
 dnl | Check for Python
 dnl +------------------------------------------------
@@ -147,11 +162,11 @@ if test $tidas_static = yes; then
   tidas_python=no
 fi
 if test $tidas_python = yes; then
-  AM_PATH_PYTHON
-  ACX_PYTHON_DEV
+  AM_PATH_PYTHON(,[tidas_python=yes],[tidas_python=no])
 fi
 AC_LANG_POP([C])
 AM_CONDITIONAL([HAVE_AM_PYTHON], [test $tidas_python = yes])
+
 dnl +------------------------------------------------
 dnl | Check for HDF5
 dnl +------------------------------------------------
@@ -167,6 +182,7 @@ if test $tidas_hdf5 = yes; then
 fi
 AC_LANG_POP([C])
 AM_CONDITIONAL([HAVE_AM_HDF5], [test $tidas_hdf5 = yes])
+
 dnl +------------------------------------------------
 dnl | Check for GetData
 dnl +------------------------------------------------
@@ -181,6 +197,7 @@ if test $tidas_getdata = yes; then
 fi
 AC_LANG_POP([C])
 AM_CONDITIONAL([HAVE_AM_GETDATA], [test $tidas_getdata = yes])
+
 dnl +------------------------------------------------
 dnl | Do we have at least one backend?
 dnl +------------------------------------------------
@@ -189,16 +206,18 @@ if test $tidas_hdf5 = no; then
     AC_MSG_ERROR([No supported backend formats can be used!])
   fi
 fi
+
 dnl +------------------------------------------------
 dnl | Set outputs
 dnl +------------------------------------------------
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([src/libtidas/sqlite/Makefile])
+AC_CONFIG_FILES([src/libtidas/core/Makefile])
+AC_CONFIG_FILES([src/libtidas/test/Makefile])
+AC_CONFIG_FILES([src/libtidas/test/gtest/Makefile])
 AC_CONFIG_FILES([src/libtidas/Makefile])
-AC_CONFIG_FILES([src/tests/Makefile])
-AC_CONFIG_FILES([src/tests/gtest/Makefile])
-AC_CONFIG_FILES([src/libtidas-mpi/Makefile])
+dnl AC_CONFIG_FILES([src/libtidas-mpi/Makefile])
 AC_CONFIG_FILES([src/python/Makefile])
 dnl AC_CONFIG_FILES([src/apps/Makefile])
 dnl AC_CONFIG_FILES([docs/Makefile])
@@ -239,8 +258,6 @@ else
 fi
 if test $tidas_python = yes; then
   AC_MSG_NOTICE([  Python                    : $PYTHON])
-  AC_MSG_NOTICE([  Python includes           : $PYTHON_CPPFLAGS $NUMPY_CPPFLAGS])
-  AC_MSG_NOTICE([  Python dev libraries      : $PYTHON_LDFLAGS])
 else
   AC_MSG_NOTICE([  Python                    : Disabled])
 fi

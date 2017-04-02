@@ -10,9 +10,14 @@
 
 #include <tidas_internal.hpp>
 
+#include <ctidas.h>
+
 #include <gtest/gtest.h>
 
-#include <ctidas.h>
+
+namespace tidas { namespace test {
+    int runner ( int argc, char *argv[] );
+}}
 
 
 class dictTest : public ::testing::Test {

@@ -14,17 +14,17 @@ if USE_AM_ALLSTATIC
   AM_LDFLAGS += -all-static
 endif
 
-if HAVE_AM_PYTHON
-  AM_CPPFLAGS += \
-  $(PYTHON_CPPFLAGS) \
-  $(NUMPY_CPPFLAGS)
-
-  AM_LDFLAGS += \
-  $(PYTHON_LDFLAGS) 
-
-  AM_LIBS += \
-  $(PYTHON_LIBS)
-endif
+# if HAVE_AM_PYTHON
+#   AM_CPPFLAGS += \
+#   $(PYTHON_CPPFLAGS) \
+#   $(NUMPY_CPPFLAGS)
+# 
+#   AM_LDFLAGS += \
+#   $(PYTHON_LDFLAGS) 
+# 
+#   AM_LIBS += \
+#   $(PYTHON_LIBS)
+# endif
 
 # HDF5 linking
 

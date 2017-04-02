@@ -6,8 +6,9 @@ SUBDIRS = gtest
 AM_CPPFLAGS = \
 -I$(top_srcdir)/src/libtidas \
 -I$(top_srcdir)/src/libtidas/sqlite \
--I$(top_srcdir)/src/tests/gtest \
--I$(top_srcdir)/src/tests
+-I$(top_srcdir)/src/libtidas/core \
+-I$(top_srcdir)/src/libtidas/test \
+-I$(top_srcdir)/src/libtidas/test/gtest
 
 AM_CFLAGS =
 AM_CXXFLAGS =
@@ -16,8 +17,7 @@ AM_FCFLAGS =
 AM_LDFLAGS = 
 
 AM_LIBS = \
-$(top_builddir)/src/tests/gtest/libtidas_gtest.la \
-$(top_builddir)/src/libtidas/libtidas.la
+$(top_builddir)/src/libtidas/test/gtest/libtidas_gtest.la
 
 # Add check flags
 
@@ -30,11 +30,10 @@ include $(top_srcdir)/src/build_options.am
 
 noinst_HEADERS = tidas_test.hpp
 
-bin_PROGRAMS = tidas_test
-TESTS = tidas_test
+noinst_LTLIBRARIES = libtidas_test.la
 
-tidas_test_SOURCES = \
-tidas_test.cpp \
+libtidas_test_la_SOURCES = \
+tidas_test_runner.cpp \
 tidas_test_utils.cpp \
 tidas_test_cereal.cpp \
 tidas_test_dict.cpp \
@@ -45,9 +44,4 @@ tidas_test_block.cpp \
 tidas_test_indexdb.cpp \
 tidas_test_volume.cpp 
 
-tidas_test_LDADD = $(AM_LIBS)
-
-
-clean-local :
-	@rm -rf *.out
-
+libtidas_test_la_LIBADD = $(AM_LIBS)

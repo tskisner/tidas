@@ -8,15 +8,8 @@
 #include <tidas_test.hpp>
 
 
-using namespace std;
-using namespace tidas;
-
-
 int main ( int argc, char *argv[] ) {
-
-	::testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
-
+    return tidas::test::runner ( argc, argv );
 }
 
 

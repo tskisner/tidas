@@ -6,8 +6,8 @@
 */
 
 
-#ifndef CTOAST_H
-#define CTOAST_H
+#ifndef CTIDAS_H
+#define CTIDAS_H
 
 #include <stdint.h>
 #include <stddef.h>

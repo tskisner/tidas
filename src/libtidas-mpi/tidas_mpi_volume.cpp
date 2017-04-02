@@ -1,8 +1,8 @@
 /*
   TImestream DAta Storage (TIDAS)
-  (c) 2014-2015, The Regents of the University of California, 
-  through Lawrence Berkeley National Laboratory.  See top
-  level LICENSE file for details.
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  is governed by a BSD-style license that can be found in the top-level
+  LICENSE file.
 */
 
 #include <tidas_mpi_internal.hpp>

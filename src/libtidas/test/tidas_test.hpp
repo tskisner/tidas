@@ -22,15 +22,15 @@ namespace tidas { namespace test {
 
 class dictTest : public ::testing::Test {
 
-	public :
+    public :
 
-		dictTest () {}
-		~dictTest () {}
-		virtual void SetUp();
-		virtual void TearDown();
+        dictTest () {}
+        ~dictTest () {}
+        virtual void SetUp();
+        virtual void TearDown();
 
-		tidas::dict dct;
-		ctidas_dict * cdct;
+        tidas::dict dct;
+        ctidas_dict * cdct;
 
 };
 
@@ -41,15 +41,15 @@ void dict_verify ( tidas::dict const & dct, ctidas_dict const * cdct );
 
 class intervalsTest : public ::testing::Test {
 
-	public :
+    public :
 
-		intervalsTest () { }
-		~intervalsTest () { }
-		virtual void SetUp();
-		virtual void TearDown();
+        intervalsTest () { }
+        ~intervalsTest () { }
+        virtual void SetUp();
+        virtual void TearDown();
 
-		tidas::interval_list intrvls;
-		ctidas_intrvl ** cintrvls;
+        tidas::interval_list intrvls;
+        ctidas_intrvl ** cintrvls;
 
 };
 
@@ -60,12 +60,12 @@ void intervals_verify ( tidas::interval_list const & inv, ctidas_intrvl * const 
 
 class schemaTest : public ::testing::Test {
 
-	public :
+    public :
 
-		schemaTest ();
-		~schemaTest () { }
-		virtual void SetUp() { }
-		virtual void TearDown() { }
+        schemaTest ();
+        ~schemaTest () { }
+        virtual void SetUp() { }
+        virtual void TearDown() { }
 
 
 };
@@ -77,14 +77,14 @@ void schema_verify ( tidas::field_list const & flist );
 
 class groupTest : public ::testing::Test {
 
-	public :
+    public :
 
-		groupTest ();
-		~groupTest () { }
-		virtual void SetUp();
-		virtual void TearDown() { }
+        groupTest ();
+        ~groupTest () { }
+        virtual void SetUp();
+        virtual void TearDown() { }
 
-		size_t gnsamp;
+        size_t gnsamp;
 };
 
 void group_setup ( tidas::group & grp, size_t offset, size_t full_nsamp );
@@ -96,15 +96,15 @@ void group_verify_int ( tidas::group & grp, size_t offset, size_t full_nsamp );
 
 class blockTest : public ::testing::Test {
 
-	public :
+    public :
 
-		blockTest ();
-		~blockTest () { }
-		virtual void SetUp();
-		virtual void TearDown() { }
+        blockTest ();
+        ~blockTest () { }
+        virtual void SetUp();
+        virtual void TearDown() { }
 
-		size_t n_samp;
-		size_t n_intr;
+        size_t n_samp;
+        size_t n_intr;
 
 };
 
@@ -121,16 +121,16 @@ void indexdb_verify ( tidas::indexdb & idx );
 
 class volumeTest : public ::testing::Test {
 
-	public :
+    public :
 
-		volumeTest ();
-		~volumeTest () { }
-		virtual void SetUp();
-		virtual void TearDown() { }
+        volumeTest ();
+        ~volumeTest () { }
+        virtual void SetUp();
+        virtual void TearDown() { }
 
-		size_t n_samp;
-		size_t n_intr;
-		size_t n_block;
+        size_t n_samp;
+        size_t n_intr;
+        size_t n_block;
 
 };
 

@@ -12,80 +12,80 @@
 
 namespace tidas {
 
-	class volume {
+    class volume {
 
-		public :
+        public :
 
-			volume ();
-			~volume ();
-			volume & operator= ( volume const & other );
+            volume ();
+            ~volume ();
+            volume & operator= ( volume const & other );
 
-			volume ( volume const & other );
+            volume ( volume const & other );
 
-			/// Create a new volume.
-			volume ( std::string const & path, backend_type type, compression_type comp );
+            /// Create a new volume.
+            volume ( std::string const & path, backend_type type, compression_type comp );
 
-			/// Open an existing volume.
-			volume ( std::string const & path, access_mode mode );
-			
-			volume ( volume const & other, std::string const & filter, backend_path const & loc );
+            /// Open an existing volume.
+            volume ( std::string const & path, access_mode mode );
+            
+            volume ( volume const & other, std::string const & filter, backend_path const & loc );
 
-			// metadata ops
+            // metadata ops
 
-			void copy ( volume const & other, std::string const & filter, backend_path const & loc );
+            void copy ( volume const & other, std::string const & filter, backend_path const & loc );
 
-			/// Export a filtered subset of the volume to a new location.
-			void duplicate ( std::string const & path, backend_type type, compression_type comp, std::string const & filter = "" ) const;
+            /// Export a filtered subset of the volume to a new location.
+            void duplicate ( std::string const & path, backend_type type, compression_type comp, std::string const & filter = "" ) const;
 
-			/// Create a (hard or soft) linked filtered subset of the volume to a new location.
-			void link ( std::string const & path, link_type const & type, std::string const & filter ) const;
+            /// Create a (hard or soft) linked filtered subset of the volume to a new location.
+            void link ( std::string const & path, link_type const & type, std::string const & filter ) const;
 
-			/// Delete the on-disk data and metadata associated with this object.
-			/// In-memory metadata is not modified.
-			void wipe ( std::string const & filter ) const;
+            /// Delete the on-disk data and metadata associated with this object.
+            /// In-memory metadata is not modified.
+            void wipe ( std::string const & filter ) const;
 
-			backend_path location () const;
+            backend_path location () const;
 
-			/// Get the root block of the volume.
-			block & root ();
+            /// Get the root block of the volume.
+            block & root ();
 
-			/// Get the (const) root block of the volume.
-			block const & root () const;
+            /// Get the (const) root block of the volume.
+            block const & root () const;
 
-			template < class P >
-			void exec ( P & op, exec_order order, std::string const & filter = "" ) {
+            template < class P >
+            void exec ( P & op, exec_order order, std::string const & filter = "" ) {
 
-				if ( filter == "" ) {
+                if ( filter == "" ) {
 
-					root_.exec ( op, order );
-				
-				} else {
-				
-					block selected = root_.select ( filter );
-					selected.exec ( op, order );
-				
-				}
+                    root_.exec ( op, order );
+                
+                } else {
+                
+                    block selected = root_.select ( filter );
+                    selected.exec ( op, order );
+                
+                }
 
-				return;
-			}
+                return;
+            }
 
-		private :
+        private :
 
-			void index_setup ();
+            void index_setup ();
 
-			void read_props ( backend_path & loc );
+            void read_props ( backend_path & loc );
 
-			void write_props ( backend_path const & loc ) const;
+            void write_props ( backend_path const & loc ) const;
 
-			backend_path root_loc ( backend_path const & loc ) const;
+            backend_path root_loc ( backend_path const & loc ) const;
 
-			backend_path loc_;
+            backend_path loc_;
 
-			block root_;
+            block root_;
 
-			std::shared_ptr < indexdb > db_;
+            std::shared_ptr < indexdb > db_;
 
-	};
+    };
 
 }
 

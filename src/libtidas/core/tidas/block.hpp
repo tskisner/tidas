@@ -12,204 +12,204 @@
 
 namespace tidas {
 
-	// forward declare copy functions
+    // forward declare copy functions
 
-	class block;
+    class block;
 
-	void data_copy ( intervals const & in, intervals & out );
-	void data_copy ( group const & in, group & out );
-	void data_copy ( block const & in, block & out );
+    void data_copy ( intervals const & in, intervals & out );
+    void data_copy ( group const & in, group & out );
+    void data_copy ( block const & in, block & out );
 
 
-	// block class
+    // block class
 
-	class block {
+    class block {
 
-		public :
+        public :
 
-			block ();
-			~block ();
-			block & operator= ( block const & other );
+            block ();
+            ~block ();
+            block & operator= ( block const & other );
 
-			block ( block const & other );
+            block ( block const & other );
 
-			block ( backend_path const & loc, std::string const & filter = "" );
-			
-			block ( block const & other, std::string const & filter, backend_path const & loc );
+            block ( backend_path const & loc, std::string const & filter = "" );
+            
+            block ( block const & other, std::string const & filter, backend_path const & loc );
 
-			// metadata ops
+            // metadata ops
 
-			void relocate ( backend_path const & loc );
+            void relocate ( backend_path const & loc );
 
-			void sync ( std::string const & filter = "" );
+            void sync ( std::string const & filter = "" );
 
-			void flush () const;
+            void flush () const;
 
-			void copy ( block const & other, std::string const & filter, backend_path const & loc );
+            void copy ( block const & other, std::string const & filter, backend_path const & loc );
 
-			/// Create a link at the specified location.
-			void link ( link_type const & type, std::string const & path ) const;
+            /// Create a link at the specified location.
+            void link ( link_type const & type, std::string const & path ) const;
 
-			/// Delete the on-disk data and metadata associated with this object.
-			/// In-memory metadata is not modified.
-			void wipe () const;
+            /// Delete the on-disk data and metadata associated with this object.
+            /// In-memory metadata is not modified.
+            void wipe () const;
 
-			backend_path location () const;
+            backend_path location () const;
 
-			std::string aux_dir () const;
+            std::string aux_dir () const;
 
-			// data ops
+            // data ops
 
-			void range ( time_type & start, time_type & stop ) const;
+            void range ( time_type & start, time_type & stop ) const;
 
-			void clear();
+            void clear();
 
 
-			group & group_add ( std::string const & name, group const & grp );
+            group & group_add ( std::string const & name, group const & grp );
 
-			group & group_get ( std::string const & name );
+            group & group_get ( std::string const & name );
 
-			group const & group_get ( std::string const & name ) const;
-			
-			void group_del ( std::string const & name );
+            group const & group_get ( std::string const & name ) const;
+            
+            void group_del ( std::string const & name );
 
-			std::vector < std::string > all_groups () const;
-			
-			void clear_groups();
+            std::vector < std::string > all_groups () const;
+            
+            void clear_groups();
 
 
-			intervals & intervals_add ( std::string const & name, intervals const & intr );
-			
-			intervals & intervals_get ( std::string const & name );
+            intervals & intervals_add ( std::string const & name, intervals const & intr );
+            
+            intervals & intervals_get ( std::string const & name );
 
-			intervals const & intervals_get ( std::string const & name ) const;
-			
-			void intervals_del ( std::string const & name );
-			
-			std::vector < std::string > all_intervals () const;
-			
-			void clear_intervals();
+            intervals const & intervals_get ( std::string const & name ) const;
+            
+            void intervals_del ( std::string const & name );
+            
+            std::vector < std::string > all_intervals () const;
+            
+            void clear_intervals();
 
 
-			block & block_add ( std::string const & name, block const & blk );
-			
-			block & block_get ( std::string const & name );
+            block & block_add ( std::string const & name, block const & blk );
+            
+            block & block_get ( std::string const & name );
 
-			block const & block_get ( std::string const & name ) const;
-			
-			void block_del ( std::string const & name );
-			
-			std::vector < std::string > all_blocks () const;
-			
-			void clear_blocks();
+            block const & block_get ( std::string const & name ) const;
+            
+            void block_del ( std::string const & name );
+            
+            std::vector < std::string > all_blocks () const;
+            
+            void clear_blocks();
 
 
-			block select ( std::string const & filter = "" ) const;
+            block select ( std::string const & filter = "" ) const;
 
 
-			// non-const version
+            // non-const version
 
-			template < class P >
-			void exec ( P & op, exec_order order ) {
+            template < class P >
+            void exec ( P & op, exec_order order ) {
 
-				if ( order == exec_order::depth_last ) {
-					op ( *this );
-				}
+                if ( order == exec_order::depth_last ) {
+                    op ( *this );
+                }
 
-				if ( block_data_.size() == 0 ) {
+                if ( block_data_.size() == 0 ) {
 
-					// this is a leaf
-					if ( order == exec_order::leaf ) {
-						op ( *this );
-					}
-				
-				} else {
-					// operate on sub blocks
+                    // this is a leaf
+                    if ( order == exec_order::leaf ) {
+                        op ( *this );
+                    }
+                
+                } else {
+                    // operate on sub blocks
 
-					for ( std::map < std::string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
-						it->second.exec ( op, order );
-					}
+                    for ( std::map < std::string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
+                        it->second.exec ( op, order );
+                    }
 
-				}
+                }
 
-				if ( order == exec_order::depth_first ) {
-					op ( *this );
-				}
+                if ( order == exec_order::depth_first ) {
+                    op ( *this );
+                }
 
-				return;
-			}
+                return;
+            }
 
 
-			// const version
-			
-			template < class P >
-			void exec ( P & op, exec_order order ) const {
+            // const version
+            
+            template < class P >
+            void exec ( P & op, exec_order order ) const {
 
-				if ( order == exec_order::depth_last ) {
-					op ( *this );
-				}
+                if ( order == exec_order::depth_last ) {
+                    op ( *this );
+                }
 
-				if ( block_data_.size() == 0 ) {
+                if ( block_data_.size() == 0 ) {
 
-					// this is a leaf
-					if ( order == exec_order::leaf ) {
-						op ( *this );
-					}
-				
-				} else {
-					// operate on sub blocks
+                    // this is a leaf
+                    if ( order == exec_order::leaf ) {
+                        op ( *this );
+                    }
+                
+                } else {
+                    // operate on sub blocks
 
-					for ( std::map < std::string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
-						it->second.exec ( op, order );
-					}
+                    for ( std::map < std::string, block > :: const_iterator it = block_data_.begin(); it != block_data_.end(); ++it ) {
+                        it->second.exec ( op, order );
+                    }
 
-				}
+                }
 
-				if ( order == exec_order::depth_first ) {
-					op ( *this );
-				}
+                if ( order == exec_order::depth_first ) {
+                    op ( *this );
+                }
 
-				return;
-			}
+                return;
+            }
 
 
-		private :
+        private :
 
-			backend_path group_loc ( backend_path const & loc, std::string const & name ) const;
-			
-			backend_path intervals_loc ( backend_path const & loc, std::string const & name ) const;
-			
-			backend_path block_loc ( backend_path const & loc, std::string const & name ) const;
+            backend_path group_loc ( backend_path const & loc, std::string const & name ) const;
+            
+            backend_path intervals_loc ( backend_path const & loc, std::string const & name ) const;
+            
+            backend_path block_loc ( backend_path const & loc, std::string const & name ) const;
 
-			std::map < std::string, block > block_data_;
-			std::map < std::string, group > group_data_;
-			std::map < std::string, intervals > intervals_data_;
+            std::map < std::string, block > block_data_;
+            std::map < std::string, group > group_data_;
+            std::map < std::string, intervals > intervals_data_;
 
-			backend_path loc_;
+            backend_path loc_;
 
-	};
+    };
 
 
-	class block_link_operator {
+    class block_link_operator {
 
-		public :
+        public :
 
-			void operator() ( block const & blk );
+            void operator() ( block const & blk );
 
-			link_type type;
-			std::string path;
-			std::string start;
+            link_type type;
+            std::string path;
+            std::string start;
 
-	};
+    };
 
 
-	class block_wipe_operator {
+    class block_wipe_operator {
 
-		public :
+        public :
 
-			void operator() ( block const & blk );
+            void operator() ( block const & blk );
 
-	};
+    };
 
 
 }

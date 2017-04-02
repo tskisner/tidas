@@ -12,137 +12,137 @@
 namespace tidas {
 
 
-	size_t hdf5_chunk ();
+    size_t hdf5_chunk ();
 
 
-	template < typename T >
-	void hdf5_helper_field_read ( backend_path const & loc, size_t type_indx, index_type offset, index_type ndata, T * data ) {
+    template < typename T >
+    void hdf5_helper_field_read ( backend_path const & loc, size_t type_indx, index_type offset, index_type ndata, T * data ) {
 
-		T testval;
-		data_type type = data_type_get ( typeid ( testval ) );
+        T testval;
+        data_type type = data_type_get ( typeid ( testval ) );
 
-		// check if file exists
+        // check if file exists
 
-		std::string fspath = loc.path + path_sep + loc.name;
+        std::string fspath = loc.path + path_sep + loc.name;
 
-		int64_t fsize = fs_stat ( fspath.c_str() );
-		if ( fsize <= 0 ) {
-			std::ostringstream o;
-			o << "HDF5 group file " << fspath << " does not exist";
-			TIDAS_THROW( o.str().c_str() );
-		}
+        int64_t fsize = fs_stat ( fspath.c_str() );
+        if ( fsize <= 0 ) {
+            std::ostringstream o;
+            o << "HDF5 group file " << fspath << " does not exist";
+            TIDAS_THROW( o.str().c_str() );
+        }
 
-		// open file and dataset
+        // open file and dataset
 
-		hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+        hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
 
-		std::string mpath = std::string("/") + group_hdf5_dataset_prefix + std::string("_") + data_type_to_string( type );
+        std::string mpath = std::string("/") + group_hdf5_dataset_prefix + std::string("_") + data_type_to_string( type );
 
-		hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
+        hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
 
-		// set up file and memory dataspaces
+        // set up file and memory dataspaces
 
-		hid_t file_dataspace = H5Dget_space ( dataset );
+        hid_t file_dataspace = H5Dget_space ( dataset );
 
-		hsize_t dims[1];
-		dims[0] = ndata;
+        hsize_t dims[1];
+        dims[0] = ndata;
 
-		hid_t mem_dataspace = H5Screate_simple ( 1, dims, NULL );
+        hid_t mem_dataspace = H5Screate_simple ( 1, dims, NULL );
 
-		// select hyperslab of file dataspace
+        // select hyperslab of file dataspace
 
-		hsize_t doff[2];
-		hsize_t dspan[2];
+        hsize_t doff[2];
+        hsize_t dspan[2];
 
-		doff[0] = type_indx;
-		doff[1] = offset;
+        doff[0] = type_indx;
+        doff[1] = offset;
 
-		dspan[0] = 1;
-		dspan[1] = ndata;
+        dspan[0] = 1;
+        dspan[1] = ndata;
 
-		herr_t status = H5Sselect_hyperslab ( file_dataspace, H5S_SELECT_SET, doff, NULL, dspan, NULL );
+        herr_t status = H5Sselect_hyperslab ( file_dataspace, H5S_SELECT_SET, doff, NULL, dspan, NULL );
 
-		// read data
+        // read data
 
-		hid_t mem_datatype = hdf5_data_type ( type );
+        hid_t mem_datatype = hdf5_data_type ( type );
 
-		status = H5Dread ( dataset, mem_datatype, mem_dataspace, file_dataspace, H5P_DEFAULT, (void *)data );
+        status = H5Dread ( dataset, mem_datatype, mem_dataspace, file_dataspace, H5P_DEFAULT, (void *)data );
 
-		// clean up
+        // clean up
 
-		status = H5Tclose ( mem_datatype );
-		status = H5Sclose ( mem_dataspace );
-		status = H5Sclose ( file_dataspace );
-		status = H5Dclose ( dataset );
-		status = H5Fclose ( file );
+        status = H5Tclose ( mem_datatype );
+        status = H5Sclose ( mem_dataspace );
+        status = H5Sclose ( file_dataspace );
+        status = H5Dclose ( dataset );
+        status = H5Fclose ( file );
 
-		return;
-	}
+        return;
+    }
 
 
-	template < typename T >
-	void hdf5_helper_field_write ( backend_path const & loc, size_t type_indx, index_type offset, index_type ndata, T const * data ) {
+    template < typename T >
+    void hdf5_helper_field_write ( backend_path const & loc, size_t type_indx, index_type offset, index_type ndata, T const * data ) {
 
-		T testval;
-		data_type type = data_type_get ( typeid ( testval ) );
+        T testval;
+        data_type type = data_type_get ( typeid ( testval ) );
 
-		// check if file exists
+        // check if file exists
 
-		std::string fspath = loc.path + path_sep + loc.name;
+        std::string fspath = loc.path + path_sep + loc.name;
 
-		int64_t fsize = fs_stat ( fspath.c_str() );
-		if ( fsize <= 0 ) {
-			std::ostringstream o;
-			o << "HDF5 group file " << fspath << " does not exist";
-			TIDAS_THROW( o.str().c_str() );
-		}
+        int64_t fsize = fs_stat ( fspath.c_str() );
+        if ( fsize <= 0 ) {
+            std::ostringstream o;
+            o << "HDF5 group file " << fspath << " does not exist";
+            TIDAS_THROW( o.str().c_str() );
+        }
 
-		// open file and dataset
+        // open file and dataset
 
-		hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
+        hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
 
-		std::string mpath = std::string("/") + group_hdf5_dataset_prefix + std::string("_") + data_type_to_string( type );
+        std::string mpath = std::string("/") + group_hdf5_dataset_prefix + std::string("_") + data_type_to_string( type );
 
-		hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
+        hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
 
-		// set up file and memory dataspaces
+        // set up file and memory dataspaces
 
-		hid_t file_dataspace = H5Dget_space ( dataset );
+        hid_t file_dataspace = H5Dget_space ( dataset );
 
-		hsize_t dims[1];
-		dims[0] = ndata;
+        hsize_t dims[1];
+        dims[0] = ndata;
 
-		hid_t mem_dataspace = H5Screate_simple ( 1, dims, NULL );
+        hid_t mem_dataspace = H5Screate_simple ( 1, dims, NULL );
 
-		// select hyperslab of file dataspace
+        // select hyperslab of file dataspace
 
-		hsize_t doff[2];
-		hsize_t dspan[2];
+        hsize_t doff[2];
+        hsize_t dspan[2];
 
-		doff[0] = type_indx;
-		doff[1] = offset;
+        doff[0] = type_indx;
+        doff[1] = offset;
 
-		dspan[0] = 1;
-		dspan[1] = ndata;
+        dspan[0] = 1;
+        dspan[1] = ndata;
 
-		herr_t status = H5Sselect_hyperslab ( file_dataspace, H5S_SELECT_SET, doff, NULL, dspan, NULL );
+        herr_t status = H5Sselect_hyperslab ( file_dataspace, H5S_SELECT_SET, doff, NULL, dspan, NULL );
 
-		// read data
+        // read data
 
-		hid_t mem_datatype = hdf5_data_type ( type );
+        hid_t mem_datatype = hdf5_data_type ( type );
 
-		status = H5Dwrite ( dataset, mem_datatype, mem_dataspace, file_dataspace, H5P_DEFAULT, (void const *)data );
+        status = H5Dwrite ( dataset, mem_datatype, mem_dataspace, file_dataspace, H5P_DEFAULT, (void const *)data );
 
-		// clean up
+        // clean up
 
-		status = H5Tclose ( mem_datatype );
-		status = H5Sclose ( mem_dataspace );
-		status = H5Sclose ( file_dataspace );
-		status = H5Dclose ( dataset );
-		status = H5Fclose ( file );
+        status = H5Tclose ( mem_datatype );
+        status = H5Sclose ( mem_dataspace );
+        status = H5Sclose ( file_dataspace );
+        status = H5Dclose ( dataset );
+        status = H5Fclose ( file );
 
-		return;
-	}
+        return;
+    }
 
 }
 

@@ -33,22 +33,22 @@ tidas::dict_backend_getdata::dict_backend_getdata ( dict_backend_getdata const &
 
 
 dict_backend_getdata & tidas::dict_backend_getdata::operator= ( dict_backend_getdata const & other ) {
-	if ( this != &other ) {
+    if ( this != &other ) {
 
-	}
-	return *this;
+    }
+    return *this;
 }
 
 
 void tidas::dict_backend_getdata::read ( backend_path const & loc, map < string, string > & data, map < string, data_type > & types ) {
-	TIDAS_THROW( "GetData backend not supported" );
-	return;
+    TIDAS_THROW( "GetData backend not supported" );
+    return;
 }
 
 
 void tidas::dict_backend_getdata::write ( backend_path const & loc, map < string, string > const & data, map < string, data_type > const & types ) const {
-	TIDAS_THROW( "GetData backend not supported" );
-	return;
+    TIDAS_THROW( "GetData backend not supported" );
+    return;
 }
 
 

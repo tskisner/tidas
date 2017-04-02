@@ -11,140 +11,140 @@
 
 namespace tidas {
 
-	// base class for dictionary backend interface
+    // base class for dictionary backend interface
 
-	class dict_backend {
+    class dict_backend {
 
-		public :
-			
-			dict_backend () {}
-			virtual ~dict_backend () {}
+        public :
+            
+            dict_backend () {}
+            virtual ~dict_backend () {}
 
-			virtual void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) = 0;
+            virtual void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types ) = 0;
 
-			virtual void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) const = 0;
+            virtual void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) const = 0;
 
-	};
+    };
 
-	// HDF5 backend class
+    // HDF5 backend class
 
-	class dict_backend_hdf5 : public dict_backend {
+    class dict_backend_hdf5 : public dict_backend {
 
-		public :
-			
-			dict_backend_hdf5 ();
-			~dict_backend_hdf5 ();
-			dict_backend_hdf5 ( dict_backend_hdf5 const & other );
-			dict_backend_hdf5 & operator= ( dict_backend_hdf5 const & other );
+        public :
+            
+            dict_backend_hdf5 ();
+            ~dict_backend_hdf5 ();
+            dict_backend_hdf5 ( dict_backend_hdf5 const & other );
+            dict_backend_hdf5 & operator= ( dict_backend_hdf5 const & other );
 
-			void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
+            void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
 
-			void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) const;
+            void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) const;
 
-	};
-
-
-	// GetData backend class
-
-	class dict_backend_getdata : public dict_backend {
-
-		public :
-			
-			dict_backend_getdata ();
-			~dict_backend_getdata ();
-			dict_backend_getdata ( dict_backend_getdata const & other );
-			dict_backend_getdata & operator= ( dict_backend_getdata const & other );
-
-			void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
-
-			void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) const;
-
-	};
+    };
 
 
-	/// Dictionary class.  
-	/// This class stores elements by name, and explicitly 
-	/// tracks the type of the assigned value. 
+    // GetData backend class
 
-	class dict {
+    class dict_backend_getdata : public dict_backend {
 
-		public :
+        public :
+            
+            dict_backend_getdata ();
+            ~dict_backend_getdata ();
+            dict_backend_getdata ( dict_backend_getdata const & other );
+            dict_backend_getdata & operator= ( dict_backend_getdata const & other );
 
-			/// Default constructor.  Backend is unassigned.
-			dict ();
-			~dict ();
-			dict & operator= ( dict const & other );
+            void read ( backend_path const & loc, std::map < std::string, std::string > & data, std::map < std::string, data_type > & types );
 
-			/// Copy constructor.  
-			/// All members and backend location are copied.
-			dict ( dict const & other );
+            void write ( backend_path const & loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) const;
 
-			/// Load the dictionary from an existing location.  
-			/// All meta data operations will apply to this location.
-			dict ( backend_path const & loc );
+    };
 
-			/// Copy from an existing dictionary.  
-			/// Apply an optional filter to elements and relocate to a new 
-			/// location.  If a filter is given, a new location must be specified.
-			dict ( dict const & other, std::string const & filter, backend_path const & loc );
 
-			// metadata ops
+    /// Dictionary class.  
+    /// This class stores elements by name, and explicitly 
+    /// tracks the type of the assigned value. 
 
-			void relocate ( backend_path const & loc );
+    class dict {
 
-			/// Reload metadata from the current location, overwriting the current state in memory.
-			void sync ();
+        public :
 
-			/// Write metadata to the current location, overwriting the information at that location.
-			void flush () const;
+            /// Default constructor.  Backend is unassigned.
+            dict ();
+            ~dict ();
+            dict & operator= ( dict const & other );
 
-			void copy ( dict const & other, std::string const & filter, backend_path const & loc );
+            /// Copy constructor.  
+            /// All members and backend location are copied.
+            dict ( dict const & other );
 
-			/// The current location.
-			backend_path location () const;
+            /// Load the dictionary from an existing location.  
+            /// All meta data operations will apply to this location.
+            dict ( backend_path const & loc );
 
-			// data ops
+            /// Copy from an existing dictionary.  
+            /// Apply an optional filter to elements and relocate to a new 
+            /// location.  If a filter is given, a new location must be specified.
+            dict ( dict const & other, std::string const & filter, backend_path const & loc );
 
-			/// Insert a value into the dictionary. 
-			template < class T >
-			void put ( std::string const & key, T const & val ) {
-				std::ostringstream o;
-				o.precision(18);
-				o.str("");
-				if ( ! ( o << val ) ) {
-					TIDAS_THROW( "cannot convert type to string for dict storage" );
-				}
-				data_[ key ] = o.str();
-				types_[ key ] = data_type_get ( typeid ( val ) );
-				return;
-			}
+            // metadata ops
 
-			/// Return a value from the dictionary. 
-			template < class T >
-			T get ( std::string const & key ) const {
-				return data_convert < T > ( data_.at( key ) );
-			}
+            void relocate ( backend_path const & loc );
 
-			/// Clear all elements of the dictionary.
-			void clear();
+            /// Reload metadata from the current location, overwriting the current state in memory.
+            void sync ();
 
-			/// Return a const reference to the underlying data map.
-			std::map < std::string, std::string > const & data() const;
+            /// Write metadata to the current location, overwriting the information at that location.
+            void flush () const;
 
-			/// Return a const reference to the underlying data type map.
-			std::map < std::string, data_type > const & types() const;
+            void copy ( dict const & other, std::string const & filter, backend_path const & loc );
 
-		private :
+            /// The current location.
+            backend_path location () const;
 
-			void set_backend ();
+            // data ops
 
-			std::map < std::string, std::string > data_;
-			std::map < std::string, data_type > types_;
+            /// Insert a value into the dictionary. 
+            template < class T >
+            void put ( std::string const & key, T const & val ) {
+                std::ostringstream o;
+                o.precision(18);
+                o.str("");
+                if ( ! ( o << val ) ) {
+                    TIDAS_THROW( "cannot convert type to string for dict storage" );
+                }
+                data_[ key ] = o.str();
+                types_[ key ] = data_type_get ( typeid ( val ) );
+                return;
+            }
 
-			backend_path loc_;
-			std::unique_ptr < dict_backend > backend_;
+            /// Return a value from the dictionary. 
+            template < class T >
+            T get ( std::string const & key ) const {
+                return data_convert < T > ( data_.at( key ) );
+            }
 
-	};
+            /// Clear all elements of the dictionary.
+            void clear();
+
+            /// Return a const reference to the underlying data map.
+            std::map < std::string, std::string > const & data() const;
+
+            /// Return a const reference to the underlying data type map.
+            std::map < std::string, data_type > const & types() const;
+
+        private :
+
+            void set_backend ();
+
+            std::map < std::string, std::string > data_;
+            std::map < std::string, data_type > types_;
+
+            backend_path loc_;
+            std::unique_ptr < dict_backend > backend_;
+
+    };
 
 
 }

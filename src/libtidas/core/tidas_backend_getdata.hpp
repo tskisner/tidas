@@ -10,7 +10,7 @@
 
 #ifdef HAVE_GETDATA
 extern "C" {
-	#include <getdata.h>
+    #include <getdata.h>
 }
 #endif
 

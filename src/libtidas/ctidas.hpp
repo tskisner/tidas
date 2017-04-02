@@ -15,11 +15,11 @@
 
 namespace ctidas {  
 
-	// enum conversions
+    // enum conversions
 
-	tidas::data_type convert_from_c ( ctidas_data_type in );
+    tidas::data_type convert_from_c ( ctidas_data_type in );
 
-	ctidas_data_type convert_to_c ( tidas::data_type in );
+    ctidas_data_type convert_to_c ( tidas::data_type in );
 
     tidas::backend_type convert_from_c ( ctidas_backend_type in );
 

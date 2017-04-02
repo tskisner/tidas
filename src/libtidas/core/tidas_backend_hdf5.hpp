@@ -11,7 +11,7 @@
 
 #ifdef HAVE_HDF5
 extern "C" {
-	#include <hdf5.h>
+    #include <hdf5.h>
 }
 #endif
 
@@ -20,7 +20,7 @@ namespace tidas {
 
 #ifdef HAVE_HDF5
 
-	hid_t hdf5_data_type ( data_type type );
+    hid_t hdf5_data_type ( data_type type );
 
 
 #endif

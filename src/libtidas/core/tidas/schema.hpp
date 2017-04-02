@@ -11,142 +11,142 @@
 
 namespace tidas {
 
-	// one field of the schema
+    // one field of the schema
 
-	class field {
+    class field {
 
-		public :
+        public :
 
-			field ();
-			field ( std::string const & name, data_type type, std::string const & units );
+            field ();
+            field ( std::string const & name, data_type type, std::string const & units );
 
-			bool operator== ( const field & other ) const;
-			bool operator!= ( const field & other ) const;
+            bool operator== ( const field & other ) const;
+            bool operator!= ( const field & other ) const;
 
-			data_type type;
-			std::string name;
-			std::string units;
+            data_type type;
+            std::string name;
+            std::string units;
 
-			template < class Archive >
-			void serialize ( Archive & ar ) {
-				ar ( CEREAL_NVP( type ) );
-				ar ( CEREAL_NVP( name ) );
-				ar ( CEREAL_NVP( units ) );
-				return;
-			}
+            template < class Archive >
+            void serialize ( Archive & ar ) {
+                ar ( CEREAL_NVP( type ) );
+                ar ( CEREAL_NVP( name ) );
+                ar ( CEREAL_NVP( units ) );
+                return;
+            }
 
-	};
+    };
 
-	typedef std::vector < field > field_list;
+    typedef std::vector < field > field_list;
 
-	field_list field_filter_type ( field_list const & fields, data_type type );
-
-
-	// base class for schema backend interface
-
-	class schema_backend {
-
-		public :
-			
-			schema_backend () {}
-			virtual ~schema_backend () {}
-
-			virtual void read ( backend_path const & loc, field_list & fields ) = 0;
-
-			virtual void write ( backend_path const & loc, field_list const & fields ) const = 0;
-
-	};
+    field_list field_filter_type ( field_list const & fields, data_type type );
 
 
-	// HDF5 backend class
+    // base class for schema backend interface
 
-	class schema_backend_hdf5 : public schema_backend {
+    class schema_backend {
 
-		public :
-			
-			schema_backend_hdf5 ();
-			~schema_backend_hdf5 ();
-			schema_backend_hdf5 ( schema_backend_hdf5 const & other );
-			schema_backend_hdf5 & operator= ( schema_backend_hdf5 const & other );
+        public :
+            
+            schema_backend () {}
+            virtual ~schema_backend () {}
 
-			void read ( backend_path const & loc, field_list & fields );
+            virtual void read ( backend_path const & loc, field_list & fields ) = 0;
 
-			void write ( backend_path const & loc, field_list const & fields ) const;
+            virtual void write ( backend_path const & loc, field_list const & fields ) const = 0;
 
-	};
+    };
 
 
-	// GetData backend class
+    // HDF5 backend class
 
-	class schema_backend_getdata : public schema_backend {
+    class schema_backend_hdf5 : public schema_backend {
 
-		public :
-			
-			schema_backend_getdata ();
-			~schema_backend_getdata ();
-			schema_backend_getdata ( schema_backend_getdata const & other );
-			schema_backend_getdata & operator= ( schema_backend_getdata const & other );
+        public :
+            
+            schema_backend_hdf5 ();
+            ~schema_backend_hdf5 ();
+            schema_backend_hdf5 ( schema_backend_hdf5 const & other );
+            schema_backend_hdf5 & operator= ( schema_backend_hdf5 const & other );
 
-			void read ( backend_path const & loc, field_list & fields );
+            void read ( backend_path const & loc, field_list & fields );
 
-			void write ( backend_path const & loc, field_list const & fields ) const;
+            void write ( backend_path const & loc, field_list const & fields ) const;
 
-	};
+    };
 
 
-	// a schema used for a group
+    // GetData backend class
 
-	class schema {
+    class schema_backend_getdata : public schema_backend {
 
-		public :
+        public :
+            
+            schema_backend_getdata ();
+            ~schema_backend_getdata ();
+            schema_backend_getdata ( schema_backend_getdata const & other );
+            schema_backend_getdata & operator= ( schema_backend_getdata const & other );
 
-			schema ();
+            void read ( backend_path const & loc, field_list & fields );
 
-			schema ( field_list const & fields );
-			
-			~schema ();
-			schema & operator= ( schema const & other );
+            void write ( backend_path const & loc, field_list const & fields ) const;
 
-			schema ( schema const & other );
+    };
 
-			schema ( backend_path const & loc );
 
-			schema ( schema const & other, std::string const & filter, backend_path const & loc );
+    // a schema used for a group
 
-			// metadata ops
+    class schema {
 
-			void relocate ( backend_path const & loc );
+        public :
 
-			void sync ();
+            schema ();
 
-			void flush () const;
+            schema ( field_list const & fields );
+            
+            ~schema ();
+            schema & operator= ( schema const & other );
 
-			void copy ( schema const & other, std::string const & filter, backend_path const & loc );
+            schema ( schema const & other );
 
-			backend_path location () const;
+            schema ( backend_path const & loc );
 
-			// data ops
+            schema ( schema const & other, std::string const & filter, backend_path const & loc );
 
-			void clear ();
-			
-			void field_add ( field const & fld );
-			
-			void field_del ( std::string const & name );
-			
-			field const & field_get ( std::string const & name ) const;
-			
-			field_list const & fields () const;
+            // metadata ops
 
-		private :
+            void relocate ( backend_path const & loc );
 
-			void set_backend ();
+            void sync ();
 
-			field_list fields_;
+            void flush () const;
 
-			backend_path loc_;
-			std::unique_ptr < schema_backend > backend_;
+            void copy ( schema const & other, std::string const & filter, backend_path const & loc );
 
-	};
+            backend_path location () const;
+
+            // data ops
+
+            void clear ();
+            
+            void field_add ( field const & fld );
+            
+            void field_del ( std::string const & name );
+            
+            field const & field_get ( std::string const & name ) const;
+            
+            field_list const & fields () const;
+
+        private :
+
+            void set_backend ();
+
+            field_list fields_;
+
+            backend_path loc_;
+            std::unique_ptr < schema_backend > backend_;
+
+    };
 
 }
 

@@ -32,21 +32,21 @@ tidas::schema_backend_getdata::schema_backend_getdata ( schema_backend_getdata c
 
 
 schema_backend_getdata & tidas::schema_backend_getdata::operator= ( schema_backend_getdata const & other ) {
-	if ( this != &other ) {
+    if ( this != &other ) {
 
-	}
-	return *this;
+    }
+    return *this;
 }
 
 
 void tidas::schema_backend_getdata::read ( backend_path const & loc, field_list & fields ) {
-	TIDAS_THROW( "GetData backend not supported" );
-	return;
+    TIDAS_THROW( "GetData backend not supported" );
+    return;
 }
 
 
 void tidas::schema_backend_getdata::write ( backend_path const & loc, field_list const & fields ) const {
-	TIDAS_THROW( "GetData backend not supported" );
-	return;
+    TIDAS_THROW( "GetData backend not supported" );
+    return;
 }
 

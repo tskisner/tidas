@@ -23,18 +23,18 @@ typedef int64_t ctidas_index_type;
 
 
 typedef enum {
-	type_none = 0,
-	type_int8 = 1,
-	type_uint8 = 2,
-	type_int16 = 3,
-	type_uint16 = 4,
-	type_int32 = 5,
-	type_uint32 = 6,
-	type_int64 = 7,
-	type_uint64 = 8,
-	type_float32 = 9,
-	type_float64 = 10,
-	type_string = 11
+    type_none = 0,
+    type_int8 = 1,
+    type_uint8 = 2,
+    type_int16 = 3,
+    type_uint16 = 4,
+    type_int32 = 5,
+    type_uint32 = 6,
+    type_int64 = 7,
+    type_uint64 = 8,
+    type_float32 = 9,
+    type_float64 = 10,
+    type_string = 11
 } ctidas_data_type;
 
 

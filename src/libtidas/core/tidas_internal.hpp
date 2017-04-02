@@ -15,7 +15,7 @@
 namespace tidas {
 
 
-	static const size_t backend_string_size = 64;
+    static const size_t backend_string_size = 64;
 
 
 }

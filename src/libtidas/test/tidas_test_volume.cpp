@@ -75,49 +75,58 @@ TEST_F( volumeTest, HDF5Backend ) {
 
 #ifdef HAVE_HDF5
 
+    string dir = tidas::test::output_dir();
+
     // test deep copy from mem
 
-    fs_rm_r ( "test_volume.out" );
-    fs_rm_r ( "test_volume_dup_mem.out" );
+    string volpath = dir + "/test_volume.out";
+    string volpathmem = dir + "/test_volume_dup_mem.out";
+
+    fs_rm_r ( volpath.c_str() );
+    fs_rm_r ( volpathmem.c_str() );
 
     {
-        volume vol ( "test_volume.out", backend_type::hdf5, compression_type::gzip );
+        volume vol ( volpath, backend_type::hdf5, compression_type::gzip );
         volume_setup ( vol, n_samp, n_intr, n_block );
         volume_verify ( vol );
 
-        vol.duplicate ( "test_volume_dup_mem.out", backend_type::hdf5, compression_type::gzip );
+        vol.duplicate ( volpathmem, backend_type::hdf5, compression_type::gzip );
     }
 
     {
-        volume vol ( "test_volume_dup_mem.out", access_mode::write );
+        volume vol ( volpathmem, access_mode::write );
         volume_verify ( vol );
     }
 
     // test deep copy from a read-write volume
 
-    fs_rm_r ( "test_volume_dup_rw.out" );
+    string volpathrw = dir + "/test_volume_dup_rw.out";
+
+    fs_rm_r ( volpathrw.c_str() );
 
     {
-        volume vol ( "test_volume_dup_mem.out", access_mode::write );
-        vol.duplicate ( "test_volume_dup_rw.out", backend_type::hdf5, compression_type::gzip );
+        volume vol ( volpathmem, access_mode::write );
+        vol.duplicate ( volpathrw, backend_type::hdf5, compression_type::gzip );
     }
 
     {
-        volume vol ( "test_volume_dup_rw.out", access_mode::read );
+        volume vol ( volpathrw, access_mode::read );
         volume_verify ( vol );
     }
 
     // test deep copy from a read-only volume
 
-    fs_rm_r ( "test_volume_dup_ro.out" );
+    string volpathro = dir + "/test_volume_dup_ro.out";
+
+    fs_rm_r ( volpathro.c_str() );
 
     {
-        volume vol ( "test_volume_dup_mem.out", access_mode::read );
-        vol.duplicate ( "test_volume_dup_ro.out", backend_type::hdf5, compression_type::gzip );
+        volume vol ( volpathmem, access_mode::read );
+        vol.duplicate ( volpathro, backend_type::hdf5, compression_type::gzip );
     }
 
     {
-        volume vol ( "test_volume_dup_ro.out", access_mode::read );
+        volume vol ( volpathro, access_mode::read );
         volume_verify ( vol );
     }
 

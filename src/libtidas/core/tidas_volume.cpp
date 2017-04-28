@@ -22,7 +22,7 @@ tidas::volume::volume () {
 }
 
 
-tidas::volume::volume ( string const & path, backend_type type, compression_type comp ) {
+tidas::volume::volume ( string const & path, backend_type type, compression_type comp, std::map < std::string, std::string > extra ) {
 
     // set up location
 
@@ -39,6 +39,7 @@ tidas::volume::volume ( string const & path, backend_type type, compression_type
     loc_.type = type;
     loc_.comp = comp;
     loc_.mode = access_mode::write;
+    loc_.backparams = extra;
 
     if ( fs_stat ( fspath.c_str() ) >= 0 ) {
         ostringstream o;

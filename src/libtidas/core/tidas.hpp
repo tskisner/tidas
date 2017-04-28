@@ -114,6 +114,9 @@ namespace tidas {
             // Metadata path inside object (backend-specific).
             std::string meta;
 
+            // Extra backend-specific parameters
+            std::map < std::string, std::string > backparams; 
+
             std::shared_ptr < indexdb > idx;
 
             template < class Archive >
@@ -124,6 +127,7 @@ namespace tidas {
                 ar ( CEREAL_NVP( path ) );
                 ar ( CEREAL_NVP( name ) );
                 ar ( CEREAL_NVP( meta ) );
+                ar ( CEREAL_NVP( backparams ) );
                 // indexdb pointer is NOT serialized!
                 return;
             }

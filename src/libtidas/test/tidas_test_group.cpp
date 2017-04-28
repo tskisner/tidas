@@ -271,7 +271,8 @@ TEST_F( groupTest, HDF5Backend ) {
 
     backend_path loc;
     loc.type = backend_type::hdf5;
-    loc.path = ".";
+    loc.path = tidas::test::output_dir();
+    fs_mkdir ( loc.path.c_str() );
     loc.name = "test_group.hdf5.out";
     loc.mode = access_mode::write;
 

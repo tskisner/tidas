@@ -102,7 +102,7 @@ TEST_F( blockTest, HDF5Backend ) {
 
     backend_path loc;
     loc.type = backend_type::hdf5;
-    loc.path = ".";
+    loc.path = tidas::test::output_dir();
     loc.name = "test_block.out";
     loc.mode = access_mode::write;
     loc.comp = compression_type::gzip;

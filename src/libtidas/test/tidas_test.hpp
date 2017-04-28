@@ -18,7 +18,11 @@
 
 
 namespace tidas { namespace test {
+
+    std::string output_dir ( std::string const & path = std::string("") );
+
     int runner ( int argc, char *argv[] );
+    
 }}
 
 

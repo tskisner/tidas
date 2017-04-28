@@ -11,11 +11,7 @@
 
 namespace tidas {
 
-    // base class for group backend interface.  Rather than trying to mix inheritance and 
-    // virtual methods that can read / write data of supported types, we use a more C-like
-    // interface that simply specifies the type, number of samples, and a void* to point
-    // to the data.  These classes are only used internally, so we have complete control
-    // over calls to this interface.
+    // Base class for group backend interface.
 
     class group_backend {
 

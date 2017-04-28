@@ -193,7 +193,10 @@ TEST( utilstest, datatype ) {
 
 TEST( utilstest, filesystem ) {
 
-    string dir = "test_fs.out";
+    string dir = tidas::test::output_dir();
+    fs_mkdir ( dir.c_str() );
+
+    dir += "/test_fs.out";
     fs_mkdir ( dir.c_str() );
 
     string file = "zeros.dat";

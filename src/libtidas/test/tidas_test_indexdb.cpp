@@ -469,8 +469,10 @@ TEST( indexdbtest, addquery_mem ) {
 
 TEST( indexdbtest, addquery_sql ) {
 
-    fs_rm ( "./indexdb_sql.out" );
-    indexdb_sql idx( "./indexdb_sql.out", "", access_mode::write );
+    string dbfile = tidas::test::output_dir() + "/indexdb_sql.out";
+    fs_rm ( dbfile.c_str() );
+
+    indexdb_sql idx( dbfile, "", access_mode::write );
 
     indexdb_setup( &idx );
 
@@ -499,8 +501,10 @@ TEST( indexdbtest, commit ) {
 
     indexdb_setup( &idx );
 
-    fs_rm ( "./indexdb_sql_commit.out" );
-    indexdb_sql check( "./indexdb_sql_commit.out", "", access_mode::write );
+    string dbfile = tidas::test::output_dir() + "/indexdb_sql_commit.out";
+    fs_rm ( dbfile.c_str() );
+
+    indexdb_sql check( dbfile, "", access_mode::write );
 
     check.commit ( idx.history() );
 
@@ -511,10 +515,13 @@ TEST( indexdbtest, commit ) {
 
 TEST( indexdbtest, treecommit ) {
 
-    fs_rm ( "./indexdb_sql_tree.out" );
-    fs_rm ( "./indexdb_sql_tree_check.out" );
-    indexdb_sql idx( "./indexdb_sql_tree.out", "", access_mode::write );
-    indexdb_sql check( "./indexdb_sql_tree_check.out", "", access_mode::write );
+    string dbfile = tidas::test::output_dir() + "/indexdb_sql_tree.out";
+    string dbcheck = tidas::test::output_dir() + "/indexdb_sql_tree_check.out";
+
+    fs_rm ( dbfile.c_str() );
+    fs_rm ( dbcheck.c_str() );
+    indexdb_sql idx( dbfile, "", access_mode::write );
+    indexdb_sql check( dbcheck, "", access_mode::write );
 
     indexdb_setup( &idx );
 
@@ -561,7 +568,7 @@ TEST( indexdbtest, serialize ) {
 
     // serialize
 
-    string outfile = "./indexdb_mem_serialized.out";
+    string outfile = tidas::test::output_dir() + "/indexdb_mem_serialized.out";
 
     {
         ofstream os( outfile, ios::binary );
@@ -586,7 +593,7 @@ TEST( indexdbtest, serialize ) {
 
 TEST( indexdbtest, sqlite ) {
 
-    string dbfile = "./indexdb_sql.out";
+    string dbfile = tidas::test::output_dir() + "/indexdb_sql.out";
     fs_rm ( dbfile.c_str() );
 
     indexdb_sql idx ( dbfile, "", access_mode::write );
@@ -600,7 +607,7 @@ TEST( indexdbtest, sqlite ) {
 
     // serialize to file
 
-    string outfile = "./indexdb_sql_serialized.out";
+    string outfile = tidas::test::output_dir() + "/indexdb_sql_serialized.out";
 
     indexdb_sql check2;
 
@@ -651,8 +658,8 @@ TEST( indexdbtest, sqlite ) {
 
 TEST( indexdbtest, treeselect ) {
 
-    string dbfile = "./indexdb_sql_select.out";
-    string checkfile = "./indexdb_sql_select_check.out";
+    string dbfile = tidas::test::output_dir() + "/indexdb_sql_select.out";
+    string checkfile = tidas::test::output_dir() + "/indexdb_sql_select_check.out";
     fs_rm ( dbfile.c_str() );
     fs_rm ( checkfile.c_str() );
 

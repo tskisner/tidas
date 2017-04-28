@@ -22,7 +22,8 @@ namespace tidas {
             volume ( volume const & other );
 
             /// Create a new volume.
-            volume ( std::string const & path, backend_type type, compression_type comp );
+            volume ( std::string const & path, backend_type type, compression_type comp, 
+                std::map < std::string, std::string > extra = std::map < std::string, std::string > () );
 
             /// Open an existing volume.
             volume ( std::string const & path, access_mode mode );

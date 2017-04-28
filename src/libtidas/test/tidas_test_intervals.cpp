@@ -150,7 +150,8 @@ TEST_F( intervalsTest, HDF5Backend ) {
     backend_path loc;
     loc.type = backend_type::hdf5;
     loc.mode = access_mode::write;
-    loc.path = ".";
+    loc.path = tidas::test::output_dir();
+    fs_mkdir ( loc.path.c_str() );
     loc.name = "test_intervals_data.hdf5.out";
 
     intervals test2 ( test, "", loc );

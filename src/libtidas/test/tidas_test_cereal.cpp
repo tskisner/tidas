@@ -48,7 +48,10 @@ TEST( cerealtest, basic ) {
 
     cereal_test test;
 
-    string path = "./cereal_test.out";
+    string path = tidas::test::output_dir();
+    fs_mkdir ( path.c_str() );
+
+    path += "/cereal_test.out";
 
     {
         ofstream os( path, ios::binary );
@@ -73,7 +76,10 @@ TEST( cerealtest, field ) {
 
     field test;
 
-    string path = "./cereal_test_field.out";
+    string path = tidas::test::output_dir();
+    fs_mkdir ( path.c_str() );
+
+    path += "/cereal_test_field.out";
 
     {
         ofstream os( path, ios::binary );

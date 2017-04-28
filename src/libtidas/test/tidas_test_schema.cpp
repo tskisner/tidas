@@ -186,7 +186,8 @@ TEST_F( schemaTest, HDF5Backend ) {
 
     backend_path loc;
     loc.type = backend_type::hdf5;
-    loc.path = ".";
+    loc.path = tidas::test::output_dir();
+    fs_mkdir ( loc.path.c_str() );
     loc.name = "test_schema.hdf5.out";
     loc.meta = string("/") + schema_hdf5_dataset;
     loc.mode = access_mode::write;

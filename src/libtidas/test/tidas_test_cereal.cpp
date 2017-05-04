@@ -51,18 +51,36 @@ TEST( cerealtest, basic ) {
     string path = tidas::test::output_dir();
     fs_mkdir ( path.c_str() );
 
-    path += "/cereal_test.out";
+    string fpath = path + "/cereal_test_bin.out";
 
     {
-        ofstream os( path, ios::binary );
-          cereal::PortableBinaryOutputArchive outarch ( os );
-          outarch ( test );
-          os.close();
+        ofstream os( fpath, ios::binary );
+        cereal::PortableBinaryOutputArchive outarch ( os );
+        outarch ( test );
+    }
 
-        ifstream is( path, ios::binary );
-          cereal::PortableBinaryInputArchive inarch ( is );
-          inarch ( test );
-          is.close();
+    {
+        ifstream is( fpath, ios::binary );
+        cereal::PortableBinaryInputArchive inarch ( is );
+        inarch ( test );
+    }
+
+    EXPECT_EQ( 1, test.itest );
+    EXPECT_EQ( string("test"), test.stest );
+    EXPECT_EQ( -1.0, test.dtest );
+
+    fpath = path + "/cereal_test_xml.out";
+
+    {
+        ofstream os( fpath );
+        cereal::XMLOutputArchive outarch ( os );
+        outarch ( test );
+    }
+
+    {
+        ifstream is( fpath );
+        cereal::XMLInputArchive inarch ( is );
+        inarch ( test );
     }
 
     EXPECT_EQ( 1, test.itest );
@@ -83,14 +101,14 @@ TEST( cerealtest, field ) {
 
     {
         ofstream os( path, ios::binary );
-          cereal::PortableBinaryOutputArchive outarch ( os );
-          outarch ( test );
-          os.close();
+        cereal::PortableBinaryOutputArchive outarch ( os );
+        outarch ( test );
+    }
 
+    {
         ifstream is( path, ios::binary );
-          cereal::PortableBinaryInputArchive inarch ( is );
-          inarch ( test );
-          is.close();
+        cereal::PortableBinaryInputArchive inarch ( is );
+        inarch ( test );
     }
 
     EXPECT_EQ( data_type::none, test.type );

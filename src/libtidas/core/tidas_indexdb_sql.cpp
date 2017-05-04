@@ -11,6 +11,7 @@
 
 #include <regex>
 
+#include <cereal/archives/portable_binary.hpp>
 
 using namespace std;
 using namespace tidas;

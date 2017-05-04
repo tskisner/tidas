@@ -35,7 +35,9 @@ namespace tidas {
             void copy ( volume const & other, std::string const & filter, backend_path const & loc );
 
             /// Export a filtered subset of the volume to a new location.
-            void duplicate ( std::string const & path, backend_type type, compression_type comp, std::string const & filter = "" ) const;
+            void duplicate ( std::string const & path, backend_type type, compression_type comp, 
+                std::string const & filter = "", std::map < std::string, std::string > extra = 
+                std::map < std::string, std::string > () ) const;
 
             /// Create a (hard or soft) linked filtered subset of the volume to a new location.
             void link ( std::string const & path, link_type const & type, std::string const & filter ) const;

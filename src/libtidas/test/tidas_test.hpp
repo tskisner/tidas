@@ -134,10 +134,11 @@ class volumeTest : public ::testing::Test {
         virtual void SetUp();
         virtual void TearDown() { }
 
+        size_t chunk;
         size_t n_samp;
         size_t n_intr;
         size_t n_block;
-
+        size_t n_big;
 };
 
 void volume_setup ( tidas::volume & vol, size_t n_samp, size_t n_intr, size_t n_block );

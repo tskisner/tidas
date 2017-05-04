@@ -236,7 +236,7 @@ groupTest::groupTest () {
 
 
 void groupTest::SetUp () {
-    gnsamp = 10 + env_hdf5_chunk_default;
+    gnsamp = 10 + hdf5_chunk_default;
 }
 
 

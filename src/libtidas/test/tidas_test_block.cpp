@@ -82,7 +82,7 @@ blockTest::blockTest () {
 
 
 void blockTest::SetUp () {
-    n_samp = 10 + env_hdf5_chunk_default;
+    n_samp = 10 + hdf5_chunk_default;
     n_intr = 10;
 }
 

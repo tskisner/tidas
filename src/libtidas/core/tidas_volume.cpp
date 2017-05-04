@@ -92,14 +92,15 @@ tidas::volume::volume ( string const & path, access_mode mode ) {
 
     string fspath = fs_fullpath ( relpath.c_str() );
 
+    // read properties
+
+    loc_.path = fspath;
+    read_props( loc_ );
+
     loc_.path = fspath;
     loc_.name = "";
     loc_.meta = "";
     loc_.mode = mode;
-
-    // read properties
-
-    read_props( loc_ );
 
     // open index
 
@@ -246,7 +247,7 @@ void tidas::volume::link ( std::string const & path, link_type const & ltype, st
 }
 
 
-void tidas::volume::duplicate ( std::string const & path, backend_type type, compression_type comp, std::string const & filter ) const {
+void tidas::volume::duplicate ( std::string const & path, backend_type type, compression_type comp, std::string const & filter, std::map < std::string, std::string > extra ) const {
 
     if ( fs_stat ( path.c_str() ) >= 0 ) {
         ostringstream o;
@@ -271,6 +272,7 @@ void tidas::volume::duplicate ( std::string const & path, backend_type type, com
     exploc.type = type;
     exploc.comp = comp;
     exploc.mode = access_mode::write;
+    exploc.backparams = extra;
 
     volume newvol;
     newvol.copy ( (*this), filter, exploc );
@@ -325,39 +327,14 @@ void tidas::volume::read_props ( backend_path & loc ) {
 
     string propfile = loc.path + path_sep + volume_fs_props;
 
-    ifstream props ( propfile );
+    {
+        ifstream props ( propfile );
+        cereal::XMLInputArchive inarch ( props );
 
-    if ( ! props.is_open() ) {
-        ostringstream o;
-        o << "cannot read volume properties from " << propfile;
-        TIDAS_THROW( o.str().c_str() );
+        backend_path tmploc;
+        inarch ( tmploc );
+        loc = tmploc;
     }
-
-    string line;
-
-    getline ( props, line );
-
-    if ( line == "hdf5" ) {
-        loc.type = backend_type::hdf5;
-    } else if ( line == "getdata" ) {
-        loc.type = backend_type::getdata;
-    } else {
-        ostringstream o;
-        o << "volume has unsupported backend \"" << line << "\"";
-        TIDAS_THROW( o.str().c_str() );
-    }
-
-    getline ( props, line );
-
-    if ( line == "gzip" ) {
-        loc.comp = compression_type::gzip;
-    } else if ( line == "bzip2" ) {
-        loc.comp = compression_type::bzip2;
-    } else {
-        loc.comp = compression_type::none;
-    }
-
-    props.close();
 
     return;
 }
@@ -373,31 +350,12 @@ void tidas::volume::write_props ( backend_path const & loc ) const {
 
     string propfile = loc.path + path_sep + volume_fs_props;
 
-    ofstream props ( propfile );
-
-    if ( ! props.is_open() ) {
-        ostringstream o;
-        o << "cannot write volume properties to " << propfile;
-        TIDAS_THROW( o.str().c_str() );
+    {
+        ofstream props ( propfile );
+        cereal::XMLOutputArchive outarch ( props );
+        backend_path tmploc = loc;
+        outarch ( cereal::make_nvp( "volume", tmploc ) );
     }
-
-    if ( loc.type == backend_type::hdf5 ) {
-        props << "hdf5" << endl;
-    } else if ( loc.type == backend_type::getdata ) {
-        props << "getdata" << endl;
-    } else {
-        props << "none" << endl;
-    }
-
-    if ( loc.comp == compression_type::gzip ) {
-        props << "gzip" << endl;
-    } else if ( loc.comp == compression_type::bzip2 ) {
-        props << "bzip2" << endl;
-    } else {
-        props << "none" << endl;
-    }
-
-    props.close();
 
     return;
 }

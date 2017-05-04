@@ -33,27 +33,6 @@ NOTES:
 */
 
 
-size_t tidas::hdf5_chunk ( ) {
-    static size_t chunk = 0;
-
-    if ( chunk == 0 ) {
-        char * envval = getenv ( env_hdf5_chunk.c_str() );
-        if ( envval ) {
-            long tmp = atol ( envval );
-            if ( tmp > 0 ) {
-                chunk = (size_t)tmp;
-            } else {
-                chunk = env_hdf5_chunk_default;
-            }
-        } else {
-            chunk = env_hdf5_chunk_default;
-        }
-    }
-
-    return chunk;
-}
-
-
 tidas::group_backend_hdf5::group_backend_hdf5 ( ) {
 
 }
@@ -283,6 +262,17 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
     H5Tclose ( datatype );
     H5Dclose ( dataset );
 
+    // determine dataset chunksize to use
+
+    size_t chunksize;
+
+    auto bpiter = loc.backparams.find ( key_hdf5_chunk );
+    if ( bpiter != loc.backparams.end() ) {
+        chunksize = (size_t) atol ( bpiter->second.c_str() );
+    } else {
+        chunksize = hdf5_chunk_default;
+    }
+
     // create datasets
 
     hsize_t dims[2];
@@ -304,7 +294,7 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
 
         // we create the dataset using chunks, and optionally compression.
 
-        size_t chunksize = hdf5_chunk();
+        
 
         hsize_t chunk_dims[2] = { 1, chunksize }; 
 

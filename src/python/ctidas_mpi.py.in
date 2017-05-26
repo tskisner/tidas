@@ -1,0 +1,60 @@
+##
+##  TImestream DAta Storage (TIDAS)
+##  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+##  is governed by a BSD-style license that can be found in the top-level
+##  LICENSE file.
+##
+from __future__ import absolute_import, division, print_function
+
+import ctypes as ct
+
+from ctypes.util import find_library
+
+import numpy as np
+import numpy.ctypeslib as npc
+
+from mpi4py import MPI
+
+#from ctidas import *
+
+# open library
+
+#library_path = find_library('tidas-mpi')
+library_path = '@LIBTIDAS_MPI_PATH@'
+libmpi = ct.CDLL(library_path, mode=ct.RTLD_GLOBAL)
+
+# MPI specific 
+
+# Define portably the MPI communicator datatype
+
+MPI_Comm = None
+try:
+    if MPI._sizeof(MPI.Comm) == ct.sizeof(ct.c_int):
+        MPI_Comm = ct.c_int
+    else:
+        MPI_Comm = ct.c_void_p
+except Exception as e:
+    raise Exception(
+        'Failed to set the portable MPI communicator datatype. mpi4py is '
+        'probably too old. You need to have at least version 2.0. ({})'
+        ''.format(e))
+
+class cMPIVolume(ct.Structure):
+    pass
+
+libmpi.ctidas_mpi_volume_create.restype = ct.POINTER(cMPIVolume)
+libmpi.ctidas_mpi_volume_create.argtypes = [ MPI_Comm, ct.c_char_p, ct.c_uint, ct.c_uint ]
+
+libmpi.ctidas_mpi_volume_open.restype = ct.POINTER(cMPIVolume)
+libmpi.ctidas_mpi_volume_open.argtypes = [ MPI_Comm, ct.c_char_p, ct.c_uint ]
+
+libmpi.ctidas_mpi_volume_close.restype = None
+libmpi.ctidas_mpi_volume_close.argtypes = [ ct.POINTER(cMPIVolume) ]
+
+libmpi.ctidas_mpi_volume_root.restype = ct.POINTER(cBlock)
+libmpi.ctidas_mpi_volume_root.argtypes = [ ct.POINTER(cMPIVolume) ]
+
+#libmpi.ctidas_mpi_volume_exec.restype = None
+#libmpi.ctidas_mpi_volume_exec.argtypes = [ ct.POINTER(cMPIVolume), ct.c_uint, cBlockExec, ct.c_void_p ]
+
+

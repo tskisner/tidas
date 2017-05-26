@@ -630,7 +630,7 @@ TEST( indexdbtest, sqlite ) {
     indexdb_sql check3;
 
     {
-          stringstream istr;
+        stringstream istr;
         cereal::PortableBinaryOutputArchive outarch ( istr );
         outarch ( idx );
 

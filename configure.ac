@@ -125,8 +125,8 @@ if test $tidas_mpi = yes; then
     fi
   fi
 fi
-AM_CONDITIONAL([HAVE_AM_MPI], [test tidas_mpi = yes])
-AM_CONDITIONAL([HAVE_AM_MPI_FC], [test tidas_mpi_fortran = yes])
+AM_CONDITIONAL([HAVE_AM_MPI], [test $tidas_mpi = yes])
+AM_CONDITIONAL([HAVE_AM_MPI_FC], [test $tidas_mpi_fortran = yes])
 
 dnl +-------------------------
 dnl | Option to perform full static linking of executables, not just
@@ -217,7 +217,7 @@ AC_CONFIG_FILES([src/libtidas/core/Makefile])
 AC_CONFIG_FILES([src/libtidas/test/Makefile])
 AC_CONFIG_FILES([src/libtidas/test/gtest/Makefile])
 AC_CONFIG_FILES([src/libtidas/Makefile])
-dnl AC_CONFIG_FILES([src/libtidas-mpi/Makefile])
+AC_CONFIG_FILES([src/libtidas-mpi/Makefile])
 AC_CONFIG_FILES([src/python/Makefile])
 dnl AC_CONFIG_FILES([src/apps/Makefile])
 dnl AC_CONFIG_FILES([docs/Makefile])

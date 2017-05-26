@@ -289,6 +289,7 @@ def dict_c2py(dct):
 def dict_py2c(pdct):
     ret = lib.ctidas_dict_alloc()
     for k in pdct.keys():
+        print("dict_py2c: put {} = {}".format(k, pdct[k]))
         cdict_put(ret, k, pdct[k])
     return ret
 
@@ -717,5 +718,4 @@ lib.ctidas_volume_root.argtypes = [ ct.POINTER(cVolume) ]
 
 #lib.ctidas_volume_exec.restype = None
 #lib.ctidas_volume_exec.argtypes = [ ct.POINTER(cVolume), ct.c_uint, cBlockExec, ct.c_void_p ]
-
 

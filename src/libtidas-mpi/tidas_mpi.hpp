@@ -15,6 +15,7 @@
 
 namespace tidas {
 
+    typedef std::vector < char > mpi_comm_buffer_type;
 
     template < typename T >
     void mpi_pack ( T const & data, std::ostringstream & sstrm ) {
@@ -29,7 +30,7 @@ namespace tidas {
 
 
     template < typename T >
-    void mpi_unpack ( std::istringstream const & sstrm, T & data ) {
+    void mpi_unpack ( std::istringstream & sstrm, T & data ) {
         {
             cereal::PortableBinaryInputArchive inarch ( sstrm );
             inarch ( data );
@@ -94,12 +95,12 @@ namespace tidas {
 
 
     template < typename T >
-    void mpi_recv ( boost::mpi::communicator const & comm, T & data, int sender, int tag ) {
+    void mpi_recv ( MPI_Comm comm, T & data, int sender, int tag ) {
 
         long size;
         std::string buf;
 
-        MPI_Status status = 0;
+        MPI_Status status;
 
         int ret = MPI_Recv ( (void*)&size, 1, MPI_LONG, sender, tag, comm, &status );
 
@@ -133,10 +134,6 @@ namespace tidas {
         int ret = MPI_Isend ( (void*)&size, 1, MPI_LONG, receiver, tag, comm, &req_size );
 
         ret = MPI_Isend ( (void*)&buf[0], size, MPI_CHAR, receiver, tag, comm, &req_data );
-
-        comm_buffer_type buf;
-
-        comm_pack ( data, buf );
 
         return req_data;
     }

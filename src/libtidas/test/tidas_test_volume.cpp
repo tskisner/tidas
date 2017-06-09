@@ -34,7 +34,7 @@ void tidas::test::volume_setup ( volume & vol, size_t n_samp, size_t n_intr, siz
 }
 
 
-void volume_verify ( volume & vol ) {
+void tidas::test::volume_verify ( volume & vol ) {
 
     block & rt = vol.root();
 

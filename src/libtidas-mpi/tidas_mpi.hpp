@@ -138,6 +138,9 @@ namespace tidas {
         return req_data;
     }
 
+    void mpi_init ( int argc, char *argv[] );
+
+    void mpi_finalize ( );
 
     void mpi_dist_uniform ( MPI_Comm comm, size_t n, size_t * offset, size_t * nlocal );
 

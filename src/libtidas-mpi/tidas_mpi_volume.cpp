@@ -28,7 +28,7 @@ tidas::mpi_volume::mpi_volume () {
 tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path, backend_type type,
     compression_type comp, std::map < std::string, std::string > extra ) {
 
-    comm_ = MPI_COMM_WORLD;
+    comm_ = comm;
     int ret = MPI_Comm_rank ( comm_, &rank_ );
     ret = MPI_Comm_size ( comm_, &nproc_ );
 
@@ -81,14 +81,14 @@ tidas::mpi_volume::~mpi_volume () {
 
 mpi_volume & tidas::mpi_volume::operator= ( mpi_volume const & other ) {
     if ( this != &other ) {
-        copy ( other, "", other.loc_ );
+        copy ( other.comm(), other, "", other.loc_ );
     }
     return *this;
 }
 
 
 tidas::mpi_volume::mpi_volume ( mpi_volume const & other ) {
-    copy ( other, "", other.loc_ );
+    copy ( other.comm(), other, "", other.loc_ );
 }
 
 
@@ -98,7 +98,7 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path,
     // FIXME: eventually the dist string will be used to distribute
     // metadata.
 
-    comm_ = MPI_COMM_WORLD;
+    comm_ = comm;
     int ret = MPI_Comm_rank ( comm_, &rank_ );
     ret = MPI_Comm_size ( comm_, &nproc_ );
 
@@ -135,7 +135,12 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path,
 
 
 tidas::mpi_volume::mpi_volume ( mpi_volume const & other, std::string const & filter, backend_path const & loc ) {
-    copy ( other, filter, loc );
+    copy ( other.comm(), other, filter, loc );
+}
+
+
+tidas::mpi_volume::mpi_volume ( MPI_Comm comm, mpi_volume const & other, std::string const & filter, backend_path const & loc ) {
+    copy ( comm, other, filter, loc );
 }
 
 
@@ -209,7 +214,11 @@ void tidas::mpi_volume::index_setup () {
 }
 
 
-void tidas::mpi_volume::copy ( mpi_volume const & other, string const & filter, backend_path const & loc ) {
+void tidas::mpi_volume::copy ( MPI_Comm comm, mpi_volume const & other, string const & filter, backend_path const & loc ) {
+
+    comm_ = comm;
+    int ret = MPI_Comm_rank ( comm_, &rank_ );
+    ret = MPI_Comm_size ( comm_, &nproc_ );
 
     string filt = filter_default ( filter );
 
@@ -350,7 +359,7 @@ void tidas::mpi_volume::duplicate ( std::string const & path, backend_type type,
     exploc.backparams = extra;
 
     mpi_volume newvol;
-    newvol.copy ( (*this), filter, exploc );
+    newvol.copy ( comm_, (*this), filter, exploc );
 
     data_copy ( (*this), newvol );
 

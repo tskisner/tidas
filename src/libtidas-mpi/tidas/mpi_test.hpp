@@ -5,8 +5,8 @@
   LICENSE file.
 */
 
-#ifndef TIDAS_MPI_VOLUME_HPP
-#define TIDAS_MPI_VOLUME_HPP
+#ifndef TIDAS_MPI_TEST_HPP
+#define TIDAS_MPI_TEST_HPP
 
 #include <tidas_test.hpp>
 

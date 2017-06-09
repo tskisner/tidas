@@ -34,6 +34,9 @@ namespace tidas {
             mpi_volume ( mpi_volume const & other, std::string const & filter, 
                 backend_path const & loc );
 
+            mpi_volume ( MPI_Comm comm, mpi_volume const & other, std::string const & filter, 
+                backend_path const & loc );
+
             MPI_Comm comm ( ) const;
 
             int comm_rank ( ) const;
@@ -44,7 +47,7 @@ namespace tidas {
 
             // metadata ops
 
-            void copy ( mpi_volume const & other, std::string const & filter, 
+            void copy ( MPI_Comm comm, mpi_volume const & other, std::string const & filter, 
                 backend_path const & loc );
 
             /// Export a filtered subset of the volume to a new location.

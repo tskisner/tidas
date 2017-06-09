@@ -287,6 +287,11 @@ void tidas::block::sync ( string const & filter ) {
             while ( ( entry = readdir ( dp ) ) ) {
                 string item = entry->d_name;
 
+                // skip over extra directories that are optional
+                if ( item == "." ) continue;
+                if ( item == ".." ) continue;
+                if ( item == block_fs_aux_dir ) continue;
+
                 if ( item == block_fs_group_dir ) {
                     found_groups = true;
                 } else if ( item == block_fs_intervals_dir ) {

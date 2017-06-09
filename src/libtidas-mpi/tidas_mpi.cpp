@@ -12,6 +12,30 @@ using namespace std;
 using namespace tidas;
 
 
+// Initialize MPI if it has not already been done
+
+void tidas::mpi_init ( int argc, char *argv[] ) {
+
+    int ret;
+    int initialized;
+
+    ret = MPI_Initialized( &initialized );
+
+    if ( ! initialized ) {
+        ret = MPI_Init ( &argc, &argv );
+    }
+
+    return;
+}
+
+
+void tidas::mpi_finalize ( ) {
+    int ret;
+    ret = MPI_Finalize ( );
+    return;
+}
+
+
 void tidas::mpi_dist_uniform ( MPI_Comm comm, size_t n, size_t * offset, size_t * nlocal ) {
 
     int irank;

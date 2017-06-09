@@ -71,10 +71,10 @@ void indexdb_setup_block ( tidas::indexdb * idx, backend_path const & loc ) {
         grouploc.name = grpname.str();
 
         field_list flist;
-        schema_setup ( flist );
+        tidas::test::schema_setup ( flist );
 
         dict dct;
-        dict_setup ( dct, NULL );
+        tidas::test::dict_setup ( dct, NULL );
 
         map < data_type, size_t > counts;
         indexdb_group_counts ( flist, counts );
@@ -90,7 +90,7 @@ void indexdb_setup_block ( tidas::indexdb * idx, backend_path const & loc ) {
     for ( size_t n = 0; n < NINTERVAL; ++n ) {
 
         interval_list inv;
-        intervals_setup ( inv, NULL );
+        tidas::test::intervals_setup ( inv, NULL );
 
         backend_path intrloc;
         intrloc.path = loc.path + path_sep + loc.name + path_sep + block_fs_intervals_dir;
@@ -103,7 +103,7 @@ void indexdb_setup_block ( tidas::indexdb * idx, backend_path const & loc ) {
         idx->add_intervals ( intrloc, inv.size() );
 
         dict dct;
-        dict_setup ( dct, NULL );
+        tidas::test::dict_setup ( dct, NULL );
 
         idx->add_dict ( intrloc, dct.data(), dct.types() );
 
@@ -113,7 +113,7 @@ void indexdb_setup_block ( tidas::indexdb * idx, backend_path const & loc ) {
 }
 
 
-void indexdb_setup ( tidas::indexdb * idx ) {
+void tidas::test::indexdb_setup ( tidas::indexdb * idx ) {
 
     backend_path loc;
     loc.path = "vol";
@@ -158,10 +158,10 @@ void indexdb_verify_block ( tidas::indexdb * idx, backend_path const & loc ) {
     for ( size_t g = 0; g < NGROUP; ++g ) {
 
         field_list flist;
-        schema_setup ( flist );
+        tidas::test::schema_setup ( flist );
 
         dict dct;
-        dict_setup ( dct, NULL );
+        tidas::test::dict_setup ( dct, NULL );
 
         backend_path grouploc;
         grouploc.path = loc.path + path_sep + loc.name + path_sep + block_fs_group_dir;
@@ -195,7 +195,7 @@ void indexdb_verify_block ( tidas::indexdb * idx, backend_path const & loc ) {
         field_list check_fields;
 
         idx->query_schema ( grouploc, check_fields );
-        schema_verify ( check_fields );
+        tidas::test::schema_verify ( check_fields );
 
         map < string, string > ddata;
         map < string, data_type > dtypes;
@@ -218,10 +218,10 @@ void indexdb_verify_block ( tidas::indexdb * idx, backend_path const & loc ) {
     for ( size_t n = 0; n < NINTERVAL; ++n ) {
 
         dict dct;
-        dict_setup ( dct, NULL );
+        tidas::test::dict_setup ( dct, NULL );
 
         interval_list inv;
-        intervals_setup ( inv, NULL );
+        tidas::test::intervals_setup ( inv, NULL );
 
         backend_path intrloc;
         intrloc.path = loc.path + path_sep + loc.name + path_sep + block_fs_intervals_dir;
@@ -260,7 +260,7 @@ void indexdb_verify_block ( tidas::indexdb * idx, backend_path const & loc ) {
 
 
 
-void indexdb_verify ( tidas::indexdb * idx ) {
+void tidas::test::indexdb_verify ( tidas::indexdb * idx ) {
 
     backend_path loc;
     loc.path = "vol";
@@ -460,9 +460,9 @@ TEST( indexdbtest, addquery_mem ) {
 
     indexdb_mem idx;
 
-    indexdb_setup( &idx );
+    tidas::test::indexdb_setup( &idx );
 
-    indexdb_verify( &idx );
+    tidas::test::indexdb_verify( &idx );
 
 }
 
@@ -474,9 +474,9 @@ TEST( indexdbtest, addquery_sql ) {
 
     indexdb_sql idx( dbfile, "", access_mode::write );
 
-    indexdb_setup( &idx );
+    tidas::test::indexdb_setup( &idx );
 
-    indexdb_verify( &idx );
+    tidas::test::indexdb_verify( &idx );
 
 }
 
@@ -486,11 +486,11 @@ TEST( indexdbtest, history ) {
     indexdb_mem idx;
     indexdb_mem check;
 
-    indexdb_setup( &idx );
+    tidas::test::indexdb_setup( &idx );
 
     check.replay ( idx.history() );
 
-    indexdb_verify( &check );
+    tidas::test::indexdb_verify( &check );
 
 }
 
@@ -499,7 +499,7 @@ TEST( indexdbtest, commit ) {
 
     indexdb_mem idx;
 
-    indexdb_setup( &idx );
+    tidas::test::indexdb_setup( &idx );
 
     string dbfile = tidas::test::output_dir() + "/indexdb_sql_commit.out";
     fs_rm ( dbfile.c_str() );
@@ -508,7 +508,7 @@ TEST( indexdbtest, commit ) {
 
     check.commit ( idx.history() );
 
-    indexdb_verify( &check );
+    tidas::test::indexdb_verify( &check );
 
 }
 
@@ -523,7 +523,7 @@ TEST( indexdbtest, treecommit ) {
     indexdb_sql idx( dbfile, "", access_mode::write );
     indexdb_sql check( dbcheck, "", access_mode::write );
 
-    indexdb_setup( &idx );
+    tidas::test::indexdb_setup( &idx );
 
     std::deque < indexdb_transaction > data;
 
@@ -534,7 +534,7 @@ TEST( indexdbtest, treecommit ) {
 
     check.commit ( data );
 
-    indexdb_verify( &check );
+    tidas::test::indexdb_verify( &check );
 
 }
 
@@ -564,7 +564,7 @@ TEST( indexdbtest, serialize ) {
 
     indexdb_mem idx;
 
-    indexdb_setup( &idx );
+    tidas::test::indexdb_setup( &idx );
 
     // serialize
 
@@ -586,7 +586,7 @@ TEST( indexdbtest, serialize ) {
 
     check.replay ( idx.history() );
 
-    indexdb_verify( &check );
+    tidas::test::indexdb_verify( &check );
 
 }
 
@@ -598,12 +598,12 @@ TEST( indexdbtest, sqlite ) {
 
     indexdb_sql idx ( dbfile, "", access_mode::write );
 
-    indexdb_setup( &idx );
+    tidas::test::indexdb_setup( &idx );
 
     // copy constructor
 
     indexdb_sql check ( idx );
-    indexdb_verify ( &check );
+    tidas::test::indexdb_verify ( &check );
 
     // serialize to file
 
@@ -623,7 +623,7 @@ TEST( indexdbtest, sqlite ) {
           is.close();
     }
 
-    indexdb_verify ( &check2 );
+    tidas::test::indexdb_verify ( &check2 );
 
     // serialize to string
 
@@ -640,7 +640,7 @@ TEST( indexdbtest, sqlite ) {
         inarch ( check3 );
     }
 
-    indexdb_verify ( &check3 );
+    tidas::test::indexdb_verify ( &check3 );
 
     // duplicate
     /*
@@ -665,7 +665,7 @@ TEST( indexdbtest, treeselect ) {
 
     indexdb_sql idx ( dbfile, "", access_mode::write );
 
-    indexdb_setup( &idx );
+    tidas::test::indexdb_setup( &idx );
 
     indexdb_sql check ( checkfile, "", access_mode::write );
 
@@ -708,7 +708,7 @@ TEST( indexdbtest, treeselect ) {
         check.commit( data );
     }
 
-    indexdb_verify ( &check );
+    tidas::test::indexdb_verify ( &check );
 
 }
 

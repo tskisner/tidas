@@ -144,6 +144,16 @@ MPI_Comm tidas::mpi_volume::comm ( ) const {
 }
 
 
+int tidas::mpi_volume::comm_rank ( ) const {
+    return rank_;
+}
+
+
+int tidas::mpi_volume::comm_size ( ) const {
+    return nproc_;
+}
+
+
 void tidas::mpi_volume::meta_sync ( ) {
 
     // all processes take turns replaying their index transactions

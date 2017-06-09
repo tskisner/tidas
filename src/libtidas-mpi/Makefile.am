@@ -22,7 +22,10 @@ AM_LIBS =
 include $(top_srcdir)/src/build_options.am
 
 
-include_HEADERS = tidas_mpi.hpp ctidas_mpi.h
+include_HEADERS = \
+tidas_mpi.hpp \
+ctidas_mpi.h
+
 noinst_HEADERS = \
 	tidas_mpi_internal.hpp \
     ctidas_mpi.hpp
@@ -32,10 +35,13 @@ lib_LTLIBRARIES = libtidas-mpi.la
 libtidas_mpi_la_includedir = $(includedir)/tidas
 
 libtidas_mpi_la_include_HEADERS = \
-	tidas/mpi_volume.hpp
+	tidas/mpi_volume.hpp \
+    tidas/mpi_test.hpp
 
 libtidas_mpi_la_SOURCES = \
+tidas_mpi.cpp \
 tidas_mpi_volume.cpp \
+tidas_mpi_test.cpp \
 ctidas_mpi.cpp
 
 libtidas_mpi_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@

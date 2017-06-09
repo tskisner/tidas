@@ -13,29 +13,29 @@ using namespace tidas;
 
 
 
-void block_setup ( block & blk, size_t n_samp, size_t n_intr ) {
+void tidas::test::block_setup ( block & blk, size_t n_samp, size_t n_intr ) {
 
     blk.clear();
 
     dict dt;
-    dict_setup ( dt, NULL );
+    tidas::test::dict_setup ( dt, NULL );
 
     intervals intr ( dt, n_intr );
 
     interval_list inv;
-    intervals_setup ( inv, NULL );
+    tidas::test::intervals_setup ( inv, NULL );
 
     field_list flist;
-    schema_setup ( flist );
+    tidas::test::schema_setup ( flist );
     schema schm ( flist );
 
     group grp ( schm, dt, n_samp );
 
     group & grefa = blk.group_add ( "group_A", grp );
-    group_setup ( grefa, 0, grefa.size() );
+    tidas::test::group_setup ( grefa, 0, grefa.size() );
 
     group & grefb = blk.group_add ( "group_B", grp );
-    group_setup ( grefb, 0, grefb.size() );
+    tidas::test::group_setup ( grefb, 0, grefb.size() );
 
     intervals & irefa = blk.intervals_add ( "intr_A", intr );
     irefa.write_data ( inv );
@@ -47,29 +47,29 @@ void block_setup ( block & blk, size_t n_samp, size_t n_intr ) {
 }
 
 
-void block_verify ( block & blk ) {
+void tidas::test::block_verify ( block & blk ) {
 
     group grp = blk.group_get ( "group_A" );
-    group_verify ( grp, 0, grp.size() );
+    tidas::test::group_verify ( grp, 0, grp.size() );
 
     grp = blk.group_get ( "group_B" );
-    group_verify ( grp, 0, grp.size() );
+    tidas::test::group_verify ( grp, 0, grp.size() );
 
     interval_list inv;
     
     intervals intr = blk.intervals_get ( "intr_A" );
     intr.read_data ( inv );
-    intervals_verify ( inv, NULL );
+    tidas::test::intervals_verify ( inv, NULL );
 
     intr = blk.intervals_get ( "intr_B" );
     intr.read_data ( inv );
-    intervals_verify ( inv, NULL );
+    tidas::test::intervals_verify ( inv, NULL );
 
     vector < string > blks = blk.all_blocks();
 
     for ( size_t i = 0; i < blks.size(); ++i ) {
         block subblk = blk.block_get ( blks[i] );
-        block_verify ( subblk );
+        tidas::test::block_verify ( subblk );
     }
 
     return;
@@ -111,9 +111,9 @@ TEST_F( blockTest, HDF5Backend ) {
     blk.relocate ( loc );
     blk.flush();
 
-    block_setup ( blk, n_samp, n_intr );
+    tidas::test::block_setup ( blk, n_samp, n_intr );
 
-    block_verify ( blk );
+    tidas::test::block_verify ( blk );
 
 #else
 

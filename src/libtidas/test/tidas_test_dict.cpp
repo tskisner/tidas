@@ -17,7 +17,7 @@ using namespace std;
 using namespace tidas;
 
 
-void dict_setup ( dict & dct, ctidas_dict * cdct ) {
+void tidas::test::dict_setup ( dict & dct, ctidas_dict * cdct ) {
 
     string sval = "blahblahblah";
     double dval = numeric_limits < double > :: max();
@@ -62,7 +62,7 @@ void dict_setup ( dict & dct, ctidas_dict * cdct ) {
 }
 
 
-void dict_verify ( dict const & d, ctidas_dict const * cdct ) {
+void tidas::test::dict_verify ( dict const & d, ctidas_dict const * cdct ) {
 
     string sval = "blahblahblah";
     double dval = numeric_limits < double > :: max();
@@ -111,7 +111,7 @@ void dict_verify ( dict const & d, ctidas_dict const * cdct ) {
 
 void dictTest::SetUp () {
     cdct = ctidas_dict_alloc();
-    dict_setup ( dct, cdct );
+    test::dict_setup ( dct, cdct );
 }
 
 
@@ -122,15 +122,15 @@ void dictTest::TearDown () {
 
 TEST_F( dictTest, MetaOps ) {
 
-    dict_verify ( dct, cdct );
+    tidas::test::dict_verify ( dct, cdct );
 
     dict test ( dct );
 
-    dict_verify ( test, NULL );
+    tidas::test::dict_verify ( test, NULL );
 
     backend_path loc;
 
-    dict_verify ( test, NULL );
+    tidas::test::dict_verify ( test, NULL );
 
 }
 
@@ -189,7 +189,7 @@ TEST_F( dictTest, HDF5Backend ) {
     test.flush();
 
     test.sync();
-    dict_verify ( test, NULL );
+    tidas::test::dict_verify ( test, NULL );
 
     // now test symlink
 

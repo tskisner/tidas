@@ -12,7 +12,7 @@ using namespace std;
 using namespace tidas;
 
 
-void intervals_setup ( interval_list & inv, ctidas_intrvl ** cinv ) {
+void tidas::test::intervals_setup ( interval_list & inv, ctidas_intrvl ** cinv ) {
 
     inv.clear();
 
@@ -49,7 +49,7 @@ void intervals_setup ( interval_list & inv, ctidas_intrvl ** cinv ) {
 }
 
 
-void intervals_verify ( interval_list const & inv, ctidas_intrvl * const * cinv ) {
+void tidas::test::intervals_verify ( interval_list const & inv, ctidas_intrvl * const * cinv ) {
 
     size_t nint = 10;
     time_type gap = 1.0;
@@ -90,7 +90,7 @@ void intervals_verify ( interval_list const & inv, ctidas_intrvl * const * cinv 
 
 void intervalsTest::SetUp () {
     cintrvls = ctidas_intrvl_list_alloc(10);
-    intervals_setup ( intrvls, cintrvls );
+    tidas::test::intervals_setup ( intrvls, cintrvls );
 }
 
 
@@ -101,7 +101,7 @@ void intervalsTest::TearDown () {
 
 TEST_F( intervalsTest, MetaOps ) {
 
-    intervals_verify ( intrvls, cintrvls );
+    tidas::test::intervals_verify ( intrvls, cintrvls );
 
     intervals intr;
 
@@ -122,7 +122,7 @@ TEST_F( intervalsTest, MetaOps ) {
 
     dict dt;
 
-    dict_setup ( dt, NULL );
+    tidas::test::dict_setup ( dt, NULL );
 
     intervals intr2 ( dt, intrvls.size() );
 
@@ -141,7 +141,7 @@ TEST_F( intervalsTest, HDF5Backend ) {
 
     dict dt;
 
-    dict_setup ( dt, NULL );
+    tidas::test::dict_setup ( dt, NULL );
 
     intervals test ( dt, intrvls.size() );
 
@@ -173,7 +173,7 @@ TEST_F( intervalsTest, HDF5Backend ) {
     interval_list check;
     test3.read_data ( check );
 
-    intervals_verify ( check, NULL );
+    tidas::test::intervals_verify ( check, NULL );
 
 #else
 

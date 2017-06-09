@@ -36,6 +36,10 @@ namespace tidas {
 
             MPI_Comm comm ( ) const;
 
+            int comm_rank ( ) const;
+
+            int comm_size ( ) const;
+
             void meta_sync ( );
 
             // metadata ops

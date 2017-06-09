@@ -25,6 +25,21 @@ void ctidas_mpi_volume_close ( ctidas_mpi_volume * vol ) {
     return;
 }
 
+MPI_Comm ctidas_mpi_volume_comm ( ctidas_mpi_volume * vol ) {
+    mpi_volume * v = reinterpret_cast < mpi_volume * > ( vol );
+    return v->comm();
+}
+
+int ctidas_mpi_volume_comm_rank ( ctidas_mpi_volume * vol ) {
+    mpi_volume * v = reinterpret_cast < mpi_volume * > ( vol );
+    return v->comm_rank();
+}
+
+int ctidas_mpi_volume_comm_size ( ctidas_mpi_volume * vol ) {
+    mpi_volume * v = reinterpret_cast < mpi_volume * > ( vol );
+    return v->comm_size();
+}
+
 ctidas_block * ctidas_mpi_volume_root ( ctidas_mpi_volume * vol ) {
     mpi_volume * v = reinterpret_cast < mpi_volume * > ( vol );
     ctidas_block * ret = ctidas_block_alloc();
@@ -41,8 +56,6 @@ void ctidas_mpi_volume_exec ( ctidas_mpi_volume * vol, ctidas_exec_order order, 
     v->exec ( opcpp, ctidas::convert_from_c(order), string(filter) );
     return;
 }
-
-
 
 void ctidas_data_mpi_volume_copy ( ctidas_mpi_volume const * in, ctidas_mpi_volume * out ) {
     mpi_volume const * vin = reinterpret_cast < mpi_volume const * > ( in );

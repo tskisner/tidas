@@ -13,7 +13,7 @@ using namespace tidas;
 
 
 
-void group_setup ( group & grp, size_t offset, size_t full_nsamp ) {
+void tidas::test::group_setup ( group & grp, size_t offset, size_t full_nsamp ) {
 
     // write data
 
@@ -71,7 +71,7 @@ void group_setup ( group & grp, size_t offset, size_t full_nsamp ) {
 }
 
 
-void group_verify ( group & grp, size_t offset, size_t full_nsamp ) {
+void tidas::test::group_verify ( group & grp, size_t offset, size_t full_nsamp ) {
 
     // read data and check
 
@@ -169,7 +169,7 @@ void group_verify ( group & grp, size_t offset, size_t full_nsamp ) {
 }
 
 
-void group_verify_int ( group & grp, size_t offset, size_t full_nsamp ) {
+void tidas::test::group_verify_int ( group & grp, size_t offset, size_t full_nsamp ) {
 
     // read data and check
 
@@ -243,10 +243,10 @@ void groupTest::SetUp () {
 TEST_F( groupTest, MetaOps ) {
 
     dict dt;
-    dict_setup ( dt, NULL );
+    tidas::test::dict_setup ( dt, NULL );
 
     field_list flist;
-    schema_setup ( flist );
+    tidas::test::schema_setup ( flist );
     schema schm ( flist );
 
     group grp ( schm, dt, gnsamp );
@@ -261,10 +261,10 @@ TEST_F( groupTest, HDF5Backend ) {
 #ifdef HAVE_HDF5
 
     dict dt;
-    dict_setup ( dt, NULL );
+    tidas::test::dict_setup ( dt, NULL );
 
     field_list flist;
-    schema_setup ( flist );
+    tidas::test::schema_setup ( flist );
     schema schm ( flist );
 
     group grp ( schm, dt, gnsamp );
@@ -280,15 +280,15 @@ TEST_F( groupTest, HDF5Backend ) {
     grp2.flush();
 
     // write test data
-    group_setup ( grp2, 0, grp2.size() );
+    tidas::test::group_setup ( grp2, 0, grp2.size() );
 
     // read and verify
-    group_verify ( grp2, 0, grp2.size() );
+    tidas::test::group_verify ( grp2, 0, grp2.size() );
 
     // construct from location and verify
 
     group grp3 ( loc );
-    group_verify ( grp3, 0, grp3.size() );
+    tidas::test::group_verify ( grp3, 0, grp3.size() );
 
     // create filtered copy and check
 
@@ -302,7 +302,7 @@ TEST_F( groupTest, HDF5Backend ) {
 
     data_copy ( grp2, grp4 );
 
-    group_verify_int ( grp4, 0, grp4.size() );
+    tidas::test::group_verify_int ( grp4, 0, grp4.size() );
 
     // test resizing and compression
 
@@ -316,9 +316,9 @@ TEST_F( groupTest, HDF5Backend ) {
     data_copy ( grp2, grp5 );
 
     grp5.resize ( 2 * gnsamp );
-    group_setup ( grp5, 0, 2 * gnsamp );
+    tidas::test::group_setup ( grp5, 0, 2 * gnsamp );
 
-    group_verify ( grp5, 0, (2 * gnsamp) );
+    tidas::test::group_verify ( grp5, 0, (2 * gnsamp) );
 
 #else
 

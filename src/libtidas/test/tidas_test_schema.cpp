@@ -13,7 +13,7 @@ using namespace tidas;
 
 
 
-void schema_setup ( tidas::field_list & flist ) {
+void tidas::test::schema_setup ( tidas::field_list & flist ) {
 
     field f_int8;
     field f_uint8;
@@ -84,11 +84,11 @@ void schema_setup ( tidas::field_list & flist ) {
 }
 
 
-void schema_verify ( tidas::field_list const & flist ) {
+void tidas::test::schema_verify ( tidas::field_list const & flist ) {
 
     tidas::field_list check;
 
-    schema_setup ( check );
+    tidas::test::schema_setup ( check );
 
     EXPECT_EQ( check.size(), flist.size() );
 
@@ -123,11 +123,11 @@ TEST_F( schemaTest, MetaOps ) {
     field_list flist = schm.fields();
     EXPECT_EQ( 0, flist.size() );
 
-    schema_setup ( flist );
+    tidas::test::schema_setup ( flist );
 
     schema schm2 ( flist );
 
-    schema_verify ( schm2.fields() );
+    tidas::test::schema_verify ( schm2.fields() );
 
 }
 
@@ -136,7 +136,7 @@ TEST_F( schemaTest, AddRemove ) {
 
     field_list flist;
 
-    schema_setup ( flist );
+    tidas::test::schema_setup ( flist );
 
     schema schm ( flist );
 
@@ -150,7 +150,7 @@ TEST_F( schemaTest, AddRemove ) {
         schm.field_add ( flist[i] );
     }
 
-    schema_verify ( schm.fields() );
+    tidas::test::schema_verify ( schm.fields() );
 
 }
 
@@ -159,7 +159,7 @@ TEST_F( schemaTest, Filter ) {
 
     field_list flist;
 
-    schema_setup ( flist );
+    tidas::test::schema_setup ( flist );
 
     schema schm ( flist );
 
@@ -178,7 +178,7 @@ TEST_F( schemaTest, HDF5Backend ) {
 
     field_list flist;
 
-    schema_setup ( flist );
+    tidas::test::schema_setup ( flist );
 
     schema schm ( flist );
 
@@ -197,7 +197,7 @@ TEST_F( schemaTest, HDF5Backend ) {
 
     schema schm3 ( loc );
 
-    schema_verify ( schm3.fields() );
+    tidas::test::schema_verify ( schm3.fields() );
 
 #else
 

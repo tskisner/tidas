@@ -22,7 +22,44 @@ namespace tidas { namespace test {
     std::string output_dir ( std::string const & path = std::string("") );
 
     int runner ( int argc, char *argv[] );
-    
+
+
+    void dict_setup ( tidas::dict & dct, ctidas_dict * cdct );
+
+    void dict_verify ( tidas::dict const & dct, ctidas_dict const * cdct );
+
+
+    void intervals_setup ( tidas::interval_list & inv, ctidas_intrvl ** cinv );
+
+    void intervals_verify ( tidas::interval_list const & inv, ctidas_intrvl * const * cinv );
+
+
+    void schema_setup ( tidas::field_list & flist );
+
+    void schema_verify ( tidas::field_list const & flist );
+
+
+    void group_setup ( tidas::group & grp, size_t offset, size_t full_nsamp );
+
+    void group_verify ( tidas::group & grp, size_t offset, size_t full_nsamp );
+
+    void group_verify_int ( tidas::group & grp, size_t offset, size_t full_nsamp );
+
+
+    void block_setup ( tidas::block & blk, size_t n_samp, size_t n_intr );
+
+    void block_verify ( tidas::block & blk );
+
+
+    void indexdb_setup ( tidas::indexdb & idx );
+
+    void indexdb_verify ( tidas::indexdb & idx );
+
+
+    void volume_setup ( tidas::volume & vol, size_t n_samp, size_t n_intr, size_t n_block );
+
+    void volume_verify ( tidas::volume & vol );
+
 }}
 
 
@@ -40,10 +77,6 @@ class dictTest : public ::testing::Test {
 
 };
 
-void dict_setup ( tidas::dict & dct, ctidas_dict * cdct );
-
-void dict_verify ( tidas::dict const & dct, ctidas_dict const * cdct );
-
 
 class intervalsTest : public ::testing::Test {
 
@@ -59,10 +92,6 @@ class intervalsTest : public ::testing::Test {
 
 };
 
-void intervals_setup ( tidas::interval_list & inv, ctidas_intrvl ** cinv );
-
-void intervals_verify ( tidas::interval_list const & inv, ctidas_intrvl * const * cinv );
-
 
 class schemaTest : public ::testing::Test {
 
@@ -76,10 +105,6 @@ class schemaTest : public ::testing::Test {
 
 };
 
-void schema_setup ( tidas::field_list & flist );
-
-void schema_verify ( tidas::field_list const & flist );
-
 
 class groupTest : public ::testing::Test {
 
@@ -92,12 +117,6 @@ class groupTest : public ::testing::Test {
 
         size_t gnsamp;
 };
-
-void group_setup ( tidas::group & grp, size_t offset, size_t full_nsamp );
-
-void group_verify ( tidas::group & grp, size_t offset, size_t full_nsamp );
-
-void group_verify_int ( tidas::group & grp, size_t offset, size_t full_nsamp );
 
 
 class blockTest : public ::testing::Test {
@@ -113,16 +132,6 @@ class blockTest : public ::testing::Test {
         size_t n_intr;
 
 };
-
-void block_setup ( tidas::block & blk, size_t n_samp, size_t n_intr );
-
-void block_verify ( tidas::block & blk );
-
-
-
-void indexdb_setup ( tidas::indexdb & idx );
-
-void indexdb_verify ( tidas::indexdb & idx );
 
 
 class volumeTest : public ::testing::Test {
@@ -140,10 +149,6 @@ class volumeTest : public ::testing::Test {
         size_t n_block;
         size_t n_big;
 };
-
-void volume_setup ( tidas::volume & vol, size_t n_samp, size_t n_intr, size_t n_block );
-
-void volume_verify ( tidas::volume & vol );
 
 
 #endif

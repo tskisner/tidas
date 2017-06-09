@@ -139,10 +139,13 @@ namespace tidas {
     }
 
 
+    void mpi_dist_uniform ( MPI_Comm comm, size_t n, size_t * offset, size_t * nlocal );
 
 }
 
 #include <tidas/mpi_volume.hpp>
+
+#include <tidas/mpi_test.hpp>
 
 
 #endif

@@ -5,36 +5,49 @@
   LICENSE file.
 */
 
-#include <tidas_test.hpp>
+#include <tidas_mpi_internal.hpp>
 
-#include <chrono>
+#include <fstream>
 
+extern "C" {
+    #include <dirent.h>
+}
 
 using namespace std;
 using namespace tidas;
 
 
-
-void tidas::test::volume_setup ( volume & vol, size_t n_samp, size_t n_intr, size_t n_block ) {
+void mpi_volume_setup ( mpi_volume & vol, size_t n_samp, size_t n_intr, size_t n_block ) {
 
     vol.root().clear();
 
-    for ( size_t b = 0; b < n_block; ++b ) {
+    MPI_Comm comm = vol.comm();
+    int rank = vol.comm_rank();
+    int nproc = vol.comm_size();
+
+    size_t offset;
+    size_t nlocal;
+
+    mpi_dist_uniform ( comm, n_block, &offset, &nlocal );
+
+    for ( size_t b = offset; b < nlocal; ++b ) {
 
         ostringstream blkname;
         blkname << "block_" << b;
 
         block & blk = vol.root().block_add ( blkname.str(), block() );
 
-        tidas::test::block_setup ( blk, n_samp, n_intr );
+        block_setup ( blk, n_samp, n_intr );
 
     }
+
+    vol.meta_sync();
 
     return;
 }
 
 
-void volume_verify ( volume & vol ) {
+void mpi_volume_verify ( mpi_volume & vol ) {
 
     block & rt = vol.root();
 
@@ -44,7 +57,7 @@ void volume_verify ( volume & vol ) {
 
         block & blk = rt.block_get ( *it );
 
-        tidas::test::block_verify ( blk );
+        block_verify ( blk );
 
     }
 
@@ -52,12 +65,12 @@ void volume_verify ( volume & vol ) {
 }
 
 
-volumeTest::volumeTest () {
+mpivolumeTest::mpivolumeTest () {
 
 }
 
 
-void volumeTest::SetUp () {
+void mpivolumeTest::SetUp () {
     chunk = 100;
     n_samp = 10 + 2 * chunk;
     n_intr = 10;
@@ -68,14 +81,14 @@ void volumeTest::SetUp () {
 }
 
 
-TEST_F( volumeTest, MetaOps ) {
+TEST_F( mpivolumeTest, MetaOps ) {
 
     volume vol;
 
 }
 
 
-TEST_F( volumeTest, HDF5Backend ) {
+TEST_F( mpivolumeTest, HDF5Backend ) {
 
     // HDF5 backend
 
@@ -102,8 +115,8 @@ TEST_F( volumeTest, HDF5Backend ) {
     {
         volume vol ( volpath, backend_type::hdf5, compression_type::gzip, hdf_extra );
         //std::cerr << "vol created" << std::endl;
-        tidas::test::volume_setup ( vol, n_samp, n_intr, n_block );
-        tidas::test::volume_verify ( vol );
+        volume_setup ( vol, n_samp, n_intr, n_block );
+        volume_verify ( vol );
 
         vol.duplicate ( volpathmem, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
         //std::cerr << "vol duplicated" << std::endl;
@@ -112,7 +125,7 @@ TEST_F( volumeTest, HDF5Backend ) {
     {
         volume vol ( volpathmem, access_mode::write );
         //std::cerr << "vol dup opened in write mode" << std::endl;
-        tidas::test::volume_verify ( vol );
+        volume_verify ( vol );
     }
 
     // test deep copy from a read-write volume
@@ -131,7 +144,7 @@ TEST_F( volumeTest, HDF5Backend ) {
     {
         volume vol ( volpathrw, access_mode::read );
         //std::cerr << "vol rw opened readonly" << std::endl;
-        tidas::test::volume_verify ( vol );
+        volume_verify ( vol );
     }
 
     // test deep copy from a read-only volume
@@ -147,7 +160,7 @@ TEST_F( volumeTest, HDF5Backend ) {
 
     {
         volume vol ( volpathro, access_mode::read );
-        tidas::test::volume_verify ( vol );
+        volume_verify ( vol );
     }
 
     // If the special environment variable is set, then run a "big"
@@ -175,14 +188,14 @@ TEST_F( volumeTest, HDF5Backend ) {
         cout << "Creating large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
 
         start = chrono::steady_clock::now();
-        tidas::test::volume_setup ( vol, n_big, n_intr, n_block );
+        volume_setup ( vol, n_big, n_intr, n_block );
         stop = chrono::steady_clock::now();
         diff = stop - start;
 
         cout << "Writing large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
         
         start = chrono::steady_clock::now();
-        tidas::test::volume_verify ( vol );
+        volume_verify ( vol );
         stop = chrono::steady_clock::now();
         diff = stop - start;
 
@@ -197,3 +210,5 @@ TEST_F( volumeTest, HDF5Backend ) {
 #endif
 
 }
+
+

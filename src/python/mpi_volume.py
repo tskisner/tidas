@@ -30,7 +30,7 @@ class MPIVolume(object):
     """
 
     def __init__(self, comm, path, mode="r", backend="hdf5", comp="none" ):
-        self.comm = comm
+        self._comm = comm
         self.path = path
         self.backend = backend
         self.comp = comp
@@ -53,6 +53,18 @@ class MPIVolume(object):
         if self.cp is not None:
             ctdmpi.libmpi.ctidas_mpi_volume_close(self.cp)
         self.cp = None
+
+    @property
+    def comm(self):
+        return self._comm
+
+    @property
+    def comm_rank(self):
+        return self._comm.rank
+
+    @property
+    def comm_size(self):
+        return self._comm.size
 
     def __del__(self):
         self.close()

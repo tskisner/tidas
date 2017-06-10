@@ -332,6 +332,8 @@ void tidas::block::sync ( string const & filter ) {
 
             while ( ( entry = readdir ( dp ) ) ) {
                 string item = entry->d_name;
+                if ( item == "." ) continue;
+                if ( item == ".." ) continue;
                 if ( regex_match ( item, groupre ) ) {
                     group_data_[ item ] = group ( group_loc ( loc_, item ) );
                 }
@@ -353,6 +355,8 @@ void tidas::block::sync ( string const & filter ) {
 
             while ( ( entry = readdir ( dp ) ) ) {
                 string item = entry->d_name;
+                if ( item == "." ) continue;
+                if ( item == ".." ) continue;
                 if ( regex_match ( item, intre ) ) {
                     intervals_data_[ item ] = intervals ( intervals_loc ( loc_, item ) );
                 }

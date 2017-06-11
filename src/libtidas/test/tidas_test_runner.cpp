@@ -22,11 +22,8 @@ std::string tidas::test::output_dir ( std::string const & path ) {
 
 
 int tidas::test::runner ( int argc, char *argv[] ) {
-
     ::testing::InitGoogleTest ( &argc, argv );
-
-    int result = RUN_ALL_TESTS();
-
-    return result;
+    ::testing::GTEST_FLAG(filter) = "-MPI*";
+    return RUN_ALL_TESTS();
 }
 

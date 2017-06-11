@@ -322,7 +322,30 @@ namespace tidas {
 
             void write_times ( std::vector < time_type > const & data );
 
+            template < class Archive >
+            void save ( Archive & ar ) const {
+                ar ( CEREAL_NVP( loc_ ) );
+                ar ( CEREAL_NVP( start_ ) );
+                ar ( CEREAL_NVP( stop_ ) );
+                ar ( CEREAL_NVP( size_ ) );
+                ar ( CEREAL_NVP( dict_ ) );
+                ar ( CEREAL_NVP( schm_ ) );
+                ar ( CEREAL_NVP( counts_ ) );
+                ar ( CEREAL_NVP( type_indx_ ) );
+            }
 
+            template < class Archive >
+            void load ( Archive & ar ) {
+                ar ( CEREAL_NVP( loc_ ) );
+                ar ( CEREAL_NVP( start_ ) );
+                ar ( CEREAL_NVP( stop_ ) );
+                ar ( CEREAL_NVP( size_ ) );
+                ar ( CEREAL_NVP( dict_ ) );
+                ar ( CEREAL_NVP( schm_ ) );
+                ar ( CEREAL_NVP( counts_ ) );
+                ar ( CEREAL_NVP( type_indx_ ) );
+                set_backend();
+            }
 
         private :
 

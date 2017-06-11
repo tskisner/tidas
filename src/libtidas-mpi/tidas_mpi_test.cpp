@@ -19,7 +19,14 @@ using namespace std;
 using namespace tidas;
 
 
-void mpi_volume_setup ( mpi_volume & vol, size_t n_samp, size_t n_intr, size_t n_block ) {
+int tidas::test::mpi_runner ( int argc, char *argv[] ) {
+    ::testing::InitGoogleTest ( &argc, argv );
+    ::testing::GTEST_FLAG(filter) = "MPI*";
+    return RUN_ALL_TESTS();
+}
+
+
+void tidas::test::mpi_volume_setup ( mpi_volume & vol, size_t n_samp, size_t n_intr, size_t n_block ) {
 
     vol.root().clear();
 
@@ -49,7 +56,7 @@ void mpi_volume_setup ( mpi_volume & vol, size_t n_samp, size_t n_intr, size_t n
 }
 
 
-void mpi_volume_verify ( mpi_volume & vol ) {
+void tidas::test::mpi_volume_verify ( mpi_volume & vol ) {
 
     block & rt = vol.root();
 
@@ -67,12 +74,12 @@ void mpi_volume_verify ( mpi_volume & vol ) {
 }
 
 
-mpivolumeTest::mpivolumeTest () {
+MPIvolumeTest::MPIvolumeTest () {
 
 }
 
 
-void mpivolumeTest::SetUp () {
+void MPIvolumeTest::SetUp () {
     chunk = 100;
     n_samp = 10 + 2 * chunk;
     n_intr = 10;
@@ -83,14 +90,14 @@ void mpivolumeTest::SetUp () {
 }
 
 
-TEST_F( mpivolumeTest, MetaOps ) {
+TEST_F( MPIvolumeTest, MetaOps ) {
 
     mpi_volume vol;
 
 }
 
 
-TEST_F( mpivolumeTest, HDF5Backend ) {
+TEST_F( MPIvolumeTest, HDF5Backend ) {
 
     // HDF5 backend
 
@@ -117,8 +124,8 @@ TEST_F( mpivolumeTest, HDF5Backend ) {
     {
         mpi_volume vol ( MPI_COMM_WORLD, volpath, backend_type::hdf5, compression_type::gzip, hdf_extra );
         //std::cerr << "vol created" << std::endl;
-        mpi_volume_setup ( vol, n_samp, n_intr, n_block );
-        mpi_volume_verify ( vol );
+        tidas::test::mpi_volume_setup ( vol, n_samp, n_intr, n_block );
+        tidas::test::mpi_volume_verify ( vol );
 
         vol.duplicate ( volpathmem, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
         //std::cerr << "vol duplicated" << std::endl;
@@ -127,7 +134,7 @@ TEST_F( mpivolumeTest, HDF5Backend ) {
     {
         mpi_volume vol ( MPI_COMM_WORLD, volpathmem, access_mode::write );
         //std::cerr << "vol dup opened in write mode" << std::endl;
-        mpi_volume_verify ( vol );
+        tidas::test::mpi_volume_verify ( vol );
     }
 
     // test deep copy from a read-write volume
@@ -146,7 +153,7 @@ TEST_F( mpivolumeTest, HDF5Backend ) {
     {
         mpi_volume vol ( MPI_COMM_WORLD, volpathrw, access_mode::read );
         //std::cerr << "vol rw opened readonly" << std::endl;
-        mpi_volume_verify ( vol );
+        tidas::test::mpi_volume_verify ( vol );
     }
 
     // test deep copy from a read-only volume
@@ -162,7 +169,7 @@ TEST_F( mpivolumeTest, HDF5Backend ) {
 
     {
         mpi_volume vol ( MPI_COMM_WORLD, volpathro, access_mode::read );
-        mpi_volume_verify ( vol );
+        tidas::test::mpi_volume_verify ( vol );
     }
 
     // If the special environment variable is set, then run a "big"
@@ -190,14 +197,14 @@ TEST_F( mpivolumeTest, HDF5Backend ) {
         cout << "Creating large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
 
         start = chrono::steady_clock::now();
-        mpi_volume_setup ( vol, n_big, n_intr, n_block );
+        tidas::test::mpi_volume_setup ( vol, n_big, n_intr, n_block );
         stop = chrono::steady_clock::now();
         diff = stop - start;
 
         cout << "Writing large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
         
         start = chrono::steady_clock::now();
-        mpi_volume_verify ( vol );
+        tidas::test::mpi_volume_verify ( vol );
         stop = chrono::steady_clock::now();
         diff = stop - start;
 

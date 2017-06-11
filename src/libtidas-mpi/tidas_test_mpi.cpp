@@ -10,7 +10,7 @@
 
 int main ( int argc, char *argv[] ) {
 	tidas::mpi_init ( argc, argv );
-    int ret = tidas::test::runner ( argc, argv );
+    int ret = tidas::test::mpi_runner ( argc, argv );
     tidas::mpi_finalize();
     return ret;
 }

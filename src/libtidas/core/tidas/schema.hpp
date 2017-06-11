@@ -137,6 +137,19 @@ namespace tidas {
             
             field_list const & fields () const;
 
+            template < class Archive >
+            void save ( Archive & ar ) const {
+                ar ( CEREAL_NVP( loc_ ) );
+                ar ( CEREAL_NVP( fields_ ) );
+            }
+
+            template < class Archive >
+            void load ( Archive & ar ) {
+                ar ( CEREAL_NVP( loc_ ) );
+                ar ( CEREAL_NVP( fields_ ) );
+                set_backend();
+            }
+
         private :
 
             void set_backend ();

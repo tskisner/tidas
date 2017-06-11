@@ -171,6 +171,21 @@ namespace tidas {
                 return;
             }
 
+            template < class Archive >
+            void save ( Archive & ar ) const {
+                ar ( CEREAL_NVP( loc_ ) );
+                ar ( CEREAL_NVP( intervals_data_ ) );
+                ar ( CEREAL_NVP( group_data_ ) );
+                ar ( CEREAL_NVP( block_data_ ) );
+            }
+
+            template < class Archive >
+            void load ( Archive & ar ) {
+                ar ( CEREAL_NVP( loc_ ) );
+                ar ( CEREAL_NVP( intervals_data_ ) );
+                ar ( CEREAL_NVP( group_data_ ) );
+                ar ( CEREAL_NVP( block_data_ ) );
+            }
 
         private :
 

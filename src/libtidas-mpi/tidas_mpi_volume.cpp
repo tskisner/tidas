@@ -129,8 +129,11 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path,
 
     // read root block
 
-    root_.sync();
+    if ( rank_ == 0 ) {
+        root_.sync();
+    }
 
+    mpi_bcast ( comm_, root_, 0 );
 }
 
 

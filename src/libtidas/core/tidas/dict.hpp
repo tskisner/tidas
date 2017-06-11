@@ -134,6 +134,21 @@ namespace tidas {
             /// Return a const reference to the underlying data type map.
             std::map < std::string, data_type > const & types() const;
 
+            template < class Archive >
+            void save ( Archive & ar ) const {
+                ar ( CEREAL_NVP( loc_ ) );
+                ar ( CEREAL_NVP( data_ ) );
+                ar ( CEREAL_NVP( types_ ) );
+            }
+
+            template < class Archive >
+            void load ( Archive & ar ) {
+                ar ( CEREAL_NVP( loc_ ) );
+                ar ( CEREAL_NVP( data_ ) );
+                ar ( CEREAL_NVP( types_ ) );
+                set_backend();
+            }
+
         private :
 
             void set_backend ();

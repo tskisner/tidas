@@ -195,6 +195,21 @@ namespace tidas {
             
             static intrvl seek_floor ( interval_list const & intr, time_type time );
 
+            template < class Archive >
+            void save ( Archive & ar ) const {
+                ar ( CEREAL_NVP( loc_ ) );
+                ar ( CEREAL_NVP( size_ ) );
+                ar ( CEREAL_NVP( dict_ ) );
+            }
+
+            template < class Archive >
+            void load ( Archive & ar ) {
+                ar ( CEREAL_NVP( loc_ ) );
+                ar ( CEREAL_NVP( size_ ) );
+                ar ( CEREAL_NVP( dict_ ) );
+                set_backend();
+            }
+
         private :
 
             void set_backend ();

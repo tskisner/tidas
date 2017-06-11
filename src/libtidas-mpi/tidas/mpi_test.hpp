@@ -11,12 +11,24 @@
 #include <tidas_test.hpp>
 
 
-class mpivolumeTest : public ::testing::Test {
+namespace tidas { namespace test {
+
+    int mpi_runner ( int argc, char *argv[] );
+
+    void mpi_volume_setup ( tidas::mpi_volume & vol, size_t n_samp, size_t n_intr, 
+        size_t n_block );
+
+    void mpi_volume_verify ( tidas::mpi_volume & vol );
+
+} }
+
+
+class MPIvolumeTest : public ::testing::Test {
 
     public :
 
-        mpivolumeTest ();
-        ~mpivolumeTest () { }
+        MPIvolumeTest ();
+        ~MPIvolumeTest () { }
         virtual void SetUp();
         virtual void TearDown() { }
 
@@ -26,10 +38,6 @@ class mpivolumeTest : public ::testing::Test {
         size_t n_block;
         size_t n_big;
 };
-
-void mpi_volume_setup ( tidas::volume & vol, size_t n_samp, size_t n_intr, size_t n_block );
-
-void mpi_volume_verify ( tidas::volume & vol );
 
 
 

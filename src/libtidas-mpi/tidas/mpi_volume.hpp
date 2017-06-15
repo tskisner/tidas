@@ -43,6 +43,10 @@ namespace tidas {
 
             int comm_size ( ) const;
 
+            std::string path_make ( std::string const & path ) const;
+
+            std::string path_get ( std::string const & path ) const;
+
             void open ( );
 
             void close ( );

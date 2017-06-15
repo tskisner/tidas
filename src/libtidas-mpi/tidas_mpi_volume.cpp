@@ -34,26 +34,7 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path, backend_type
 
     // set up location
 
-    string fspath;
-
-    if ( rank_ == 0 ) {
-        if ( fs_stat ( path.c_str() ) >= 0 ) {
-            ostringstream o;
-            o << "cannot create volume \"" << path << "\", which already exists";
-            TIDAS_THROW( o.str().c_str() );
-        }
-        string relpath = path;
-        if ( relpath[ relpath.size() - 1 ] == '/' ) {
-            relpath[ relpath.size() - 1 ] = '\0';
-        }
-
-        // We have to make the directory before we can get the absolute path.
-        fs_mkdir ( relpath.c_str() );
-
-        fspath = fs_fullpath ( relpath.c_str() );
-    }
-
-    mpi_bcast ( comm_, fspath, 0 );
+    string fspath = path_make ( path );
 
     std::cout << "DBG: mpi_volume create at " << fspath << std::endl;
 
@@ -113,23 +94,7 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path,
     int ret = MPI_Comm_rank ( comm_, &rank_ );
     ret = MPI_Comm_size ( comm_, &nproc_ );
 
-    string fspath;
-
-    if ( rank_ == 0 ) {
-        if ( fs_stat ( path.c_str() ) == 0 ) {
-            ostringstream o;
-            o << "cannot open volume \"" << path << "\", which does not exist";
-            TIDAS_THROW( o.str().c_str() );
-        }
-        string relpath = path;
-        if ( relpath[ relpath.size() - 1 ] == '/' ) {
-            relpath[ relpath.size() - 1 ] = '\0';
-        }
-
-        fspath = fs_fullpath ( relpath.c_str() );
-    }
-
-    mpi_bcast ( comm_, fspath, 0 );
+    string fspath = path_get ( path );
 
     std::cout << "DBG: mpi_volume open existing at " << fspath << std::endl;
 
@@ -158,6 +123,55 @@ tidas::mpi_volume::mpi_volume ( mpi_volume const & other, std::string const & fi
 
 tidas::mpi_volume::mpi_volume ( MPI_Comm comm, mpi_volume const & other, std::string const & filter, backend_path const & loc ) {
     copy ( comm, other, filter, loc );
+}
+
+
+string tidas::mpi_volume::path_make ( string const & path ) const {
+    string fspath;
+
+    if ( rank_ == 0 ) {
+        if ( fs_stat ( path.c_str() ) >= 0 ) {
+            ostringstream o;
+            o << "cannot create mpi_volume \"" << path << "\", a file or directory already exists";
+            TIDAS_THROW( o.str().c_str() );
+        }
+        string relpath = path;
+        if ( relpath[ relpath.size() - 1 ] == '/' ) {
+            relpath[ relpath.size() - 1 ] = '\0';
+        }
+
+        // We have to make the directory before we can get the absolute path.
+        fs_mkdir ( relpath.c_str() );
+
+        fspath = fs_fullpath ( relpath.c_str() );
+    }
+
+    mpi_bcast ( comm_, fspath, 0 );
+
+    return fspath;
+}
+
+
+string tidas::mpi_volume::path_get ( string const & path ) const {
+    string fspath;
+
+    if ( rank_ == 0 ) {
+        if ( fs_stat ( path.c_str() ) == 0 ) {
+            ostringstream o;
+            o << "cannot get mpi_volume path \"" << path << "\", directory does not exist";
+            TIDAS_THROW( o.str().c_str() );
+        }
+        string relpath = path;
+        if ( relpath[ relpath.size() - 1 ] == '/' ) {
+            relpath[ relpath.size() - 1 ] = '\0';
+        }
+
+        fspath = fs_fullpath ( relpath.c_str() );
+    }
+
+    mpi_bcast ( comm_, fspath, 0 );
+
+    return fspath;
 }
 
 
@@ -300,11 +314,11 @@ void tidas::mpi_volume::index_setup () {
 
 void tidas::mpi_volume::copy ( MPI_Comm comm, mpi_volume const & other, string const & filter, backend_path const & loc ) {
 
-    // Check that we have no outstanding transactions
+    // Check that we have no outstanding transactions in the source volume.
     size_t histsize = other.localdb_->history().size();
     if ( histsize > 0 ) {
         ostringstream o;
-        o << "process " << rank_ << " in mpi_volume copy has " << histsize << " outstanding transactions";
+        o << "process " << rank_ << " in mpi_volume copy source has " << histsize << " outstanding transactions";
         TIDAS_THROW( o.str().c_str() );
     }
 
@@ -333,26 +347,8 @@ void tidas::mpi_volume::copy ( MPI_Comm comm, mpi_volume const & other, string c
 
         if ( loc_.path != "" ) {
 
-            string fspath;
+            string fspath = path_make ( loc_.path );
 
-            if ( rank_ == 0 ) {
-                if ( fs_stat ( loc_.path.c_str() ) >= 0 ) {
-                    ostringstream o;
-                    o << "cannot create mpi_volume \"" << loc_.path << "\", a file or directory already exists";
-                    TIDAS_THROW( o.str().c_str() );
-                }
-                string relpath = loc_.path;
-                if ( relpath[ relpath.size() - 1 ] == '/' ) {
-                    relpath[ relpath.size() - 1 ] = '\0';
-                }
-
-                // We have to make the directory before we can get the absolute path.
-                fs_mkdir ( relpath.c_str() );
-
-                fspath = fs_fullpath ( relpath.c_str() );
-            }
-
-            mpi_bcast ( comm_, fspath, 0 );
             loc_.path = fspath;
 
             // write properties
@@ -361,11 +357,11 @@ void tidas::mpi_volume::copy ( MPI_Comm comm, mpi_volume const & other, string c
 
         }
 
-        // open index
-
-        index_setup();
-
     }
+
+    // open index
+
+    index_setup();
 
     // copy root
 
@@ -454,18 +450,18 @@ void tidas::mpi_volume::duplicate ( std::string const & path, backend_type type,
 
     // construct new volume and copy
 
-    backend_path exploc;
+    backend_path duploc;
 
-    exploc.path = path;
-    exploc.name = "";
-    exploc.meta = "";
-    exploc.type = type;
-    exploc.comp = comp;
-    exploc.mode = access_mode::write;
-    exploc.backparams = extra;
+    duploc.path = path;
+    duploc.name = "";
+    duploc.meta = "";
+    duploc.type = type;
+    duploc.comp = comp;
+    duploc.mode = access_mode::write;
+    duploc.backparams = extra;
 
     mpi_volume newvol;
-    newvol.copy ( comm_, (*this), filter, exploc );
+    newvol.copy ( comm_, (*this), filter, duploc );
 
     data_copy ( (*this), newvol );
 

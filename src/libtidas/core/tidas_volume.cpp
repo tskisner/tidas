@@ -31,6 +31,15 @@ tidas::volume::volume ( string const & path, backend_type type, compression_type
         relpath[ relpath.size() - 1 ] = '\0';
     }
 
+    if ( fs_stat ( relpath.c_str() ) >= 0 ) {
+        ostringstream o;
+        o << "cannot create volume \"" << relpath << "\", a file or directory already exists";
+        TIDAS_THROW( o.str().c_str() );
+    }
+
+    // We have to make the directory before we can get the absolute path.
+    fs_mkdir ( relpath.c_str() );
+
     string fspath = fs_fullpath ( relpath.c_str() );
 
     loc_.path = fspath;
@@ -40,12 +49,6 @@ tidas::volume::volume ( string const & path, backend_type type, compression_type
     loc_.comp = comp;
     loc_.mode = access_mode::write;
     loc_.backparams = extra;
-
-    if ( fs_stat ( fspath.c_str() ) >= 0 ) {
-        ostringstream o;
-        o << "cannot create volume \"" << fspath << "\", a file or directory already exists";
-        TIDAS_THROW( o.str().c_str() );
-    }
 
     // write properties
 
@@ -88,6 +91,12 @@ tidas::volume::volume ( string const & path, access_mode mode ) {
     string relpath = path;
     if ( relpath[ relpath.size() - 1 ] == '/' ) {
         relpath[ relpath.size() - 1 ] = '\0';
+    }
+
+    if ( fs_stat ( relpath.c_str() ) == 0 ) {
+        ostringstream o;
+        o << "cannot open volume \"" << relpath << "\", directory does not exist";
+        TIDAS_THROW( o.str().c_str() );
     }
 
     string fspath = fs_fullpath ( relpath.c_str() );
@@ -162,6 +171,17 @@ void tidas::volume::copy ( volume const & other, string const & filter, backend_
                 o << "cannot create volume \"" << loc_.path << "\", a file or directory already exists";
                 TIDAS_THROW( o.str().c_str() );
             }
+
+            string relpath = loc_.path;
+            if ( relpath[ relpath.size() - 1 ] == '/' ) {
+                relpath[ relpath.size() - 1 ] = '\0';
+            }
+
+            // We have to make the directory before we can get the absolute path.
+            fs_mkdir ( relpath.c_str() );
+
+            string fspath = fs_fullpath ( relpath.c_str() );
+            loc_.path = fspath;
 
             // write properties
 
@@ -249,24 +269,11 @@ void tidas::volume::link ( std::string const & path, link_type const & ltype, st
 
 void tidas::volume::duplicate ( std::string const & path, backend_type type, compression_type comp, std::string const & filter, std::map < std::string, std::string > extra ) const {
 
-    if ( fs_stat ( path.c_str() ) >= 0 ) {
-        ostringstream o;
-        o << "cannot export volume to \"" << path << "\", which already exists";
-        TIDAS_THROW( o.str().c_str() );
-    }
-
-    // construct new volume
+    // construct new volume and copy
 
     backend_path exploc;
 
-    string relpath = path;
-    if ( relpath[ relpath.size() - 1 ] == '/' ) {
-        relpath[ relpath.size() - 1 ] = '\0';
-    }
-
-    string fspath = fs_fullpath ( relpath.c_str() );
-
-    exploc.path = fspath;
+    exploc.path = path;
     exploc.name = "";
     exploc.meta = "";
     exploc.type = type;

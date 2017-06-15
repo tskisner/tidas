@@ -19,20 +19,6 @@ using namespace tidas;
 
 
 
-/*
-NOTES:
-
-- enable chunking per field and with some number of samples
-- set hash table size to number of chunks
-- dataset should be extensible in time direction
-- chunk cache size based on few times sample buffer * sizeof(double)
-
-
-
-
-*/
-
-
 tidas::group_backend_hdf5::group_backend_hdf5 ( ) {
 
 }

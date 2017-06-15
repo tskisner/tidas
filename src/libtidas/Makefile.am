@@ -47,17 +47,6 @@ $(top_builddir)/src/libtidas/sqlite/libtidas_sqlite.la \
 $(AM_LIBS)
 
 
-bin_PROGRAMS = tidas_test
-TESTS = tidas_test
-
-tidas_test_SOURCES = \
-tidas_test.cpp
-
-tidas_test_LDADD = \
-$(top_builddir)/src/libtidas/libtidas.la \
-$(AM_LIBS)
-
-
 # install / uninstall cereal headers
 
 install-data-local:

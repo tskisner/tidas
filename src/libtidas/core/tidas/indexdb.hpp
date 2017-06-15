@@ -362,6 +362,8 @@ namespace tidas {
             std::deque < indexdb_transaction > const & history () const;
             
             void history_clear();
+
+            void history_set ( std::deque < indexdb_transaction > const & trans );
             
             void replay ( std::deque < indexdb_transaction > const & trans );
 

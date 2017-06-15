@@ -34,12 +34,28 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path, backend_type
 
     // set up location
 
-    string relpath = path;
-    if ( relpath[ relpath.size() - 1 ] == '/' ) {
-        relpath[ relpath.size() - 1 ] = '\0';
+    string fspath;
+
+    if ( rank_ == 0 ) {
+        if ( fs_stat ( path.c_str() ) >= 0 ) {
+            ostringstream o;
+            o << "cannot create volume \"" << path << "\", which already exists";
+            TIDAS_THROW( o.str().c_str() );
+        }
+        string relpath = path;
+        if ( relpath[ relpath.size() - 1 ] == '/' ) {
+            relpath[ relpath.size() - 1 ] = '\0';
+        }
+
+        // We have to make the directory before we can get the absolute path.
+        fs_mkdir ( relpath.c_str() );
+
+        fspath = fs_fullpath ( relpath.c_str() );
     }
 
-    string fspath = fs_fullpath ( relpath.c_str() );
+    mpi_bcast ( comm_, fspath, 0 );
+
+    std::cout << "DBG: mpi_volume create at " << fspath << std::endl;
 
     loc_.path = fspath;
     loc_.name = "";
@@ -49,33 +65,28 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path, backend_type
     loc_.mode = access_mode::write;
     loc_.backparams = extra;
 
-    if ( fs_stat ( fspath.c_str() ) >= 0 ) {
-        ostringstream o;
-        o << "cannot create mpi_volume \"" << fspath << "\", a file or directory already exists";
-        TIDAS_THROW( o.str().c_str() );
-    }
-
     // write properties
-
     write_props( loc_ );
 
     // open index
-
     index_setup();
 
-    // relocate root block
+    // flush root block
+    if ( rank_ == 0 ) {
+        loc_.idx = masterdb_;
+        root_.relocate ( root_loc ( loc_ ) );
+        root_.flush();
+        loc_.idx = localdb_;
+        root_.relocate ( root_loc ( loc_ ) );
+    }
 
-    root_.relocate ( root_loc ( loc_ ) );
-
-    // write root block
-
-    root_.flush();
-
+    // collectively get objects
+    open();
 }
 
 
 tidas::mpi_volume::~mpi_volume () {
-    meta_sync();
+    close();
 }
 
 
@@ -102,12 +113,25 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path,
     int ret = MPI_Comm_rank ( comm_, &rank_ );
     ret = MPI_Comm_size ( comm_, &nproc_ );
 
-    string relpath = path;
-    if ( relpath[ relpath.size() - 1 ] == '/' ) {
-        relpath[ relpath.size() - 1 ] = '\0';
+    string fspath;
+
+    if ( rank_ == 0 ) {
+        if ( fs_stat ( path.c_str() ) == 0 ) {
+            ostringstream o;
+            o << "cannot open volume \"" << path << "\", which does not exist";
+            TIDAS_THROW( o.str().c_str() );
+        }
+        string relpath = path;
+        if ( relpath[ relpath.size() - 1 ] == '/' ) {
+            relpath[ relpath.size() - 1 ] = '\0';
+        }
+
+        fspath = fs_fullpath ( relpath.c_str() );
     }
 
-    string fspath = fs_fullpath ( relpath.c_str() );
+    mpi_bcast ( comm_, fspath, 0 );
+
+    std::cout << "DBG: mpi_volume open existing at " << fspath << std::endl;
 
     // read properties
 
@@ -120,20 +144,10 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path,
     loc_.mode = mode;
 
     // open index
-
     index_setup();
 
-    // relocate root block
-
-    root_.relocate ( root_loc ( loc_ ) );
-
-    // read root block
-
-    if ( rank_ == 0 ) {
-        root_.sync();
-    }
-
-    mpi_bcast ( comm_, root_, 0 );
+    // collectively get objects
+    open();
 }
 
 
@@ -144,6 +158,107 @@ tidas::mpi_volume::mpi_volume ( mpi_volume const & other, std::string const & fi
 
 tidas::mpi_volume::mpi_volume ( MPI_Comm comm, mpi_volume const & other, std::string const & filter, backend_path const & loc ) {
     copy ( comm, other, filter, loc );
+}
+
+
+void tidas::mpi_volume::open ( ) {
+
+    // Check that we have no outstanding transactions
+    size_t histsize = localdb_->history().size();
+    if ( histsize > 0 ) {
+        ostringstream o;
+        o << "process " << rank_ << " in mpi_volume has " << histsize << " outstanding transactions that would be lost during sync";
+        TIDAS_THROW( o.str().c_str() );
+    }
+
+    // All processes clear their local in-memory DB
+    localdb_.reset ( new indexdb_mem() );
+
+    std::deque < indexdb_transaction > hist;
+
+    // rank zero reads the master sql DB and replicates transactions to
+    // local in-memory DB.
+    if ( rank_ == 0 ) {
+        // recursively set active DB to sql one.
+        loc_.idx = masterdb_;
+        root_.relocate ( root_loc ( loc_ ) );
+
+        // recursively load objects and metadata from DB or filesystem
+        root_.sync();
+
+        // get transactions which replicate the full DB
+        masterdb_->tree ( root_loc ( loc_ ), "", hist );
+    }
+
+    // broadcast all objects (does not send index)
+    mpi_bcast ( comm_, root_, 0 );
+
+    // broadcast transactions
+    mpi_bcast ( comm_, hist, 0 );
+
+    // replay transactions into local DB
+    std::cout << "DBG: mpi_volume open replaying:" << std::endl;
+    for ( auto const & h : hist ) {
+        h.print ( std::cout );
+    }
+
+    localdb_->replay ( hist );
+
+    // recursively set active DB to in-memory one
+    loc_.idx = localdb_;
+    root_.relocate ( root_loc ( loc_ ) );
+
+    int ret = MPI_Barrier ( comm_ );
+
+    return;
+}
+
+
+void tidas::mpi_volume::close ( ) {
+
+    // First, ensure that all transactions in memory are gathered at the root
+    // process.
+
+    std::deque < indexdb_transaction > hist;
+    hist = localdb_->history();
+    localdb_->history_clear();
+
+    for ( int p = 0; p < nproc_; ++p ) {
+        if ( rank_ == p ) {
+            std::cout << "DBG: mpi_volume close proc " << p << " local:" << std::endl;
+            for ( auto const & h : hist ) {
+                h.print ( std::cout );
+            }
+        }
+        int blah = MPI_Barrier ( comm_ );
+    }
+
+    std::vector < std::deque < indexdb_transaction > > allhist;
+
+    mpi_gather ( comm_, hist, allhist, 0 );
+
+    // Root process replays to master DB
+
+    if ( rank_ == 0 ) {
+        for ( size_t i = 0; i < nproc_; ++i ) {
+            std::cout << "DBG: mpi_volume close replaying from proc " << i << ":" << std::endl;
+            for ( auto const & h : allhist[i] ) {
+                h.print ( std::cout );
+            }
+            masterdb_->commit ( allhist[i] );
+        }
+    }
+
+    int ret = MPI_Barrier ( comm_ );
+
+    return;
+}
+
+
+void tidas::mpi_volume::meta_sync ( ) {
+    close();
+    open();
+    return;
 }
 
 
@@ -159,40 +274,6 @@ int tidas::mpi_volume::comm_rank ( ) const {
 
 int tidas::mpi_volume::comm_size ( ) const {
     return nproc_;
-}
-
-
-void tidas::mpi_volume::meta_sync ( ) {
-
-    // all processes take turns replaying their index transactions
-    // to the master DB.
-
-    int ret;
-
-    std::deque < indexdb_transaction > hist;
-
-    for ( int p = 0; p < nproc_; ++p ) {
-        if ( rank_ == 0 ) {
-            if ( p == 0 ) {
-                // replay our own transactions
-                hist = localdb_->history();
-            } else {
-                // receive transactions from this process
-                mpi_recv ( comm_, hist, p, p );
-            }
-            masterdb_->commit ( hist );
-        } else {
-            if ( rank_ == p ) {
-                // send our transactions
-                hist = localdb_->history();
-                mpi_send ( comm_, hist, 0, p );
-            }
-        }
-        ret = MPI_Barrier ( comm_ );
-    }
-    localdb_->history_clear();
-
-    return;
 }
 
 
@@ -219,6 +300,14 @@ void tidas::mpi_volume::index_setup () {
 
 void tidas::mpi_volume::copy ( MPI_Comm comm, mpi_volume const & other, string const & filter, backend_path const & loc ) {
 
+    // Check that we have no outstanding transactions
+    size_t histsize = other.localdb_->history().size();
+    if ( histsize > 0 ) {
+        ostringstream o;
+        o << "process " << rank_ << " in mpi_volume copy has " << histsize << " outstanding transactions";
+        TIDAS_THROW( o.str().c_str() );
+    }
+
     comm_ = comm;
     int ret = MPI_Comm_rank ( comm_, &rank_ );
     ret = MPI_Comm_size ( comm_, &nproc_ );
@@ -231,7 +320,12 @@ void tidas::mpi_volume::copy ( MPI_Comm comm, mpi_volume const & other, string c
 
     loc_ = loc;
 
-    if ( loc_ != other.loc_ ) {
+    bool newloc = true;
+    if ( loc_ == other.loc_ ) {
+        newloc = false;
+    }
+
+    if ( newloc ) {
 
         if ( loc_.mode != access_mode::write ) {
             TIDAS_THROW( "cannot copy volume to read-only location" );
@@ -239,11 +333,27 @@ void tidas::mpi_volume::copy ( MPI_Comm comm, mpi_volume const & other, string c
 
         if ( loc_.path != "" ) {
 
-            if ( fs_stat ( loc_.path.c_str() ) >= 0 ) {
-                ostringstream o;
-                o << "cannot create mpi_volume \"" << loc_.path << "\", a file or directory already exists";
-                TIDAS_THROW( o.str().c_str() );
+            string fspath;
+
+            if ( rank_ == 0 ) {
+                if ( fs_stat ( loc_.path.c_str() ) >= 0 ) {
+                    ostringstream o;
+                    o << "cannot create mpi_volume \"" << loc_.path << "\", a file or directory already exists";
+                    TIDAS_THROW( o.str().c_str() );
+                }
+                string relpath = loc_.path;
+                if ( relpath[ relpath.size() - 1 ] == '/' ) {
+                    relpath[ relpath.size() - 1 ] = '\0';
+                }
+
+                // We have to make the directory before we can get the absolute path.
+                fs_mkdir ( relpath.c_str() );
+
+                fspath = fs_fullpath ( relpath.c_str() );
             }
+
+            mpi_bcast ( comm_, fspath, 0 );
+            loc_.path = fspath;
 
             // write properties
 
@@ -261,10 +371,14 @@ void tidas::mpi_volume::copy ( MPI_Comm comm, mpi_volume const & other, string c
 
     root_.copy ( other.root_, filter, root_loc ( loc_ ) );
 
-    if ( loc_ != other.loc_ ) {
+    if ( newloc ) {
+        // flush root block
         if ( rank_ == 0 ) {
-            // write root block
+            loc_.idx = masterdb_;
+            root_.relocate ( root_loc ( loc_ ) );
             root_.flush();
+            loc_.idx = localdb_;
+            root_.relocate ( root_loc ( loc_ ) );
         }
     }
 
@@ -330,30 +444,19 @@ void tidas::mpi_volume::link ( std::string const & path, link_type const & ltype
         }
     }
 
+    int ret = MPI_Barrier ( comm_ );
+
     return;
 }
 
 
 void tidas::mpi_volume::duplicate ( std::string const & path, backend_type type, compression_type comp, std::string const & filter, std::map < std::string, std::string > extra ) const {
 
-    if ( fs_stat ( path.c_str() ) >= 0 ) {
-        ostringstream o;
-        o << "cannot export volume to \"" << path << "\", which already exists";
-        TIDAS_THROW( o.str().c_str() );
-    }
-
-    // construct new volume
+    // construct new volume and copy
 
     backend_path exploc;
 
-    string relpath = path;
-    if ( relpath[ relpath.size() - 1 ] == '/' ) {
-        relpath[ relpath.size() - 1 ] = '\0';
-    }
-
-    string fspath = fs_fullpath ( relpath.c_str() );
-
-    exploc.path = fspath;
+    exploc.path = path;
     exploc.name = "";
     exploc.meta = "";
     exploc.type = type;
@@ -381,6 +484,8 @@ void tidas::mpi_volume::wipe ( string const & filter ) const {
             TIDAS_THROW( "cannot wipe volume in read-only mode" );
         }
     }
+
+    int ret = MPI_Barrier ( comm_ );
 
     return;
 }
@@ -469,11 +574,13 @@ void tidas::data_copy ( mpi_volume const & in, mpi_volume & out ) {
     int ret = MPI_Comm_rank ( comm, &rank );
     ret = MPI_Comm_size ( comm, &nproc );
 
-    // just copy the root block
+    // Just copy the root block.  This could be parallelized in the future.
 
     if ( rank == 0 ) {
         data_copy ( in.root(), out.root() );
     }
+
+    ret = MPI_Barrier ( comm );
 
     return;
 }

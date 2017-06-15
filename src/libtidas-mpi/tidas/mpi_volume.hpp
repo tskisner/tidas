@@ -43,6 +43,10 @@ namespace tidas {
 
             int comm_size ( ) const;
 
+            void open ( );
+
+            void close ( );
+
             void meta_sync ( );
 
             // metadata ops

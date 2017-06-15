@@ -61,6 +61,11 @@ esac
 AC_SUBST(TIDAS_SHARED_EXT)
 
 dnl +-------------------------
+dnl | Utilities
+dnl +-------------------------
+AC_PROG_MKDIR_P
+
+dnl +-------------------------
 dnl | C support
 dnl +-------------------------
 AC_PROG_CC
@@ -219,10 +224,9 @@ AC_CONFIG_FILES([src/libtidas/test/gtest/Makefile])
 AC_CONFIG_FILES([src/libtidas/Makefile])
 AC_CONFIG_FILES([src/libtidas-mpi/Makefile])
 AC_CONFIG_FILES([src/python/Makefile])
-dnl AC_CONFIG_FILES([src/apps/Makefile])
+AC_CONFIG_FILES([src/apps/Makefile])
+AC_CONFIG_FILES([src/apps-mpi/Makefile])
 dnl AC_CONFIG_FILES([docs/Makefile])
-dnl AC_CONFIG_FILES([src/tests-mpi/Makefile])
-dnl AC_CONFIG_FILES([src/apps-mpi/Makefile])
 dnl +------------------------------------------------
 dnl | Generate Makefiles
 dnl +------------------------------------------------

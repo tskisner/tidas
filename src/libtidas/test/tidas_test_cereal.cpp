@@ -117,3 +117,60 @@ TEST( cerealtest, field ) {
 
 }
 
+
+TEST( cerealtest, transaction ) {
+
+    std::deque < indexdb_transaction > data;
+
+    indexdb_transaction trans1;
+    indexdb_transaction trans2;
+
+    trans1.op = indexdb_op::add;
+    indexdb_intervals * idbint = new indexdb_intervals();
+    idbint->size = 123;
+    trans1.obj.reset ( idbint );
+    data.push_back ( trans1 );
+
+    trans2.op = indexdb_op::add;
+    idbint = new indexdb_intervals();
+    idbint->size = 456;
+    trans2.obj.reset ( idbint );
+    data.push_back ( trans2 );
+
+    std::ostringstream ostrm;
+    {
+        cereal::PortableBinaryOutputArchive outarch ( ostrm );
+        outarch ( data );
+    }
+
+    std::string ostr = ostrm.str();
+
+    size_t bufsize = ostr.size();
+
+    std::vector < char > charbuf ( bufsize );
+    std::copy ( ostr.begin(), ostr.end(), charbuf.begin() );
+
+    std::string strbuf ( &charbuf[0], bufsize );
+    std::istringstream istrm ( strbuf );
+
+    std::deque < indexdb_transaction > check;
+
+    {
+        cereal::PortableBinaryInputArchive inarch ( istrm );
+        inarch ( check );
+    }
+
+    for ( size_t i = 0; i < 2; ++i ) {
+        EXPECT_EQ( data[i].op, check[i].op );
+        indexdb_intervals * dp = dynamic_cast < indexdb_intervals * > ( data[i].obj.get() );
+        indexdb_intervals * cp = dynamic_cast < indexdb_intervals * > ( check[i].obj.get() );
+        EXPECT_EQ( dp->type, cp->type );
+        EXPECT_EQ( dp->path, cp->path );
+        EXPECT_EQ( dp->size, cp->size );
+    }
+
+}
+
+
+
+

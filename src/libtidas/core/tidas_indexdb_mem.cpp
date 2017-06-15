@@ -560,6 +560,12 @@ void tidas::indexdb_mem::history_clear() {
 }
 
 
+void tidas::indexdb_mem::history_set ( std::deque < indexdb_transaction > const & trans ) {
+    history_ = trans;
+    return;
+}
+
+
 void tidas::indexdb_mem::replay ( deque < indexdb_transaction > const & trans ) {
 
     for ( auto tr : trans ) {

@@ -172,6 +172,9 @@ void tidas::block::relocate ( backend_path const & loc ) {
 
     loc_ = loc;
 
+    string fspath = loc_.path + path_sep + loc_.name;
+    std::cout << "DBG: block relocate to " << fspath << std::endl;
+
     // relocate groups
 
     for ( auto & gr : group_data_ ) {
@@ -197,6 +200,8 @@ void tidas::block::relocate ( backend_path const & loc ) {
 void tidas::block::sync ( string const & filter ) {
 
     if ( loc_.type != backend_type::none ) {
+        string fspath = loc_.path + path_sep + loc_.name;
+        std::cout << "DBG: block sync from " << fspath << std::endl;
 
         group_data_.clear();
         intervals_data_.clear();
@@ -366,6 +371,8 @@ void tidas::block::sync ( string const & filter ) {
 
         }
 
+    } else {
+        std::cout << "DBG: block sync backend none" << std::endl;
     }
 
     return;
@@ -379,6 +386,7 @@ void tidas::block::flush () const {
         if ( loc_.mode == access_mode::write ) {
 
             string dir = loc_.path + path_sep + loc_.name;
+            std::cout << "DBG: block flush to " << dir << std::endl;
             fs_mkdir ( dir.c_str() );
 
             string groupdir = dir + path_sep + block_fs_group_dir;
@@ -396,8 +404,12 @@ void tidas::block::flush () const {
                 loc_.idx->update_block ( loc_ );
             }
 
+        } else {
+            std::cout << "DBG: block readonly flush" << std::endl;
         }
 
+    } else {
+        std::cout << "DBG: block flush backend none" << std::endl;
     }
 
     // flush groups

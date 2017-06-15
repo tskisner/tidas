@@ -82,6 +82,7 @@ TEST_F( volumeTest, HDF5Backend ) {
 #ifdef HAVE_HDF5
 
     string dir = tidas::test::output_dir();
+    fs_mkdir ( dir.c_str() );
 
     // We use the backend-specific options to override the default
     // chunk size.
@@ -189,6 +190,7 @@ TEST_F( volumeTest, HDF5Backend ) {
         cout << "Read and verify large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
     }
     
+    //EXPECT_TRUE(false);
 
 #else
 

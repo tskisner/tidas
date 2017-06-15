@@ -221,6 +221,9 @@ void tidas::fs_link_r ( char const * target, char const * path, bool hard ) {
 }
 
 
+// NOTE: this function only works if the relative path given to realpath()
+// already exists!
+
 std::string tidas::fs_fullpath ( char const * relpath ) {
 
     char * ptr;

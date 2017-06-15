@@ -4,6 +4,7 @@ CXX = @MPICXX@
 # Initialize compile and linking flags
 
 AM_CPPFLAGS = \
+-I$(top_srcdir)/src/apps-mpi \
 -I$(top_srcdir)/src/libtidas \
 -I$(top_srcdir)/src/libtidas/sqlite \
 -I$(top_srcdir)/src/libtidas/core \
@@ -24,28 +25,15 @@ AM_LIBS =
 include $(top_srcdir)/src/build_options.am
 
 
-include_HEADERS = \
-tidas_mpi.hpp \
-ctidas_mpi.h
+bin_PROGRAMS = tidas_test_mpi
+TESTS = tidas_test_mpi
 
-noinst_HEADERS = \
-	tidas_mpi_internal.hpp \
-    ctidas_mpi.hpp
+tidas_test_mpi_SOURCES = \
+tidas_test_mpi.cpp
 
-lib_LTLIBRARIES = libtidas-mpi.la
+tidas_test_mpi_LDADD = \
+$(top_builddir)/src/libtidas-mpi/libtidas-mpi.la \
+$(top_builddir)/src/libtidas/libtidas.la \
+$(AM_LIBS)
 
-libtidas_mpi_la_includedir = $(includedir)/tidas
-
-libtidas_mpi_la_include_HEADERS = \
-	tidas/mpi_volume.hpp \
-    tidas/mpi_test.hpp
-
-libtidas_mpi_la_SOURCES = \
-tidas_mpi.cpp \
-tidas_mpi_volume.cpp \
-tidas_mpi_test.cpp \
-ctidas_mpi.cpp
-
-libtidas_mpi_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@
-libtidas_mpi_la_LIBADD = 
 

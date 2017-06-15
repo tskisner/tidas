@@ -38,8 +38,10 @@ void tidas::test::mpi_volume_setup ( mpi_volume & vol, size_t n_samp, size_t n_i
     size_t nlocal;
 
     mpi_dist_uniform ( comm, n_block, &offset, &nlocal );
+    //std::cout << "Process " << rank << " assigned blocks " << offset << " - " << offset+nlocal-1 << std::endl;
 
-    for ( size_t b = offset; b < nlocal; ++b ) {
+    for ( size_t b = offset; b < offset+nlocal; ++b ) {
+        //std::cout << "Process " << rank << " setting up block " << b << std::endl;
 
         ostringstream blkname;
         blkname << "block_" << b;
@@ -47,7 +49,6 @@ void tidas::test::mpi_volume_setup ( mpi_volume & vol, size_t n_samp, size_t n_i
         block & blk = vol.root().block_add ( blkname.str(), block() );
 
         tidas::test::block_setup ( blk, n_samp, n_intr );
-
     }
 
     vol.meta_sync();
@@ -83,7 +84,7 @@ void MPIvolumeTest::SetUp () {
     chunk = 100;
     n_samp = 10 + 2 * chunk;
     n_intr = 10;
-    n_block = 3;
+    n_block = 10;
 
     // this will be used for a large data test
     n_big = 3000000;
@@ -103,7 +104,17 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
 
 #ifdef HAVE_HDF5
 
+    int ret;
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int rank;
+    int nproc;
+    ret = MPI_Comm_rank ( comm, &rank );
+    ret = MPI_Comm_size ( comm, &nproc );
+
     string dir = tidas::test::output_dir();
+    if ( rank == 0 ) {
+        fs_mkdir ( dir.c_str() );
+    }
 
     // We use the backend-specific options to override the default
     // chunk size.
@@ -118,99 +129,118 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
     string volpath = dir + "/test_mpi_volume.out";
     string volpathmem = dir + "/test_mpi_volume_dup_mem.out";
 
-    fs_rm_r ( volpath.c_str() );
-    fs_rm_r ( volpathmem.c_str() );
-
+    if ( rank == 0 ) {
+        fs_rm_r ( volpath.c_str() );
+        fs_rm_r ( volpathmem.c_str() );
+    }
+    ret = MPI_Barrier ( comm );
+    
     {
-        mpi_volume vol ( MPI_COMM_WORLD, volpath, backend_type::hdf5, compression_type::gzip, hdf_extra );
+        std::cout << "DBG: call ctor at " << volpath << std::endl;
+        mpi_volume vol ( comm, volpath, backend_type::hdf5, compression_type::gzip, hdf_extra );
         //std::cerr << "vol created" << std::endl;
         tidas::test::mpi_volume_setup ( vol, n_samp, n_intr, n_block );
+        vol.meta_sync();
         tidas::test::mpi_volume_verify ( vol );
 
+        std::cout << "DBG: call duplicate to " << volpathmem << std::endl;
         vol.duplicate ( volpathmem, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
         //std::cerr << "vol duplicated" << std::endl;
     }
 
-    {
-        mpi_volume vol ( MPI_COMM_WORLD, volpathmem, access_mode::write );
-        //std::cerr << "vol dup opened in write mode" << std::endl;
-        tidas::test::mpi_volume_verify ( vol );
-    }
+    // {
+    //     mpi_volume vol ( comm, volpathmem, access_mode::write );
+    //     //std::cerr << "vol dup opened in write mode" << std::endl;
+    //     tidas::test::mpi_volume_verify ( vol );
+    // }
 
-    // test deep copy from a read-write volume
+    // // test deep copy from a read-write volume
 
-    string volpathrw = dir + "/test_mpi_volume_dup_rw.out";
+    // string volpathrw = dir + "/test_mpi_volume_dup_rw.out";
 
-    fs_rm_r ( volpathrw.c_str() );
+    // if ( rank == 0 ) {
+    //     fs_rm_r ( volpathrw.c_str() );
+    // }
+    // ret = MPI_Barrier ( comm );
 
-    {
-        mpi_volume vol ( MPI_COMM_WORLD, volpathmem, access_mode::write );
-        //std::cerr << "vol dup opened in write mode" << std::endl;
-        vol.duplicate ( volpathrw, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
-        //std::cerr << "vol duplicated to rw path" << std::endl;
-    }
+    // {
+    //     mpi_volume vol ( comm, volpathmem, access_mode::write );
+    //     //std::cerr << "vol dup opened in write mode" << std::endl;
+    //     vol.duplicate ( volpathrw, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
+    //     //std::cerr << "vol duplicated to rw path" << std::endl;
+    // }
 
-    {
-        mpi_volume vol ( MPI_COMM_WORLD, volpathrw, access_mode::read );
-        //std::cerr << "vol rw opened readonly" << std::endl;
-        tidas::test::mpi_volume_verify ( vol );
-    }
+    // {
+    //     mpi_volume vol ( comm, volpathrw, access_mode::read );
+    //     //std::cerr << "vol rw opened readonly" << std::endl;
+    //     tidas::test::mpi_volume_verify ( vol );
+    // }
 
-    // test deep copy from a read-only volume
+    // // test deep copy from a read-only volume
 
-    string volpathro = dir + "/test_mpi_volume_dup_ro.out";
+    // string volpathro = dir + "/test_mpi_volume_dup_ro.out";
 
-    fs_rm_r ( volpathro.c_str() );
+    // if ( rank == 0 ) {
+    //     fs_rm_r ( volpathro.c_str() );
+    // }
+    // ret = MPI_Barrier ( comm );
 
-    {
-        mpi_volume vol ( MPI_COMM_WORLD, volpathmem, access_mode::read );
-        vol.duplicate ( volpathro, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
-    }
+    // {
+    //     mpi_volume vol ( comm, volpathmem, access_mode::read );
+    //     vol.duplicate ( volpathro, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
+    // }
 
-    {
-        mpi_volume vol ( MPI_COMM_WORLD, volpathro, access_mode::read );
-        tidas::test::mpi_volume_verify ( vol );
-    }
+    // {
+    //     mpi_volume vol ( comm, volpathro, access_mode::read );
+    //     tidas::test::mpi_volume_verify ( vol );
+    // }
 
-    // If the special environment variable is set, then run a "big"
-    // test.
+    // // If the special environment variable is set, then run a "big"
+    // // test.
 
-    bool do_big = false;
-    char * envval = getenv ( "TIDAS_TEST_BIG" );
-    if ( envval ) {
-        long tmp = atol ( envval );
-        if ( tmp > 0 ) {
-            do_big = true;
-        }
-    }
+    // bool do_big = false;
+    // char * envval = getenv ( "TIDAS_TEST_BIG" );
+    // if ( envval ) {
+    //     long tmp = atol ( envval );
+    //     if ( tmp > 0 ) {
+    //         do_big = true;
+    //     }
+    // }
 
-    if ( do_big ) {
-        string volbig = dir + "/test_mpi_volume_big.out";
+    // if ( do_big ) {
+    //     string volbig = dir + "/test_mpi_volume_big.out";
 
-        auto start = chrono::steady_clock::now();
+    //     if ( rank == 0 ) {
+    //         fs_rm_r ( volbig.c_str() );
+    //     }
+    //     ret = MPI_Barrier ( comm );
+
+    //     auto start = chrono::steady_clock::now();
         
-        mpi_volume vol ( MPI_COMM_WORLD, volbig, backend_type::hdf5, compression_type::none );
+    //     mpi_volume vol ( comm, volbig, backend_type::hdf5, compression_type::none );
         
-        auto stop = chrono::steady_clock::now();
-        auto diff = stop - start;
+    //     auto stop = chrono::steady_clock::now();
+    //     auto diff = stop - start;
 
-        cout << "Creating large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
+    //     cout << "Creating large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
 
-        start = chrono::steady_clock::now();
-        tidas::test::mpi_volume_setup ( vol, n_big, n_intr, n_block );
-        stop = chrono::steady_clock::now();
-        diff = stop - start;
+    //     start = chrono::steady_clock::now();
+    //     tidas::test::mpi_volume_setup ( vol, n_big, n_intr, n_block );
+    //     vol.meta_sync();
+    //     stop = chrono::steady_clock::now();
+    //     diff = stop - start;
 
-        cout << "Writing large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
+    //     cout << "Writing large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
         
-        start = chrono::steady_clock::now();
-        tidas::test::mpi_volume_verify ( vol );
-        stop = chrono::steady_clock::now();
-        diff = stop - start;
+    //     start = chrono::steady_clock::now();
+    //     tidas::test::mpi_volume_verify ( vol );
+    //     stop = chrono::steady_clock::now();
+    //     diff = stop - start;
 
-        cout << "Read and verify large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
-    }
-    
+    //     cout << "Read and verify large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
+    // }
+
+    EXPECT_TRUE(false);
 
 #else
 

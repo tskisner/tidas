@@ -122,6 +122,30 @@ libc.free.restype = None
 libc.free.argtypes = [ ct.c_void_p ]
 
 
+# Numpy arrays
+
+# numpy pointer types that we use frequently.  These types handle treating "None"
+# as a NULL pointer.  See:
+#
+#  https://stackoverflow.com/questions/32120178/how-can-i-pass-null-to-an-external-library-using-ctypes-with-an-argument-decla
+#
+
+def wrapped_ndptr(*args, **kwargs):
+    base = npc.ndpointer(*args, **kwargs)
+    def from_param(cls, obj):
+        if obj is None:
+            return obj
+        return base.from_param(obj)
+    return type(base.__name__, (base,), {'from_param': classmethod(from_param)})
+
+npu8 = wrapped_ndptr(dtype=np.uint8, ndim=1, flags="C_CONTIGUOUS")
+npi8 = wrapped_ndptr(dtype=np.int8, ndim=1, flags="C_CONTIGUOUS")
+npi32 = wrapped_ndptr(dtype=np.int32, ndim=1, flags="C_CONTIGUOUS")
+npi64 = wrapped_ndptr(dtype=np.int64, ndim=1, flags="C_CONTIGUOUS")
+npu64 = wrapped_ndptr(dtype=np.uint64, ndim=1, flags="C_CONTIGUOUS")
+npf64 = wrapped_ndptr(dtype=np.float64, ndim=1, flags="C_CONTIGUOUS")
+
+
 # utils
 
 lib.ctidas_string_alloc.restype = ct.POINTER(ct.c_char_p)
@@ -238,40 +262,42 @@ lib.ctidas_dict_get_string.restype = raw_c_char_p
 lib.ctidas_dict_get_string.argtypes = [ ct.POINTER(cDict), ct.c_char_p ]
 
 def cdict_put(dct, key, val):
+    keystr = ct.c_char_p(key)
     if type(val) is int:
-        lib.ctidas_dict_put_int64(dct, key, ct.c_longlong(val))
+        lib.ctidas_dict_put_int64(dct, keystr, ct.c_longlong(val))
     elif type(val) is float:
-        lib.ctidas_dict_put_double(dct, key, ct.c_double(val))
+        lib.ctidas_dict_put_double(dct, keystr, ct.c_double(val))
     elif type(val) is str:
-        lib.ctidas_dict_put_string(dct, key, val)
+        lib.ctidas_dict_put_string(dct, keystr, val)
     else:
         raise ValueError("unknown python type \"{}\" for value \"{}\"".format(type(val), val))
     return
 
 def cdict_get(dct, key):
-    typ = lib.ctidas_dict_type(dct, key)
+    keystr = ct.c_char_p(key)
+    typ = lib.ctidas_dict_type(dct, keystr)
     if data_type_str[typ] == 'int8':
-        return lib.ctidas_dict_get_int8(dct, key)
+        return lib.ctidas_dict_get_int8(dct, keystr)
     elif data_type_str[typ] == 'int16':
-        return lib.ctidas_dict_get_int16(dct, key)
+        return lib.ctidas_dict_get_int16(dct, keystr)
     elif data_type_str[typ] == 'int32':
-        return lib.ctidas_dict_get_int32(dct, key)
+        return lib.ctidas_dict_get_int32(dct, keystr)
     elif data_type_str[typ] == 'int64':
-        return lib.ctidas_dict_get_int64(dct, key)
+        return lib.ctidas_dict_get_int64(dct, keystr)
     elif data_type_str[typ] == 'uint8':
-        return lib.ctidas_dict_get_uint8(dct, key)
+        return lib.ctidas_dict_get_uint8(dct, keystr)
     elif data_type_str[typ] == 'uint16':
-        return lib.ctidas_dict_get_uint16(dct, key)
+        return lib.ctidas_dict_get_uint16(dct, keystr)
     elif data_type_str[typ] == 'uint32':
-        return lib.ctidas_dict_get_uint32(dct, key)
+        return lib.ctidas_dict_get_uint32(dct, keystr)
     elif data_type_str[typ] == 'uint64':
-        return lib.ctidas_dict_get_uint64(dct, key)
+        return lib.ctidas_dict_get_uint64(dct, keystr)
     elif data_type_str[typ] == 'float32':
-        return lib.ctidas_dict_get_float(dct, key)
+        return lib.ctidas_dict_get_float(dct, keystr)
     elif data_type_str[typ] == 'float64':
-        return lib.ctidas_dict_get_double(dct, key)
+        return lib.ctidas_dict_get_double(dct, keystr)
     elif data_type_str[typ] == 'string':
-        tmpstr = lib.ctidas_dict_get_string(dct, key)
+        tmpstr = lib.ctidas_dict_get_string(dct, keystr)
         retstr = str(tmpstr.value)
         libc.free(tmpstr)
         return retstr

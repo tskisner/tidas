@@ -33,7 +33,6 @@ tidas_test_mpi.cpp
 
 tidas_test_mpi_LDADD = \
 $(top_builddir)/src/libtidas-mpi/libtidas-mpi.la \
-$(top_builddir)/src/libtidas/libtidas.la \
 $(AM_LIBS)
 
 

@@ -33,17 +33,17 @@ if HAVE_AM_MPI
   pkgtidas_PYTHON += mpi_volume.py
 endif
 
-ctidas.py : ctidas.py.in
+ctidas.py : ctidas.py.in ctidas_mpi.py.in
 	@./gen_python.sh \
 	"$(DESTDIR)$(libdir)/libtidas.$(TIDAS_SHARED_EXT)" \
     "$(DESTDIR)$(libdir)/libtidas-mpi.$(TIDAS_SHARED_EXT)"
 
-ctidas_mpi.py : ctidas_mpi.py.in ctidas.py
+ctidas_mpi.py : ctidas.py
 
 
-EXTRA_DIST = gen_python.sh ctidas.py.in
+EXTRA_DIST = gen_python.sh ctidas.py.in ctidas_mpi.py.in
 
-CLEANFILES = ctidas.py
+CLEANFILES = ctidas.py ctidas_mpi.py
 
 clean-local :
 	@rm -f *.pyc

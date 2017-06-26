@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 ##
 ##  TImestream DAta Storage (TIDAS)
 ##  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
@@ -6,21 +7,21 @@
 ##
 from __future__ import absolute_import, division, print_function
 
+#from mpi4py import MPI
+
 import os
 import sys
-import tempfile
+import argparse
+
+import numpy as np
 import numpy.testing as nt
 
-import ctypes as ct
-
-from .ctidas import *
-from .group import *
-from .intervals import *
-from .block import *
-from .volume import *
+import tidas as tds
+# from tidas.ctidas_mpi import dist_uniform
+# from tidas.mpi_volume import MPIVolume
 
 
-def test_dict_setup():
+def dict_setup():
     ret = {}
     ret["string"] = "blahblahblah"
     ret["double"] = -123456789.0123
@@ -36,7 +37,7 @@ def test_dict_setup():
     return ret
 
 
-def test_dict_verify(dct):
+def dict_verify(dct):
     nt.assert_equal(dct["string"], "blahblahblah")
     nt.assert_equal(dct["int8"], -100)
     nt.assert_equal(dct["uint8"], 100)
@@ -51,7 +52,7 @@ def test_dict_verify(dct):
     return
 
 
-def test_schema_setup():
+def schema_setup(ndet):
     fields = {}
     fields["int8"] = ("int8", "int8")
     fields["uint8"] = ("uint8", "uint8")
@@ -64,10 +65,13 @@ def test_schema_setup():
     fields["float32"] = ("float32", "float32")
     fields["float64"] = ("float64", "float64")
     fields["string"] = ("string", "string")
+    for d in range(ndet):
+        dname = "det_{}".format(d)
+        fields[dname] = ("float64", "volts")
     return fields
 
 
-def test_schema_verify(fields):
+def schema_verify(fields, ndet):
     assert fields["int8"] == ("int8", "int8")
     assert fields["uint8"] == ("uint8", "uint8")
     assert fields["int16"] == ("int16", "int16")
@@ -79,12 +83,14 @@ def test_schema_verify(fields):
     assert fields["float32"] == ("float32", "float32")
     assert fields["float64"] == ("float64", "float64")
     assert fields["string"] == ("string", "string")
+    for d in range(ndet):
+        dname = "det_{}".format(d)
+        assert fields[dname] == ("float64", "volts")
     return
 
 
-def test_intervals_setup():
+def intervals_setup(nint):
     ilist = []
-    nint = 10
     gap = 1.0
     span = 123.4
     gap_samp = 5
@@ -94,11 +100,11 @@ def test_intervals_setup():
         stop = float(i + 1) * ( span + gap )
         first = gap_samp + long(i) * ( span_samp + gap_samp );
         last = long(i + 1) * ( span_samp + gap_samp );
-        ilist.append(Intrvl(start, stop, first, last))
+        ilist.append(tds.Intrvl(start, stop, first, last))
     return ilist
 
 
-def test_intervals_verify(ilist):
+def intervals_verify(ilist):
     comp = test_intervals_setup()
     for i in range(len(comp)):
         nt.assert_almost_equal(ilist[i].start, comp[i].start)
@@ -107,7 +113,7 @@ def test_intervals_verify(ilist):
         assert ilist[i].last == comp[i].last
 
 
-def test_group_setup(grp, nsamp):
+def group_setup(grp, ndet, nsamp):
 
     time = np.zeros(nsamp, dtype=np.float64)
     int8_data = np.zeros(nsamp, dtype=np.int8)
@@ -147,10 +153,16 @@ def test_group_setup(grp, nsamp):
     grp.write("float32", 0, float32_data)
     grp.write("float64", 0, float64_data)
 
+    for d in range(ndet):
+        dname = "det_{}".format(d)
+        numpy.random.seed(d)
+        data = np.random.normal(loc=0.0, scale=10.0, size=nsamp)
+        grp.write(dname, 0, data)
+
     return
 
 
-def test_group_verify(grp, nsamp):
+def group_verify(grp, ndet, nsamp):
 
     time_check = np.zeros(nsamp, dtype=np.float64)
     int8_data_check = np.zeros(nsamp, dtype=np.int8)
@@ -203,216 +215,118 @@ def test_group_verify(grp, nsamp):
     nt.assert_almost_equal(float64_data, float64_data_check)
     nt.assert_almost_equal(time, time_check)
 
+    for d in range(ndet):
+        dname = "det_{}".format(d)
+        numpy.random.seed(d)
+        data = np.random.normal(loc=0.0, scale=10.0, size=nsamp)
+        check = grp.read(dname, 0, nsamp)
+        nt.assert_almost_equal(data, check)
+
     return
 
 
-def test_block_setup(blk, nsamp):
-    #sys.stderr.write("block setup {}\n".format(blk._handle()))
-
+def block_setup(blk, gnames, inames, ndet, nsamp, nint):
     blk.clear()
 
-    #sys.stderr.write("block setup {} dict\n".format(blk._handle()))
+    dct = dict_setup()
 
-    dct = test_dict_setup()
+    fields = schema_setup(ndet)
+    grp = tds.Group(schema=fields, size=nsamp, props=dct)
 
-    #sys.stderr.write("block setup {} ilist\n".format(blk._handle()))
+    ilist = intervals_setup(nint)
+    intr = tds.Intervals(size=nint, props=dct)
 
-    ilist = test_intervals_setup()
+    for gn in gnames:
+        blk.group_add(gn, grp)
+        ref = blk.group_get(gn)
+        group_verify(ref, ndet, nsamp)
 
-    #sys.stderr.write("block setup {} intervals\n".format(blk._handle()))
-
-    intr = Intervals(size=len(ilist), props=dct)
-
-    #sys.stderr.write("block setup {} group\n".format(blk._handle()))
-
-    fields = test_schema_setup()
-    grp = Group(schema=fields, size=nsamp, props=dct)
-
-    #sys.stderr.write("block setup {} add group A\n".format(blk._handle()))
-
-    blk.group_add("group_A", grp)
-    ga = blk.group_get("group_A")
-    #sys.stderr.write("block setup {} got group A {}\n".format(blk._handle(), ga._handle()))
-
-    test_group_setup(ga, nsamp)
-
-    #sys.stderr.write("block setup {} add group B\n".format(blk._handle()))
-
-    blk.group_add("group_B", grp)
-    gb = blk.group_get("group_B")
-    test_group_setup(gb, nsamp)
-
-    #sys.stderr.write("block setup {} add intr A\n".format(blk._handle()))
-
-    blk.intervals_add("intr_A", intr)
-    ia = blk.intervals_get("intr_A")
-    ia.write(ilist)
-
-    #sys.stderr.write("block setup {} add intr B\n".format(blk._handle()))
-
-    blk.intervals_add("intr_B", intr)
-    ib = blk.intervals_get("intr_B")
-    ib.write(ilist)
+    for intn in inames:
+        blk.intervals_add(intn, intr)
+        ref = blk.intervals_get(intn)
+        ref.write(ilist)
 
     return
 
 
-def test_block_verify(blk, nsamp):
-    #sys.stderr.write("block verify {}\n".format(blk._handle()))
+def block_verify(blk, gnames, inames, ndet, nsamp, nint):
 
-    grp = blk.group_get("group_A")
-    test_group_verify(grp, nsamp)
+    for gn in gnames:
+        ref = blk.group_get(gn)
+        group_setup(ref, ndet, nsamp)
 
-    grp = blk.group_get("group_B")
-    test_group_verify(grp, nsamp)
-
-    intr = blk.intervals_get("intr_A")
-    ilist = intr.read()
-    test_intervals_verify(ilist)
-
-    intr = blk.intervals_get("intr_B")
-    ilist = intr.read()
-    test_intervals_verify(ilist)
-
-    names = blk.block_names()
-    all = blk.blocks(names)
-
-    for b in all:
-        test_block_verify(b, nsamp)
+    for intn in inames:
+        ref = blk.intervals_get(intn)
+        ilist = ref.read()
+        intervals_verify(ilist)
 
     return
 
 
-def test_volume_setup(vol, nblock, nsamp):
-    rt = vol.root()
-    #sys.stderr.write("volume setup root {}\n".format(rt._handle()))
-    rt.clear()
-    for b in range(nblock):
-        rt.block_add("block_{}".format(b))
-        child = rt.block_get("block_{}".format(b))
-        #sys.stderr.write("volume setup root/child {}\n".format(child._handle()))
-        test_block_setup(child, nsamp)
-    return
+def main():
+
+    # comm = MPI.COMM_WORLD
+
+    # if comm.rank == 0:
+    #     print("Running with {} processes at {}".format(
+    #         comm.size, str(datetime.now())), flush=True)
+
+    # global_start = MPI.Wtime()
+
+    parser = argparse.ArgumentParser(
+        description="TIDAS I/O Timing Tests")
+
+    parser.add_argument("--path", required=False, type=str, default="tidas_demo",
+                        help="Path to volume")
+
+    parser.add_argument("--ndet", required=False, type=int, default=100,
+                        help="Number of detectors")
+
+    parser.add_argument("--nsamp", required=False, default=1000, type=int,
+                        help="Number of samples")
+
+    parser.add_argument("--ninterval", required=False, default=100, type=int,
+                        help="Number of intervals")
+
+    parser.add_argument("--nobs", required=False, default=10, type=int,
+                        help="Number of observations")
+
+    args = parser.parse_args()
+
+    # Distribute obs among processes
+
+    #firstobs, localobs = dist_uniform(comm, args.nobs)
+    firstobs = 0
+    localobs = args.nobs
+
+    # Group names to create
+
+    gnames = [
+        "readout_0",
+        "readout_1",
+        "readout_2"
+    ]
+
+    # Intervals to create
+
+    inames = [
+        "subscans",
+        "otherevents"
+    ]
+
+    # Create and write the volume
+
+    with tds.Volume(args.path, backend="hdf5", comp="gzip") as vol:
+        root = vol.root()
+
+        # each proc creates their observations
+        
+        for ob in range(firstobs, firstobs + localobs):
+            obname = "observation_{:03d}".format(ob)
+            root.block_add(obname)
+            blk = root.block_get(obname)
+            block_setup(blk, gnames, inames, args.ndet, args.nsamp, args.ninterval)
 
 
-def test_volume_verify(vol, nblock, nsamp):
-    rt = vol.root()
-    for b in range(nblock):
-        child = rt.block_get("block_{}".format(b))
-        test_block_verify(child, nsamp)
-    return
-
-
-
-def test(tmpdir=None, recurse=False):
-    dirpath = ""
-    if tmpdir is None:
-        dirpath = tempfile.mkdtemp()
-    else:
-        if os.path.isdir(tmpdir):
-            dirpath = os.path.abspath(tmpdir)
-        else:
-            raise RuntimeError("test output path \"{}\" is not a directory".format(tmpdir))
-
-    print("Testing dictionary conversion...")
-
-    pd = test_dict_setup()
-    
-    cd = dict_py2c(pd)
-    check_pd = dict_c2py(cd)
-    lib.ctidas_dict_free(cd)
-
-    test_dict_verify(check_pd)
-
-    print("   PASS")
-
-    print("Testing schema conversion...")
-
-    ps = test_schema_setup()
-
-    cs = schema_py2c(ps)
-    check_ps = schema_c2py(cs)
-    lib.ctidas_schema_free(cs)
-
-    test_schema_verify(check_ps)
-    
-    print("   PASS")
-
-    print("Testing interval list conversion...")
-
-    pt = test_intervals_setup()
-
-    ct = intrvl_list_py2c(pt)
-    check_pt = intrvl_list_c2py(ct, len(pt))
-    lib.ctidas_intrvl_list_free(ct, len(pt))
-
-    test_intervals_verify(check_pt)
-    
-    print("   PASS")
-
-    print("Testing volume operations...")
-
-    volpath = os.path.join(dirpath, "tidas_py_volume")
-
-    nblock = 3
-    nsamp = 10
-
-    with Volume(volpath, backend="hdf5", comp="gzip") as vol:
-        test_volume_setup(vol, nblock, nsamp)
-
-    with Volume(volpath, mode="r") as vol:
-        test_volume_verify(vol, nblock, nsamp)
-        vol.info(recurse=recurse)
-
-    print("   PASS")
-
-    return
-
-
-def test_mpi_volume_setup(vol, nblock, nsamp):
-    rt = vol.root()
-    #sys.stderr.write("volume setup root {}\n".format(rt._handle()))
-    rt.clear()
-
-    offset, nlocal = mpi_dist_uniform(vol.comm, n_block)
-
-    for b in range(offset, offset + nlocal):
-        rt.block_add("block_{}".format(b))
-        child = rt.block_get("block_{}".format(b))
-        test_block_setup(child, nsamp)
-    return
-
-
-def test_mpi(tmpdir=None, recurse=False):
-    from .mpi_volume import MPIVolume
-    from .ctidas_mpi import mpi_dist_uniform
-    from mpi4py import MPI
-
-    dirpath = ""
-    if tmpdir is None:
-        dirpath = tempfile.mkdtemp()
-    else:
-        if os.path.isdir(tmpdir):
-            dirpath = os.path.abspath(tmpdir)
-        else:
-            raise RuntimeError("test output path \"{}\" is not a directory".format(tmpdir))
-
-    print("Testing MPI volume operations...")
-
-    volpath = os.path.join(dirpath, "tidas_py_mpi_volume")
-
-    nblock = 10
-    nsamp = 10
-
-    with MPI_Volume(MPI.COMM_WORLD, volpath, backend="hdf5", comp="gzip") as vol:
-        test_mpi_volume_setup(vol, nblock, nsamp)
-
-    with MPI_Volume(volpath, mode="r") as vol:
-        test_volume_verify(vol, nblock, nsamp)
-        vol.info(recurse=recurse)
-
-    print("   PASS")
-
-    return
-
-
+if __name__ == "__main__":
+    main()

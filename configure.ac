@@ -37,7 +37,7 @@ fi
 
 AC_CANONICAL_HOST
 AC_PROG_INSTALL
-LT_INIT
+LT_INIT([disable-fast-install])
 
 dnl +-------------------------
 dnl | Shared library extension

@@ -40,6 +40,7 @@ from .volume import (
 )
 
 from .test import (
-    test
+    test,
+    test_mpi
 )
 

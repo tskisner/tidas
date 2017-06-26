@@ -47,5 +47,7 @@ tidas_mpi_test.cpp \
 ctidas_mpi.cpp
 
 libtidas_mpi_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@
-libtidas_mpi_la_LIBADD = 
+libtidas_mpi_la_LIBADD = $(top_builddir)/src/libtidas/libtidas.la \
+$(AM_LIBS)
+
 

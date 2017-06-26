@@ -31,7 +31,7 @@ class Volume(object):
         self.path = path
         self.backend = backend
         self.comp = comp
-        self.cp = ct.POINTER(cVolume)
+        #self.cp = ct.POINTER(cVolume)
         if os.path.isdir(self.path):
             if (mode == "w"):
                 self.mode = "write"

@@ -47,9 +47,6 @@ bool tidas::backend_path::operator== ( const backend_path & other ) const {
     if ( backparams != other.backparams ) {
         return false;
     }
-    if ( idx != other.idx ) {
-        return false;
-    }
     return true;
 }
 

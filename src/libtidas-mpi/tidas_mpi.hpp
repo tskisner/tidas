@@ -227,9 +227,9 @@ namespace tidas {
                 mpi_unpack ( recvstr, temp );
                 std::cout << "DBG: unpacking data from proc " << i << " obj size = " << temp.size() << std::endl;
 
-                for ( auto const & h : temp ) {
-                    h.print ( std::cout );
-                }
+                // for ( auto const & h : temp ) {
+                //     h.print ( std::cout );
+                // }
                 result.push_back ( temp );
             }
         }

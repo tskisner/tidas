@@ -1,5 +1,5 @@
 
-SUBDIRS = sqlite core test
+SUBDIRS = sqlite core test capi
 
 # Initialize compile and linking flags
 
@@ -24,10 +24,6 @@ include $(top_srcdir)/src/build_options.am
 
 EXTRA_DIST = cereal
 
-include_HEADERS = ctidas.h
-noinst_HEADERS = \
-	ctidas.hpp
-
 noinst_SCRIPTS = gen_pkgconfig.sh
 
 EXTRA_DIST += gen_pkgconfig.sh
@@ -35,8 +31,7 @@ EXTRA_DIST += gen_pkgconfig.sh
 
 lib_LTLIBRARIES = libtidas.la
 
-libtidas_la_SOURCES = \
-ctidas.cpp
+libtidas_la_SOURCES = tidas.cpp
 
 libtidas_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@
 
@@ -44,6 +39,7 @@ libtidas_la_LIBADD = \
 $(top_builddir)/src/libtidas/test/libtidas_test.la \
 $(top_builddir)/src/libtidas/core/libtidas_core.la \
 $(top_builddir)/src/libtidas/sqlite/libtidas_sqlite.la \
+$(top_builddir)/src/libtidas/capi/libtidas_capi.la \
 $(AM_LIBS)
 
 

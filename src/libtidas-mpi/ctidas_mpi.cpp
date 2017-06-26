@@ -80,5 +80,20 @@ void ctidas_data_mpi_volume_copy ( ctidas_mpi_volume const * in, ctidas_mpi_volu
 }
 
 
+void ctidas_mpi_init ( int argc, char *argv[] ) {
+    tidas::mpi_init ( argc, argv );
+    return;
+}
+
+void ctidas_mpi_finalize ( ) {
+    tidas::mpi_finalize ( );
+    return;
+}
+
+void ctidas_mpi_dist_uniform ( MPI_Comm comm, size_t n, size_t * offset, size_t * nlocal ) {
+    tidas::mpi_dist_uniform ( comm, n, offset, nlocal );
+    return;
+}
+
 
 

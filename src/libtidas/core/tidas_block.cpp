@@ -720,7 +720,7 @@ group & tidas::block::group_add ( string const & name, group const & grp ) {
     }
 
     group_data_[ name ].copy ( grp, "", group_loc ( loc_, name ) );
-
+    std::cout << "DBG:  flushing group " << name << std::endl;
     group_data_[ name ].flush();
 
     if ( ( loc_.type != backend_type::none ) && ( grp.location().type != backend_type::none ) ) {
@@ -805,7 +805,7 @@ intervals & tidas::block::intervals_add ( string const & name, intervals const &
     }
 
     intervals_data_[ name ].copy ( intr, "", intervals_loc ( loc_, name ) );
-
+    std::cout << "DBG:  flushing intervals " << name << std::endl;
     intervals_data_[ name ].flush();
 
     if ( ( loc_.type != backend_type::none ) && ( intr.location().type != backend_type::none ) ) {
@@ -890,7 +890,7 @@ block & tidas::block::block_add ( string const & name, block const & blk ) {
     }
 
     block_data_[ name ].copy ( blk, "", block_loc ( loc_, name ) );
-
+    std::cout << "DBG:  flushing block " << name << std::endl;
     block_data_[ name ].flush();
 
     if ( ( loc_.type != backend_type::none ) && ( blk.location().type != backend_type::none ) ) {

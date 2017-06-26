@@ -9,6 +9,7 @@ AM_CPPFLAGS = \
 -I$(top_srcdir)/src/libtidas/core \
 -I$(top_srcdir)/src/libtidas/test \
 -I$(top_srcdir)/src/libtidas/test/gtest \
+-I$(top_srcdir)/src/libtidas/capi \
 -I$(top_srcdir)/src/libtidas-mpi
 
 
@@ -47,7 +48,11 @@ tidas_mpi_test.cpp \
 ctidas_mpi.cpp
 
 libtidas_mpi_la_LDFLAGS = -version-info @TIDAS_LT_VERSION@
-libtidas_mpi_la_LIBADD = $(top_builddir)/src/libtidas/libtidas.la \
-$(AM_LIBS)
 
+libtidas_mpi_la_LIBADD = \
+$(top_builddir)/src/libtidas/test/libtidas_test.la \
+$(top_builddir)/src/libtidas/core/libtidas_core.la \
+$(top_builddir)/src/libtidas/sqlite/libtidas_sqlite.la \
+$(top_builddir)/src/libtidas/capi/libtidas_capi.la \
+$(AM_LIBS)
 

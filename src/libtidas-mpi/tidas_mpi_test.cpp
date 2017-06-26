@@ -136,12 +136,16 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
     ret = MPI_Barrier ( comm );
     
     {
+        std::cout << "============================= test 1 ============================" << std::endl;
+
         std::cout << "DBG: call ctor at " << volpath << std::endl;
         mpi_volume vol ( comm, volpath, backend_type::hdf5, compression_type::gzip, hdf_extra );
         //std::cerr << "vol created" << std::endl;
         tidas::test::mpi_volume_setup ( vol, n_samp, n_intr, n_block );
         vol.meta_sync();
         tidas::test::mpi_volume_verify ( vol );
+
+        std::cout << "============================= test 2 ============================" << std::endl;
 
         std::cout << "DBG: call duplicate to " << volpathmem << std::endl;
         vol.duplicate ( volpathmem, backend_type::hdf5, compression_type::gzip, "", hdf_extra );

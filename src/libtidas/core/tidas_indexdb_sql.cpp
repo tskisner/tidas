@@ -1071,7 +1071,7 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
     trans.push_back ( tr );
 
-    //cerr << "tree_node filter = \"" << filter << "\"" << endl;
+    cerr << "tree_node filter = \"" << filter << "\"" << endl;
 
     // split filter into local and sub blocks:  [XX=XX,XX=XX]/XXXX[XX=XX]/XXX[X=X]/ ---> [XX=XX,XX=XX] XXXX[XX=XX]/XXX[X=X]/
 
@@ -1095,16 +1095,17 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
     filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
 
-    //cerr << "tree_node group filter = \"" << filt_name << "\"" << endl;
+    cerr << "tree_node group filter = \"" << filt_name << "\"" << endl;
 
     regex groupre ( filter_default ( filt_name ), std::regex::extended );
 
     backend_path chloc;
 
     for ( auto const & c : child_groups ) {
+        cerr << "tree_node checking group " << c << endl;
         if ( regex_match ( c, groupre ) ) {
 
-            //cerr << "tree_node  using group " << c << endl;
+            cerr << "tree_node  using group " << c << endl;
             chloc = loc;
             chloc.path = chloc.path + path_sep + chloc.name + path_sep + block_fs_group_dir;
             chloc.name = c;
@@ -1191,14 +1192,15 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
     filter_sub ( filts[ intervals_submatch_key ], filt_name, filt_pass );
 
-    //cerr << "tree_node intervals filter = \"" << filt_name << "\"" << endl;
+    cerr << "tree_node intervals filter = \"" << filt_name << "\"" << endl;
 
     regex intre ( filter_default ( filt_name ), std::regex::extended );
 
     for ( auto const & c : child_intervals ) {
+        cerr << "tree_node checking intervals " << c << endl;
         if ( regex_match ( c, intre ) ) {
 
-            //cerr << "tree_node  using intervals " << c << endl;
+            cerr << "tree_node  using intervals " << c << endl;
 
             chloc = loc;
             chloc.path = chloc.path + path_sep + chloc.name + path_sep + block_fs_intervals_dir;
@@ -1265,12 +1267,13 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
         regex blockre ( filter_default ( filt_name ), std::regex::extended );
 
-        //cerr << "tree_node block filter = \"" << filt_name << "\"" << endl;
+        cerr << "tree_node block filter = \"" << filt_name << "\"" << endl;
 
         for ( auto const & c : child_blocks ) {
+            cerr << "tree_node checking block " << c << endl;
             if ( regex_match ( c, blockre ) ) {
 
-                //cerr << "tree_node  using block " << c << endl;
+                cerr << "tree_node  using block " << c << endl;
 
                 chloc = loc;
                 chloc.path = chloc.path + path_sep + chloc.name;
@@ -1278,7 +1281,7 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
                 
                 tree_node( chloc, filt_pass, trans );
             } else {
-                //cerr << "tree_node  rejecting block " << c << endl;
+                cerr << "tree_node  rejecting block " << c << endl;
             }
         }
 

@@ -7,6 +7,7 @@ AM_CPPFLAGS = \
 -I$(top_srcdir)/src/libtidas \
 -I$(top_srcdir)/src/libtidas/sqlite \
 -I$(top_srcdir)/src/libtidas/core \
+-I$(top_srcdir)/src/libtidas/capi \
 -I$(top_srcdir)/src/libtidas/test \
 -I$(top_srcdir)/src/libtidas/test/gtest
 

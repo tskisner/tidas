@@ -11,22 +11,6 @@ using namespace std;
 using namespace tidas;
 
 
-void ctidas_mpi_init ( int argc, char *argv[] ) {
-    tidas::mpi_init ( argc, argv );
-    return;
-}
-
-void ctidas_mpi_finalize ( ) {
-    tidas::mpi_finalize ( );
-    return;
-}
-
-void ctidas_mpi_dist_uniform ( MPI_Comm comm, size_t n, size_t * offset, size_t * nlocal ) {
-    tidas::mpi_dist_uniform ( comm, n, offset, nlocal );
-    return;
-}
-
-
 ctidas_mpi_volume * ctidas_mpi_volume_create ( MPI_Comm comm, char const * path, ctidas_backend_type type, ctidas_compression_type comp ) {
     return reinterpret_cast < ctidas_mpi_volume * > ( new mpi_volume( comm, string(path), ctidas::convert_from_c(type), ctidas::convert_from_c(comp) ) );
 }

@@ -20,15 +20,6 @@ extern "C" {
 #endif
 
 
-/* Utilities */
-
-void ctidas_mpi_init ( int argc, char *argv[] );
-
-void ctidas_mpi_finalize ( );
-
-void ctidas_mpi_dist_uniform ( MPI_Comm comm, size_t n, size_t * offset, size_t * nlocal );
-
-
 /* MPI Volume */
 
 struct ctidas_mpi_volume_;

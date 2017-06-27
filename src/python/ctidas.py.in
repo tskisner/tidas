@@ -262,19 +262,20 @@ lib.ctidas_dict_get_string.restype = raw_c_char_p
 lib.ctidas_dict_get_string.argtypes = [ ct.POINTER(cDict), ct.c_char_p ]
 
 def cdict_put(dct, key, val):
-    keystr = ct.c_char_p(key)
+    keystr = ct.c_char_p(key.encode('utf-8'))
     if type(val) is int:
         lib.ctidas_dict_put_int64(dct, keystr, ct.c_longlong(val))
     elif type(val) is float:
         lib.ctidas_dict_put_double(dct, keystr, ct.c_double(val))
     elif type(val) is str:
-        lib.ctidas_dict_put_string(dct, keystr, val)
+        valstr = ct.c_char_p(val.encode('utf-8'))
+        lib.ctidas_dict_put_string(dct, keystr, valstr)
     else:
         raise ValueError("unknown python type \"{}\" for value \"{}\"".format(type(val), val))
     return
 
 def cdict_get(dct, key):
-    keystr = ct.c_char_p(key)
+    keystr = ct.c_char_p(key.encode('utf-8'))
     typ = lib.ctidas_dict_type(dct, keystr)
     if data_type_str[typ] == 'int8':
         return lib.ctidas_dict_get_int8(dct, keystr)
@@ -360,10 +361,10 @@ def field_py2c(pfld):
     if len(pfld) != 3:
         raise ValueError("field tuple must have 3 elements (name, type, units)")
     fld = lib.ctidas_field_alloc()
-    lib.ctidas_field_name_set(fld, pfld[0])
+    lib.ctidas_field_name_set(fld, ct.c_char_p(pfld[0].encode('utf-8')))
     typ = data_type[pfld[1]]
     lib.ctidas_field_type_set(fld, typ)
-    lib.ctidas_field_units_set(fld, pfld[2])
+    lib.ctidas_field_units_set(fld, ct.c_char_p(pfld[2].encode('utf-8')))
     return fld
 
 

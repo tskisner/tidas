@@ -39,15 +39,17 @@ class MPIVolume(object):
         comm_ptr = MPI._addressof(comm)
         c_comm = ctdmpi.MPI_Comm.from_address(comm_ptr)
 
+        cpath = path.encode("utf-8")
+        pcpath = ct.c_char_p(cpath)
         if os.path.isdir(self.path):
             if (mode == "w"):
                 self.mode = "write"
             else:
                 self.mode = "read"
-            self.cp = ctdmpi.libmpi.ctidas_mpi_volume_open(c_comm, path, access_mode[self.mode])
+            self.cp = ctdmpi.libmpi.ctidas_mpi_volume_open(c_comm, pcpath, access_mode[self.mode])
         else:
             self.mode = "write"
-            self.cp = ctdmpi.libmpi.ctidas_mpi_volume_create(c_comm, path, backend_type[backend], compression_type[comp])
+            self.cp = ctdmpi.libmpi.ctidas_mpi_volume_create(c_comm, pcpath, backend_type[backend], compression_type[comp])
 
     def close(self):
         if self.cp is not None:

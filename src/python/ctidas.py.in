@@ -188,7 +188,7 @@ def cdict_keys(dct):
     nkeys = ct.c_ulong(0)
     buf = lib.ctidas_dict_keys(dct, ct.byref(nkeys))
     for k in range(nkeys.value):
-        ret.append(str(buf[k]))
+        ret.append(str(buf[k].decode()))
     lib.ctidas_string_free(nkeys, buf)
     return ret
 
@@ -302,7 +302,7 @@ def cdict_get(dct, key):
         return lib.ctidas_dict_get_double(dct, keystr)
     elif data_type_str[typ] == 'string':
         tmpstr = lib.ctidas_dict_get_string(dct, keystr)
-        retstr = str(tmpstr.value)
+        retstr = str(tmpstr.value.decode())
         libc.free(tmpstr)
         return retstr
     else:
@@ -356,8 +356,8 @@ lib.ctidas_field_units_get.restype = ct.c_char_p
 lib.ctidas_field_units_get.argtypes = [ ct.POINTER(cField) ]
 
 def field_c2py(fld):
-    name = str(lib.ctidas_field_name_get(fld))
-    units = str(lib.ctidas_field_units_get(fld))
+    name = str(lib.ctidas_field_name_get(fld).decode())
+    units = str(lib.ctidas_field_units_get(fld).decode())
     typ = lib.ctidas_field_type_get(fld)
     return (name, data_type_str[typ], units)
 
@@ -394,7 +394,7 @@ def cschema_fields(schm):
     nfields = ct.c_ulong(0)
     buf = lib.ctidas_schema_fields(schm, ct.byref(nfields))
     for f in range(nfields.value):
-        ret.append(str(buf[f]))
+        ret.append(str(buf[f].decode()))
     lib.ctidas_string_free(nfields, buf)
     return ret
 
@@ -411,7 +411,8 @@ def schema_c2py(schm):
     ret = {}
     fields = cschema_fields(schm)
     for f in fields:
-        cf = lib.ctidas_schema_field_get(schm, f)
+        fstr = f.encode("utf-8")
+        cf = lib.ctidas_schema_field_get(schm, ct.c_char_p(fstr))
         pf = field_c2py(cf)
         ret[pf[0]] = (pf[1], pf[2])
         lib.ctidas_field_free(cf)
@@ -710,7 +711,7 @@ def cblock_groups(blk):
     n = ct.c_ulong(0)
     buf = lib.ctidas_block_all_groups(blk, ct.byref(n))
     for i in range(n.value):
-        ret.append(str(buf[i]))
+        ret.append(str(buf[i].decode()))
     lib.ctidas_string_free(n, buf)
     return ret
 
@@ -719,7 +720,7 @@ def cblock_intervals(blk):
     n = ct.c_ulong(0)
     buf = lib.ctidas_block_all_intervals(blk, ct.byref(n))
     for i in range(n.value):
-        ret.append(str(buf[i]))
+        ret.append(str(buf[i].decode()))
     lib.ctidas_string_free(n, buf)
     return ret
 
@@ -728,7 +729,7 @@ def cblock_children(blk):
     n = ct.c_ulong(0)
     buf = lib.ctidas_block_all_children(blk, ct.byref(n))
     for i in range(n.value):
-        ret.append(str(buf[i]))
+        ret.append(str(buf[i].decode()))
     lib.ctidas_string_free(n, buf)
     return ret
 

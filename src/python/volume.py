@@ -31,16 +31,18 @@ class Volume(object):
         self.path = path
         self.backend = backend
         self.comp = comp
-        #self.cp = ct.POINTER(cVolume)
+        self.cp = None
+        cpath = path.encode("utf-8")
+        pcpath = ct.c_char_p(cpath)
         if os.path.isdir(self.path):
             if (mode == "w"):
                 self.mode = "write"
             else:
                 self.mode = "read"
-            self.cp = lib.ctidas_volume_open(path, access_mode[self.mode])
+            self.cp = lib.ctidas_volume_open(pcpath, access_mode[self.mode])
         else:
             self.mode = "write"
-            self.cp = lib.ctidas_volume_create(path, backend_type[backend], compression_type[comp])
+            self.cp = lib.ctidas_volume_create(pcpath, backend_type[backend], compression_type[comp])
 
     def close(self):
         if self.cp is not None:

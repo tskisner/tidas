@@ -92,8 +92,8 @@ def test_intervals_setup():
     for i in range(nint):
         start = gap + float(i) * ( span + gap )
         stop = float(i + 1) * ( span + gap )
-        first = gap_samp + long(i) * ( span_samp + gap_samp );
-        last = long(i + 1) * ( span_samp + gap_samp );
+        first = gap_samp + i * ( span_samp + gap_samp );
+        last = (i + 1) * ( span_samp + gap_samp );
         ilist.append(Intrvl(start, stop, first, last))
     return ilist
 

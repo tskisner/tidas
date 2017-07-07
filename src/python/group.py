@@ -109,45 +109,47 @@ class Group(object):
         if last > self._sz:
             raise IndexError("cannot read sample range {} - {} from group with {} samples".format(offset, last-1, self._sz))
         data = None
+        cfield = field.encode("utf-8")
+        pcf = ct.c_char_p(cfield)
         if self.cp is not None:
             # determine type and correct method to call
             if self._schm[field][0] == "int8":
                 data = np.zeros(ndata, dtype=np.int8, order='C')
-                lib.ctidas_group_read_int8(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_read_int8(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "uint8":
                 data = np.zeros(ndata, dtype=np.uint8, order='C')
-                lib.ctidas_group_read_uint8(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_read_uint8(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "int16":
                 data = np.zeros(ndata, dtype=np.int16, order='C')
-                lib.ctidas_group_read_int16(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_read_int16(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "uint16":
                 data = np.zeros(ndata, dtype=np.uint16, order='C')
-                lib.ctidas_group_read_uint16(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_read_uint16(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "int32":
                 data = np.zeros(ndata, dtype=np.int32, order='C')
-                lib.ctidas_group_read_int32(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_read_int32(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "uint32":
                 data = np.zeros(ndata, dtype=np.uint32, order='C')
-                lib.ctidas_group_read_uint32(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_read_uint32(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "int64":
                 data = np.zeros(ndata, dtype=np.int64, order='C')
-                lib.ctidas_group_read_int64(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_read_int64(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "uint64":
                 data = np.zeros(ndata, dtype=np.uint64, order='C')
-                lib.ctidas_group_read_uint64(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_read_uint64(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "float32":
                 data = np.zeros(ndata, dtype=np.float32, order='C')
-                lib.ctidas_group_read_float(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_read_float(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "float64":
                 data = np.zeros(ndata, dtype=np.float64, order='C')
-                lib.ctidas_group_read_double(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_read_double(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "string":
                 backsize = lib.ctidas_backend_string_size()
                 cdata = lib.ctidas_string_alloc(ndata, backsize)
-                lib.ctidas_group_read_string(self.cp, field, offset, ndata, cdata)
+                lib.ctidas_group_read_string(self.cp, pcf, offset, ndata, cdata)
                 data = []
                 for i in range(ndata):
-                    data.append( str(cdata[i]) )
+                    data.append( str(cdata[i].decode()) )
                 lib.ctidas_string_free(ndata, cdata)
             else:
                 raise ValueError("cannot read field with unknown data type \"{}\"".format(self.schm[field][0]))
@@ -160,33 +162,35 @@ class Group(object):
         last = offset + ndata
         if last > self._sz:
             raise IndexError("cannot write sample range {} - {} from group with {} samples".format(offset, last-1, self._sz))
+        cfield = field.encode("utf-8")
+        pcf = ct.c_char_p(cfield)
         if self.cp is not None:
             # determine type and correct method to call
             if self._schm[field][0] == "int8":
-                lib.ctidas_group_write_int8(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_write_int8(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "uint8":
-                lib.ctidas_group_write_uint8(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_write_uint8(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "int16":
-                lib.ctidas_group_write_int16(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_write_int16(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "uint16":
-                lib.ctidas_group_write_uint16(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_write_uint16(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "int32":
-                lib.ctidas_group_write_int32(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_write_int32(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "uint32":
-                lib.ctidas_group_write_uint32(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_write_uint32(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "int64":
-                lib.ctidas_group_write_int64(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_write_int64(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "uint64":
-                lib.ctidas_group_write_uint64(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_write_uint64(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "float32":
-                lib.ctidas_group_write_float(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_write_float(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "float64":
-                lib.ctidas_group_write_double(self.cp, field, offset, ndata, data)
+                lib.ctidas_group_write_double(self.cp, pcf, offset, ndata, data)
             elif self._schm[field][0] == "string":
                 backsize = lib.ctidas_backend_string_size()
                 cdata = lib.ctidas_string_alloc(ndata, backsize)
                 for i in range(ndata):
-                    cdata[i] = data[i]
+                    cdata[i] = data[i].decode()
                 lib.ctidas_group_write_string(self.cp, field, offset, ndata, cdata)
                 lib.ctidas_string_free(ndata, cdata)
             else:

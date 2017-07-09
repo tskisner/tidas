@@ -38,6 +38,7 @@ fi
 AC_CANONICAL_HOST
 AC_PROG_INSTALL
 LT_INIT([disable-fast-install])
+AC_SUBST([LIBTOOL_DEPS])
 
 dnl +-------------------------
 dnl | Shared library extension
@@ -216,6 +217,7 @@ dnl +------------------------------------------------
 dnl | Set outputs
 dnl +------------------------------------------------
 AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([fixlibtool/Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([src/libtidas/sqlite/Makefile])
 AC_CONFIG_FILES([src/libtidas/core/Makefile])

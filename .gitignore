@@ -24,6 +24,7 @@ Makefile.in
 # libtool files
 
 /libtool
+/libtool_mpi
 /ltmain.sh
 *.la
 *.lo
@@ -34,6 +35,7 @@ Makefile.in
 /m4/ltsugar.m4
 /m4/ltversion.m4
 /m4/lt~obsolete.m4
+fixlibtool/fixlibtool
 
 # Build outputs
 
@@ -45,14 +47,13 @@ Makefile.in
 
 /src/libtidas/sqlite/tidas_sqlite
 
-/src/tests/tidas_test
-/src/tests/*.out
-/src/tests/test-suite.log
-/src/tests/tidas_test.log
-/src/tests/tidas_test.trs
+/src/apps-mpi/tidas_test_mpi
+/src/apps/tidas_test
 
 # python files
 
+py-compile
 *.pyc
 
-
+/src/python/ctidas.py
+/src/python/ctidas_mpi.py

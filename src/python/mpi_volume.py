@@ -6,6 +6,8 @@
 ##
 from __future__ import absolute_import, division, print_function
 
+from mpi4py import MPI
+
 import os
 import sys
 
@@ -34,7 +36,7 @@ class MPIVolume(object):
         self.path = path
         self.backend = backend
         self.comp = comp
-        self.cp = ct.POINTER(ctdmpi.cMPIVolume)
+        self.cp = None
 
         comm_ptr = MPI._addressof(comm)
         c_comm = ctdmpi.MPI_Comm.from_address(comm_ptr)

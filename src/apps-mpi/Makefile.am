@@ -1,5 +1,6 @@
 
 CXX = @MPICXX@
+LIBTOOL = @LIBTOOL@_mpi
 
 # Initialize compile and linking flags
 

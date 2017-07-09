@@ -15,6 +15,8 @@ from ctypes.util import find_library
 import numpy as np
 import numpy.ctypeslib as npc
 
+from . import ctidas as ctd
+
 # open library
 
 #library_path = find_library('tidas-mpi')
@@ -57,8 +59,7 @@ def mpi_dist_uniform(comm, n):
     offset = ct.c_ulong(0)
     nlocal = ct.c_ulong(0)
     libmpi.ctidas_mpi_dist_uniform(c_comm, n, ct.byref(offset), ct.byref(nlocal))
-    return int(offset), int(nlocal)    
-
+    return int(offset.value), int(nlocal.value)    
 
 # Volume
 
@@ -83,7 +84,7 @@ libmpi.ctidas_mpi_volume_comm_rank.argtypes = [ ct.POINTER(cMPIVolume) ]
 libmpi.ctidas_mpi_volume_comm_size.restype = ct.c_int
 libmpi.ctidas_mpi_volume_comm_size.argtypes = [ ct.POINTER(cMPIVolume) ]
 
-libmpi.ctidas_mpi_volume_root.restype = ct.POINTER(cBlock)
+libmpi.ctidas_mpi_volume_root.restype = ct.POINTER(ctd.cBlock)
 libmpi.ctidas_mpi_volume_root.argtypes = [ ct.POINTER(cMPIVolume) ]
 
 #libmpi.ctidas_mpi_volume_exec.restype = None

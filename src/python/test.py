@@ -309,10 +309,9 @@ def test(tmpdir=None, recurse=False):
     if tmpdir is None:
         dirpath = tempfile.mkdtemp()
     else:
-        if os.path.isdir(tmpdir):
-            dirpath = os.path.abspath(tmpdir)
-        else:
-            raise RuntimeError("test output path \"{}\" is not a directory".format(tmpdir))
+        dirpath = os.path.abspath(tmpdir)
+        if not os.path.isdir(tmpdir):
+            os.makedirs(dirpath)
 
     print("Testing dictionary conversion...")
 
@@ -370,11 +369,13 @@ def test(tmpdir=None, recurse=False):
 
 
 def test_mpi_volume_setup(vol, nblock, nsamp):
+    from .ctidas_mpi import mpi_dist_uniform
+
     rt = vol.root()
     #sys.stderr.write("volume setup root {}\n".format(rt._handle()))
     rt.clear()
 
-    offset, nlocal = mpi_dist_uniform(vol.comm, n_block)
+    offset, nlocal = mpi_dist_uniform(vol.comm, nblock)
 
     for b in range(offset, offset + nlocal):
         rt.block_add("block_{}".format(b))
@@ -392,10 +393,9 @@ def test_mpi(tmpdir=None, recurse=False):
     if tmpdir is None:
         dirpath = tempfile.mkdtemp()
     else:
-        if os.path.isdir(tmpdir):
-            dirpath = os.path.abspath(tmpdir)
-        else:
-            raise RuntimeError("test output path \"{}\" is not a directory".format(tmpdir))
+        dirpath = os.path.abspath(tmpdir)
+        if not os.path.isdir(tmpdir):
+            os.makedirs(dirpath)
 
     print("Testing MPI volume operations...")
 
@@ -404,10 +404,10 @@ def test_mpi(tmpdir=None, recurse=False):
     nblock = 10
     nsamp = 10
 
-    with MPI_Volume(MPI.COMM_WORLD, volpath, backend="hdf5", comp="gzip") as vol:
+    with MPIVolume(MPI.COMM_WORLD, volpath, backend="hdf5", comp="gzip") as vol:
         test_mpi_volume_setup(vol, nblock, nsamp)
 
-    with MPI_Volume(volpath, mode="r") as vol:
+    with MPIVolume(MPI.COMM_WORLD, volpath, mode="r") as vol:
         test_volume_verify(vol, nblock, nsamp)
         vol.info(recurse=recurse)
 

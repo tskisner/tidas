@@ -1,6 +1,6 @@
 EXTRA_DIST = autogen.sh m4 configure platforms docs
 
-SUBDIRS = src
+SUBDIRS = fixlibtool src
 
 ACLOCAL_AMFLAGS = -I m4
 

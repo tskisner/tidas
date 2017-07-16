@@ -241,15 +241,15 @@ void tidas::mpi_volume::close ( ) {
     hist = localdb_->history();
     localdb_->history_clear();
 
-    // for ( int p = 0; p < nproc_; ++p ) {
-    //     if ( rank_ == p ) {
-    //         std::cout << "DBG: mpi_volume close proc " << p << " local:" << std::endl;
-    //         for ( auto const & h : hist ) {
-    //             h.print ( std::cout );
-    //         }
-    //     }
-    //     int blah = MPI_Barrier ( comm_ );
-    // }
+    for ( int p = 0; p < nproc_; ++p ) {
+        if ( rank_ == p ) {
+            std::cout << "DBG: mpi_volume close proc " << p << " local:" << std::endl;
+            for ( auto const & h : hist ) {
+                h.print ( std::cout );
+            }
+        }
+        int blah = MPI_Barrier ( comm_ );
+    }
 
     std::vector < std::deque < indexdb_transaction > > allhist;
 
@@ -259,10 +259,10 @@ void tidas::mpi_volume::close ( ) {
 
     if ( rank_ == 0 ) {
         for ( size_t i = 0; i < nproc_; ++i ) {
-            // std::cout << "DBG: mpi_volume close replaying from proc " << i << ":" << std::endl;
-            // for ( auto const & h : allhist[i] ) {
-            //     h.print ( std::cout );
-            // }
+            std::cout << "DBG: mpi_volume close replaying from proc " << i << ":" << std::endl;
+            for ( auto const & h : allhist[i] ) {
+                h.print ( std::cout );
+            }
             masterdb_->commit ( allhist[i] );
         }
     }
@@ -303,6 +303,7 @@ void tidas::mpi_volume::index_setup () {
         if ( loc_.path != "" ) {
             string indxpath = loc_.path + path_sep + volume_fs_index;
             std::cout << "DBG: index setup master == " << indxpath << std::endl;
+            std::cout << "DBG: index setup master volpath == " << loc_.path << std::endl;
             masterdb_.reset ( new indexdb_sql( indxpath, loc_.path, loc_.mode ) );
         } else {
             std::cout << "DBG: index setup master == empty" << std::endl;
@@ -356,6 +357,8 @@ void tidas::mpi_volume::copy ( MPI_Comm comm, mpi_volume const & other, string c
             string fspath = path_make ( loc_.path );
 
             loc_.path = fspath;
+
+            std::cout << "DBG loc in copy path = " << loc_.path << ", name = " << loc_.name << std::endl;
 
             // write properties
 

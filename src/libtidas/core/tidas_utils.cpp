@@ -17,6 +17,7 @@ extern "C" {
     #include <sys/stat.h>
     #include <sys/types.h>
     #include <limits.h>
+    #include <libgen.h>
 }
 
 using namespace std;

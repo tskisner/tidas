@@ -149,55 +149,55 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
 
         std::cout << "DBG: call duplicate to " << volpathmem << std::endl;
         vol.duplicate ( volpathmem, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
-        //std::cerr << "vol duplicated" << std::endl;
+        std::cerr << "vol duplicated" << std::endl;
     }
 
-    // {
-    //     mpi_volume vol ( comm, volpathmem, access_mode::write );
-    //     //std::cerr << "vol dup opened in write mode" << std::endl;
-    //     tidas::test::mpi_volume_verify ( vol );
-    // }
+    {
+        mpi_volume vol ( comm, volpathmem, access_mode::write );
+        std::cerr << "vol dup opened in write mode" << std::endl;
+        tidas::test::mpi_volume_verify ( vol );
+    }
 
-    // // test deep copy from a read-write volume
+    // test deep copy from a read-write volume
 
-    // string volpathrw = dir + "/test_mpi_volume_dup_rw.out";
+    string volpathrw = dir + "/test_mpi_volume_dup_rw.out";
 
-    // if ( rank == 0 ) {
-    //     fs_rm_r ( volpathrw.c_str() );
-    // }
-    // ret = MPI_Barrier ( comm );
+    if ( rank == 0 ) {
+        fs_rm_r ( volpathrw.c_str() );
+    }
+    ret = MPI_Barrier ( comm );
 
-    // {
-    //     mpi_volume vol ( comm, volpathmem, access_mode::write );
-    //     //std::cerr << "vol dup opened in write mode" << std::endl;
-    //     vol.duplicate ( volpathrw, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
-    //     //std::cerr << "vol duplicated to rw path" << std::endl;
-    // }
+    {
+        mpi_volume vol ( comm, volpathmem, access_mode::write );
+        std::cerr << "vol dup opened in write mode" << std::endl;
+        vol.duplicate ( volpathrw, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
+        std::cerr << "vol duplicated to rw path" << std::endl;
+    }
 
-    // {
-    //     mpi_volume vol ( comm, volpathrw, access_mode::read );
-    //     //std::cerr << "vol rw opened readonly" << std::endl;
-    //     tidas::test::mpi_volume_verify ( vol );
-    // }
+    {
+        mpi_volume vol ( comm, volpathrw, access_mode::read );
+        std::cerr << "vol rw opened readonly" << std::endl;
+        tidas::test::mpi_volume_verify ( vol );
+    }
 
-    // // test deep copy from a read-only volume
+    // test deep copy from a read-only volume
 
-    // string volpathro = dir + "/test_mpi_volume_dup_ro.out";
+    string volpathro = dir + "/test_mpi_volume_dup_ro.out";
 
-    // if ( rank == 0 ) {
-    //     fs_rm_r ( volpathro.c_str() );
-    // }
-    // ret = MPI_Barrier ( comm );
+    if ( rank == 0 ) {
+        fs_rm_r ( volpathro.c_str() );
+    }
+    ret = MPI_Barrier ( comm );
 
-    // {
-    //     mpi_volume vol ( comm, volpathmem, access_mode::read );
-    //     vol.duplicate ( volpathro, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
-    // }
+    {
+        mpi_volume vol ( comm, volpathmem, access_mode::read );
+        vol.duplicate ( volpathro, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
+    }
 
-    // {
-    //     mpi_volume vol ( comm, volpathro, access_mode::read );
-    //     tidas::test::mpi_volume_verify ( vol );
-    // }
+    {
+        mpi_volume vol ( comm, volpathro, access_mode::read );
+        tidas::test::mpi_volume_verify ( vol );
+    }
 
     // // If the special environment variable is set, then run a "big"
     // // test.

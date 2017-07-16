@@ -76,10 +76,14 @@ string tidas::indexdb_sql::dbpath ( string const & fullpath ) {
     string ret;
     if ( volpath_ != "" ) {
         size_t pos = fullpath.find ( volpath_ );
-        ret = fullpath.substr ( pos + volpath_.size() + 1 );
+        if ( pos != 0 ) {
+            TIDAS_THROW("object path does not begin with volume path");
+        }
+        ret = fullpath.substr ( volpath_.size() + 1 );
     } else {
         ret = fullpath;
     }
+    std::cout << "DBG:  sqlite dbpath " << fullpath << " --> " << ret << std::endl;
     return ret;
 }
 
@@ -245,6 +249,8 @@ void tidas::indexdb_sql::ops_dict ( backend_path loc, indexdb_op op, map < strin
     }
 
     string path = loc.path + path_sep + loc.name;
+
+    std::cout << "DBG ops_dict path = " << path << std::endl;
 
     string dpath = dbpath ( path );
 
@@ -541,6 +547,8 @@ void tidas::indexdb_sql::ops_block ( backend_path loc, indexdb_op op ) {
     }
 
     string path = loc.path + path_sep + loc.name;
+
+    std::cout << "DBG ops_block path = " << path << std::endl;
 
     string dpath = dbpath ( path );
 

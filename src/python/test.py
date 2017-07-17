@@ -8,6 +8,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import sys
+import shutil
 import tempfile
 import numpy.testing as nt
 
@@ -378,6 +379,7 @@ def test_mpi_volume_setup(vol, nblock, nsamp):
     offset, nlocal = mpi_dist_uniform(vol.comm, nblock)
 
     for b in range(offset, offset + nlocal):
+        print("TEST setup process {} blocks {}-{}".format(vol.comm.rank, offset, offset+nlocal-1))
         rt.block_add("block_{}".format(b))
         child = rt.block_get("block_{}".format(b))
         test_block_setup(child, nsamp)
@@ -389,25 +391,36 @@ def test_mpi(tmpdir=None, recurse=False):
     from .ctidas_mpi import mpi_dist_uniform
     from mpi4py import MPI
 
+    comm = MPI.COMM_WORLD
+
     dirpath = ""
-    if tmpdir is None:
-        dirpath = tempfile.mkdtemp()
-    else:
-        dirpath = os.path.abspath(tmpdir)
-        if not os.path.isdir(tmpdir):
-            os.makedirs(dirpath)
+
+    if comm.rank == 0:
+        if tmpdir is None:
+            dirpath = tempfile.mkdtemp()
+        else:
+            dirpath = os.path.abspath(tmpdir)
+            if not os.path.isdir(tmpdir):
+                os.makedirs(dirpath)
+
+    dirpath = comm.bcast(dirpath, root=0)
 
     print("Testing MPI volume operations...")
 
     volpath = os.path.join(dirpath, "tidas_py_mpi_volume")
 
+    if comm.rank == 0:
+        if os.path.isdir(volpath):
+            shutil.rmtree(volpath)
+    comm.barrier()
+
     nblock = 10
     nsamp = 10
 
-    with MPIVolume(MPI.COMM_WORLD, volpath, backend="hdf5", comp="gzip") as vol:
+    with MPIVolume(comm, volpath, backend="hdf5", comp="gzip") as vol:
         test_mpi_volume_setup(vol, nblock, nsamp)
 
-    with MPIVolume(MPI.COMM_WORLD, volpath, mode="r") as vol:
+    with MPIVolume(comm, volpath, mode="r") as vol:
         test_volume_verify(vol, nblock, nsamp)
         vol.info(recurse=recurse)
 

@@ -108,11 +108,16 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path,
     loc_.meta = "";
     loc_.mode = mode;
 
+    std::cout << "DBG: mpi_volume open existing properties read" << std::endl;
+
     // open index
     index_setup();
 
+    std::cout << "DBG: mpi_volume open existing index set up" << std::endl;
+
     // collectively get objects
     open();
+    std::cout << "DBG: mpi_volume open meta open done" << std::endl;
 }
 
 
@@ -186,7 +191,11 @@ void tidas::mpi_volume::open ( ) {
     }
 
     // All processes clear their local in-memory DB
-    localdb_.reset ( new indexdb_mem() );
+    if ( loc_.path != "" ) {
+        localdb_.reset ( new indexdb_mem( loc_.path ) );
+    } else {
+        localdb_.reset ( new indexdb_mem() );
+    }
 
     std::deque < indexdb_transaction > hist;
 
@@ -311,7 +320,11 @@ void tidas::mpi_volume::index_setup () {
         }
     }
 
-    localdb_.reset ( new indexdb_mem() );
+    if ( loc_.path != "" ) {
+        localdb_.reset ( new indexdb_mem( loc_.path ) );
+    } else {
+        localdb_.reset ( new indexdb_mem() );
+    }
 
     loc_.idx = localdb_;
 

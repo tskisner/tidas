@@ -152,13 +152,41 @@ void tidas::indexdb_transaction::print ( ostream & out ) const {
 }
 
 
-tidas::indexdb::~indexdb () {
+tidas::indexdb::indexdb ( ) {
+    volpath_ = "";
+}
 
+
+tidas::indexdb::indexdb ( std::string const & volpath ) {
+    volpath_ = volpath;
+}
+
+
+tidas::indexdb::~indexdb () {
+}
+
+
+string tidas::indexdb::dbpath ( string const & fullpath ) {
+    string ret;
+    if ( volpath_ != "" ) {
+        size_t pos = fullpath.find ( volpath_ );
+        if ( pos != 0 ) {
+            TIDAS_THROW("object path does not begin with volume path");
+        }
+        ret = fullpath.substr ( volpath_.size() + 1 );
+    } else {
+        ret = fullpath;
+    }
+    std::cout << "DBG:  dbpath " << fullpath << " --> " << ret << std::endl;
+    return ret;
 }
 
 
 tidas::indexdb_mem::indexdb_mem () : indexdb() {
+}
 
+
+tidas::indexdb_mem::indexdb_mem ( std::string const & volpath ) : indexdb( volpath ) {
 }
 
 
@@ -181,6 +209,8 @@ tidas::indexdb_mem::indexdb_mem ( indexdb_mem const & other ) : indexdb( other )
 
 
 void tidas::indexdb_mem::copy ( indexdb_mem const & other ) {
+    volpath_ = other.volpath_;
+
     history_ = other.history_;
 
     data_dict_ = other.data_dict_;
@@ -197,16 +227,18 @@ void tidas::indexdb_mem::ops_dict ( backend_path loc, indexdb_op op, map < strin
 
     string path = loc.path + path_sep + loc.name;
 
+    string dpath = dbpath ( path );
+
     indexdb_dict d;
     d.type = indexdb_object_type::dict;
-    d.path = path;
+    d.path = dpath;
     d.data = data;
     d.types = types;
 
     if ( ( op == indexdb_op::add ) || ( op == indexdb_op::update ) ) {
-        data_dict_[ path ] = d;
+        data_dict_[ dpath ] = d;
     } else if ( op == indexdb_op::del ) {
-        data_dict_.erase( path );
+        data_dict_.erase( dpath );
     } else {
         TIDAS_THROW( "unknown indexdb dict operation" );
     }
@@ -225,15 +257,17 @@ void tidas::indexdb_mem::ops_schema ( backend_path loc, indexdb_op op, field_lis
 
     string path = loc.path + path_sep + loc.name;
 
+    string dpath = dbpath ( path );
+
     indexdb_schema s;
     s.type = indexdb_object_type::schema;
-    s.path = path;
+    s.path = dpath;
     s.fields = fields;
 
     if ( ( op == indexdb_op::add ) || ( op == indexdb_op::update ) ) {
-        data_schema_[ path ] = s;
+        data_schema_[ dpath ] = s;
     } else if ( op == indexdb_op::del ) {
-        data_schema_.erase( path );
+        data_schema_.erase( dpath );
     } else {
         TIDAS_THROW( "unknown indexdb schema operation" );
     }
@@ -252,18 +286,20 @@ void tidas::indexdb_mem::ops_group ( backend_path loc, indexdb_op op, index_type
 
     string path = loc.path + path_sep + loc.name;
 
+    string dpath = dbpath ( path );
+
     indexdb_group g;
     g.type = indexdb_object_type::group;
-    g.path = path;
+    g.path = dpath;
     g.nsamp = nsamp;
     g.counts = counts;
     g.start = start;
     g.stop = stop;
 
     if ( ( op == indexdb_op::add ) || ( op == indexdb_op::update ) ) {
-        data_group_[ path ] = g;
+        data_group_[ dpath ] = g;
     } else if ( op == indexdb_op::del ) {
-        data_group_.erase( path );
+        data_group_.erase( dpath );
     } else {
         TIDAS_THROW( "unknown indexdb group operation" );
     }
@@ -282,15 +318,17 @@ void tidas::indexdb_mem::ops_intervals ( backend_path loc, indexdb_op op, size_t
 
     string path = loc.path + path_sep + loc.name;
 
+    string dpath = dbpath ( path );
+
     indexdb_intervals t;
     t.type = indexdb_object_type::intervals;
-    t.path = path;
+    t.path = dpath;
     t.size = size;
 
     if ( ( op == indexdb_op::add ) || ( op == indexdb_op::update ) ) {
-        data_intervals_[ path ] = t;
+        data_intervals_[ dpath ] = t;
     } else if ( op == indexdb_op::del ) {
-        data_intervals_.erase( path );
+        data_intervals_.erase( dpath );
     } else {
         TIDAS_THROW( "unknown indexdb intervals operation" );
     }
@@ -309,14 +347,16 @@ void tidas::indexdb_mem::ops_block ( backend_path loc, indexdb_op op ) {
 
     string path = loc.path + path_sep + loc.name;
 
+    string dpath = dbpath ( path );
+
     indexdb_block b;
     b.type = indexdb_object_type::block;
-    b.path = path;
+    b.path = dpath;
 
     if ( ( op == indexdb_op::add ) || ( op == indexdb_op::update ) ) {
-        data_block_[ path ] = b;
+        data_block_[ dpath ] = b;
     } else if ( op == indexdb_op::del ) {
-        data_block_.erase( path );
+        data_block_.erase( dpath );
     } else {
         TIDAS_THROW( "unknown indexdb block operation" );
     }
@@ -431,9 +471,11 @@ bool tidas::indexdb_mem::query_dict ( backend_path loc, map < string, string > &
 
     string path = loc.path + path_sep + loc.name;
 
-    if ( data_dict_.count ( path ) > 0 ) {
-        data = data_dict_.at( path ).data;
-        types = data_dict_.at( path ).types;
+    string dpath = dbpath ( path );
+
+    if ( data_dict_.count ( dpath ) > 0 ) {
+        data = data_dict_.at( dpath ).data;
+        types = data_dict_.at( dpath ).types;
         found = true;
     }
 
@@ -447,8 +489,10 @@ bool tidas::indexdb_mem::query_schema ( backend_path loc, field_list & fields ) 
 
     string path = loc.path + path_sep + loc.name;
 
-    if ( data_schema_.count ( path ) > 0 ) {
-        fields = data_schema_.at( path ).fields;
+    string dpath = dbpath ( path );
+
+    if ( data_schema_.count ( dpath ) > 0 ) {
+        fields = data_schema_.at( dpath ).fields;
         found = true;
     }
 
@@ -462,11 +506,13 @@ bool tidas::indexdb_mem::query_group ( backend_path loc, index_type & nsamp, tim
 
     string path = loc.path + path_sep + loc.name;
 
-    if ( data_group_.count ( path ) > 0 ) {
-        nsamp = data_group_.at( path ).nsamp;
-        start = data_group_.at( path ).start;
-        stop = data_group_.at( path ).stop;
-        counts = data_group_.at( path ).counts;
+    string dpath = dbpath ( path );
+
+    if ( data_group_.count ( dpath ) > 0 ) {
+        nsamp = data_group_.at( dpath ).nsamp;
+        start = data_group_.at( dpath ).start;
+        stop = data_group_.at( dpath ).stop;
+        counts = data_group_.at( dpath ).counts;
         found = true;
     }
 
@@ -480,8 +526,10 @@ bool tidas::indexdb_mem::query_intervals ( backend_path loc, size_t & size ) {
 
     string path = loc.path + path_sep + loc.name;
 
-    if ( data_intervals_.count ( path ) > 0 ) {
-        size = data_intervals_.at( path ).size;
+    string dpath = dbpath ( path );
+
+    if ( data_intervals_.count ( dpath ) > 0 ) {
+        size = data_intervals_.at( dpath ).size;
         found = true;
     }
 
@@ -499,18 +547,20 @@ bool tidas::indexdb_mem::query_block ( backend_path loc, vector < string > & chi
 
     string path = loc.path + path_sep + loc.name;
 
-    if ( data_block_.count ( path ) > 0 ) {
+    string dpath = dbpath ( path );
 
-        map < string, indexdb_block > :: const_iterator bit = data_block_.lower_bound ( path );
+    if ( data_block_.count ( dpath ) > 0 ) {
+
+        map < string, indexdb_block > :: const_iterator bit = data_block_.lower_bound ( dpath );
 
         string dir;
         string base;
 
-        while ( ( bit != data_block_.end() ) && ( bit->first.compare ( 0, path.size(), path ) == 0 ) ) {
-            if ( bit->first.size() > path.size() ) {
+        while ( ( bit != data_block_.end() ) && ( bit->first.compare ( 0, dpath.size(), dpath ) == 0 ) ) {
+            if ( bit->first.size() > dpath.size() ) {
                 //(we don't want the parent itself)
 
-                size_t off = path.size() + 1;
+                size_t off = dpath.size() + 1;
                 size_t pos = bit->first.find ( path_sep, off );
 
                 if ( pos == string::npos ) {
@@ -521,7 +571,7 @@ bool tidas::indexdb_mem::query_block ( backend_path loc, vector < string > & chi
             ++bit;
         }
 
-        string grpdir = path + path_sep + block_fs_group_dir;
+        string grpdir = dpath + path_sep + block_fs_group_dir;
 
         map < string, indexdb_group > :: const_iterator git = data_group_.lower_bound ( grpdir );
 
@@ -531,7 +581,7 @@ bool tidas::indexdb_mem::query_block ( backend_path loc, vector < string > & chi
             ++git;
         }
 
-        string intdir = path + path_sep + block_fs_intervals_dir;
+        string intdir = dpath + path_sep + block_fs_intervals_dir;
 
         map < string, indexdb_intervals > :: const_iterator it = data_intervals_.lower_bound ( intdir );
 

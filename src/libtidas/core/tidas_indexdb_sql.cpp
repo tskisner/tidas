@@ -23,7 +23,6 @@ sql_err( err, msg, __FILE__, __LINE__ )
 
 tidas::indexdb_sql::indexdb_sql () : indexdb() {
     path_ = "";
-    volpath_ = "";
     mode_ = access_mode::write;
     sql_ = NULL;
 }
@@ -63,28 +62,11 @@ void tidas::indexdb_sql::copy ( indexdb_sql const & other ) {
 }
 
 
-tidas::indexdb_sql::indexdb_sql ( string const & path, string const & volpath, access_mode mode ) {
+tidas::indexdb_sql::indexdb_sql ( string const & path, string const & volpath, access_mode mode ) : indexdb ( volpath ) {
     path_ = path;
-    volpath_ = volpath;
     mode_ = mode;
     sql_ = NULL;
     open();
-}
-
-
-string tidas::indexdb_sql::dbpath ( string const & fullpath ) {
-    string ret;
-    if ( volpath_ != "" ) {
-        size_t pos = fullpath.find ( volpath_ );
-        if ( pos != 0 ) {
-            TIDAS_THROW("object path does not begin with volume path");
-        }
-        ret = fullpath.substr ( volpath_.size() + 1 );
-    } else {
-        ret = fullpath;
-    }
-    std::cout << "DBG:  sqlite dbpath " << fullpath << " --> " << ret << std::endl;
-    return ret;
 }
 
 

@@ -188,6 +188,10 @@ namespace tidas {
 
         public :
 
+            indexdb ( );
+
+            indexdb ( std::string const & volpath );
+
             virtual ~indexdb ();
 
             virtual void add_dict ( backend_path loc, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types ) = 0;
@@ -215,13 +219,18 @@ namespace tidas {
             virtual void del_block ( backend_path loc ) = 0;
             virtual bool query_block ( backend_path loc, std::vector < std::string > & child_blocks, std::vector < std::string > & child_groups, std::vector < std::string > & child_intervals ) = 0;
 
+            std::string dbpath ( std::string const & fullpath );
+            std::string volpath_;
+
             template < class Archive >
             void save ( Archive & ar ) const {
+                ar ( CEREAL_NVP( volpath_ ) );
                 return;
             }
 
             template < class Archive >
             void load ( Archive & ar ) {
+                ar ( CEREAL_NVP( volpath_ ) );
                 return;
             }
 
@@ -275,7 +284,6 @@ namespace tidas {
             void save ( Archive & ar ) const {
                 ar ( cereal::base_class < indexdb > ( this ) );
                 ar ( CEREAL_NVP( path_ ) );
-                ar ( CEREAL_NVP( volpath_ ) );
                 ar ( CEREAL_NVP( mode_ ) );
                 return;
             }
@@ -284,7 +292,6 @@ namespace tidas {
             void load ( Archive & ar ) {
                 ar ( cereal::base_class < indexdb > ( this ) );
                 ar ( CEREAL_NVP( path_ ) );
-                ar ( CEREAL_NVP( volpath_ ) );
                 ar ( CEREAL_NVP( mode_ ) );
                 sql_ = NULL;
                 open();
@@ -305,15 +312,13 @@ namespace tidas {
 
             void ops_block ( backend_path loc, indexdb_op op );
 
-            std::string dbpath ( std::string const & fullpath );
-
             void open ();
             void close ();
             void init ( std::string const & path );
             void sql_err ( bool err, char const * msg, char const * file, int line );
 
             std::string path_;
-            std::string volpath_;
+            
             access_mode mode_;
 
             sqlite3 * sql_;
@@ -328,6 +333,7 @@ namespace tidas {
         public :
 
             indexdb_mem ();
+            indexdb_mem ( std::string const & volpath );
             ~indexdb_mem ();
             indexdb_mem & operator= ( indexdb_mem const & other );
             indexdb_mem ( indexdb_mem const & other );

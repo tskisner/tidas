@@ -51,7 +51,7 @@ void tidas::test::mpi_volume_setup ( mpi_volume & vol, size_t n_samp, size_t n_i
         tidas::test::block_setup ( blk, n_samp, n_intr );
     }
 
-    vol.meta_sync();
+    //vol.meta_sync();
 
     return;
 }
@@ -136,13 +136,16 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
     ret = MPI_Barrier ( comm );
     
     {
-        std::cout << "============================= test 1 ============================" << std::endl;
+        std::cout << "============================= test 1 ctor ============================" << std::endl;
 
         std::cout << "DBG: call ctor at " << volpath << std::endl;
         mpi_volume vol ( comm, volpath, backend_type::hdf5, compression_type::gzip, hdf_extra );
         //std::cerr << "vol created" << std::endl;
+        std::cout << "============================= test 1 setup ============================" << std::endl;
         tidas::test::mpi_volume_setup ( vol, n_samp, n_intr, n_block );
+        std::cout << "============================= test 1 meta_sync ============================" << std::endl;
         vol.meta_sync();
+        std::cout << "============================= test 1 verify ============================" << std::endl;
         tidas::test::mpi_volume_verify ( vol );
 
         std::cout << "============================= test 2 ============================" << std::endl;
@@ -151,6 +154,7 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
         vol.duplicate ( volpathmem, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
         std::cerr << "vol duplicated" << std::endl;
     }
+
 
     {
         mpi_volume vol ( comm, volpathmem, access_mode::write );
@@ -199,50 +203,50 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
         tidas::test::mpi_volume_verify ( vol );
     }
 
-    // // If the special environment variable is set, then run a "big"
-    // // test.
+    // If the special environment variable is set, then run a "big"
+    // test.
 
-    // bool do_big = false;
-    // char * envval = getenv ( "TIDAS_TEST_BIG" );
-    // if ( envval ) {
-    //     long tmp = atol ( envval );
-    //     if ( tmp > 0 ) {
-    //         do_big = true;
-    //     }
-    // }
+    bool do_big = false;
+    char * envval = getenv ( "TIDAS_TEST_BIG" );
+    if ( envval ) {
+        long tmp = atol ( envval );
+        if ( tmp > 0 ) {
+            do_big = true;
+        }
+    }
 
-    // if ( do_big ) {
-    //     string volbig = dir + "/test_mpi_volume_big.out";
+    if ( do_big ) {
+        string volbig = dir + "/test_mpi_volume_big.out";
 
-    //     if ( rank == 0 ) {
-    //         fs_rm_r ( volbig.c_str() );
-    //     }
-    //     ret = MPI_Barrier ( comm );
+        if ( rank == 0 ) {
+            fs_rm_r ( volbig.c_str() );
+        }
+        ret = MPI_Barrier ( comm );
 
-    //     auto start = chrono::steady_clock::now();
+        auto start = chrono::steady_clock::now();
         
-    //     mpi_volume vol ( comm, volbig, backend_type::hdf5, compression_type::none );
+        mpi_volume vol ( comm, volbig, backend_type::hdf5, compression_type::none );
         
-    //     auto stop = chrono::steady_clock::now();
-    //     auto diff = stop - start;
+        auto stop = chrono::steady_clock::now();
+        auto diff = stop - start;
 
-    //     cout << "Creating large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
+        cout << "Creating large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
 
-    //     start = chrono::steady_clock::now();
-    //     tidas::test::mpi_volume_setup ( vol, n_big, n_intr, n_block );
-    //     vol.meta_sync();
-    //     stop = chrono::steady_clock::now();
-    //     diff = stop - start;
+        start = chrono::steady_clock::now();
+        tidas::test::mpi_volume_setup ( vol, n_big, n_intr, n_block );
+        vol.meta_sync();
+        stop = chrono::steady_clock::now();
+        diff = stop - start;
 
-    //     cout << "Writing large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
+        cout << "Writing large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
         
-    //     start = chrono::steady_clock::now();
-    //     tidas::test::mpi_volume_verify ( vol );
-    //     stop = chrono::steady_clock::now();
-    //     diff = stop - start;
+        start = chrono::steady_clock::now();
+        tidas::test::mpi_volume_verify ( vol );
+        stop = chrono::steady_clock::now();
+        diff = stop - start;
 
-    //     cout << "Read and verify large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
-    // }
+        cout << "Read and verify large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
+    }
 
     EXPECT_TRUE(false);
 

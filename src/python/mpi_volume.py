@@ -54,6 +54,7 @@ class MPIVolume(object):
             self.cp = ctdmpi.libmpi.ctidas_mpi_volume_create(c_comm, pcpath, backend_type[backend], compression_type[comp])
 
     def close(self):
+        self._comm.barrier()
         if self.cp is not None:
             ctdmpi.libmpi.ctidas_mpi_volume_close(self.cp)
         self.cp = None

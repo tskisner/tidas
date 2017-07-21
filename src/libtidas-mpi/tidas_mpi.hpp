@@ -166,8 +166,6 @@ namespace tidas {
         std::copy ( sendstrg.begin(), sendstrg.end(), sendbuf.begin() );
         sendstrg.clear();
 
-        std::cout << "DBG: gather proc " << rank << " has send buffer size " << size << std::endl;
-
         // All processes communicate the size of their local blobs.
 
         std::vector < int > recvsizes;
@@ -193,11 +191,9 @@ namespace tidas {
             recvoff.resize ( nproc );
             total = recvsizes[0];
             recvoff[0] = 0;
-            std::cout << "DBG: gather p " << 0 << " displ " << recvoff[0] << " size " << recvsizes[0] << std::endl;
             for ( int i = 1; i < nproc; ++i ) {
                 recvoff[i] = recvoff[i - 1] + recvsizes[i - 1];
                 total += recvsizes[i];
-                std::cout << "DBG: gather p " << i << " displ " << recvoff[i] << " size " << recvsizes[i] << std::endl;
             }
 
             recvbuf.resize ( total );
@@ -217,19 +213,10 @@ namespace tidas {
 
         if ( rank == root ) {
             for ( int i = 0; i < nproc; ++i ) {
-                std::cout << "DBG: unpacking data from proc " << i << " displ " << recvoff[i] << " size " << recvsizes[i] << std::endl;
-
                 std::string buf ( &recvbuf[recvoff[i]], recvsizes[i] );
-                std::cout << "DBG: unpacking data from proc " << i << " string len = " << buf.size() << std::endl;
                 std::istringstream recvstr ( buf );
-                std::cout << "DBG: unpacking data from proc " << i << " istream len = " << recvstr.str().size() << std::endl;
                 datatype temp;
                 mpi_unpack ( recvstr, temp );
-                std::cout << "DBG: unpacking data from proc " << i << " obj size = " << temp.size() << std::endl;
-
-                // for ( auto const & h : temp ) {
-                //     h.print ( std::cout );
-                // }
                 result.push_back ( temp );
             }
         }

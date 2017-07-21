@@ -11,6 +11,8 @@
 
 #include <regex>
 
+#include <chrono>
+
 #include <cereal/archives/portable_binary.hpp>
 
 using namespace std;
@@ -144,6 +146,9 @@ void tidas::indexdb_sql::init ( string const & path ) {
 
 void tidas::indexdb_sql::open () {
 
+    int ret;
+    char * sqlerr;
+
     if ( path_ == "" ) {
         TIDAS_THROW( "cannot open sqlite db with empty path" );
     }
@@ -165,7 +170,7 @@ void tidas::indexdb_sql::open () {
                 flags = flags | SQLITE_OPEN_READONLY;
             }
 
-            int ret = sqlite3_open_v2 ( path_.c_str(), &sql_, flags, NULL );
+            ret = sqlite3_open_v2 ( path_.c_str(), &sql_, flags, NULL );
             SQLERR( ret != SQLITE_OK, "open" );
 
         } else {
@@ -177,7 +182,7 @@ void tidas::indexdb_sql::open () {
 
                 flags = flags | SQLITE_OPEN_READWRITE;
 
-                int ret = sqlite3_open_v2 ( path_.c_str(), &sql_, flags, NULL );
+                ret = sqlite3_open_v2 ( path_.c_str(), &sql_, flags, NULL );
                 SQLERR( ret != SQLITE_OK, "open" );
 
             } else {
@@ -188,6 +193,28 @@ void tidas::indexdb_sql::open () {
 
         }
 
+        // Set database options for high performance.  If the DB is corrupted, it
+        // will be recreated on next open in read-write mode.
+
+        ret = sqlite3_exec ( sql_, "PRAGMA TEMP_STORE = MEMORY", NULL, NULL, &sqlerr );
+        SQLERR( ret != SQLITE_OK, "pragma temp_store" );
+
+        ret = sqlite3_exec ( sql_, "PRAGMA JOURNAL_MODE = MEMORY", NULL, NULL, &sqlerr );
+        SQLERR( ret != SQLITE_OK, "pragma journal_mode" );
+
+        ret = sqlite3_exec ( sql_, "PRAGMA SYNCHRONOUS = NORMAL", NULL, NULL, &sqlerr );
+        SQLERR( ret != SQLITE_OK, "pragma synchronous" );
+
+        ret = sqlite3_exec ( sql_, "PRAGMA LOCKING_MODE = NORMAL", NULL, NULL, &sqlerr );
+        SQLERR( ret != SQLITE_OK, "pragma locking_mode" );
+
+        ret = sqlite3_exec ( sql_, "PRAGMA PAGE_SIZE = 4096", NULL, NULL, &sqlerr );
+        SQLERR( ret != SQLITE_OK, "pragma page_size" );
+
+        ret = sqlite3_exec ( sql_, "PRAGMA CACHE_SIZE = 2000", NULL, NULL, &sqlerr );
+        SQLERR( ret != SQLITE_OK, "pragma cache_size" );
+
+
         // Create all prepared statements needed
 
         ostringstream command;
@@ -195,7 +222,7 @@ void tidas::indexdb_sql::open () {
 
         command.str("");
         command << "INSERT OR REPLACE INTO dct_grp ( parent, data, types ) VALUES ( @parent, @data, @types );";
-        int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
+        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
             command.str().size() + 1, &(stmt_dictgroup_ins_), NULL );
         SQLERR( ret != SQLITE_OK, "dict group insert prepare" );
 
@@ -341,7 +368,8 @@ void tidas::indexdb_sql::ops_begin ( ) {
         TIDAS_THROW( "sqlite DB is not open" );
     }
 
-    std::cout << "DBG: BEGIN TRANSACTION" << std::endl;
+    // sql_t1_ = chrono::steady_clock::now();
+    // std::cout << "DBG: BEGIN TRANSACTION" << std::endl;
 
     ostringstream command;
     command.str("");
@@ -362,8 +390,6 @@ void tidas::indexdb_sql::ops_end ( ) {
         TIDAS_THROW( "sqlite DB is not open" );
     }
 
-    std::cout << "DBG: END TRANSACTION" << std::endl;
-
     ostringstream command;
     command.str("");
 
@@ -373,6 +399,11 @@ void tidas::indexdb_sql::ops_end ( ) {
 
     int ret = sqlite3_exec ( sql_, command.str().c_str(), NULL, NULL, &sqlerr );
     SQLERR( ret != SQLITE_OK, "end transaction" );
+
+    // sql_t2_ = chrono::steady_clock::now();
+    // auto diff = sql_t2_ - sql_t1_;
+    // double sec = 0.001 * chrono::duration<double, milli>(diff).count();
+    // std::cout << "DBG: END TRANSACTION at " << sec << " seconds" << std::endl;
 
     return;
 }
@@ -394,9 +425,9 @@ void tidas::indexdb_sql::ops_dict ( backend_path loc, indexdb_op op, map < strin
 
     string path = loc.path + path_sep + loc.name;
 
-    std::cout << "DBG ops_dict path = " << path << std::endl;
-
     string dpath = dbpath ( path );
+
+    //std::cout << "DBG ops_dict path = " << dpath << std::endl;
 
     sqlite3_stmt * stmt;
 
@@ -469,8 +500,8 @@ void tidas::indexdb_sql::ops_dict ( backend_path loc, indexdb_op op, map < strin
     ret = sqlite3_step ( stmt );
     SQLERR( ret != SQLITE_DONE, "dict step" );
 
-    ret = sqlite3_clear_bindings ( stmt );
-    SQLERR( ret != SQLITE_OK, "dict clear" );
+    // ret = sqlite3_clear_bindings ( stmt );
+    // SQLERR( ret != SQLITE_OK, "dict clear" );
 
     ret = sqlite3_reset ( stmt );
     SQLERR( ret != SQLITE_OK, "dict reset" );
@@ -496,6 +527,8 @@ void tidas::indexdb_sql::ops_schema ( backend_path loc, indexdb_op op, field_lis
     string path = loc.path + path_sep + loc.name;
 
     string dpath = dbpath ( path );
+
+    //std::cout << "DBG ops_schema path = " << dpath << std::endl;
 
     sqlite3_stmt * stmt;
 
@@ -529,8 +562,8 @@ void tidas::indexdb_sql::ops_schema ( backend_path loc, indexdb_op op, field_lis
     ret = sqlite3_step ( stmt );
     SQLERR( ret != SQLITE_DONE, "schema step" );
 
-    ret = sqlite3_clear_bindings ( stmt );
-    SQLERR( ret != SQLITE_OK, "schema clear" );
+    // ret = sqlite3_clear_bindings ( stmt );
+    // SQLERR( ret != SQLITE_OK, "schema clear" );
 
     ret = sqlite3_reset ( stmt );
     SQLERR( ret != SQLITE_OK, "schema reset" );
@@ -556,6 +589,8 @@ void tidas::indexdb_sql::ops_group ( backend_path loc, indexdb_op op, index_type
     string path = loc.path + path_sep + loc.name;
 
     string dpath = dbpath ( path );
+
+    //std::cout << "DBG ops_group path = " << dpath << std::endl;
 
     sqlite3_stmt * stmt;
 
@@ -610,8 +645,8 @@ void tidas::indexdb_sql::ops_group ( backend_path loc, indexdb_op op, index_type
     ret = sqlite3_step ( stmt );
     SQLERR( ret != SQLITE_DONE, "group step" );
 
-    ret = sqlite3_clear_bindings ( stmt );
-    SQLERR( ret != SQLITE_OK, "group clear" );
+    // ret = sqlite3_clear_bindings ( stmt );
+    // SQLERR( ret != SQLITE_OK, "group clear" );
 
     ret = sqlite3_reset ( stmt );
     SQLERR( ret != SQLITE_OK, "group reset" );
@@ -637,6 +672,8 @@ void tidas::indexdb_sql::ops_intervals ( backend_path loc, indexdb_op op, size_t
     string path = loc.path + path_sep + loc.name;
 
     string dpath = dbpath ( path );
+
+    //std::cout << "DBG ops_intervals path = " << dpath << std::endl;
 
     sqlite3_stmt * stmt;
 
@@ -676,8 +713,8 @@ void tidas::indexdb_sql::ops_intervals ( backend_path loc, indexdb_op op, size_t
     ret = sqlite3_step ( stmt );
     SQLERR( ret != SQLITE_DONE, "intervals step" );
 
-    ret = sqlite3_clear_bindings ( stmt );
-    SQLERR( ret != SQLITE_OK, "intervals clear" );
+    // ret = sqlite3_clear_bindings ( stmt );
+    // SQLERR( ret != SQLITE_OK, "intervals clear" );
 
     ret = sqlite3_reset ( stmt );
     SQLERR( ret != SQLITE_OK, "intervals reset" );
@@ -702,9 +739,9 @@ void tidas::indexdb_sql::ops_block ( backend_path loc, indexdb_op op ) {
 
     string path = loc.path + path_sep + loc.name;
 
-    std::cout << "DBG ops_block path = " << path << std::endl;
-
     string dpath = dbpath ( path );
+
+    //std::cout << "DBG ops_block path = " << dpath << std::endl;
 
     sqlite3_stmt * stmt;
 
@@ -724,16 +761,12 @@ void tidas::indexdb_sql::ops_block ( backend_path loc, indexdb_op op ) {
         ret = sqlite3_bind_text ( stmt, 2, parent.c_str(), -1, SQLITE_TRANSIENT );
         SQLERR( ret != SQLITE_OK, "block bind parent" );
 
-        std::cout << "DBG ops_block update \"" << dpath << "\" \"" << parent << "\"" << std::endl;
-
     } else if ( op == indexdb_op::del ) {
 
         stmt = stmt_block_del_;
 
         ret = sqlite3_bind_text ( stmt, 1, dpath.c_str(), -1, SQLITE_TRANSIENT );
         SQLERR( ret != SQLITE_OK, "block bind path" );
-
-        std::cout << "DBG ops_block delete \"" << dpath << "\"" << std::endl;
         
     } else {
         TIDAS_THROW( "unknown indexdb block operation" );
@@ -742,8 +775,8 @@ void tidas::indexdb_sql::ops_block ( backend_path loc, indexdb_op op ) {
     ret = sqlite3_step ( stmt );
     SQLERR( ret != SQLITE_DONE, "block step" );
 
-    ret = sqlite3_clear_bindings ( stmt );
-    SQLERR( ret != SQLITE_OK, "block clear" );
+    // ret = sqlite3_clear_bindings ( stmt );
+    // SQLERR( ret != SQLITE_OK, "block clear" );
 
     ret = sqlite3_reset ( stmt );
     SQLERR( ret != SQLITE_OK, "block reset" );
@@ -1104,7 +1137,7 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
     command.str("");
     command << "SELECT * FROM blk WHERE path = \"" << dpath << "\";";
 
-    std::cout << command.str() << std::endl;
+    //std::cout << command.str() << std::endl;
 
     sqlite3_stmt * bstmt;
     int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &bstmt, NULL );
@@ -1182,6 +1215,10 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 
 
 void tidas::indexdb_sql::commit ( deque < indexdb_transaction > const & trans ) {
+
+    if ( trans.size() == 0 ) {
+        return;
+    }
 
     ops_begin();
 
@@ -1273,7 +1310,7 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
     trans.push_back ( tr );
 
-    cerr << "tree_node filter = \"" << filter << "\"" << endl;
+    //cerr << "tree_node filter = \"" << filter << "\"" << endl;
 
     // split filter into local and sub blocks:  [XX=XX,XX=XX]/XXXX[XX=XX]/XXX[X=X]/ ---> [XX=XX,XX=XX] XXXX[XX=XX]/XXX[X=X]/
 
@@ -1297,17 +1334,17 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
     filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
 
-    cerr << "tree_node group filter = \"" << filt_name << "\"" << endl;
+    //cerr << "tree_node group filter = \"" << filt_name << "\"" << endl;
 
     regex groupre ( filter_default ( filt_name ), std::regex::extended );
 
     backend_path chloc;
 
     for ( auto const & c : child_groups ) {
-        cerr << "tree_node checking group " << c << endl;
+        //cerr << "tree_node checking group " << c << endl;
         if ( regex_match ( c, groupre ) ) {
 
-            cerr << "tree_node  using group " << c << endl;
+            //cerr << "tree_node  using group " << c << endl;
             chloc = loc;
             chloc.path = chloc.path + path_sep + chloc.name + path_sep + block_fs_group_dir;
             chloc.name = c;
@@ -1394,15 +1431,15 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
     filter_sub ( filts[ intervals_submatch_key ], filt_name, filt_pass );
 
-    cerr << "tree_node intervals filter = \"" << filt_name << "\"" << endl;
+    //cerr << "tree_node intervals filter = \"" << filt_name << "\"" << endl;
 
     regex intre ( filter_default ( filt_name ), std::regex::extended );
 
     for ( auto const & c : child_intervals ) {
-        cerr << "tree_node checking intervals " << c << endl;
+        //cerr << "tree_node checking intervals " << c << endl;
         if ( regex_match ( c, intre ) ) {
 
-            cerr << "tree_node  using intervals " << c << endl;
+            //cerr << "tree_node  using intervals " << c << endl;
 
             chloc = loc;
             chloc.path = chloc.path + path_sep + chloc.name + path_sep + block_fs_intervals_dir;
@@ -1469,13 +1506,13 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
         regex blockre ( filter_default ( filt_name ), std::regex::extended );
 
-        cerr << "tree_node block filter = \"" << filt_name << "\"" << endl;
+        //cerr << "tree_node block filter = \"" << filt_name << "\"" << endl;
 
         for ( auto const & c : child_blocks ) {
-            cerr << "tree_node checking block " << c << endl;
+            //cerr << "tree_node checking block " << c << endl;
             if ( regex_match ( c, blockre ) ) {
 
-                cerr << "tree_node  using block " << c << endl;
+                //cerr << "tree_node  using block " << c << endl;
 
                 chloc = loc;
                 chloc.path = chloc.path + path_sep + chloc.name;
@@ -1483,7 +1520,7 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
                 
                 tree_node( chloc, filt_pass, trans );
             } else {
-                cerr << "tree_node  rejecting block " << c << endl;
+                //cerr << "tree_node  rejecting block " << c << endl;
             }
         }
 

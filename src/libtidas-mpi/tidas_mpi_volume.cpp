@@ -36,8 +36,6 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path, backend_type
 
     string fspath = path_make ( path );
 
-    std::cout << "DBG: mpi_volume create at " << fspath << std::endl;
-
     loc_.path = fspath;
     loc_.name = "";
     loc_.meta = "";
@@ -96,8 +94,6 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path,
 
     string fspath = path_get ( path );
 
-    std::cout << "DBG: mpi_volume open existing at " << fspath << std::endl;
-
     // read properties
 
     loc_.path = fspath;
@@ -108,16 +104,11 @@ tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path,
     loc_.meta = "";
     loc_.mode = mode;
 
-    std::cout << "DBG: mpi_volume open existing properties read" << std::endl;
-
     // open index
     index_setup();
 
-    std::cout << "DBG: mpi_volume open existing index set up" << std::endl;
-
     // collectively get objects
     open();
-    std::cout << "DBG: mpi_volume open meta open done" << std::endl;
 }
 
 
@@ -219,10 +210,10 @@ void tidas::mpi_volume::open ( ) {
             hist = master->history();
         }
 
-        std::cout << "DBG: mpi_volume rank 0 tree:" << std::endl;
-        for ( auto const & h : hist ) {
-            h.print ( std::cout );
-        }
+        // std::cout << "DBG: mpi_volume rank 0 tree:" << std::endl;
+        // for ( auto const & h : hist ) {
+        //     h.print ( std::cout );
+        // }
     }
 
     // broadcast all objects (does not send index)
@@ -232,10 +223,10 @@ void tidas::mpi_volume::open ( ) {
     mpi_bcast ( comm_, hist, 0 );
 
     // replay transactions into local DB
-    std::cout << "DBG: mpi_volume open replaying:" << std::endl;
-    for ( auto const & h : hist ) {
-        h.print ( std::cout );
-    }
+    // std::cout << "DBG: mpi_volume open replaying:" << std::endl;
+    // for ( auto const & h : hist ) {
+    //     h.print ( std::cout );
+    // }
 
     localdb_->replay ( hist );
 
@@ -258,15 +249,15 @@ void tidas::mpi_volume::close ( ) {
     hist = localdb_->history();
     localdb_->history_clear();
 
-    for ( int p = 0; p < nproc_; ++p ) {
-        if ( rank_ == p ) {
-            std::cout << "DBG: mpi_volume close proc " << p << " local:" << std::endl;
-            for ( auto const & h : hist ) {
-                h.print ( std::cout );
-            }
-        }
-        int blah = MPI_Barrier ( comm_ );
-    }
+    // for ( int p = 0; p < nproc_; ++p ) {
+    //     if ( rank_ == p ) {
+    //         std::cout << "DBG: mpi_volume close proc " << p << " local:" << std::endl;
+    //         for ( auto const & h : hist ) {
+    //             h.print ( std::cout );
+    //         }
+    //     }
+    //     int blah = MPI_Barrier ( comm_ );
+    // }
 
     std::vector < std::deque < indexdb_transaction > > allhist;
 
@@ -276,10 +267,10 @@ void tidas::mpi_volume::close ( ) {
 
     if ( rank_ == 0 ) {
         for ( size_t i = 0; i < nproc_; ++i ) {
-            std::cout << "DBG: mpi_volume close replaying from proc " << i << ":" << std::endl;
-            for ( auto const & h : allhist[i] ) {
-                h.print ( std::cout );
-            }
+            // std::cout << "DBG: mpi_volume close replaying from proc " << i << ":" << std::endl;
+            // for ( auto const & h : allhist[i] ) {
+            //     h.print ( std::cout );
+            // }
 
             if ( loc_.path != "" ) {
                 indexdb_sql * master = dynamic_cast < indexdb_sql * > ( masterdb_.get() );
@@ -326,11 +317,8 @@ void tidas::mpi_volume::index_setup () {
     if ( rank_ == 0 ) {
         if ( loc_.path != "" ) {
             string indxpath = loc_.path + path_sep + volume_fs_index;
-            std::cout << "DBG: index setup master == " << indxpath << std::endl;
-            std::cout << "DBG: index setup master volpath == " << loc_.path << std::endl;
             masterdb_.reset ( new indexdb_sql( indxpath, loc_.path, loc_.mode ) );
         } else {
-            std::cout << "DBG: index setup master == memory" << std::endl;
             masterdb_.reset( new indexdb_mem () );
         }
     }
@@ -385,8 +373,6 @@ void tidas::mpi_volume::copy ( MPI_Comm comm, mpi_volume const & other, string c
             string fspath = path_make ( loc_.path );
 
             loc_.path = fspath;
-
-            std::cout << "DBG loc in copy path = " << loc_.path << ", name = " << loc_.name << std::endl;
 
             // write properties
 

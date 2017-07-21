@@ -177,7 +177,7 @@ string tidas::indexdb::dbpath ( string const & fullpath ) {
     } else {
         ret = fullpath;
     }
-    std::cout << "DBG:  dbpath " << fullpath << " --> " << ret << std::endl;
+    //std::cout << "DBG:  dbpath " << fullpath << " --> " << ret << std::endl;
     return ret;
 }
 

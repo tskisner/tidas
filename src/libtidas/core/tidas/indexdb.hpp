@@ -9,6 +9,9 @@
 #define TIDAS_INDEXDB_HPP
 
 
+#include <chrono>
+
+
 extern "C" {
 #include <tidas/sqlite3.h>
 }
@@ -323,6 +326,9 @@ namespace tidas {
             std::string path_;
             
             access_mode mode_;
+
+            std::chrono::steady_clock::time_point sql_t1_;
+            std::chrono::steady_clock::time_point sql_t2_;
 
             sqlite3 * sql_;
 

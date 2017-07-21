@@ -173,7 +173,6 @@ void tidas::block::relocate ( backend_path const & loc ) {
     loc_ = loc;
 
     string fspath = loc_.path + path_sep + loc_.name;
-    std::cout << "DBG: block relocate to " << fspath << std::endl;
 
     // relocate groups
 
@@ -201,7 +200,6 @@ void tidas::block::sync ( string const & filter ) {
 
     if ( loc_.type != backend_type::none ) {
         string fspath = loc_.path + path_sep + loc_.name;
-        std::cout << "DBG: block sync from " << fspath << std::endl;
 
         group_data_.clear();
         intervals_data_.clear();
@@ -249,8 +247,6 @@ void tidas::block::sync ( string const & filter ) {
 
         if ( found ) {
 
-            std::cout << "DBG: block sync found in DB: " << fspath << std::endl;
-
             for ( auto const & b : child_blocks ) {
                 if ( ! stop ) {
                     if ( regex_match ( b, blockre ) ) {
@@ -272,8 +268,6 @@ void tidas::block::sync ( string const & filter ) {
             }
 
         } else {
-
-            std::cout << "DBG: block sync not in DB: " << fspath << std::endl;
 
             // find all sub-blocks
 
@@ -375,8 +369,6 @@ void tidas::block::sync ( string const & filter ) {
 
         }
 
-    } else {
-        std::cout << "DBG: block sync backend none" << std::endl;
     }
 
     return;
@@ -390,7 +382,6 @@ void tidas::block::flush () const {
         if ( loc_.mode == access_mode::write ) {
 
             string dir = loc_.path + path_sep + loc_.name;
-            std::cout << "DBG: block flush to " << dir << std::endl;
             fs_mkdir ( dir.c_str() );
 
             string groupdir = dir + path_sep + block_fs_group_dir;
@@ -408,12 +399,8 @@ void tidas::block::flush () const {
                 loc_.idx->update_block ( loc_ );
             }
 
-        } else {
-            std::cout << "DBG: block readonly flush" << std::endl;
         }
 
-    } else {
-        std::cout << "DBG: block flush backend none" << std::endl;
     }
 
     // flush groups
@@ -724,7 +711,6 @@ group & tidas::block::group_add ( string const & name, group const & grp ) {
     }
 
     group_data_[ name ].copy ( grp, "", group_loc ( loc_, name ) );
-    std::cout << "DBG:  flushing group " << name << std::endl;
     group_data_[ name ].flush();
 
     if ( ( loc_.type != backend_type::none ) && ( grp.location().type != backend_type::none ) ) {
@@ -809,7 +795,6 @@ intervals & tidas::block::intervals_add ( string const & name, intervals const &
     }
 
     intervals_data_[ name ].copy ( intr, "", intervals_loc ( loc_, name ) );
-    std::cout << "DBG:  flushing intervals " << name << std::endl;
     intervals_data_[ name ].flush();
 
     if ( ( loc_.type != backend_type::none ) && ( intr.location().type != backend_type::none ) ) {
@@ -894,7 +879,6 @@ block & tidas::block::block_add ( string const & name, block const & blk ) {
     }
 
     block_data_[ name ].copy ( blk, "", block_loc ( loc_, name ) );
-    std::cout << "DBG:  flushing block " << name << std::endl;
     block_data_[ name ].flush();
 
     if ( ( loc_.type != backend_type::none ) && ( blk.location().type != backend_type::none ) ) {

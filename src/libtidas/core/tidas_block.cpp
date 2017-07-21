@@ -249,6 +249,8 @@ void tidas::block::sync ( string const & filter ) {
 
         if ( found ) {
 
+            std::cout << "DBG: block sync found in DB: " << fspath << std::endl;
+
             for ( auto const & b : child_blocks ) {
                 if ( ! stop ) {
                     if ( regex_match ( b, blockre ) ) {
@@ -270,6 +272,8 @@ void tidas::block::sync ( string const & filter ) {
             }
 
         } else {
+
+            std::cout << "DBG: block sync not in DB: " << fspath << std::endl;
 
             // find all sub-blocks
 

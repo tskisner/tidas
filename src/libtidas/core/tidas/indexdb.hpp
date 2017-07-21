@@ -302,6 +302,9 @@ namespace tidas {
 
             void tree_node ( backend_path loc, std::string const & filter, std::deque < indexdb_transaction > & trans );
 
+            void ops_begin ();
+            void ops_end ();
+
             void ops_dict ( backend_path loc, indexdb_op op, std::map < std::string, std::string > const & data, std::map < std::string, data_type > const & types );
 
             void ops_schema ( backend_path loc, indexdb_op op, field_list const & fields );
@@ -322,6 +325,24 @@ namespace tidas {
             access_mode mode_;
 
             sqlite3 * sql_;
+
+            sqlite3_stmt * stmt_dictgroup_ins_;
+            sqlite3_stmt * stmt_dictgroup_del_;
+
+            sqlite3_stmt * stmt_dictinterval_ins_;
+            sqlite3_stmt * stmt_dictinterval_del_;
+
+            sqlite3_stmt * stmt_schema_ins_;
+            sqlite3_stmt * stmt_schema_del_;
+
+            sqlite3_stmt * stmt_group_ins_;
+            sqlite3_stmt * stmt_group_del_;
+            
+            sqlite3_stmt * stmt_interval_ins_;
+            sqlite3_stmt * stmt_interval_del_;
+            
+            sqlite3_stmt * stmt_block_ins_;
+            sqlite3_stmt * stmt_block_del_;
 
     };
 

@@ -353,6 +353,8 @@ def test(tmpdir=None, recurse=False):
     print("Testing volume operations...")
 
     volpath = os.path.join(dirpath, "tidas_py_volume")
+    if os.path.isdir(volpath):
+        shutil.rmtree(volpath)
 
     nblock = 3
     nsamp = 10

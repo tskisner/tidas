@@ -118,7 +118,7 @@ namespace tidas {
             std::string dist_;
 
             std::shared_ptr < indexdb_mem > localdb_;
-            std::shared_ptr < indexdb_sql > masterdb_;
+            std::shared_ptr < indexdb > masterdb_;
 
     };
 

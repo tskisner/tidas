@@ -210,7 +210,15 @@ void tidas::mpi_volume::open ( ) {
         root_.sync();
 
         // get transactions which replicate the full DB
-        masterdb_->tree ( root_loc ( loc_ ), "", hist );
+
+        if ( loc_.path != "" ) {
+            indexdb_sql * master = dynamic_cast < indexdb_sql * > ( masterdb_.get() );
+            master->tree ( root_loc ( loc_ ), "", hist );
+        } else {
+            indexdb_mem * master = dynamic_cast < indexdb_mem * > ( masterdb_.get() );
+            hist = master->history();
+        }
+
         std::cout << "DBG: mpi_volume rank 0 tree:" << std::endl;
         for ( auto const & h : hist ) {
             h.print ( std::cout );
@@ -272,7 +280,14 @@ void tidas::mpi_volume::close ( ) {
             for ( auto const & h : allhist[i] ) {
                 h.print ( std::cout );
             }
-            masterdb_->commit ( allhist[i] );
+
+            if ( loc_.path != "" ) {
+                indexdb_sql * master = dynamic_cast < indexdb_sql * > ( masterdb_.get() );
+                master->commit ( allhist[i] );
+            } else {
+                indexdb_mem * master = dynamic_cast < indexdb_mem * > ( masterdb_.get() );
+                master->replay ( allhist[i] );
+            }
         }
     }
 
@@ -315,8 +330,8 @@ void tidas::mpi_volume::index_setup () {
             std::cout << "DBG: index setup master volpath == " << loc_.path << std::endl;
             masterdb_.reset ( new indexdb_sql( indxpath, loc_.path, loc_.mode ) );
         } else {
-            std::cout << "DBG: index setup master == empty" << std::endl;
-            masterdb_.reset();
+            std::cout << "DBG: index setup master == memory" << std::endl;
+            masterdb_.reset( new indexdb_mem () );
         }
     }
 

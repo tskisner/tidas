@@ -165,6 +165,7 @@ namespace tidas {
     static const std::string volume_fs_index = "index.db";
     static const std::string volume_fs_props = "tidas.xml";
 
+    static const std::string indexdb_top_parent = "NOPARENT";
 
 }
 

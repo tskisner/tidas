@@ -334,7 +334,7 @@ void ctidas_block_clear ( ctidas_block * blk );
 char * ctidas_block_aux_dir ( ctidas_block * blk );
 
 
-void ctidas_block_group_add ( ctidas_block * blk, char const * name, ctidas_group * grp );
+ctidas_group * ctidas_block_group_add ( ctidas_block * blk, char const * name, ctidas_group * grp );
 
 ctidas_group * ctidas_block_group_get ( ctidas_block const * blk, char const * name );
 
@@ -345,7 +345,7 @@ char ** ctidas_block_all_groups ( ctidas_block const * blk, size_t * ngroup );
 void ctidas_block_clear_groups ( ctidas_block * blk );
 
 
-void ctidas_block_intervals_add ( ctidas_block * blk, char const * name, ctidas_intervals * inv );
+ctidas_intervals * ctidas_block_intervals_add ( ctidas_block * blk, char const * name, ctidas_intervals * inv );
 
 ctidas_intervals * ctidas_block_intervals_get ( ctidas_block const * blk, char const * name );
 
@@ -356,7 +356,7 @@ char ** ctidas_block_all_intervals ( ctidas_block const * blk, size_t * ninterva
 void ctidas_block_clear_intervals ( ctidas_block * blk );
 
 
-void ctidas_block_child_add ( ctidas_block * blk, char const * name, ctidas_block * child );
+ctidas_block * ctidas_block_child_add ( ctidas_block * blk, char const * name, ctidas_block * child );
 
 ctidas_block * ctidas_block_child_get ( ctidas_block const * blk, char const * name );
 

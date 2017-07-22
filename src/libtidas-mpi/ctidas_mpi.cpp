@@ -24,6 +24,12 @@ void ctidas_mpi_volume_close ( ctidas_mpi_volume * vol ) {
     return;
 }
 
+void ctidas_mpi_volume_meta_sync ( ctidas_mpi_volume * vol ) {
+    mpi_volume * v = reinterpret_cast < mpi_volume * > ( vol );
+    v->meta_sync();
+    return;
+}
+
 MPI_Comm ctidas_mpi_volume_comm ( ctidas_mpi_volume * vol ) {
     mpi_volume * v = reinterpret_cast < mpi_volume * > ( vol );
     return v->comm();

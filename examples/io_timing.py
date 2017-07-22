@@ -7,18 +7,21 @@
 ##
 from __future__ import absolute_import, division, print_function
 
-#from mpi4py import MPI
+from mpi4py import MPI
 
 import os
 import sys
 import argparse
+import shutil
 
 import numpy as np
 import numpy.testing as nt
 
+import calendar
+
 import tidas as tds
-# from tidas.ctidas_mpi import dist_uniform
-# from tidas.mpi_volume import MPIVolume
+from tidas.ctidas_mpi import mpi_dist_uniform
+from tidas.mpi_volume import MPIVolume
 
 
 def dict_setup():
@@ -98,8 +101,8 @@ def intervals_setup(nint):
     for i in range(nint):
         start = gap + float(i) * ( span + gap )
         stop = float(i + 1) * ( span + gap )
-        first = gap_samp + long(i) * ( span_samp + gap_samp );
-        last = long(i + 1) * ( span_samp + gap_samp );
+        first = gap_samp + i * ( span_samp + gap_samp );
+        last = (i + 1) * ( span_samp + gap_samp );
         ilist.append(tds.Intrvl(start, stop, first, last))
     return ilist
 
@@ -225,7 +228,7 @@ def group_verify(grp, ndet, nsamp):
     return
 
 
-def block_setup(blk, gnames, inames, ndet, nsamp, nint):
+def block_create(blk, gnames, inames, ndet, nsamp, nint):
     blk.clear()
 
     dct = dict_setup()
@@ -233,16 +236,26 @@ def block_setup(blk, gnames, inames, ndet, nsamp, nint):
     fields = schema_setup(ndet)
     grp = tds.Group(schema=fields, size=nsamp, props=dct)
 
-    ilist = intervals_setup(nint)
     intr = tds.Intervals(size=nint, props=dct)
 
     for gn in gnames:
-        blk.group_add(gn, grp)
-        ref = blk.group_get(gn)
-        group_verify(ref, ndet, nsamp)
+        ref = blk.group_add(gn, grp)
 
     for intn in inames:
-        blk.intervals_add(intn, intr)
+        ref = blk.intervals_add(intn, intr)
+
+    return
+
+
+def block_write(blk, gnames, inames, ndet, nsamp, nint):
+
+    ilist = intervals_setup(nint)
+
+    for gn in gnames:
+        ref = blk.group_get(gn)
+        group_setup(ref, ndet, nsamp)
+
+    for intn in inames:
         ref = blk.intervals_get(intn)
         ref.write(ilist)
 
@@ -253,7 +266,7 @@ def block_verify(blk, gnames, inames, ndet, nsamp, nint):
 
     for gn in gnames:
         ref = blk.group_get(gn)
-        group_setup(ref, ndet, nsamp)
+        group_verify(ref, ndet, nsamp)
 
     for intn in inames:
         ref = blk.intervals_get(intn)
@@ -263,15 +276,28 @@ def block_verify(blk, gnames, inames, ndet, nsamp, nint):
     return
 
 
+def timing(msg=""):
+    if "last" not in timing.__dict__:
+        timing.last = MPI.Wtime()
+    else:
+        stop = MPI.Wtime()
+        diff = stop - timing.last
+        print("{}: {} seconds".format(msg, diff))
+        timing.last = stop
+    return
+
+
 def main():
 
-    # comm = MPI.COMM_WORLD
+    comm = MPI.COMM_WORLD
 
-    # if comm.rank == 0:
-    #     print("Running with {} processes at {}".format(
-    #         comm.size, str(datetime.now())), flush=True)
+    if comm.rank == 0:
+        print("Running with {} processes".format(comm.size))
 
-    # global_start = MPI.Wtime()
+    timing()
+
+    global_start = MPI.Wtime()
+    start = global_start
 
     parser = argparse.ArgumentParser(
         description="TIDAS I/O Timing Tests")
@@ -279,25 +305,22 @@ def main():
     parser.add_argument("--path", required=False, type=str, default="tidas_demo",
                         help="Path to volume")
 
-    parser.add_argument("--ndet", required=False, type=int, default=100,
+    parser.add_argument("--ndet", required=False, type=int, default=1,
                         help="Number of detectors")
 
-    parser.add_argument("--nsamp", required=False, default=1000, type=int,
-                        help="Number of samples")
+    parser.add_argument("--rate", required=False, type=float, default=1.0,
+                        help="Sample rate in Hz")
 
-    parser.add_argument("--ninterval", required=False, default=100, type=int,
-                        help="Number of intervals")
+    parser.add_argument("--startyear", required=False, default=2018, type=int,
+                        help="Starting year")
 
-    parser.add_argument("--nobs", required=False, default=10, type=int,
-                        help="Number of observations")
+    parser.add_argument("--years", required=False, default=1, type=int,
+                        help="Number of years of data")
+
+    parser.add_argument("--intervals", required=False, default=100, type=int,
+                        help="Number of intervals in one day")
 
     args = parser.parse_args()
-
-    # Distribute obs among processes
-
-    #firstobs, localobs = dist_uniform(comm, args.nobs)
-    firstobs = 0
-    localobs = args.nobs
 
     # Group names to create
 
@@ -314,18 +337,91 @@ def main():
         "otherevents"
     ]
 
-    # Create and write the volume
+    # Compute the total number of observations.  
 
-    with tds.Volume(args.path, backend="hdf5", comp="gzip") as vol:
+    day_to_year = {}
+    day_to_month = {}
+    day_to_mday = {}
+
+    totaldays = 0
+    for yr in range(args.startyear, args.startyear + args.years):
+        for mn in range(12):
+            weekday, nday = calendar.monthrange(yr, mn+1)
+            for dy in range(nday):
+                cur = totaldays + dy
+                day_to_mday[cur] = dy
+                day_to_month[cur] = mn
+                day_to_year[cur] = yr
+            totaldays += nday
+
+    daysamples = 24.0 * 3600.0 * args.rate
+
+    # Distribute days among processes
+
+    firstday, ndays = mpi_dist_uniform(comm, totaldays)
+
+    # Create the volume.
+
+    if comm.rank == 0:
+        if os.path.isdir(args.path):
+            shutil.rmtree(args.path)
+    
+    comm.barrier()
+    if comm.rank == 0:
+        timing("Reading options and wiping old data")
+
+    with MPIVolume(comm, args.path, backend="hdf5") as vol:
         root = vol.root()
 
-        # each proc creates their observations
-        
-        for ob in range(firstobs, firstobs + localobs):
-            obname = "observation_{:03d}".format(ob)
-            root.block_add(obname)
-            blk = root.block_get(obname)
-            block_setup(blk, gnames, inames, args.ndet, args.nsamp, args.ninterval)
+        if comm.rank == 0:
+            # Rank zero process creates the empty blocks for all 
+            # years and months.
+            for yr in range(args.startyear, args.startyear + args.years):
+                yrblock = root.block_add("{:04d}".format(yr))
+                print("Add block {}".format("/{:04d}".format(yr)))
+                for mn in range(12):
+                    mnstr = calendar.month_abbr[mn+1]
+                    mnblock = yrblock.block_add(mnstr)
+                    print("Add block {}".format("/{:04d}/{}".format(yr, mnstr)))
+
+        # sync this meta data to all processes
+        vol.meta_sync()
+
+        # now every process creates its days
+        for dy in range(firstday, firstday + ndays):
+            yr = day_to_year[dy]
+            mn = day_to_month[dy]
+            mday = day_to_mday[dy]
+            mblkname = "/{:04d}/{}".format(yr, calendar.month_abbr[mn+1])
+            mblk = root.select(mblkname)
+            dyblk = mblk.block_add("{:02d}".format(mday))
+            print("Add block /{:04d}/{}/{:02d}".format(yr, calendar.month_abbr[mn+1], mday))
+            block_create(dyblk, gnames, inames, args.ndet, daysamples, args.intervals)
+
+    comm.barrier()
+    if comm.rank == 0:
+        timing("Create Volume")
+
+    # Re-open the volume and write the data.  We could have done this 
+    # all in one step, but we split it up to allow timing the creation
+    # and the writing separately.
+
+    with MPIVolume(comm, args.path) as vol:
+        root = vol.root()
+
+        for dy in range(firstday, firstday + ndays):
+            yr = day_to_year[dy]
+            mn = day_to_month[dy]
+            mday = day_to_mday[dy]
+            dyblkname = "/{:04d}/{}/{:02d}".format(yr, calendar.month_abbr[mn+1], mday)
+            dyblk = root.select(dyblkname)
+            print("Writing /{:04d}/{}/{:02d}".format(yr, calendar.month_abbr[mn+1], mday))
+            block_write(dyblk, gnames, inames, args.ndet, daysamples, args.intervals)
+
+    comm.barrier()
+    if comm.rank == 0:
+        timing("Write Volume")
+
 
 
 if __name__ == "__main__":

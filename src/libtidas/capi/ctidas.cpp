@@ -1034,7 +1034,7 @@ void ctidas_block_clear ( ctidas_block * blk ) {
 }
 
 
-void ctidas_block_group_add ( ctidas_block * blk, char const * name, ctidas_group * grp ) {
+ctidas_group * ctidas_block_group_add ( ctidas_block * blk, char const * name, ctidas_group * grp ) {
     block * b = reinterpret_cast < block * > ( blk );
     if ( grp == NULL ) {
         fprintf(stderr, "Cannot add a NULL group pointer to block\n");
@@ -1042,7 +1042,7 @@ void ctidas_block_group_add ( ctidas_block * blk, char const * name, ctidas_grou
     }
     group * g = reinterpret_cast < group * > ( grp );
     group & gref = b->group_add ( string(name), (*g) );
-    return;
+    return reinterpret_cast < ctidas_group * > ( new group( gref ) );
 }
 
 ctidas_group * ctidas_block_group_get ( ctidas_block const * blk, char const * name ) {
@@ -1088,7 +1088,7 @@ void ctidas_block_clear_groups ( ctidas_block * blk ) {
 }
 
 
-void ctidas_block_intervals_add ( ctidas_block * blk, char const * name, ctidas_intervals * inv ) {
+ctidas_intervals * ctidas_block_intervals_add ( ctidas_block * blk, char const * name, ctidas_intervals * inv ) {
     block * b = reinterpret_cast < block * > ( blk );
     if ( inv == NULL ) {
         fprintf(stderr, "Cannot add a NULL interval pointer to block\n");
@@ -1096,7 +1096,7 @@ void ctidas_block_intervals_add ( ctidas_block * blk, char const * name, ctidas_
     }
     intervals * t = reinterpret_cast < intervals * > ( inv );
     intervals & iref = b->intervals_add ( string(name), (*t) );
-    return;
+    return reinterpret_cast < ctidas_intervals * > ( new intervals ( iref ) );
 }
 
 ctidas_intervals * ctidas_block_intervals_get ( ctidas_block const * blk, char const * name ) {
@@ -1142,7 +1142,7 @@ void ctidas_block_clear_intervals ( ctidas_block * blk ) {
 }
 
 
-void ctidas_block_child_add ( ctidas_block * blk, char const * name, ctidas_block * child ) {
+ctidas_block * ctidas_block_child_add ( ctidas_block * blk, char const * name, ctidas_block * child ) {
     block * b = reinterpret_cast < block * > ( blk );
     if ( child == NULL ) {
         fprintf(stderr, "Cannot add a NULL block pointer to block\n");
@@ -1150,7 +1150,7 @@ void ctidas_block_child_add ( ctidas_block * blk, char const * name, ctidas_bloc
     }
     block * c = reinterpret_cast < block * > ( child );
     block & bref = b->block_add ( string(name), (*c) );
-    return;
+    return reinterpret_cast < ctidas_block * > ( new block ( bref ) );
 }
 
 ctidas_block * ctidas_block_child_get ( ctidas_block const * blk, char const * name ) {

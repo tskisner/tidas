@@ -81,12 +81,15 @@ class MPIVolume(object):
         self.close()
         return False
 
+    def meta_sync(self):
+        ctdmpi.libmpi.ctidas_mpi_volume_meta_sync(self.cp)
+        return
+
     def info(self, recurse=True):
         prf = "TIDAS:  "
         indent = 0
         for i in range(indent):
             prf = "{} ".format(prf)
-        print("{}Volume \"{}\" (mode={}, backend={}, comp={})".format(prf, self.path, self.mode, self.backend, self.comp))
         b = self.root()
         if recurse:
             b.info("/", recurse=True)

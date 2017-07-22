@@ -110,11 +110,11 @@ class Block(object):
             lib.ctidas_dict_free(cdict)
             #sys.stderr.write("group add temp schema and dict freed\n")
         cname = name.encode("utf-8")
-        lib.ctidas_block_group_add(self.cp, ct.c_char_p(cname), cgrp)
+        ngrp = lib.ctidas_block_group_add(self.cp, ct.c_char_p(cname), cgrp)
         if grp._handle() is None:
             #sys.stderr.write("group add free temp handle = {}\n".format(cgrp))
             lib.ctidas_group_free(cgrp)
-        return
+        return Group(handle=ngrp)
 
     def group_del(self, name):
         if self.cp is None:
@@ -155,10 +155,10 @@ class Block(object):
             cintr = lib.ctidas_intervals_alloc(cdict, ct.c_ulong(intr.size))
             lib.ctidas_dict_free(cdict)
         cname = name.encode("utf-8")
-        lib.ctidas_block_intervals_add(self.cp, ct.c_char_p(cname), cintr)
+        nintr = lib.ctidas_block_intervals_add(self.cp, ct.c_char_p(cname), cintr)
         if intr._handle() is None:
             lib.ctidas_intervals_free(cintr)
-        return
+        return Intervals(handle=nintr)
 
     def intervals_del(self, name):
         if self.cp is None:
@@ -195,9 +195,9 @@ class Block(object):
             raise RuntimeError("block is not associated with a volume")
         cb = lib.ctidas_block_alloc()
         cname = name.encode("utf-8")
-        lib.ctidas_block_child_add(self.cp, ct.c_char_p(cname), cb)
+        nb = lib.ctidas_block_child_add(self.cp, ct.c_char_p(cname), cb)
         lib.ctidas_block_free(cb)
-        return
+        return Block(handle=nb)
 
     def block_del(self, name):
         if self.cp is None:

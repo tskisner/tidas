@@ -31,6 +31,8 @@ ctidas_mpi_volume * ctidas_mpi_volume_open ( MPI_Comm comm, char const * path, c
 
 void ctidas_mpi_volume_close ( ctidas_mpi_volume * vol );
 
+void ctidas_mpi_volume_meta_sync ( ctidas_mpi_volume * vol );
+
 MPI_Comm ctidas_mpi_volume_comm ( ctidas_mpi_volume * vol );
 
 int ctidas_mpi_volume_comm_rank ( ctidas_mpi_volume * vol );

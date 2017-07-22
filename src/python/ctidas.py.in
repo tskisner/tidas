@@ -313,14 +313,12 @@ def dict_c2py(dct):
     ret = {}
     keys = cdict_keys(dct)
     for k in keys:
-        print("dict_c2py: getting {}".format(k))
         ret[k] = cdict_get(dct, k)
     return ret
 
 def dict_py2c(pdct):
     ret = lib.ctidas_dict_alloc()
     for k in pdct.keys():
-        print("dict_py2c: put {} = {}".format(k, pdct[k]))
         cdict_put(ret, k, pdct[k])
     return ret
 
@@ -653,7 +651,7 @@ lib.ctidas_block_range.argtypes = [ ct.POINTER(cBlock), ct.POINTER(ct.c_double),
 lib.ctidas_block_clear.restype = None
 lib.ctidas_block_clear.argtypes = [ ct.POINTER(cBlock) ]
 
-lib.ctidas_block_group_add.restype = None
+lib.ctidas_block_group_add.restype = ct.POINTER(cGroup)
 lib.ctidas_block_group_add.argtypes = [ ct.POINTER(cBlock), ct.c_char_p, ct.POINTER(cGroup) ]
 
 lib.ctidas_block_group_get.restype = ct.POINTER(cGroup)
@@ -668,7 +666,7 @@ lib.ctidas_block_all_groups.argtypes = [ ct.POINTER(cBlock), ct.POINTER(ct.c_ulo
 lib.ctidas_block_clear_groups.restype = None
 lib.ctidas_block_clear_groups.argtypes = [ ct.POINTER(cBlock) ]
 
-lib.ctidas_block_intervals_add.restype = None
+lib.ctidas_block_intervals_add.restype = ct.POINTER(cIntervals)
 lib.ctidas_block_intervals_add.argtypes = [ ct.POINTER(cBlock), ct.c_char_p, ct.POINTER(cIntervals) ]
 
 lib.ctidas_block_intervals_get.restype = ct.POINTER(cIntervals)
@@ -683,7 +681,7 @@ lib.ctidas_block_all_intervals.argtypes = [ ct.POINTER(cBlock), ct.POINTER(ct.c_
 lib.ctidas_block_clear_intervals.restype = None
 lib.ctidas_block_clear_intervals.argtypes = [ ct.POINTER(cBlock) ]
 
-lib.ctidas_block_child_add.restype = None
+lib.ctidas_block_child_add.restype = ct.POINTER(cBlock)
 lib.ctidas_block_child_add.argtypes = [ ct.POINTER(cBlock), ct.c_char_p, ct.POINTER(cBlock) ]
 
 lib.ctidas_block_child_get.restype = ct.POINTER(cBlock)

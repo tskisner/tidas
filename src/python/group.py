@@ -43,7 +43,7 @@ class Group(object):
             self._sz = lib.ctidas_group_size(self.cp)
         else:
             self._schm = schema
-            self._sz = size
+            self._sz = int(size)
             self._prps = props
 
     def close(self):

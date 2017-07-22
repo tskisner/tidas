@@ -231,28 +231,24 @@ def test_block_setup(blk, nsamp):
 
     #sys.stderr.write("block setup {} add group A\n".format(blk._handle()))
 
-    blk.group_add("group_A", grp)
-    ga = blk.group_get("group_A")
+    ga = blk.group_add("group_A", grp)
     #sys.stderr.write("block setup {} got group A {}\n".format(blk._handle(), ga._handle()))
 
     test_group_setup(ga, nsamp)
 
     #sys.stderr.write("block setup {} add group B\n".format(blk._handle()))
 
-    blk.group_add("group_B", grp)
-    gb = blk.group_get("group_B")
+    gb = blk.group_add("group_B", grp)
     test_group_setup(gb, nsamp)
 
     #sys.stderr.write("block setup {} add intr A\n".format(blk._handle()))
 
-    blk.intervals_add("intr_A", intr)
-    ia = blk.intervals_get("intr_A")
+    ia = blk.intervals_add("intr_A", intr)
     ia.write(ilist)
 
     #sys.stderr.write("block setup {} add intr B\n".format(blk._handle()))
 
-    blk.intervals_add("intr_B", intr)
-    ib = blk.intervals_get("intr_B")
+    ib = blk.intervals_add("intr_B", intr)
     ib.write(ilist)
 
     return
@@ -289,8 +285,7 @@ def test_volume_setup(vol, nblock, nsamp):
     #sys.stderr.write("volume setup root {}\n".format(rt._handle()))
     rt.clear()
     for b in range(nblock):
-        rt.block_add("block_{}".format(b))
-        child = rt.block_get("block_{}".format(b))
+        child = rt.block_add("block_{}".format(b))
         #sys.stderr.write("volume setup root/child {}\n".format(child._handle()))
         test_block_setup(child, nsamp)
     return
@@ -364,7 +359,7 @@ def test(tmpdir=None, recurse=False):
 
     with Volume(volpath, mode="r") as vol:
         test_volume_verify(vol, nblock, nsamp)
-        vol.info(recurse=recurse)
+        #vol.info(recurse=recurse)
 
     print("   PASS")
 
@@ -381,9 +376,8 @@ def test_mpi_volume_setup(vol, nblock, nsamp):
     offset, nlocal = mpi_dist_uniform(vol.comm, nblock)
 
     for b in range(offset, offset + nlocal):
-        print("TEST setup process {} blocks {}-{}".format(vol.comm.rank, offset, offset+nlocal-1))
-        rt.block_add("block_{}".format(b))
-        child = rt.block_get("block_{}".format(b))
+        #print("TEST setup process {} blocks {}-{}".format(vol.comm.rank, offset, offset+nlocal-1))
+        child = rt.block_add("block_{}".format(b))
         test_block_setup(child, nsamp)
     return
 
@@ -407,7 +401,8 @@ def test_mpi(tmpdir=None, recurse=False):
 
     dirpath = comm.bcast(dirpath, root=0)
 
-    print("Testing MPI volume operations...")
+    if comm.rank == 0:
+        print("Testing MPI volume operations...")
 
     volpath = os.path.join(dirpath, "tidas_py_mpi_volume")
 
@@ -424,9 +419,10 @@ def test_mpi(tmpdir=None, recurse=False):
 
     with MPIVolume(comm, volpath, mode="r") as vol:
         test_volume_verify(vol, nblock, nsamp)
-        vol.info(recurse=recurse)
+        #vol.info(recurse=recurse)
 
-    print("   PASS")
+    if comm.rank == 0:
+        print("   PASS")
 
     return
 

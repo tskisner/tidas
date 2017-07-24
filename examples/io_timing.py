@@ -349,7 +349,7 @@ def main():
             weekday, nday = calendar.monthrange(yr, mn+1)
             for dy in range(nday):
                 cur = totaldays + dy
-                day_to_mday[cur] = dy
+                day_to_mday[cur] = dy + 1
                 day_to_month[cur] = mn
                 day_to_year[cur] = yr
             totaldays += nday
@@ -379,6 +379,7 @@ def main():
             for yr in range(args.startyear, args.startyear + args.years):
                 yrblock = root.block_add("{:04d}".format(yr))
                 print("Add block {}".format("/{:04d}".format(yr)))
+                sys.stdout.flush()
                 for mn in range(12):
                     mnstr = calendar.month_abbr[mn+1]
                     mnblock = yrblock.block_add(mnstr)
@@ -392,10 +393,12 @@ def main():
             yr = day_to_year[dy]
             mn = day_to_month[dy]
             mday = day_to_mday[dy]
-            mblkname = "/{:04d}/{}".format(yr, calendar.month_abbr[mn+1])
-            mblk = root.select(mblkname)
+            yrblk = root.block_get("{:04d}".format(yr))
+            mblk = yrblk.block_get("{}".format(calendar.month_abbr[mn+1]))
             dyblk = mblk.block_add("{:02d}".format(mday))
+            sys.stdout.flush()
             print("Add block /{:04d}/{}/{:02d}".format(yr, calendar.month_abbr[mn+1], mday))
+            sys.stdout.flush()
             block_create(dyblk, gnames, inames, args.ndet, daysamples, args.intervals)
 
     comm.barrier()
@@ -406,16 +409,19 @@ def main():
     # all in one step, but we split it up to allow timing the creation
     # and the writing separately.
 
-    with MPIVolume(comm, args.path) as vol:
+    with MPIVolume(comm, args.path, mode="w") as vol:
         root = vol.root()
 
         for dy in range(firstday, firstday + ndays):
             yr = day_to_year[dy]
             mn = day_to_month[dy]
             mday = day_to_mday[dy]
-            dyblkname = "/{:04d}/{}/{:02d}".format(yr, calendar.month_abbr[mn+1], mday)
-            dyblk = root.select(dyblkname)
+            yrblk = root.block_get("{:04d}".format(yr))
+            mblk = yrblk.block_get("{}".format(calendar.month_abbr[mn+1]))
+            dyblk = mblk.block_add("{:02d}".format(mday))
+            sys.stdout.flush()
             print("Writing /{:04d}/{}/{:02d}".format(yr, calendar.month_abbr[mn+1], mday))
+            sys.stdout.flush()
             block_write(dyblk, gnames, inames, args.ndet, daysamples, args.intervals)
 
     comm.barrier()

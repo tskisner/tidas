@@ -94,6 +94,54 @@ TEST_F( blockTest, MetaOps ) {
 }
 
 
+TEST_F( blockTest, Select ) {
+
+    block top;
+
+    backend_path loc;
+    loc.type = backend_type::none;
+    loc.path = "";
+    loc.name = "top";
+    loc.mode = access_mode::write;
+    loc.comp = compression_type::none;
+
+    top.relocate ( loc );
+
+    for ( size_t i = 0; i < 5; ++i ) {
+        ostringstream name;
+        name << "block_" << i;
+        block & blk = top.block_add ( name.str(), tidas::block() );
+        for ( size_t j = 0; j < 5; ++j ) {
+            ostringstream subname;
+            subname << "sub_" << j;
+            block & sub = blk.block_add ( subname.str(), tidas::block() );
+        }
+    }
+
+    for ( size_t i = 0; i < 5; ++i ) {
+        ostringstream name;
+        name << "block_" << i;
+        for ( size_t j = 0; j < 5; ++j ) {
+            ostringstream subname;
+            subname << "sub_" << j;
+            // string filter = path_sep + name.str() + path_sep + subname.str() + path_sep;
+            string filter = path_sep + name.str() + path_sep + subname.str();
+            block blk = top.select ( filter );
+
+            vector < string > children = blk.all_blocks();
+            EXPECT_EQ ( children.size(), 1 );
+            EXPECT_EQ ( children[0], name.str() );
+
+            block sub = blk.block_get ( children[0] );
+            children = sub.all_blocks();
+            EXPECT_EQ ( children.size(), 1 );
+            EXPECT_EQ ( children[0], subname.str() );
+        }
+    }
+
+}
+
+
 TEST_F( blockTest, HDF5Backend ) {
 
     // HDF5 backend

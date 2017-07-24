@@ -247,6 +247,8 @@ void tidas::block::sync ( string const & filter ) {
 
         if ( found ) {
 
+            std::cout << "DBG:  block in index" << std::endl;
+
             for ( auto const & b : child_blocks ) {
                 if ( ! stop ) {
                     if ( regex_match ( b, blockre ) ) {
@@ -377,11 +379,12 @@ void tidas::block::sync ( string const & filter ) {
 
 void tidas::block::flush () const {
 
+    string dir = loc_.path + path_sep + loc_.name;
+
     if ( loc_.type != backend_type::none ) {
 
         if ( loc_.mode == access_mode::write ) {
 
-            string dir = loc_.path + path_sep + loc_.name;
             fs_mkdir ( dir.c_str() );
 
             string groupdir = dir + path_sep + block_fs_group_dir;
@@ -396,11 +399,16 @@ void tidas::block::flush () const {
             // update index
 
             if ( loc_.idx ) {
+                std::cout << "flushing block " << dir << " to index " << loc_.idx.get() << std::endl;
                 loc_.idx->update_block ( loc_ );
             }
 
         }
 
+        std::cout << "block " << dir << " opened read-only, skipping flush" << std::endl;
+
+    } else {
+        std::cout << "block " << dir << " no backend, skipping flush" << std::endl;
     }
 
     // flush groups
@@ -528,6 +536,8 @@ block tidas::block::select ( string const & filter ) const {
 
     filter_block ( filter, filt_local, filt_sub, stop );
 
+    std::cout << "filter_block:  local = \"" << filt_local << "\", sub = \"" << filt_sub << "\", stop = " << stop << std::endl;
+
     // split local filter string:  [XX=XX,XX=XX]
 
     map < string, string > filts = filter_split ( filt_local );
@@ -538,28 +548,44 @@ block tidas::block::select ( string const & filter ) const {
     string filt_name;
     string filt_pass;
 
-    // XXX[schm=XXX,dict=XXX] ---> XXX [schm=XXX,dict=XXX]
+    if ( filts.count ( group_submatch_key ) > 0 ) {
 
-    filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
+        // XXX[schm=XXX,dict=XXX] ---> XXX [schm=XXX,dict=XXX]
+        filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
 
-    regex groupre ( filter_default ( filt_name ), std::regex::extended );
+        regex groupre ( filter_default ( filt_name ), std::regex::extended );
 
-    for ( auto & gr : group_data_ ) {
-        if ( regex_match ( gr.first, groupre ) ) {
+        for ( auto & gr : group_data_ ) {
+            if ( regex_match ( gr.first, groupre ) ) {
+                ret.group_data_[ gr.first ].copy ( gr.second, "", group_loc ( ret.loc_, gr.first ) );
+            }
+        }
+
+    } else {
+
+        for ( auto & gr : group_data_ ) {
             ret.group_data_[ gr.first ].copy ( gr.second, "", group_loc ( ret.loc_, gr.first ) );
         }
+
     }
 
     // select intervals.  Again, we strip off sub-filters.
 
-    // XXX[dict=XXX] ---> XXX [dict=XXX]
+    if ( filts.count ( intervals_submatch_key ) > 0 ) {
 
-    filter_sub ( filts[ intervals_submatch_key ], filt_name, filt_pass );
+        // XXX[dict=XXX] ---> XXX [dict=XXX]
+        filter_sub ( filts[ intervals_submatch_key ], filt_name, filt_pass );
 
-    regex intre ( filter_default ( filt_name ), std::regex::extended );
+        regex intre ( filter_default ( filt_name ), std::regex::extended );
 
-    for ( auto & inv : intervals_data_ ) {
-        if ( regex_match ( inv.first, intre ) ) {
+        for ( auto & inv : intervals_data_ ) {
+            if ( regex_match ( inv.first, intre ) ) {
+                ret.intervals_data_[ inv.first ].copy ( inv.second, "", intervals_loc ( ret.loc_, inv.first ) );
+            }
+        }
+
+    } else {
+        for ( auto & inv : intervals_data_ ) {
             ret.intervals_data_[ inv.first ].copy ( inv.second, "", intervals_loc ( ret.loc_, inv.first ) );
         }
     }
@@ -573,11 +599,18 @@ block tidas::block::select ( string const & filter ) const {
 
         filter_sub ( filt_sub, filt_name, filt_pass );
 
+        std::cout << "  sub blocks:  name = \"" << filt_name << "\" (" << filter_default(filt_name) << ") " << " pass = \"" << filt_pass << "\"" << std::endl;
+
         regex blockre ( filter_default ( filt_name ), std::regex::extended );
+
+        std::cout << "    searching " << block_data_.size() << " sub blocks" << std::endl;
 
         for ( auto & blk : block_data_ ) {
             if ( regex_match ( blk.first, blockre ) ) {
+                std::cout << "    block \"" << blk.first << "\" matches" << std::endl;
                 ret.block_data_[ blk.first ] = blk.second.select ( filt_pass );
+            } else {
+                std::cout << "    block \"" << blk.first << "\" no match" << std::endl;
             }
         }
 
@@ -880,6 +913,8 @@ block & tidas::block::block_add ( string const & name, block const & blk ) {
 
     block_data_[ name ].copy ( blk, "", block_loc ( loc_, name ) );
     block_data_[ name ].flush();
+
+    std::cout << "DBG:  block " << loc_.path << "/" << loc_.name << " adding child " << name << std::endl;
 
     if ( ( loc_.type != backend_type::none ) && ( blk.location().type != backend_type::none ) ) {
         data_copy ( blk, block_data_.at ( name ) );

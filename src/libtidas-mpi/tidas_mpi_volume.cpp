@@ -210,10 +210,10 @@ void tidas::mpi_volume::open ( ) {
             hist = master->history();
         }
 
-        // std::cout << "DBG: mpi_volume rank 0 tree:" << std::endl;
-        // for ( auto const & h : hist ) {
-        //     h.print ( std::cout );
-        // }
+        std::cout << "DBG: mpi_volume rank 0 tree:" << std::endl;
+        for ( auto const & h : hist ) {
+            h.print ( std::cout );
+        }
     }
 
     // broadcast all objects (does not send index)
@@ -223,10 +223,10 @@ void tidas::mpi_volume::open ( ) {
     mpi_bcast ( comm_, hist, 0 );
 
     // replay transactions into local DB
-    // std::cout << "DBG: mpi_volume open replaying:" << std::endl;
-    // for ( auto const & h : hist ) {
-    //     h.print ( std::cout );
-    // }
+    std::cout << "DBG: mpi_volume open replaying:" << std::endl;
+    for ( auto const & h : hist ) {
+        h.print ( std::cout );
+    }
 
     localdb_->replay ( hist );
 
@@ -249,15 +249,15 @@ void tidas::mpi_volume::close ( ) {
     hist = localdb_->history();
     localdb_->history_clear();
 
-    // for ( int p = 0; p < nproc_; ++p ) {
-    //     if ( rank_ == p ) {
-    //         std::cout << "DBG: mpi_volume close proc " << p << " local:" << std::endl;
-    //         for ( auto const & h : hist ) {
-    //             h.print ( std::cout );
-    //         }
-    //     }
-    //     int blah = MPI_Barrier ( comm_ );
-    // }
+    for ( int p = 0; p < nproc_; ++p ) {
+        if ( rank_ == p ) {
+            std::cout << "DBG: mpi_volume close proc " << p << " local:" << std::endl;
+            for ( auto const & h : hist ) {
+                h.print ( std::cout );
+            }
+        }
+        int blah = MPI_Barrier ( comm_ );
+    }
 
     std::vector < std::deque < indexdb_transaction > > allhist;
 
@@ -267,10 +267,10 @@ void tidas::mpi_volume::close ( ) {
 
     if ( rank_ == 0 ) {
         for ( size_t i = 0; i < nproc_; ++i ) {
-            // std::cout << "DBG: mpi_volume close replaying from proc " << i << ":" << std::endl;
-            // for ( auto const & h : allhist[i] ) {
-            //     h.print ( std::cout );
-            // }
+            std::cout << "DBG: mpi_volume close replaying from proc " << i << ":" << std::endl;
+            for ( auto const & h : allhist[i] ) {
+                h.print ( std::cout );
+            }
 
             if ( loc_.path != "" ) {
                 indexdb_sql * master = dynamic_cast < indexdb_sql * > ( masterdb_.get() );
@@ -330,6 +330,8 @@ void tidas::mpi_volume::index_setup () {
     }
 
     loc_.idx = localdb_;
+
+    std::cout << "proc " << rank_ << ", master = " << masterdb_.get() << " local = " << localdb_.get() << std::endl;
 
     return;
 }

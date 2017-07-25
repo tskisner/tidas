@@ -75,4 +75,4 @@ class Volume(object):
     def root(self):
         croot = lib.ctidas_volume_root(self.cp)
         #sys.stderr.write("return root instance at {}\n".format(croot))
-        return Block(croot)
+        return Block(croot, managed=False)

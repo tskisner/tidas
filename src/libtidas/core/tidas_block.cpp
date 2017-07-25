@@ -198,8 +198,9 @@ void tidas::block::relocate ( backend_path const & loc ) {
 
 void tidas::block::sync ( string const & filter ) {
 
+    string fspath = loc_.path + path_sep + loc_.name;
+
     if ( loc_.type != backend_type::none ) {
-        string fspath = loc_.path + path_sep + loc_.name;
 
         group_data_.clear();
         intervals_data_.clear();
@@ -247,7 +248,7 @@ void tidas::block::sync ( string const & filter ) {
 
         if ( found ) {
 
-            std::cout << "DBG:  block in index" << std::endl;
+            //std::cout << "DBG SYNC:  block " << fspath << " in index, querying children" << std::endl;
 
             for ( auto const & b : child_blocks ) {
                 if ( ! stop ) {
@@ -270,6 +271,8 @@ void tidas::block::sync ( string const & filter ) {
             }
 
         } else {
+
+            //std::cout << "DBG SYNC:  block " << fspath << " not in index, reading filesystem" << std::endl;
 
             // find all sub-blocks
 
@@ -371,6 +374,8 @@ void tidas::block::sync ( string const & filter ) {
 
         }
 
+    } else {
+        //std::cout << "DBG SYNC:  block " << fspath << " no backend (will be empty)" << std::endl;
     }
 
     return;
@@ -399,16 +404,16 @@ void tidas::block::flush () const {
             // update index
 
             if ( loc_.idx ) {
-                std::cout << "flushing block " << dir << " to index " << loc_.idx.get() << std::endl;
+                //std::cout << "DBG FLUSH:  block " << dir << " to index " << loc_.idx.get() << std::endl;
                 loc_.idx->update_block ( loc_ );
             }
 
         }
 
-        std::cout << "block " << dir << " opened read-only, skipping flush" << std::endl;
+        //std::cout << "DBG FLUSH:  block " << dir << " opened read-only, skipping flush" << std::endl;
 
     } else {
-        std::cout << "block " << dir << " no backend, skipping flush" << std::endl;
+        //std::cout << "DBG FLUSH:  block " << dir << " no backend, skipping flush" << std::endl;
     }
 
     // flush groups
@@ -536,7 +541,7 @@ block tidas::block::select ( string const & filter ) const {
 
     filter_block ( filter, filt_local, filt_sub, stop );
 
-    std::cout << "filter_block:  local = \"" << filt_local << "\", sub = \"" << filt_sub << "\", stop = " << stop << std::endl;
+    //std::cout << "filter_block:  local = \"" << filt_local << "\", sub = \"" << filt_sub << "\", stop = " << stop << std::endl;
 
     // split local filter string:  [XX=XX,XX=XX]
 
@@ -599,18 +604,18 @@ block tidas::block::select ( string const & filter ) const {
 
         filter_sub ( filt_sub, filt_name, filt_pass );
 
-        std::cout << "  sub blocks:  name = \"" << filt_name << "\" (" << filter_default(filt_name) << ") " << " pass = \"" << filt_pass << "\"" << std::endl;
+        //std::cout << "  sub blocks:  name = \"" << filt_name << "\" (" << filter_default(filt_name) << ") " << " pass = \"" << filt_pass << "\"" << std::endl;
 
         regex blockre ( filter_default ( filt_name ), std::regex::extended );
 
-        std::cout << "    searching " << block_data_.size() << " sub blocks" << std::endl;
+        //std::cout << "    searching " << block_data_.size() << " sub blocks" << std::endl;
 
         for ( auto & blk : block_data_ ) {
             if ( regex_match ( blk.first, blockre ) ) {
-                std::cout << "    block \"" << blk.first << "\" matches" << std::endl;
+                //std::cout << "    block \"" << blk.first << "\" matches" << std::endl;
                 ret.block_data_[ blk.first ] = blk.second.select ( filt_pass );
             } else {
-                std::cout << "    block \"" << blk.first << "\" no match" << std::endl;
+                //std::cout << "    block \"" << blk.first << "\" no match" << std::endl;
             }
         }
 
@@ -914,7 +919,7 @@ block & tidas::block::block_add ( string const & name, block const & blk ) {
     block_data_[ name ].copy ( blk, "", block_loc ( loc_, name ) );
     block_data_[ name ].flush();
 
-    std::cout << "DBG:  block " << loc_.path << "/" << loc_.name << " adding child " << name << std::endl;
+    //std::cout << "DBG:  block " << loc_.path << "/" << loc_.name << " adding child " << name << std::endl;
 
     if ( ( loc_.type != backend_type::none ) && ( blk.location().type != backend_type::none ) ) {
         data_copy ( blk, block_data_.at ( name ) );
@@ -989,6 +994,37 @@ void tidas::block::clear () {
     clear_groups();
     clear_intervals();
     clear_blocks();
+    return;
+}
+
+
+void tidas::block::info ( string name, bool recurse, size_t indent ) {
+    string istr ( indent, ' ' );
+    string prefix = string("BLOCK:  ") + istr;
+
+    std::cout << prefix << name << std::endl;
+
+    std::cout << prefix << "  groups:" << std::endl;
+    for ( auto & gr : group_data_ ) {
+        std::cout << prefix << "    " << gr.first << std::endl;
+    }
+
+    std::cout << prefix << "  intervals:" << std::endl;
+    for ( auto & inv : intervals_data_ ) {
+        std::cout << prefix << "    " << inv.first << std::endl;
+    }
+
+    if ( recurse ) {
+        for ( auto & blk : block_data_ ) {
+            blk.second.info ( blk.first, recurse, indent+2 );
+        }
+    } else {
+        std::cout << prefix << "sub-blocks:" << std::endl;
+        for ( auto & blk : block_data_ ) {
+            std::cout << prefix << "  " << blk.first << std::endl;
+        }
+    }
+
     return;
 }
 

@@ -1197,10 +1197,9 @@ void ctidas_block_clear_children ( ctidas_block * blk ) {
 
 
 ctidas_block * ctidas_block_select ( ctidas_block const * blk, char const * filter ) {
-    block const * b = reinterpret_cast < block const * > ( blk );
-    ctidas_block * ret = ctidas_block_alloc();
-    block * r = reinterpret_cast < block * > ( ret );
-    (*r) = b->select( string(filter) );
+    block const * b = reinterpret_cast < block const * > ( blk );    
+    block result = b->select( string(filter) );
+    ctidas_block * ret = reinterpret_cast < ctidas_block * > ( new block( result ) );
     return ret;
 }
 
@@ -1236,9 +1235,10 @@ void ctidas_volume_close ( ctidas_volume * vol ) {
 
 ctidas_block * ctidas_volume_root ( ctidas_volume * vol ) {
     volume * v = reinterpret_cast < volume * > ( vol );
-    ctidas_block * ret = ctidas_block_alloc();
-    block * b = reinterpret_cast < block * > ( ret );
-    (*b) = v->root();
+    block & b = v->root();
+    // note this DOES NOT allocate a new block, but rather returns
+    // a pointer to the fixed root block in the volume.
+    ctidas_block * ret = reinterpret_cast < ctidas_block * > ( &b );
     return ret;
 }
 

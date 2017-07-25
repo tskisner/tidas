@@ -285,7 +285,7 @@ def test_volume_setup(vol, nblock, nsamp):
     #sys.stderr.write("volume setup root {}\n".format(rt._handle()))
     rt.clear()
     for b in range(nblock):
-        child = rt.block_add("block_{}".format(b))
+        child = rt.block_add("block_{}".format(b), Block(None))
         #sys.stderr.write("volume setup root/child {}\n".format(child._handle()))
         test_block_setup(child, nsamp)
     return
@@ -377,7 +377,7 @@ def test_mpi_volume_setup(vol, nblock, nsamp):
 
     for b in range(offset, offset + nlocal):
         #print("TEST setup process {} blocks {}-{}".format(vol.comm.rank, offset, offset+nlocal-1))
-        child = rt.block_add("block_{}".format(b))
+        child = rt.block_add("block_{}".format(b), Block(None))
         test_block_setup(child, nsamp)
     return
 

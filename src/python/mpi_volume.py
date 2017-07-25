@@ -100,4 +100,4 @@ class MPIVolume(object):
     def root(self):
         croot = ctdmpi.libmpi.ctidas_mpi_volume_root(self.cp)
         #sys.stderr.write("return root instance at {}\n".format(croot))
-        return Block(croot)
+        return Block(croot, managed=False)

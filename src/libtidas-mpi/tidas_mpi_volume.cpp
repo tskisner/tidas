@@ -181,12 +181,12 @@ void tidas::mpi_volume::open ( ) {
         TIDAS_THROW( o.str().c_str() );
     }
 
-    // All processes clear their local in-memory DB
-    if ( loc_.path != "" ) {
-        localdb_.reset ( new indexdb_mem( loc_.path ) );
-    } else {
-        localdb_.reset ( new indexdb_mem() );
-    }
+    // // All processes clear their local in-memory DB
+    // if ( loc_.path != "" ) {
+    //     localdb_.reset ( new indexdb_mem( loc_.path ) );
+    // } else {
+    //     localdb_.reset ( new indexdb_mem() );
+    // }
 
     std::deque < indexdb_transaction > hist;
 
@@ -210,23 +210,31 @@ void tidas::mpi_volume::open ( ) {
             hist = master->history();
         }
 
-        std::cout << "DBG: mpi_volume rank 0 tree:" << std::endl;
-        for ( auto const & h : hist ) {
-            h.print ( std::cout );
-        }
+        // std::cout << "DBG: mpi_volume rank 0 tree:" << std::endl;
+        // for ( auto const & h : hist ) {
+        //     h.print ( std::cout );
+        // }
     }
 
+    // copy the root block before broadcast, so that we don't invalidate
+    // existing pointers to the root.
+
+    block rootcopy ( root_, "", root_loc ( loc_ ) );
+
     // broadcast all objects (does not send index)
-    mpi_bcast ( comm_, root_, 0 );
+    mpi_bcast ( comm_, rootcopy, 0 );
+
+    // copy result back to the root member variable
+    root_.copy ( rootcopy, "", root_loc ( loc_ ) );
 
     // broadcast transactions
     mpi_bcast ( comm_, hist, 0 );
 
     // replay transactions into local DB
-    std::cout << "DBG: mpi_volume open replaying:" << std::endl;
-    for ( auto const & h : hist ) {
-        h.print ( std::cout );
-    }
+    // std::cout << "DBG: mpi_volume open replaying:" << std::endl;
+    // for ( auto const & h : hist ) {
+    //     h.print ( std::cout );
+    // }
 
     localdb_->replay ( hist );
 
@@ -235,6 +243,14 @@ void tidas::mpi_volume::open ( ) {
     root_.relocate ( root_loc ( loc_ ) );
 
     int ret = MPI_Barrier ( comm_ );
+
+    // for ( size_t i = 0; i < nproc_; ++i ) {
+    //     if ( rank_ == i ) {
+    //         std::cout << "DBG OPEN:  proc " << i << " has blocks:" << std::endl;
+    //         root_.info ( "/", true, 0 );
+    //     }
+    //     ret = MPI_Barrier ( comm_ );
+    // }
 
     return;
 }
@@ -249,15 +265,15 @@ void tidas::mpi_volume::close ( ) {
     hist = localdb_->history();
     localdb_->history_clear();
 
-    for ( int p = 0; p < nproc_; ++p ) {
-        if ( rank_ == p ) {
-            std::cout << "DBG: mpi_volume close proc " << p << " local:" << std::endl;
-            for ( auto const & h : hist ) {
-                h.print ( std::cout );
-            }
-        }
-        int blah = MPI_Barrier ( comm_ );
-    }
+    // for ( int p = 0; p < nproc_; ++p ) {
+    //     if ( rank_ == p ) {
+    //         std::cout << "DBG: mpi_volume close proc " << p << " local:" << std::endl;
+    //         for ( auto const & h : hist ) {
+    //             h.print ( std::cout );
+    //         }
+    //     }
+    //     int blah = MPI_Barrier ( comm_ );
+    // }
 
     std::vector < std::deque < indexdb_transaction > > allhist;
 
@@ -267,10 +283,10 @@ void tidas::mpi_volume::close ( ) {
 
     if ( rank_ == 0 ) {
         for ( size_t i = 0; i < nproc_; ++i ) {
-            std::cout << "DBG: mpi_volume close replaying from proc " << i << ":" << std::endl;
-            for ( auto const & h : allhist[i] ) {
-                h.print ( std::cout );
-            }
+            // std::cout << "DBG: mpi_volume close replaying from proc " << i << ":" << std::endl;
+            // for ( auto const & h : allhist[i] ) {
+            //     h.print ( std::cout );
+            // }
 
             if ( loc_.path != "" ) {
                 indexdb_sql * master = dynamic_cast < indexdb_sql * > ( masterdb_.get() );
@@ -331,7 +347,7 @@ void tidas::mpi_volume::index_setup () {
 
     loc_.idx = localdb_;
 
-    std::cout << "proc " << rank_ << ", master = " << masterdb_.get() << " local = " << localdb_.get() << std::endl;
+    //std::cout << "proc " << rank_ << ", master = " << masterdb_.get() << " local = " << localdb_.get() << std::endl;
 
     return;
 }

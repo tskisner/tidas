@@ -105,6 +105,8 @@ namespace tidas {
 
             block select ( std::string const & filter = "" ) const;
 
+            void info ( std::string name, bool recurse, size_t indent );
+
 
             // non-const version
 

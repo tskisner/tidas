@@ -19,12 +19,14 @@ class Block(object):
     """
     Class which represents a TIDAS block.
     """
-    def __init__(self, handle):
+    def __init__(self, handle, managed=True):
         self.cp = handle
+        self.managed = managed
 
     def close(self):
         if self.cp is not None:
-            lib.ctidas_block_free(self.cp)
+            if self.managed:
+                lib.ctidas_block_free(self.cp)
         self.cp = None
 
     def __del__(self):
@@ -188,15 +190,18 @@ class Block(object):
             raise RuntimeError("block is not associated with a volume")
         cname = name.encode("utf-8")
         cb = lib.ctidas_block_child_get(self.cp, ct.c_char_p(cname))
-        return Block(cb)
+        return Block(handle=cb)
 
-    def block_add(self, name):
+    def block_add(self, name, blk):
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
-        cb = lib.ctidas_block_alloc()
+        cblk = blk._handle()
+        if blk._handle() is None:
+            cblk = lib.ctidas_block_alloc()
         cname = name.encode("utf-8")
-        nb = lib.ctidas_block_child_add(self.cp, ct.c_char_p(cname), cb)
-        lib.ctidas_block_free(cb)
+        nb = lib.ctidas_block_child_add(self.cp, ct.c_char_p(cname), cblk)
+        if blk._handle() is None:
+            lib.ctidas_block_free(cblk)
         return Block(handle=nb)
 
     def block_del(self, name):
@@ -211,7 +216,7 @@ class Block(object):
             raise RuntimeError("block is not associated with a volume")
         cfilter = filter.encode("utf-8")
         cblk = lib.ctidas_block_select(self.cp, ct.c_char_p(cfilter))
-        return Block(cblk)
+        return Block(handle=cblk)
 
     def info(self, name="", recurse=True, indent=2):
         prf = "TIDAS:  "

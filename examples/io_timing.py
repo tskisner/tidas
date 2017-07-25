@@ -158,7 +158,7 @@ def group_setup(grp, ndet, nsamp):
 
     for d in range(ndet):
         dname = "det_{}".format(d)
-        numpy.random.seed(d)
+        np.random.seed(d)
         data = np.random.normal(loc=0.0, scale=10.0, size=nsamp)
         grp.write(dname, 0, data)
 
@@ -308,7 +308,7 @@ def main():
     parser.add_argument("--ndet", required=False, type=int, default=1,
                         help="Number of detectors")
 
-    parser.add_argument("--rate", required=False, type=float, default=1.0,
+    parser.add_argument("--rate", required=False, type=float, default=0.01,
                         help="Sample rate in Hz")
 
     parser.add_argument("--startyear", required=False, default=2018, type=int,
@@ -354,7 +354,7 @@ def main():
                 day_to_year[cur] = yr
             totaldays += nday
 
-    daysamples = 24.0 * 3600.0 * args.rate
+    daysamples = int(24.0 * 3600.0 * args.rate)
 
     # Distribute days among processes
 
@@ -377,29 +377,39 @@ def main():
             # Rank zero process creates the empty blocks for all 
             # years and months.
             for yr in range(args.startyear, args.startyear + args.years):
-                yrblock = root.block_add("{:04d}".format(yr))
-                print("Add block {}".format("/{:04d}".format(yr)))
+                yrblock = root.block_add("{:04d}".format(yr), tds.Block(None))
+                #print("Add block {}".format("/{:04d}".format(yr)))
                 sys.stdout.flush()
                 for mn in range(12):
                     mnstr = calendar.month_abbr[mn+1]
-                    mnblock = yrblock.block_add(mnstr)
-                    print("Add block {}".format("/{:04d}/{}".format(yr, mnstr)))
+                    mnblock = yrblock.block_add(mnstr, tds.Block(None))
+                    #print("Add block {}".format("/{:04d}/{}".format(yr, mnstr)))
 
         # sync this meta data to all processes
         vol.meta_sync()
+
+        #root.info("/")
 
         # now every process creates its days
         for dy in range(firstday, firstday + ndays):
             yr = day_to_year[dy]
             mn = day_to_month[dy]
             mday = day_to_mday[dy]
-            yrblk = root.block_get("{:04d}".format(yr))
-            mblk = yrblk.block_get("{}".format(calendar.month_abbr[mn+1]))
-            dyblk = mblk.block_add("{:02d}".format(mday))
             sys.stdout.flush()
-            print("Add block /{:04d}/{}/{:02d}".format(yr, calendar.month_abbr[mn+1], mday))
+            #print("Getting year block {:04d}".format(yr))
+            sys.stdout.flush()
+            yrblk = root.block_get("{:04d}".format(yr))
+            sys.stdout.flush()
+            #print("Getting month block {}".format(calendar.month_abbr[mn+1]))
+            sys.stdout.flush()
+            mblk = yrblk.block_get("{}".format(calendar.month_abbr[mn+1]))
+            dyblk = mblk.block_add("{:02d}".format(mday), tds.Block(None))
+            sys.stdout.flush()
+            #print("Add block /{:04d}/{}/{:02d}".format(yr, calendar.month_abbr[mn+1], mday))
             sys.stdout.flush()
             block_create(dyblk, gnames, inames, args.ndet, daysamples, args.intervals)
+
+        #root.info("/")
 
     comm.barrier()
     if comm.rank == 0:
@@ -418,7 +428,7 @@ def main():
             mday = day_to_mday[dy]
             yrblk = root.block_get("{:04d}".format(yr))
             mblk = yrblk.block_get("{}".format(calendar.month_abbr[mn+1]))
-            dyblk = mblk.block_add("{:02d}".format(mday))
+            dyblk = mblk.block_get("{:02d}".format(mday))
             sys.stdout.flush()
             print("Writing /{:04d}/{}/{:02d}".format(yr, calendar.month_abbr[mn+1], mday))
             sys.stdout.flush()

@@ -47,9 +47,10 @@ int ctidas_mpi_volume_comm_size ( ctidas_mpi_volume * vol ) {
 
 ctidas_block * ctidas_mpi_volume_root ( ctidas_mpi_volume * vol ) {
     mpi_volume * v = reinterpret_cast < mpi_volume * > ( vol );
-    ctidas_block * ret = ctidas_block_alloc();
-    block * b = reinterpret_cast < block * > ( ret );
-    (*b) = v->root();
+    block & b = v->root();
+    // note this DOES NOT allocate a new block, but rather returns
+    // a pointer to the fixed root block in the volume.
+    ctidas_block * ret = reinterpret_cast < ctidas_block * > ( &b );
     return ret;
 }
 

@@ -1,7 +1,7 @@
 SUBDIRS = libtidas apps
 
 if HAVE_AM_PYTHON
-  SUBDIRS += python
+  SUBDIRS += tidas
 endif
 
 if HAVE_AM_MPI

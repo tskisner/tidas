@@ -21,10 +21,13 @@ In TIDAS we focus on common operations that are needed in working with timestrea
 Data Organization
 ---------------------------------------
 
-The highest-level object in TIDAS is a "volume".  A volume contains a hierarchy of "blocks".  Each block is a logical collection of data based on some common property.  A block can contain data itself, and/or other blocks.  The data inside a block is organized into one or more "groups".  The timestreams in a group are sampled consistently.  A block can optionally contain an "intervals" object which is a collection of smaller time ranges within the block.  These intervals might describe sections of good (or bad) data, or specify time ranges that have some special property.  All three of these fundamental objects (blocks, groups, and intervals) also have an optional dictionary of arbitrary scalar properties.  Putting this all together, here is a crude schematic of a simple TIDAS volume:
+The highest-level object in TIDAS is a "volume".  A volume contains a hierarchy of "blocks".  Each block is a logical collection of data based on some common property.  A block can contain data itself, and/or other blocks.  The data inside a block is organized into one or more "groups".  The timestreams in a group are sampled consistently.  A block can optionally contain an "intervals" object which is a collection of smaller time ranges within the block.  These intervals might describe sections of good (or bad) data, or specify time ranges that have some special property.  The two objects which actually contain data (groups and intervals) also have an optional dictionary of arbitrary scalar properties.  Putting this all together, here is a crude schematic of a simple TIDAS volume:
 
 (insert figure here)
 
 
+Code Organization and Requirements
+---------------------------------------
 
+TIDAS consists mainly of a serial C++(11) library with no external dependencies.  There is an optional high-level MPI interface for working with TIDAS volumes.  There are also C and Python bindings for many operations.  Data and metadata are written to disk through the use of compile-time plugins ("backends").  Currently there is only one backend (HDF5), so the serial HDF5 library is also currently a requirement for doing any meaningful work with this package.
 

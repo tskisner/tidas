@@ -93,6 +93,18 @@ access_mode_str = {
     ct.c_uint(1).value : 'write'
 }
 
+link_type = {
+    'none' = ct.c_uint(0),
+    'hard' = ct.c_uint(1),
+    'soft' = ct.c_uint(2)
+}
+
+link_type_str = {
+    ct.c_uint(0).value : 'none',
+    ct.c_uint(1).value : 'hard',
+    ct.c_uint(2).value : 'soft'
+}
+
 exec_order = {
     'depth_first' : ct.c_uint(0),
     'depth_last' : ct.c_uint(1),
@@ -744,6 +756,14 @@ lib.ctidas_volume_open.argtypes = [ ct.c_char_p, ct.c_uint ]
 
 lib.ctidas_volume_close.restype = None
 lib.ctidas_volume_close.argtypes = [ ct.POINTER(cVolume) ]
+
+lib.ctidas_volume_duplicate.restype = None
+lib.ctidas_volume_duplicate.argtypes = [ ct.POINTER(cVolume), ct.c_char_p, 
+    ct.c_uint, ct.c_uint, ct.c_char_p ]
+
+lib.ctidas_volume_link.restype = None
+lib.ctidas_volume_link.argtypes = [ ct.POINTER(cVolume), ct.c_char_p, 
+    ct.c_uint, ct.c_char_p ]
 
 lib.ctidas_volume_root.restype = ct.POINTER(cBlock)
 lib.ctidas_volume_root.argtypes = [ ct.POINTER(cVolume) ]

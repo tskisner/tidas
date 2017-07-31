@@ -43,7 +43,7 @@ namespace tidas {
             /// Copy constructor.
             block ( block const & other );
 
-            /// (**Internal**) Create a block from disk with the specified 
+            /// (**Internal**) Load a block from disk with the specified 
             /// selection filter.
             block ( backend_path const & loc, std::string const & filter = "" );
             
@@ -52,29 +52,29 @@ namespace tidas {
 
             // metadata ops
 
-            /// (Internal) Change the location of the block.
+            /// (**Internal**) Change the location of the block.
             void relocate ( backend_path const & loc );
 
-            /// (Internal) Recursively read the metadata for the block and its
+            /// (**Internal**) Recursively read the metadata for the block and its
             /// children from disk.  Optionally apply a selection filter.
             void sync ( std::string const & filter = "" );
 
-            /// (Internal) Recursively write metadata for the block and its 
+            /// (**Internal**) Recursively write metadata for the block and its 
             /// children.
             void flush () const;
 
-            /// (Internal) Copy
+            /// (**Internal**) Copy with optional selection and relocation.
             void copy ( block const & other, std::string const & filter, backend_path const & loc );
 
-            // Create a link at the specified location.
+            /// (**Internal**) Create a link at the specified location.
             void link ( link_type const & type, std::string const & path ) const;
 
-            // Delete the on-disk data and metadata associated with this object.
-            // In-memory metadata is not modified.
+            /// (**Internal**) Delete the on-disk data and metadata associated 
+            /// with this object.  In-memory metadata is not modified.
             void wipe () const;
 
+            /// (**Internal**) The current location.
             backend_path location () const;
-
 
             /// Return the filesystem path of the auxilliary directory for 
             /// this block.
@@ -82,57 +82,90 @@ namespace tidas {
 
             // data ops
 
+            /// Returns the extrema of timestamps of all groups in this block.
+            /// This is not recursive (does not traverse sub-blocks).
             void range ( time_type & start, time_type & stop ) const;
 
+            /// Removes all groups, intervals, and sub-blocks from this block.
             void clear();
 
-
+            /// Add a group to this block using the specified name.  Returns
+            /// a refererence to the newly added group.
             group & group_add ( std::string const & name, group const & grp );
 
+            /// Get a (non-const) reference to the group with the specified
+            /// name.
             group & group_get ( std::string const & name );
 
+            /// Get a (non-const) reference to the group with the specified
+            /// name.
             group const & group_get ( std::string const & name ) const;
             
+            /// Delete the specified group.
             void group_del ( std::string const & name );
 
+            /// Return a list of the names of all groups.
             std::vector < std::string > all_groups () const;
             
+            /// Remove all groups from this block.
             void clear_groups();
 
-
+            /// Add an intervals object to this block using the specified 
+            /// name.  Returns a refererence to the newly added intervals.
             intervals & intervals_add ( std::string const & name, intervals const & intr );
             
+            /// Get a (non-const) reference to the intervals object with 
+            /// the specified name.
             intervals & intervals_get ( std::string const & name );
 
+            /// Get a (const) reference to the intervals object with 
+            /// the specified name.
             intervals const & intervals_get ( std::string const & name ) const;
             
+            /// Delete the specified intervals object.
             void intervals_del ( std::string const & name );
             
+            /// Return a list of the names of all intervals.
             std::vector < std::string > all_intervals () const;
             
+            /// Remove all intervals objects from this block.
             void clear_intervals();
 
-
+            /// Add a sub-block to this block using the specified name.
+            /// Returns a reference to the newly added block.
             block & block_add ( std::string const & name, block const & blk );
             
+            /// Get a (non-const) reference to the sub-block with the
+            /// specified name.
             block & block_get ( std::string const & name );
 
+            /// Get a (const) reference to the sub-block with the
+            /// specified name.
             block const & block_get ( std::string const & name ) const;
             
+            /// Remove the specified sub-block.
             void block_del ( std::string const & name );
             
+            /// Return a list of the names of all sub-blocks.
             std::vector < std::string > all_blocks () const;
             
+            /// Remove all sub-blocks from this block.
             void clear_blocks();
 
-
+            /// Recursively copy the current block and all descendents,
+            /// applying the specified matching pattern.
             block select ( std::string const & filter = "" ) const;
 
+            /// (**Internal**) Print metadat info for this block.  Mainly
+            /// used for debugging.
             void info ( std::string name, bool recurse, size_t indent );
 
 
             // non-const version
 
+            /// Pass over this block and all descendents, calling a functor
+            /// on each one.  The specified class should provide the
+            /// operator() method.  Blocks may be modified by this version.
             template < class P >
             void exec ( P & op, exec_order order ) {
 
@@ -166,6 +199,9 @@ namespace tidas {
 
             // const version
             
+            /// Pass over this block and all descendents, calling a functor
+            /// on each one.  The specified class should provide the
+            /// operator() method.  Blocks are treated as const in this version.
             template < class P >
             void exec ( P & op, exec_order order ) const {
 

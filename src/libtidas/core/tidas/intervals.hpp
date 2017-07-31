@@ -19,7 +19,11 @@ namespace tidas {
 
         public :
 
+            /// Default constructor.
             intrvl ();
+
+            /// Constructor specifying the start and stop times and the
+            /// first and last indices.
             intrvl ( time_type new_start, time_type new_stop, index_type new_first, index_type new_last );
 
             bool operator== ( const intrvl & other ) const;
@@ -125,7 +129,13 @@ namespace tidas {
     };
 
 
-    /// Intervals class.
+    /// An intervals object represents a list of disjoint spans of time.
+    /// Although each interval has both a time range and a sample range,
+    /// those sample indices are only meaningful in the context of a particular
+    /// group.  An intervals object has an optional dictionary associated
+    /// with it at construction time.
+    /// Some public methods are only used internally and are not needed for
+    /// normal use of the object.  These are labelled "internal".
 
     class intervals {
 
@@ -137,62 +147,82 @@ namespace tidas {
             /// Constructor with specified size and dictionary.
             intervals ( dict const & d, size_t const & size );
 
+            /// Destructor
             ~intervals ();
+
+            /// Assignment operator.
             intervals & operator= ( intervals const & other );
 
-            /// Copy constructor.  
-            /// All members and backend location are copied.
+            /// Copy constructor.
             intervals ( intervals const & other );
 
-            /// Load the intervals from an existing location.  
+            /// (**Internal**) Load the intervals from the specified location.  
             /// All meta data operations will apply to this location.
             intervals ( backend_path const & loc );
             
-            /// Copy from an existing intervals instance.  
+            /// (**Internal**) Copy from an existing intervals instance.  
             /// Apply an optional filter to elements and relocate to a new 
             /// location.  If a filter is given, a new location must be specified.
             intervals ( intervals const & other, std::string const & filter, backend_path const & loc );
 
             // metadata ops
 
+            /// (**Internal**) Change the location of the intervals.
             void relocate ( backend_path const & loc );
 
-            /// Reload metadata from the current location, overwriting the current state in memory.
+            /// (**Internal**) Reload metadata from the current location, 
+            /// overwriting the current state in memory.
             void sync ();
 
-            /// Write metadata to the current location, overwriting the information at that location.
+            /// (**Internal**) Write metadata to the current location, 
+            /// overwriting the information at that location.
             void flush () const;
 
+            /// (**Internal**) Copy with optional selection and relocation.
             void copy ( intervals const & other, std::string const & filter, backend_path const & loc );
 
-            /// Create a link at the specified location.
+            /// (**Internal**) Create a link at the specified location.
             void link ( link_type const & type, std::string const & path ) const;
 
-            /// Delete the on-disk data and metadata associated with this object.
-            /// In-memory metadata is not modified.
+            /// (**Internal**) Delete the on-disk data and metadata associated 
+            /// with this object.  In-memory metadata is not modified.
             void wipe () const;
 
-            /// The current location.
+            /// (**Internal**) The current location.
             backend_path location () const;
 
             // data ops
 
-            size_t size () const;
-
+            /// A (const) reference to the dictionary specified at
+            /// construction.
             dict const & dictionary () const;
 
+            /// The number of intervals contained in this object.
+            size_t size () const;
+
+            /// Read the list of intervals from the current location.
             void read_data ( interval_list & intr ) const;
 
+            /// Write the list of intervals to the current location.
             void write_data ( interval_list const & intr );
 
+            /// The total number of samples included in all intervals.
             static index_type total_samples ( interval_list const & intr );
 
+            /// The total time span included in all intervals.
             static time_type total_time ( interval_list const & intr );
 
+            /// Return the single interval that contains a specified time.
+            /// If no interval contains the time, an empty interval is
+            /// returned.  
             static intrvl seek ( interval_list const & intr, time_type time );
 
+            /// Return the first interval whose stop time is after the
+            /// specified time.
             static intrvl seek_ceil ( interval_list const & intr, time_type time );
             
+            /// Return the last interval whose start time is before the
+            /// specified time.
             static intrvl seek_floor ( interval_list const & intr, time_type time );
 
             template < class Archive >

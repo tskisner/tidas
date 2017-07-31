@@ -4,7 +4,7 @@
 Utilities
 ==============
 
-
+TIDAS has several small helper functions / classes.  They are documented here for lack of a better place.
 
 Dictionaries
 ------------------

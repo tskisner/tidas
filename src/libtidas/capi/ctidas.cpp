@@ -1233,6 +1233,23 @@ void ctidas_volume_close ( ctidas_volume * vol ) {
     return;
 }
 
+void ctidas_volume_duplicate ( ctidas_volume * vol, char const * path,
+    ctidas_backend_type type, ctidas_compression_type comp, 
+    char const * filter ) {
+    volume * v = reinterpret_cast < volume * > ( vol );
+    v->duplicate ( string(path), ctidas::convert_from_c(type), 
+        ctidas::convert_from_c(comp), string(filter) );
+    return;
+}
+
+void ctidas_volume_link ( ctidas_volume * vol, char const * path,
+    ctidas_link_type const & type, char const * filter ) {
+    volume * v = reinterpret_cast < volume * > ( vol );
+    v->link ( string(path), ctidas::convert_from_c(type), 
+        string(filter) );
+    return;
+}
+
 ctidas_block * ctidas_volume_root ( ctidas_volume * vol ) {
     volume * v = reinterpret_cast < volume * > ( vol );
     block & b = v->root();

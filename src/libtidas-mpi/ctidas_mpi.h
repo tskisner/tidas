@@ -31,6 +31,13 @@ ctidas_mpi_volume * ctidas_mpi_volume_open ( MPI_Comm comm, char const * path, c
 
 void ctidas_mpi_volume_close ( ctidas_mpi_volume * vol );
 
+void ctidas_mpi_volume_duplicate ( ctidas_mpi_volume * vol, char const * path,
+    ctidas_backend_type type, ctidas_compression_type comp, 
+    char const * filter );
+
+void ctidas_mpi_volume_link ( ctidas_mpi_volume * vol, char const * path,
+    ctidas_link_type const & type, char const * filter )
+
 void ctidas_mpi_volume_meta_sync ( ctidas_mpi_volume * vol );
 
 MPI_Comm ctidas_mpi_volume_comm ( ctidas_mpi_volume * vol );

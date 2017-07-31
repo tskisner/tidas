@@ -190,54 +190,93 @@ namespace tidas {
 
     // group of data streams which are sampled synchronously
 
+    /// A group represents a collection of timestreams which are sampled
+    /// consistently (they have the same number of samples).  The list of
+    /// fields and their types (the schema) is set at construction time.
+    /// The number of samples in the group may be altered, although this
+    /// should be done with care since it may be an expensive filesystem
+    /// operation.  A group has an optional dictionary associated with it
+    /// at construction time.
+    /// Some public methods are only used internally and are not needed for
+    /// normal use of the object.  These are labelled "internal".
+
     class group {
 
         public :
 
+            /// Default constructor.  The backend is set to be memory based.
             group ();
 
+            /// Constructor with specified schema, dictionary, and number 
+            /// of samples.
             group ( schema const & schm, dict const & d, size_t const & size );
 
+            /// Destructor
             ~group ();
+
+            /// Assignment operator.
             group & operator= ( group const & other );
 
+            /// Copy constructor.
             group ( group const & other );
 
+            /// (**Internal**) Load the group from the specified location.
+            /// All meta data operations will apply to this location.
             group ( backend_path const & loc );
             
-            group ( group const & other, std::string const & filter, backend_path const & loc );
+            /// (**Internal**) Copy from an existing group.  
+            /// Apply an optional filter to elemetns and relocate to a new 
+            /// location.  If a filter is given, a new location must be 
+            /// specified.
+            group ( group const & other, std::string const & filter, 
+                backend_path const & loc );
 
             // metadata ops
 
+            /// (**Internal**) Change the location of the group.
             void relocate ( backend_path const & loc );
 
+            /// (**Internal**) Reload metadata from the current location, 
+            /// overwriting the current state in memory.
             void sync ();
 
+            /// (**Internal**) Write metadata to the current location, 
+            /// overwriting the information at that location.
             void flush () const;
 
+            /// (**Internal**) Copy with optional selection and relocation.
             void copy ( group const & other, std::string const & filter, backend_path const & loc );
 
-            /// Create a link at the specified location.
+            /// (**Internal**) Create a link at the specified location.
             void link ( link_type const & type, std::string const & path ) const;
 
-            /// Delete the on-disk data and metadata associated with this object.
-            /// In-memory metadata is not modified.
+            /// (**Internal**) Delete the on-disk data and metadata associated 
+            /// with this object.  In-memory metadata is not modified.
             void wipe () const;
 
+            /// (**Internal**) The current location.
             backend_path location () const;
 
             // data ops
 
+            /// A (const) reference to the dictionary specified at construction.
             dict const & dictionary () const;
 
+            /// The fixed schema specified at construction.
             schema const & schema_get () const;
 
+            /// The number of samples currently in the group.
             index_type size () const;
 
+            /// Change the number of samples in the group.  Depending on the
+            /// backend format, this may involve expensive disk operations.
             void resize ( index_type const & newsize );
 
+            /// The extrema values of the timestamp field.
             void range ( time_type & start, time_type & stop ) const;
 
+            /// Read a range of data from a field.  Store results to the bare
+            /// memory address specified.
             template < class T >
             void read_field ( std::string const & field_name, index_type offset, index_type ndata, T * data ) const {
                 field check = schm_.field_get ( field_name );
@@ -259,6 +298,8 @@ namespace tidas {
                 return;
             }
 
+            /// Write a range of data to a field.  Data is provided at the
+            /// bare memory address specified.
             template < class T >
             void write_field ( std::string const & field_name, index_type offset, index_type ndata, T const * data ) {
                 field check = schm_.field_get ( field_name );
@@ -282,12 +323,16 @@ namespace tidas {
 
             // wrapper for std::vector
 
+            /// Read a range of data from a field.  Store results in the 
+            /// given vector.
             template < class T >
             void read_field ( std::string const & field_name, index_type offset, std::vector < T > & data ) const {
                 read_field ( field_name, offset, data.size(), data.data() );
                 return;
             }
 
+            /// Write a range of data to a field.  Data is provided as
+            /// a vector.
             template < class T >
             void write_field ( std::string const & field_name, index_type offset, std::vector < T > const & data ) {
                 write_field ( field_name, offset, data.size(), data.data() );
@@ -296,14 +341,22 @@ namespace tidas {
 
             // specialization for strings
 
+            /// Read a range of string data from a field.  Store results in 
+            /// in an array of pointers.
             void read_field ( std::string const & field_name, index_type offset, index_type ndata, char ** data ) const;
 
+            /// Write a range of string data to a field.  Data is provided at
+            /// the bare memory address specified.
             void write_field ( std::string const & field_name, index_type offset, index_type ndata, char * const * data );
 
             // wrapper for vector of strings
 
+            /// Read a range of string data from a field.  Store results in 
+            /// in a vector of strings.
             void read_field ( std::string const & field_name, index_type offset, std::vector < std::string > & data ) const;
 
+            /// Write a range of string data to a field.  Data is provided as
+            /// a vector of strings.
             void write_field ( std::string const & field_name, index_type offset, std::vector < std::string > const & data );
 
             // overload for time_type which updates range
@@ -314,12 +367,20 @@ namespace tidas {
 
             // read / write the full time stamp vector
 
+            /// Read the timestamps for this group.  Data is stored in the
+            /// bare memory address provided.
             void read_times ( index_type ndata, time_type * data ) const;
 
+            /// Read the timestamps for this group.  Data is stored in the
+            /// vector provided.
             void read_times ( std::vector < time_type > & data ) const;
 
+            /// Write the timestamps for this group.  Data is provided at 
+            /// the bare memory address specified.
             void write_times ( index_type ndata, time_type const * data );
 
+            /// Write the timestamps for this group.  Data is provided as
+            /// a vector.
             void write_times ( std::vector < time_type > const & data );
 
             template < class Archive >

@@ -68,11 +68,14 @@ breathe_default_project = "TIDAS"
 # built documents.
 #
 fullversion = sp.run(["../../m4/git-version.sh"], check=True, 
-  stdout=sp.PIPE, universal_newlines=True).stdout
+    stdout=sp.PIPE, universal_newlines=True).stdout
 fvparts = fullversion.split(".")
 
 # The short X.Y version.
-version = "{}.{}".format(fvparts[0], fvparts[1])
+if len(fvparts) == 1:
+    version = fvparts[0]
+else:
+    version = "{}.{}".format(fvparts[0], fvparts[1])
 # The full version, including alpha/beta/rc tags.
 release = fullversion
 
@@ -222,8 +225,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'TIDAS.tex', u'TIDAS Documentation',
-   u'Theodore Kisner', 'manual'),
+    ('index', 'TIDAS.tex', u'TIDAS Documentation',
+    u'Theodore Kisner', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -266,9 +269,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'TIDAS', u'TIDAS Documentation',
-   u'Theodore Kisner', 'TIDAS', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'TIDAS', u'TIDAS Documentation',
+    u'Theodore Kisner', 'TIDAS', 'One line description of project.',
+    'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.

@@ -75,6 +75,14 @@ libmpi.ctidas_mpi_volume_open.argtypes = [ MPI_Comm, ct.c_char_p, ct.c_uint ]
 libmpi.ctidas_mpi_volume_close.restype = None
 libmpi.ctidas_mpi_volume_close.argtypes = [ ct.POINTER(cMPIVolume) ]
 
+libmpi.ctidas_mpi_volume_duplicate.restype = None
+libmpi.ctidas_mpi_volume_duplicate.argtypes = [ ct.POINTER(cMPIVolume), 
+    ct.c_char_p, ct.c_uint, ct.c_uint, ct.c_char_p ]
+
+libmpi.ctidas_mpi_volume_link.restype = None
+libmpi.ctidas_mpi_volume_link.argtypes = [ ct.POINTER(cMPIVolume),
+    ct.c_char_p, ct.c_uint, ct.c_char_p ]
+
 libmpi.ctidas_mpi_volume_meta_sync.restype = None
 libmpi.ctidas_mpi_volume_meta_sync.argtypes = [ ct.POINTER(cMPIVolume) ]
 

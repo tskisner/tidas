@@ -21,10 +21,13 @@ namespace tidas {
 
         public :
 
+            /// Default constructor.
             volume ();
 
+            /// Destructor
             ~volume ();
             
+            /// Assignment operator.
             volume & operator= ( volume const & other );
 
             /// Copy constructor.
@@ -37,11 +40,12 @@ namespace tidas {
             /// Open an existing volume.
             volume ( std::string const & path, access_mode mode );
             
-            /// (**Internal**) Create a copy of a volume, with optional selection and new location.
+            /// (**Internal**) Copy constructor, with optional selection and new location.
             volume ( volume const & other, std::string const & filter, backend_path const & loc );
 
             // metadata ops
 
+            /// (**Internal**) Create a copy of a volume, with optional selection and new location.
             void copy ( volume const & other, std::string const & filter, backend_path const & loc );
 
             /// Export a filtered subset of the volume to a new location.
@@ -56,6 +60,7 @@ namespace tidas {
             /// In-memory metadata is not modified.
             void wipe ( std::string const & filter ) const;
 
+            /// (**Internal**) The current location.
             backend_path location () const;
 
             /// Get the root block of the volume.
@@ -64,6 +69,9 @@ namespace tidas {
             /// Get the (const) root block of the volume.
             block const & root () const;
 
+            /// Pass over the root block and all descendents, calling a 
+            /// functor on each one.  The specified class should provide the
+            /// operator() method.
             template < class P >
             void exec ( P & op, exec_order order, std::string const & filter = "" ) {
 

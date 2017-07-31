@@ -24,6 +24,23 @@ void ctidas_mpi_volume_close ( ctidas_mpi_volume * vol ) {
     return;
 }
 
+void ctidas_mpi_volume_duplicate ( ctidas_mpi_volume * vol, char const * path,
+    ctidas_backend_type type, ctidas_compression_type comp, 
+    char const * filter ) {
+    mpi_volume * v = reinterpret_cast < mpi_volume * > ( vol );
+    v->duplicate ( string(path), ctidas::convert_from_c(type), 
+        ctidas::convert_from_c(comp), string(filter) );
+    return;
+}
+
+void ctidas_mpi_volume_link ( ctidas_mpi_volume * vol, char const * path,
+    ctidas_link_type const & type, char const * filter ) {
+    mpi_volume * v = reinterpret_cast < mpi_volume * > ( vol );
+    v->link ( string(path), ctidas::convert_from_c(type), 
+        string(filter) );
+    return;
+}
+
 void ctidas_mpi_volume_meta_sync ( ctidas_mpi_volume * vol ) {
     mpi_volume * v = reinterpret_cast < mpi_volume * > ( vol );
     v->meta_sync();

@@ -81,6 +81,26 @@ class MPIVolume(object):
         self.close()
         return False
 
+    def duplicate(self, path, backend="hdf5", comp="none", selection=""):
+        cpath = path.encode("utf-8")
+        pcpath = ct.c_char_p(cpath)
+        if self.cp is None:
+            raise RuntimeError("Volume is not open")
+        ctdmpi.libmpi.ctidas_mpi_volume_duplicate(self.cp, pcpath, 
+            backend_type[backend], compression_type[comp], selection)
+        return
+
+    def link(self, path, type="soft", selection=""):
+        cpath = path.encode("utf-8")
+        csel = selection.encode("utf-8")
+        pcpath = ct.c_char_p(cpath)
+        pcsel = ct.c_char_p(csel)
+        if self.cp is None:
+            raise RuntimeError("Volume is not open")
+        ctdmpi.libmpi.ctidas_mpi_volume_link(self.cp, pcpath, 
+            link_type[backend], pcsel)
+        return
+
     def meta_sync(self):
         ctdmpi.libmpi.ctidas_mpi_volume_meta_sync(self.cp)
         return

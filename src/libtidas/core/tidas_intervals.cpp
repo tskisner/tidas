@@ -344,6 +344,7 @@ intrvl tidas::intervals::seek_ceil ( interval_list const & intr, time_type time 
         if ( time < inv.stop ) {
             // we are inside the interval, or after the stop of the previous one
             ret = inv;
+            break;
         }
     }
 

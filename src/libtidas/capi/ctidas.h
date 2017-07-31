@@ -381,15 +381,25 @@ void ctidas_block_exec ( ctidas_block const * blk, ctidas_exec_order order, CTID
 struct ctidas_volume_;
 typedef struct ctidas_volume_ ctidas_volume;
 
-ctidas_volume * ctidas_volume_create ( char const * path, ctidas_backend_type type, ctidas_compression_type comp );
+ctidas_volume * ctidas_volume_create ( char const * path, 
+    ctidas_backend_type type, ctidas_compression_type comp );
 
-ctidas_volume * ctidas_volume_open ( char const * path, ctidas_access_mode mode );
+ctidas_volume * ctidas_volume_open ( char const * path, 
+    ctidas_access_mode mode );
 
 void ctidas_volume_close ( ctidas_volume * vol );
 
+void ctidas_volume_duplicate ( ctidas_volume * vol, char const * path,
+    ctidas_backend_type type, ctidas_compression_type comp, 
+    char const * filter );
+
+void ctidas_volume_link ( ctidas_volume * vol, char const * path,
+    ctidas_link_type const & type, char const * filter );
+
 ctidas_block * ctidas_volume_root ( ctidas_volume * vol );
 
-void ctidas_volume_exec ( ctidas_volume * vol, ctidas_exec_order order, CTIDAS_EXEC_OP op, void * aux );
+void ctidas_volume_exec ( ctidas_volume * vol, ctidas_exec_order order,
+    CTIDAS_EXEC_OP op, void * aux );
 
 
 /* Data copy */

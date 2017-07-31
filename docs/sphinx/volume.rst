@@ -6,7 +6,19 @@ Volumes
 
 A volume is the top-level TIDAS object.  It defines the "backend" data format and holds a metadata database for fast(er) data selection and query operations.  It also contains the root of a hierarchy (a tree) of "blocks".
 
+Interface
+---------------
 
+C++
+~~~~~~~~~
+.. doxygenclass:: tidas::volume
+    :members:
+    :no-link:
+
+Python
+~~~~~~~~~
+.. autoclass:: tidas.Volume
+    :members:
 
 
 
@@ -15,10 +27,10 @@ Blocks
 
 A "block" is simply a logical collection of data which has a "name" (a string) associated with it.  A block can contain data itself, other blocks, or both.  A volume contains a special "root" block, which is the top of the tree / hierarchy of blocks in the volume.
 
-C++
+ C++
 ~~~~~~~~~
 .. doxygenclass:: tidas::block
-        :members:
+    :members:
 
 Python
 ~~~~~~~~~

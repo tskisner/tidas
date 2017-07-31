@@ -60,7 +60,7 @@ copyright = u'2014-2017, Theodore Kisner'
 # breathe                                                                                                    
 breathe_projects = { "TIDAS": "../xml/" }
 breathe_default_project = "TIDAS"
-breathe_default_members = ('members',)
+#breathe_default_members = ('members',)
 #breathe_default_members = ('members', 'undoc-members')
 
 # The version info for the project you're documenting, acts as replacement for
@@ -117,6 +117,8 @@ pygments_style = 'sphinx'
 # -- Options for autodoc --------------------------------------------------
 
 autoclass_content = 'both'
+
+autodoc_mock_imports = ['mpi4py']
 
 # -- Options for HTML output ----------------------------------------------
 

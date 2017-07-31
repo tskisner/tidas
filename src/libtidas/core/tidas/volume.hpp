@@ -11,14 +11,23 @@
 
 namespace tidas {
 
+    /// A volume is the top-level TIDAS object.  A volume stores the backend
+    /// format and properties and the metadata index.  It contains the root
+    /// block which is the parent of all blocks in the tree.
+    /// Some public methods are only used internally and are not needed for
+    /// normal use of the object.  These are labelled "internal".
+
     class volume {
 
         public :
 
             volume ();
+
             ~volume ();
+            
             volume & operator= ( volume const & other );
 
+            /// Copy constructor.
             volume ( volume const & other );
 
             /// Create a new volume.
@@ -28,6 +37,7 @@ namespace tidas {
             /// Open an existing volume.
             volume ( std::string const & path, access_mode mode );
             
+            /// (**Internal**) Create a copy of a volume, with optional selection and new location.
             volume ( volume const & other, std::string const & filter, backend_path const & loc );
 
             // metadata ops

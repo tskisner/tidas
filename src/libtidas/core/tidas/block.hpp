@@ -20,41 +20,64 @@ namespace tidas {
     void data_copy ( block const & in, block & out );
 
 
-    // block class
+    /// A block represents a logical grouping of data.  A block can have zero
+    /// or more groups, intervals and sub-blocks.  Child objects are added
+    /// with a "name" associated to them.  These names are used when performing
+    /// selection / query operations.  
+    /// Some public methods are only used internally and are not needed for
+    /// normal use of the object.  These are labelled "internal".
 
     class block {
 
         public :
 
+            /// Default constructor.
             block ();
+
+            /// Destructor
             ~block ();
+            
+            /// Assignment operator.
             block & operator= ( block const & other );
 
+            /// Copy constructor.
             block ( block const & other );
 
+            /// (**Internal**) Create a block from disk with the specified 
+            /// selection filter.
             block ( backend_path const & loc, std::string const & filter = "" );
             
+            /// (**Internal**) Create a copy of a block, with optional selection and new location.
             block ( block const & other, std::string const & filter, backend_path const & loc );
 
             // metadata ops
 
+            /// (Internal) Change the location of the block.
             void relocate ( backend_path const & loc );
 
+            /// (Internal) Recursively read the metadata for the block and its
+            /// children from disk.  Optionally apply a selection filter.
             void sync ( std::string const & filter = "" );
 
+            /// (Internal) Recursively write metadata for the block and its 
+            /// children.
             void flush () const;
 
+            /// (Internal) Copy
             void copy ( block const & other, std::string const & filter, backend_path const & loc );
 
-            /// Create a link at the specified location.
+            // Create a link at the specified location.
             void link ( link_type const & type, std::string const & path ) const;
 
-            /// Delete the on-disk data and metadata associated with this object.
-            /// In-memory metadata is not modified.
+            // Delete the on-disk data and metadata associated with this object.
+            // In-memory metadata is not modified.
             void wipe () const;
 
             backend_path location () const;
 
+
+            /// Return the filesystem path of the auxilliary directory for 
+            /// this block.
             std::string aux_dir () const;
 
             // data ops

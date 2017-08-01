@@ -74,8 +74,8 @@ with tidas.Volume(path, backend="hdf5") as vol:
         # Add a block for this year
         yb = root.block_add(year)
 
-        for monthnum in range(1, 13):
-            # Add a block for the month
+        for monthnum in range(1, 2):
+            # Add a block for the month.  Just use January for now.
             month = calendar.month_abbr[monthnum]
             mb = yb.block_add(month)
 
@@ -155,8 +155,6 @@ with tidas.Volume(path, backend="hdf5") as vol:
 # interested in the speed, not the direction.  Let's extract just the wind
 # speed data for the month of January, 2019.
 
-print("Small demo")
-
 file = "demo_weather_small"
 if os.path.isdir(file):
     shutil.rmtree(file)
@@ -167,6 +165,7 @@ with tidas.Volume(path) as vol:
 
 # Take a quick peek at the small data volume:
 
+print("\nSmall volume with just wind speed:\n")
 with tidas.Volume(file) as vol:
     vol.info()
 
@@ -175,8 +174,6 @@ with tidas.Volume(file) as vol:
 # However, we want to do some operations on that original data and produce some
 # new derived data products.  We can make a volume which links to the original
 # data and then add new groups to this.
-
-print("Link demo")
 
 file = "demo_weather_link"
 if os.path.isdir(file):
@@ -222,5 +219,6 @@ with tidas.Volume(file, mode="w") as vol:
 # in this volume.  However, note that trying to write to these would fail
 # if the filesystem permissions were read-only.
 
+print("\nVolume linked to original with new local Intervals:\n")
 with tidas.Volume(file) as vol:
     vol.info()

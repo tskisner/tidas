@@ -50,7 +50,30 @@ An important feature of TIDAS volumes is the ability to open / copy / link only 
 Most data collected from monitoring systems, experimental apparatuses, etc, have natural ways that the data might be split up into pieces.  For example, if the data collection is started fresh each day, you might have a block for each day.  If there are different sorts of data within one day which you might want to frequently split up, then you could have sub-blocks in each day for the different data types.  Going the other direction up the hierarchy, you might organize the days into blocks for each month, each quarter, each year, etc. 
 
 
-Example
+MPI Volumes
 ----------------------
 
+On supported systems, an MPI interface to TIDAS volumes will be installed.
+These are very similar to serial volumes.  When a volume is opened through
+the MPI interface, all processes get a copy of the metadata index.  If any
+objects are added or resized on one process, the other processes will not
+see those changes until the synchronization method is called.
+
+.. warning::
+
+	Multiple processes writing to the same group or intervals object is not supported, and may corrupt the data files for those objects!
+
+
+C++
+~~~~~~~~~
+
+.. doxygenclass:: tidas::mpi_volume
+    :members:
+    :no-link:
+
+Python
+~~~~~~~~~
+
+.. autoclass:: tidas.mpi_volume.MPIVolume
+    :members:
 

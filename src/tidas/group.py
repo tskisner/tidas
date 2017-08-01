@@ -4,6 +4,7 @@
 ##  is governed by a BSD-style license that can be found in the top-level
 ##  LICENSE file.
 ##
+
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import sys
@@ -20,12 +21,12 @@ class Group(object):
 
     Args:
         schema (dict): dictionary of fields and their types and units to
-                       create in the group.  Example:
-                       { "field1" : ("uint16", "counts"), 
-                         "field2" : ("double", "volts") }
+            create in the group.  Example:
+            { "field1" : ("uint16", "counts"), 
+            "field2" : ("double", "volts") }
         size (long):   number of samples in the group.
         props (dict):  (optional) a dictionary of properties to associate
-                       with the group.
+            with the group.
     """
     def __init__(self, schema=dict(), size=0, props=dict(), handle=None ):
         self.cp = handle
@@ -47,6 +48,9 @@ class Group(object):
             self._prps = props
 
     def close(self):
+        """
+        Explicitly close the group (free the underlying C++ pointer).
+        """
         if self.cp is not None:
             #sys.stderr.write("group close c pointer {}\n".format(self.cp))
             lib.ctidas_group_free(self.cp)
@@ -57,20 +61,40 @@ class Group(object):
 
     @property
     def props(self):
+        """
+        The dictionary of properties set at construction time.
+        """
         return self._prps
 
     @property
     def schema(self):
+        """
+        The schema of the group.  This is a dictionary keyed on the field
+        names whose values are a 2-tuple containing the datatype and units
+        of the field.
+        """
         return self._schm
 
     @property
     def size(self):
+        """
+        The number of samples in the group.
+        """
         return self._sz
 
     def _handle(self):
         return self.cp
 
     def resize(self, newsize):
+        """
+        Change the size of the group.
+
+        This will resize the underlying on-disk storage and may be expensive,
+        depending on the details of the backend format.
+
+        Args:
+            newsize (int): the new size of the group.
+        """
         if self.cp is not None:
             lib.ctidas_group_resize(self.cp, newsize)
             self._sz = lib.ctidas_group_size(self.cp)
@@ -79,6 +103,12 @@ class Group(object):
         return
 
     def range(self):
+        """
+        The start / stop of the group's time field.
+
+        Returns (tuple):
+            the start and stop times.
+        """
         start = ct.c_double(0)
         stop = ct.c_double(0)
         if self.cp is not None:
@@ -88,6 +118,14 @@ class Group(object):
         return (start.value, stop.value)
 
     def read_times(self):
+        """
+        Read the full time vector.
+
+        This reads the full timestamps for the group.
+
+        Returns (array):
+            the timestamps as a numpy float64 array.
+        """
         data = np.zeros(self._sz, dtype=np.float64, order='C')
         if self.cp is not None:
             lib.ctidas_group_read_times(self.cp, self._sz, data)
@@ -96,6 +134,14 @@ class Group(object):
         return data
 
     def write_times(self, data):
+        """
+        Write the full time vector.
+
+        This writes the full timestamps for the group.
+
+        Args:
+            data (array): the timestamps as a numpy float64 array.
+        """
         if self.cp is not None:
             if data.shape[0] != self._sz:
                 raise ValueError("cannot write full time vector which is smaller than the group")
@@ -105,6 +151,20 @@ class Group(object):
         return
 
     def read(self, field, offset, ndata):
+        """
+        Read data from the specified field.
+
+        Data is read for the specified sample range and returned as a
+        numpy array with a dtype that matches the underlying data type.
+
+        Args:
+            field (str): name of the field to read.
+            offset (int): the first sample to read.
+            ndata (int): the number of samples to read.
+
+        Returns (array):
+            the data for the field.
+        """
         last = offset + ndata
         if last > self._sz:
             raise IndexError("cannot read sample range {} - {} from group with {} samples".format(offset, last-1, self._sz))
@@ -158,6 +218,21 @@ class Group(object):
         return data
 
     def write(self, field, offset, data):
+        """
+        Write data to the specified field.
+
+        Data is written for the specified sample range and the provided numpy
+        array must have a dtype that is compatible with the C/C++ interface
+        for the field type.
+
+        Args:
+            field (str): name of the field to write.
+            offset (int): the first sample to write.
+            data (array): the data to write
+
+        Returns:
+            Nothing.
+        """
         ndata = data.shape[0]
         last = offset + ndata
         if last > self._sz:
@@ -200,6 +275,14 @@ class Group(object):
         return
             
     def info(self, name, indent=2):
+        """
+        Print basic information about this group to stdout.
+
+        Mainly useful for debugging.
+
+        Args:
+            name (str): the name of this group in the parent block.
+        """
         prf = "TIDAS:  "
         for i in range(indent):
             prf = "{} ".format(prf)

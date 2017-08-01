@@ -156,14 +156,17 @@ namespace tidas {
             /// Copy constructor.
             intervals ( intervals const & other );
 
-            /// (**Internal**) Load the intervals from the specified location.  
+            /// (**Internal**) Load the intervals from the specified
+            /// location.  
             /// All meta data operations will apply to this location.
             intervals ( backend_path const & loc );
             
             /// (**Internal**) Copy from an existing intervals instance.  
             /// Apply an optional filter to elements and relocate to a new 
-            /// location.  If a filter is given, a new location must be specified.
-            intervals ( intervals const & other, std::string const & filter, backend_path const & loc );
+            /// location.  If a filter is given, a new location must be
+            /// specified.
+            intervals ( intervals const & other, std::string const & filter,
+                backend_path const & loc );
 
             // metadata ops
 

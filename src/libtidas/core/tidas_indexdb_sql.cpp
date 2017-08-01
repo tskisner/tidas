@@ -1229,8 +1229,10 @@ void tidas::indexdb_sql::commit ( deque < indexdb_transaction > const & trans ) 
         string fullpath;
         if ( volpath_ == "" ) {
             fullpath = tr.obj->path;
+            //std::cout << "commit volpath empty: " << fullpath << std::endl;
         } else {
             fullpath = volpath_ + path_sep + tr.obj->path;
+            //std::cout << "commit volpath non-empty: " << fullpath << std::endl;
         }
 
         backend_path loc;
@@ -1285,6 +1287,8 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
     string path = loc.path + path_sep + loc.name;
 
     string dpath = dbpath ( path );
+
+    //std::cout << "tree_node " << path << " --> " << dpath << std::endl;
 
     vector < string > child_blocks;
     vector < string > child_groups;
@@ -1350,6 +1354,7 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
             chloc.name = c;
 
             string child_path = chloc.path + path_sep + chloc.name;
+            string chpath = dbpath ( child_path );
 
             index_type nsamp;
             time_type start;
@@ -1366,7 +1371,7 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
             indexdb_group g;
             g.type = indexdb_object_type::group;
-            g.path = child_path;
+            g.path = chpath;
             g.nsamp = nsamp;
             g.counts = counts;
             g.start = start;
@@ -1392,7 +1397,7 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
             indexdb_schema s;
             s.type = indexdb_object_type::schema;
-            s.path = child_path;
+            s.path = chpath;
             s.fields = fields;
 
             tr.op = indexdb_op::add;
@@ -1413,7 +1418,7 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
             indexdb_dict d;
             d.type = indexdb_object_type::dict;
-            d.path = child_path;
+            d.path = chpath;
             d.data = data;
             d.types = types;
 
@@ -1446,6 +1451,7 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
             chloc.name = c;
 
             string child_path = chloc.path + path_sep + chloc.name;
+            string chpath = dbpath ( child_path );
 
             size_t size;
 
@@ -1459,7 +1465,7 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
             indexdb_intervals t;
             t.type = indexdb_object_type::intervals;
-            t.path = child_path;
+            t.path = chpath;
             t.size = size;
 
             indexdb_transaction tr;
@@ -1483,7 +1489,7 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
             indexdb_dict d;
             d.type = indexdb_object_type::dict;
-            d.path = child_path;
+            d.path = chpath;
             d.data = data;
             d.types = types;
 

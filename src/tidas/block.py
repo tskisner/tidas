@@ -19,11 +19,14 @@ class Block(object):
     """
     Class which represents a TIDAS block.
     """
-    def __init__(self, handle, managed=True):
+    def __init__(self, handle=None, managed=True):
         self.cp = handle
         self.managed = managed
 
     def close(self):
+        """
+        Explicitly close the block (free the underlying C++ pointer).
+        """
         if self.cp is not None:
             if self.managed:
                 lib.ctidas_block_free(self.cp)
@@ -36,27 +39,46 @@ class Block(object):
         return self.cp
 
     def clear_groups(self):
+        """
+        Remove all groups from this block.
+        """
         if self.cp is not None:
             lib.ctidas_block_clear_groups(self.cp)
         return
 
     def clear_intervals(self):
+        """
+        Remove all intervals from this block.
+        """
         if self.cp is not None:
             lib.ctidas_block_clear_intervals(self.cp)
         return
 
     def clear_blocks(self):
+        """
+        Remove all sub-blocks from this block.
+        """
         if self.cp is not None:
             lib.ctidas_block_clear_children(self.cp)
         return
 
     def clear(self):
-        #sys.stderr.write("block clear {}\n".format(self.cp))
+        """
+        Remove all groups, intervals and sub-blocks from this block.
+        """
         if self.cp is not None:
             lib.ctidas_block_clear(self.cp)
         return
 
     def range(self):
+        """
+        Returns the extrema of timestamps of all groups in this block.
+        
+        This is not recursive (does not traverse sub-blocks).
+
+        Returns (tuple):
+            the minimum / maximum start / stop times.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         start = ct.c_double(0)
@@ -65,6 +87,16 @@ class Block(object):
         return (start.value, stop.value)
 
     def aux_dir(self):
+        """
+        Returns the filesystem path of the auxilliary data directory.
+
+        Each block has an associated directory for extra user-defined
+        data.  This function returns the path to this directory for this
+        block.
+
+        Returns (str):
+            path to the auxilliary data directory.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         tmpstr = lib.ctidas_block_aux_dir(self.cp)
@@ -73,12 +105,28 @@ class Block(object):
         return retstr
 
     def group_names(self):
+        """
+        The names of all groups in this block.
+
+        Returns (list):
+            a list of all the group names.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         names = cblock_groups(self.cp)
         return names
 
     def groups(self, names):
+        """
+        Return a dictionary of all the specified groups.
+
+        Args:
+            names (list): a list of strings with the group names.
+
+        Returns (dict):
+            a dictionary keyed on the names whose values are Group
+            instances.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         ret = {}
@@ -89,6 +137,15 @@ class Block(object):
         return ret
 
     def group_get(self, name):
+        """
+        Return the specified group.
+
+        Args:
+            name (str): the name of the group.
+
+        Returns (Group):
+            the requested group.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         cname = name.encode("utf-8")
@@ -98,6 +155,20 @@ class Block(object):
         return ret
 
     def group_add(self, name, grp):
+        """
+        Add the specified group to the block.
+
+        Adds a copy of the group to this block.  If the python Group instance
+        does not have a C++ handle associated with it, then a new C++ instance
+        is created before adding it.
+
+        Args:
+            name (str): the name of the group.
+            grp (Group): the group to add.
+        
+        Returns (Group):
+            a copy of the newly added Group associated with the block.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         cgrp = grp._handle()
@@ -119,6 +190,12 @@ class Block(object):
         return Group(handle=ngrp)
 
     def group_del(self, name):
+        """
+        Delete the specified group from the block.
+
+        Args:
+            name (str): the name of the group.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         cname = name.encode("utf-8")
@@ -126,12 +203,28 @@ class Block(object):
         return
 
     def intervals_names(self):
+        """
+        The names of all intervals in this block.
+
+        Returns (list):
+            a list of all the intervals names.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         names = cblock_intervals(self.cp)
         return names
 
     def intervals(self, names):
+        """
+        Return a dictionary of all the specified intervals.
+
+        Args:
+            names (list): a list of strings with the intervals names.
+
+        Returns (dict):
+            a dictionary keyed on the names whose values are Intervals
+            instances.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         ret = {}
@@ -142,6 +235,15 @@ class Block(object):
         return ret
 
     def intervals_get(self, name):
+        """
+        Return the specified intervals.
+
+        Args:
+            name (str): the name of the intervals.
+
+        Returns (Intervals):
+            the requested intervals.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         cname = name.encode("utf-8")
@@ -149,6 +251,20 @@ class Block(object):
         return Intervals(handle=cp)
 
     def intervals_add(self, name, intr):
+        """
+        Add the specified intervals to the block.
+
+        Adds a copy of the intervals to this block.  If the python Intervals
+        instance does not have a C++ handle associated with it, then a new 
+        C++ instance is created before adding it.
+
+        Args:
+            name (str): the name of the Intervals.
+            intr (Intervals): the Intervals to add.
+        
+        Returns (Intervals):
+            a copy of the newly added Intervals associated with the block.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         cintr = intr._handle()
@@ -163,6 +279,12 @@ class Block(object):
         return Intervals(handle=nintr)
 
     def intervals_del(self, name):
+        """
+        Delete the specified intervals from the block.
+
+        Args:
+            name (str): the name of the intervals.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         cname = name.encode("utf-8")
@@ -170,12 +292,28 @@ class Block(object):
         return
 
     def block_names(self, filter=''):
+        """
+        The names of all sub-blocks in this block.
+
+        Returns (list):
+            a list of all the block names.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         names = cblock_children(self.cp)
         return names
 
     def blocks(self, names):
+        """
+        Return a dictionary of all the specified blocks.
+
+        Args:
+            names (list): a list of strings with the block names.
+
+        Returns (dict):
+            a dictionary keyed on the names whose values are Block
+            instances.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         ret = {}
@@ -186,15 +324,40 @@ class Block(object):
         return ret
 
     def block_get(self, name):
+        """
+        Return the specified block.
+
+        Args:
+            name (str): the name of the block.
+
+        Returns (Block):
+            the requested block.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         cname = name.encode("utf-8")
         cb = lib.ctidas_block_child_get(self.cp, ct.c_char_p(cname))
         return Block(handle=cb)
 
-    def block_add(self, name, blk):
+    def block_add(self, name, blk=None):
+        """
+        Add the specified child block to this block.
+
+        If the python Block instance does not have a C++ handle 
+        associated with it, then a new C++ instance is created before 
+        adding it.
+
+        Args:
+            name (str): the name of the block.
+            blk (Block): the block to add.
+        
+        Returns (Block):
+            a copy of the newly added child block.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
+        if blk is None:
+            blk = Block()
         cblk = blk._handle()
         if blk._handle() is None:
             cblk = lib.ctidas_block_alloc()
@@ -205,6 +368,12 @@ class Block(object):
         return Block(handle=nb)
 
     def block_del(self, name):
+        """
+        Delete the specified sub-block from the block.
+
+        Args:
+            name (str): the name of the sub-block.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         cname = name.encode("utf-8")
@@ -212,6 +381,16 @@ class Block(object):
         return
 
     def select(self, filter=''):
+        """
+        Recursively copy the current block and all descendents,
+        applying the specified matching pattern.
+
+        Args:
+            filter (str): the selection string to apply.
+
+        Returns (Block):
+            a Block copy with a pruned tree of objects.
+        """
         if self.cp is None:
             raise RuntimeError("block is not associated with a volume")
         cfilter = filter.encode("utf-8")
@@ -219,6 +398,14 @@ class Block(object):
         return Block(handle=cblk)
 
     def info(self, name="", recurse=True, indent=2):
+        """
+        Print basic information about this block to stdout.
+
+        Mainly useful for debugging.
+
+        Args:
+            name (str): the name of this group in the parent block.
+        """
         prf = "TIDAS:  "
         if name == "":
             indent = 0

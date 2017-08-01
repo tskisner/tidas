@@ -34,7 +34,7 @@ void ctidas_mpi_volume_duplicate ( ctidas_mpi_volume * vol, char const * path,
 }
 
 void ctidas_mpi_volume_link ( ctidas_mpi_volume * vol, char const * path,
-    ctidas_link_type const & type, char const * filter ) {
+    ctidas_link_type type, char const * filter ) {
     mpi_volume * v = reinterpret_cast < mpi_volume * > ( vol );
     v->link ( string(path), ctidas::convert_from_c(type), 
         string(filter) );

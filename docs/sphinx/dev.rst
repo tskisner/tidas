@@ -24,6 +24,17 @@ Backends
 
 
 
+Location Information
+-----------------------
+
+Each object has a "location" which represents its on-disk position relative to other objects in the hierarchy.
+
+.. doxygenclass:: tidas::backend_path
+        :members:
+
+
+
+
 Indexing (Metadata Database)
 ----------------------------------
 

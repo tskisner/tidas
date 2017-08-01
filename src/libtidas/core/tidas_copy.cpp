@@ -117,19 +117,19 @@ void tidas::data_copy ( group const & in, group & out ) {
 
 void tidas::data_copy ( block const & in, block & out ) {
 
-    vector < string > grps = in.all_groups();
+    vector < string > grps = out.all_groups();
 
     for ( auto name : grps ) {
         data_copy ( in.group_get( name ), out.group_get( name ) );
     }
 
-    vector < string > intrs = in.all_intervals();
+    vector < string > intrs = out.all_intervals();
 
     for ( auto name : intrs ) {
         data_copy ( in.intervals_get( name ), out.intervals_get( name ) );
     }
 
-    vector < string > blks = in.all_blocks();
+    vector < string > blks = out.all_blocks();
 
     for ( auto name : blks ) {
         data_copy ( in.block_get( name ), out.block_get( name ) );

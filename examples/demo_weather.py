@@ -6,6 +6,8 @@
 ##  LICENSE file.
 ##
 
+# WARNING:  Running this script will generate a several GB of data...
+
 import os
 import sys
 import shutil
@@ -29,8 +31,8 @@ wind_schema = {
     "direction" : ("float32", "Degrees")
 }
 
-# sampled at 1Hz
-wind_rate = 1.0
+# sampled every 10 seconds
+wind_rate = 10.0 / 60.0
 wind_daysamples = int(24.0 * 3600.0 * wind_rate)
 
 thermal_schema = {
@@ -68,19 +70,19 @@ with tidas.Volume(path, backend="hdf5") as vol:
     volstart = datetime.datetime(2018, 1, 1)
     volstartsec = volstart.timestamp()
 
-    for year in ["2018", "2019", "2020"]:
+    for year in ["2018", "2019"]:
         # Add a block for this year
         yb = root.block_add(year)
 
-        for monthnum in range(12):
+        for monthnum in range(1, 13):
             # Add a block for the month
-            month = calendar.month_abbr[monthnum + 1]
+            month = calendar.month_abbr[monthnum]
             mb = yb.block_add(month)
 
-            weekday, nday = calendar.monthrange(year, monthnum + 1)
-            for dy in range(nday):
+            weekday, nday = calendar.monthrange(int(year), monthnum)
+            for dy in range(1, nday+1):
 
-                daystart = datetime.datetime(int(year), monthnum + 1, dy)
+                daystart = datetime.datetime(int(year), monthnum, dy)
                 daystartsec = (daystart - volstart).total_seconds() \
                     + volstartsec
 
@@ -89,6 +91,8 @@ with tidas.Volume(path, backend="hdf5") as vol:
                 db = mb.block_add(day)
 
                 # Now we are going to add the data groups for this day.
+
+                print("Writing data for {} {:02d}, {}".format(month, dy, year))
 
                 wind = tidas.Group(schema=wind_schema, size=wind_daysamples)
                 wind = db.group_add("wind", wind)
@@ -118,27 +122,27 @@ with tidas.Volume(path, backend="hdf5") as vol:
                 np.random.seed(seed)
 
                 data = np.absolute(np.random.normal(loc=0.0, scale=5.0, 
-                    size=wind_daysamples))
+                    size=wind_daysamples)).astype(np.float32)
                 wind.write("speed", 0, data)
 
                 data = 360.0 * np.absolute(np.random.random(
-                    size=wind_daysamples))
+                    size=wind_daysamples)).astype(np.float32)
                 wind.write("direction", 0, data)                
 
                 data = np.absolute(np.random.normal(loc=25.0, scale=5.0, 
-                    size=thermal_daysamples))
+                    size=thermal_daysamples)).astype(np.float32)
                 thermal.write("temperature", 0, data)
 
                 data = np.absolute(np.random.normal(loc=1013.25, scale=30.0, 
-                    size=thermal_daysamples))
+                    size=thermal_daysamples)).astype(np.float32)
                 thermal.write("pressure", 0, data)
 
                 data = np.absolute(np.random.normal(loc=30.0, scale=10.0, 
-                    size=thermal_daysamples))
+                    size=thermal_daysamples)).astype(np.float32)
                 thermal.write("humidity", 0, data)
 
                 data = 360.0 * np.absolute(np.random.random(
-                    size=precip_daysamples))
+                    size=precip_daysamples)).astype(np.float32)
                 precip.write("rainfall", 0, data)
 
 
@@ -149,13 +153,17 @@ with tidas.Volume(path, backend="hdf5") as vol:
 
 # Let's say we only care about wind data, and in fact we are only 
 # interested in the speed, not the direction.  Let's extract just the wind
-# speed data for the month of June, 2019.
+# speed data for the month of January, 2019.
+
+print("Small demo")
 
 file = "demo_weather_small"
+if os.path.isdir(file):
+    shutil.rmtree(file)
 
 with tidas.Volume(path) as vol:
     vol.duplicate(file, backend="hdf5", 
-        selection="/2019/Jun/.*[grp=wind[schm=speed]]")
+        selection="/2019/Jan/.*[grp=wind[schm=speed]]")
 
 # Take a quick peek at the small data volume:
 
@@ -168,7 +176,11 @@ with tidas.Volume(file) as vol:
 # new derived data products.  We can make a volume which links to the original
 # data and then add new groups to this.
 
+print("Link demo")
+
 file = "demo_weather_link"
+if os.path.isdir(file):
+    shutil.rmtree(file)
 
 with tidas.Volume(path) as vol:
     vol.link(file)
@@ -177,13 +189,16 @@ with tidas.Volume(path) as vol:
 # original read-only files.  Now open this volume up and make some new
 # new intervals that will be only in our local linked copy of the volume:
 
-with tidas.Volume(file) as vol:
+with tidas.Volume(file, mode="w") as vol:
     # Get the root block of the volume
     root = vol.root()
 
-    for yb in root.blocks():
-        for mb in yb.blocks():
-            for db in mb.blocks():
+    years = root.blocks(root.block_names())
+    for yr, yb in years.items():
+        months = yb.blocks(yb.block_names())
+        for mn, mb in months.items():
+            days = mb.blocks(mb.block_names())
+            for dy, db in days.items():
                 # Pretend that we have 10 spans of time where the temperature
                 # is "low".  Just fake uniform intervals here...
                 nlow = 10
@@ -203,4 +218,9 @@ with tidas.Volume(file) as vol:
                 lowtemps = db.intervals_add("low", lowtemps)
                 lowtemps.write(data)
 
+# Take a quick peek- all the original groups linked in appear to be
+# in this volume.  However, note that trying to write to these would fail
+# if the filesystem permissions were read-only.
 
+with tidas.Volume(file) as vol:
+    vol.info()

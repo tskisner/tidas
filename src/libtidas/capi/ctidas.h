@@ -394,7 +394,7 @@ void ctidas_volume_duplicate ( ctidas_volume * vol, char const * path,
     char const * filter );
 
 void ctidas_volume_link ( ctidas_volume * vol, char const * path,
-    ctidas_link_type const & type, char const * filter );
+    ctidas_link_type type, char const * filter );
 
 ctidas_block * ctidas_volume_root ( ctidas_volume * vol );
 

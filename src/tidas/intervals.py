@@ -19,7 +19,7 @@ class Intervals(object):
     Args:
         size (long):   size of the list of intervals.
         props (dict):  (optional) a dictionary of properties to associate
-                       with the group.
+            with the group.
     """
     def __init__(self, size=0, props=dict(), handle=None ):
         self.cp = handle
@@ -33,6 +33,9 @@ class Intervals(object):
             self._prps = props
 
     def close(self):
+        """
+        Explicitly close the intervals (free the underlying C++ pointer).
+        """
         if self.cp is not None:
             lib.ctidas_intervals_free(self.cp)
         self.cp = None
@@ -42,16 +45,32 @@ class Intervals(object):
 
     @property
     def props(self):
+        """
+        The dictionary of properties set at construction time.
+        """
         return self._prps
 
     @property
     def size(self):
+        """
+        The number of intervals.
+        """
         return self._sz
 
     def _handle(self):
         return self.cp
 
     def read(self):
+        """
+        Read the list of intervals.
+
+        This reads the underlying intervals data and returns the results as
+        a simple Python class with data members for start / stop times and
+        first / last samples.
+
+        Returns (list):
+            a list of Intrvl objects.
+        """
         data = None
         if self.cp is not None:
             nint = ct.c_ulong(0)
@@ -63,6 +82,15 @@ class Intervals(object):
         return data
 
     def write(self, data):
+        """
+        Write the list of intervals.
+
+        Takes a list of Intrvl objects and passes them to the underlying C++
+        code for writing.
+
+        Args:
+            data (list): a list of Intrvl objects.
+        """
         ndata = len(data)
         if ndata != self._sz:
             raise IndexError("cannot write interval list of length {} to intervals object with size {}".format(ndata, self._sz))
@@ -77,6 +105,15 @@ class Intervals(object):
             
 
 def intervals_samples(data):
+    """
+    Sum the total number of samples in a list of Intrvl objects.
+
+    Args:
+        data (list): a list of Intrvl objects.
+
+    Returns (int):
+        the total number of samples in all intervals.
+    """
     ndata = len(data)
     nint = ct.c_ulong(ndata)
     cdata = intrvl_list_py2c(data)
@@ -85,6 +122,15 @@ def intervals_samples(data):
     return result
 
 def intervals_time(data):
+    """
+    Sum the total time in a list of Intrvl objects.
+
+    Args:
+        data (list): a list of Intrvl objects.
+
+    Returns (float):
+        the total number of seconds in all intervals.
+    """
     ndata = len(data)
     nint = ct.c_ulong(ndata)
     cdata = intrvl_list_py2c(data)
@@ -93,6 +139,19 @@ def intervals_time(data):
     return result
 
 def intervals_seek(data, time):
+    """
+    Return the single interval that contains a specified time.
+
+    If no interval contains the time, an empty interval is
+    returned.
+
+    Args:
+        data (list): a list of Intrvl objects.
+        time (float): the time to compare.
+
+    Returns (Intrvl):
+        a single Intrvl object.
+    """
     ndata = len(data)
     nint = ct.c_ulong(ndata)
     cdata = intrvl_list_py2c(data)
@@ -106,6 +165,17 @@ def intervals_seek(data, time):
     return result
 
 def intervals_seek_ceil(data, time):
+    """
+    Return the first interval whose stop time is after the
+    specified time.
+
+    Args:
+        data (list): a list of Intrvl objects.
+        time (float): the time to compare.
+
+    Returns (Intrvl):
+        a single Intrvl object.
+    """
     ndata = len(data)
     nint = ct.c_ulong(ndata)
     cdata = intrvl_list_py2c(data)
@@ -119,6 +189,17 @@ def intervals_seek_ceil(data, time):
     return result
 
 def intervals_seek_floor(data, time):
+    """
+    Return the last interval whose start time is before the
+    specified time.
+
+    Args:
+        data (list): a list of Intrvl objects.
+        time (float): the time to compare.
+
+    Returns (Intrvl):
+        a single Intrvl object.
+    """
     ndata = len(data)
     nint = ct.c_ulong(ndata)
     cdata = intrvl_list_py2c(data)

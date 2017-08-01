@@ -490,6 +490,18 @@ void tidas::group_backend_hdf5::update_range ( backend_path const & loc, time_ty
 
 void tidas::group_backend_hdf5::link ( backend_path const & loc, link_type type, std::string const & path ) const {
 
+#ifdef HAVE_HDF5
+
+    string fspath = loc.path + path_sep + loc.name;
+
+    fs_link ( fspath.c_str(), path.c_str(), ( type == link_type::hard ) );
+
+#else
+
+    TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
+
+#endif
+
     return;
 }
 

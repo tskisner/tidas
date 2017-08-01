@@ -8,11 +8,13 @@ A "group" contains a collection of timestreams with consistent sampling.  In oth
 
 C++
 ~~~~~~~~~
+
 .. doxygenclass:: tidas::group
         :members:
 
 Python
 ~~~~~~~~~
+
 .. autoclass:: tidas.Group
     :members:
 

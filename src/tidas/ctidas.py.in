@@ -94,9 +94,9 @@ access_mode_str = {
 }
 
 link_type = {
-    'none' = ct.c_uint(0),
-    'hard' = ct.c_uint(1),
-    'soft' = ct.c_uint(2)
+    'none' : ct.c_uint(0),
+    'hard' : ct.c_uint(1),
+    'soft' : ct.c_uint(2)
 }
 
 link_type_str = {

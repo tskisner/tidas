@@ -10,6 +10,7 @@ Contents:
 
    intro
    install
+   example
    volume
    group
    intervals

@@ -1243,7 +1243,7 @@ void ctidas_volume_duplicate ( ctidas_volume * vol, char const * path,
 }
 
 void ctidas_volume_link ( ctidas_volume * vol, char const * path,
-    ctidas_link_type const & type, char const * filter ) {
+    ctidas_link_type type, char const * filter ) {
     volume * v = reinterpret_cast < volume * > ( vol );
     v->link ( string(path), ctidas::convert_from_c(type), 
         string(filter) );

@@ -23,7 +23,9 @@ Data Organization
 
 The highest-level object in TIDAS is a "volume".  A volume contains a hierarchy of "blocks".  Each block is a logical collection of data based on some common property.  A block can contain data itself, and/or other blocks.  The data inside a block is organized into one or more "groups".  The timestreams in a group are sampled consistently.  A block can optionally contain an "intervals" object which is a collection of smaller time ranges within the block.  These intervals might describe sections of good (or bad) data, or specify time ranges that have some special property.  The two objects which actually contain data (groups and intervals) also have an optional dictionary of arbitrary scalar properties.  Putting this all together, here is a crude schematic of a simple TIDAS volume:
 
-(insert figure here)
+.. todo::
+
+    A figure here showing nested blocks and groups of timestreams would be nice.
 
 
 Code Organization and Requirements

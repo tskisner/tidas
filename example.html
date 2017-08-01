@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Examples &#8212; TIDAS 85f9226.dev135
+    <title>Examples &#8212; TIDAS 0.2.0.dev138
  documentation</title>
     
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
@@ -15,25 +15,27 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '85f9226.dev135',
+        VERSION:     '0.2.0.dev138
+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="TIDAS 0.2.0.dev138
+ documentation" href="index.html" />
     <link rel="next" title="Volumes" href="volume.html" />
     <link rel="prev" title="Installation" href="install.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/tidas_logo_small.png" alt="Logo"/><h1 class="heading"><a href="index.html">
-          <span>TIDAS 85f9226.dev135
+          <span>TIDAS 0.2.0.dev138
  documentation</span></a></h1>
         <h2 class="heading"><span>Examples</span></h2>
       </div>
@@ -94,7 +96,7 @@ to it.</p>
 <span class="p">}</span>
 
 <span class="c1"># sampled every 10 seconds</span>
-<span class="n">wind_rate</span> <span class="o">=</span> <span class="mf">10.0</span> <span class="o">/</span> <span class="mf">60.0</span>
+<span class="n">wind_rate</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">10.0</span>
 <span class="n">wind_daysamples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">24.0</span> <span class="o">*</span> <span class="mf">3600.0</span> <span class="o">*</span> <span class="n">wind_rate</span><span class="p">)</span>
 
 <span class="n">thermal_schema</span> <span class="o">=</span> <span class="p">{</span>
@@ -136,8 +138,8 @@ to it.</p>
         <span class="c1"># Add a block for this year</span>
         <span class="n">yb</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">block_add</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">monthnum</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">):</span>
-            <span class="c1"># Add a block for the month</span>
+        <span class="k">for</span> <span class="n">monthnum</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="c1"># Add a block for the month.  Just use January for now.</span>
             <span class="n">month</span> <span class="o">=</span> <span class="n">calendar</span><span class="o">.</span><span class="n">month_abbr</span><span class="p">[</span><span class="n">monthnum</span><span class="p">]</span>
             <span class="n">mb</span> <span class="o">=</span> <span class="n">yb</span><span class="o">.</span><span class="n">block_add</span><span class="p">(</span><span class="n">month</span><span class="p">)</span>
 
@@ -217,8 +219,6 @@ to it.</p>
 <span class="c1"># interested in the speed, not the direction.  Let&#39;s extract just the wind</span>
 <span class="c1"># speed data for the month of January, 2019.</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Small demo&quot;</span><span class="p">)</span>
-
 <span class="n">file</span> <span class="o">=</span> <span class="s2">&quot;demo_weather_small&quot;</span>
 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
     <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
@@ -229,6 +229,7 @@ to it.</p>
 
 <span class="c1"># Take a quick peek at the small data volume:</span>
 
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Small volume with just wind speed:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="k">with</span> <span class="n">tidas</span><span class="o">.</span><span class="n">Volume</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">as</span> <span class="n">vol</span><span class="p">:</span>
     <span class="n">vol</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
 
@@ -237,8 +238,6 @@ to it.</p>
 <span class="c1"># However, we want to do some operations on that original data and produce some</span>
 <span class="c1"># new derived data products.  We can make a volume which links to the original</span>
 <span class="c1"># data and then add new groups to this.</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Link demo&quot;</span><span class="p">)</span>
 
 <span class="n">file</span> <span class="o">=</span> <span class="s2">&quot;demo_weather_link&quot;</span>
 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
@@ -284,8 +283,234 @@ to it.</p>
 <span class="c1"># in this volume.  However, note that trying to write to these would fail</span>
 <span class="c1"># if the filesystem permissions were read-only.</span>
 
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Volume linked to original with new local Intervals:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="k">with</span> <span class="n">tidas</span><span class="o">.</span><span class="n">Volume</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">as</span> <span class="n">vol</span><span class="p">:</span>
     <span class="n">vol</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fake-telescope">
+<h2>Fake Telescope<a class="headerlink" href="#fake-telescope" title="Permalink to this headline">¶</a></h2>
+<p>In this example, we create several groups per day with data at very different
+sampling rates.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1">##</span>
+<span class="c1">##  TImestream DAta Storage (TIDAS)</span>
+<span class="c1">##  Copyright (c) 2014-2017, all rights reserved.  Use of this source code </span>
+<span class="c1">##  is governed by a BSD-style license that can be found in the top-level</span>
+<span class="c1">##  LICENSE file.</span>
+<span class="c1">##</span>
+
+<span class="c1"># WARNING:  Running this script will generate a several GB of data...</span>
+
+<span class="c1"># This is just a toy exercise.  We assume continuous data collection with</span>
+<span class="c1"># no gaps.  We use very simple types of detector and housekeeping data.</span>
+<span class="c1"># In a &quot;real&quot; dataset, we would be unpacking raw frame data from a data</span>
+<span class="c1"># acquisition system and would know how many samples we have for a given</span>
+<span class="c1"># observation.  Here we just make these numbers up.</span>
+
+<span class="c1"># THIS IS JUST AN EXAMPLE.</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">calendar</span>
+
+<span class="kn">import</span> <span class="nn">tidas</span>
+
+<span class="c1"># The name of the volume</span>
+
+<span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;demo_telescope&quot;</span>
+
+<span class="c1"># Create the schemas for the data groups that we will have for each day</span>
+
+<span class="c1"># ---- Data from a weather station ----</span>
+
+<span class="n">weather_schema</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;windspeed&quot;</span> <span class="p">:</span> <span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;Meters / second&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;windangle&quot;</span> <span class="p">:</span> <span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;Degrees&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;temperature&quot;</span> <span class="p">:</span> <span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;Degrees Celsius&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;pressure&quot;</span> <span class="p">:</span> <span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;Millibars&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;humidity&quot;</span> <span class="p">:</span> <span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;Percent&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;PWV&quot;</span> <span class="p">:</span> <span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;mm&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1"># sampled every 10 seconds</span>
+<span class="n">weather_rate</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">10.0</span>
+<span class="n">weather_daysamples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">24.0</span> <span class="o">*</span> <span class="mf">3600.0</span> <span class="o">*</span> <span class="n">weather_rate</span><span class="p">)</span>
+
+<span class="c1"># ---- Housekeeping data ----</span>
+
+<span class="n">hk_schema</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;thermo1&quot;</span> <span class="p">:</span> <span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;Degrees Kelvin&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;thermo2&quot;</span> <span class="p">:</span> <span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;Degrees Kelvin&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1"># sampled once per minute</span>
+<span class="n">hk_rate</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">60.0</span>
+<span class="n">hk_daysamples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">24.0</span> <span class="o">*</span> <span class="mf">3600.0</span> <span class="o">*</span> <span class="n">hk_rate</span><span class="p">)</span>
+
+<span class="c1"># ---- Pointing data ----</span>
+
+<span class="n">pointing_schema</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;az&quot;</span> <span class="p">:</span> <span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;Radians&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;el&quot;</span> <span class="p">:</span> <span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;Radians&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;psi&quot;</span> <span class="p">:</span> <span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;Radians&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1"># sampled at 20 Hz</span>
+<span class="n">pointing_rate</span> <span class="o">=</span> <span class="mf">20.0</span>
+<span class="n">pointing_daysamples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">24.0</span> <span class="o">*</span> <span class="mf">3600.0</span> <span class="o">*</span> <span class="n">pointing_rate</span><span class="p">)</span>
+
+<span class="c1"># ---- Detector data ----</span>
+
+<span class="n">ndet</span> <span class="o">=</span> <span class="mi">50</span>
+
+<span class="n">det_schema</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndet</span><span class="p">):</span>
+    <span class="n">detname</span> <span class="o">=</span> <span class="s2">&quot;det_</span><span class="si">{:04d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">det_schema</span><span class="p">[</span><span class="n">detname</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;int16&quot;</span><span class="p">,</span> <span class="s2">&quot;ADU&quot;</span><span class="p">)</span>
+
+<span class="c1"># sampled at 100Hz</span>
+<span class="n">det_rate</span> <span class="o">=</span> <span class="mf">100.0</span>
+<span class="n">det_daysamples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">24.0</span> <span class="o">*</span> <span class="mf">3600.0</span> <span class="o">*</span> <span class="n">det_rate</span><span class="p">)</span>
+
+<span class="n">day_seconds</span> <span class="o">=</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span>
+
+<span class="c1"># Remove the volume if it exists</span>
+
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+<span class="c1"># Create the volume all at once.  To keep the size of the volume</span>
+<span class="c1"># reasonable for this demo, only write 3 days of data.</span>
+
+<span class="k">with</span> <span class="n">tidas</span><span class="o">.</span><span class="n">Volume</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;hdf5&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">vol</span><span class="p">:</span>
+
+    <span class="c1"># Get the root block of the volume</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">vol</span><span class="o">.</span><span class="n">root</span><span class="p">()</span>
+
+    <span class="n">volstart</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">volstartsec</span> <span class="o">=</span> <span class="n">volstart</span><span class="o">.</span><span class="n">timestamp</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;2018&quot;</span><span class="p">,]:</span>
+        <span class="c1"># Add a block for this year</span>
+        <span class="n">yb</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">block_add</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">monthnum</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="c1"># Add a block for the month</span>
+            <span class="n">month</span> <span class="o">=</span> <span class="n">calendar</span><span class="o">.</span><span class="n">month_abbr</span><span class="p">[</span><span class="n">monthnum</span><span class="p">]</span>
+            <span class="n">mb</span> <span class="o">=</span> <span class="n">yb</span><span class="o">.</span><span class="n">block_add</span><span class="p">(</span><span class="n">month</span><span class="p">)</span>
+
+            <span class="n">weekday</span><span class="p">,</span> <span class="n">nday</span> <span class="o">=</span> <span class="n">calendar</span><span class="o">.</span><span class="n">monthrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">year</span><span class="p">),</span> <span class="n">monthnum</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">dy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+
+                <span class="n">daystart</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">year</span><span class="p">),</span> <span class="n">monthnum</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span>
+                <span class="n">daystartsec</span> <span class="o">=</span> <span class="p">(</span><span class="n">daystart</span> <span class="o">-</span> <span class="n">volstart</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> \
+                    <span class="o">+</span> <span class="n">volstartsec</span>
+
+                <span class="c1"># Add a block for the day</span>
+                <span class="n">day</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dy</span><span class="p">)</span>
+                <span class="n">db</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">block_add</span><span class="p">(</span><span class="n">day</span><span class="p">)</span>
+
+                <span class="c1"># Just fake some seed for now</span>
+                <span class="n">seed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">year</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000000</span> <span class="o">+</span> <span class="n">monthnum</span> <span class="o">*</span> <span class="mi">10000</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">*</span> <span class="mi">100</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+                <span class="c1"># Now we are going to add the data groups for this day.</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-</span><span class="si">{:02d}</span><span class="s2">:&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">dy</span><span class="p">))</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  writing weather data&quot;</span><span class="p">)</span>
+
+                <span class="n">weather</span> <span class="o">=</span> <span class="n">tidas</span><span class="o">.</span><span class="n">Group</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">weather_schema</span><span class="p">,</span> 
+                    <span class="n">size</span><span class="o">=</span><span class="n">weather_daysamples</span><span class="p">)</span>
+                <span class="n">weather</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">group_add</span><span class="p">(</span><span class="s2">&quot;weather&quot;</span><span class="p">,</span> <span class="n">weather</span><span class="p">)</span>
+                <span class="n">weather</span><span class="o">.</span><span class="n">write_times</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">daystartsec</span><span class="p">,</span> 
+                    <span class="n">daystartsec</span> <span class="o">+</span> <span class="n">day_seconds</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">weather_daysamples</span><span class="p">))</span>
+
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> 
+                    <span class="n">size</span><span class="o">=</span><span class="n">weather_daysamples</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">weather</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;windspeed&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+                <span class="n">data</span> <span class="o">=</span> <span class="mf">360.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span>
+                    <span class="n">size</span><span class="o">=</span><span class="n">weather_daysamples</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">weather</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;windangle&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>                
+
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">25.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> 
+                    <span class="n">size</span><span class="o">=</span><span class="n">weather_daysamples</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">weather</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;temperature&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">1013.25</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span> 
+                    <span class="n">size</span><span class="o">=</span><span class="n">weather_daysamples</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">weather</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> 
+                    <span class="n">size</span><span class="o">=</span><span class="n">weather_daysamples</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">weather</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;humidity&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> 
+                    <span class="n">size</span><span class="o">=</span><span class="n">weather_daysamples</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">weather</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;PWV&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  writing housekeeping data&quot;</span><span class="p">)</span>
+
+                <span class="n">hk</span> <span class="o">=</span> <span class="n">tidas</span><span class="o">.</span><span class="n">Group</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">hk_schema</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">hk_daysamples</span><span class="p">)</span>
+                <span class="n">hk</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">group_add</span><span class="p">(</span><span class="s2">&quot;hk&quot;</span><span class="p">,</span> <span class="n">hk</span><span class="p">)</span>
+                <span class="n">hk</span><span class="o">.</span><span class="n">write_times</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">daystartsec</span><span class="p">,</span> 
+                    <span class="n">daystartsec</span> <span class="o">+</span> <span class="n">day_seconds</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">hk_daysamples</span><span class="p">))</span>
+
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">273.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> 
+                    <span class="n">size</span><span class="o">=</span><span class="n">hk_daysamples</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">hk</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;thermo1&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">77.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> 
+                    <span class="n">size</span><span class="o">=</span><span class="n">hk_daysamples</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">hk</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;thermo2&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  writing pointing data&quot;</span><span class="p">)</span>
+
+                <span class="n">pointing</span> <span class="o">=</span> <span class="n">tidas</span><span class="o">.</span><span class="n">Group</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">pointing_schema</span><span class="p">,</span> 
+                    <span class="n">size</span><span class="o">=</span><span class="n">pointing_daysamples</span><span class="p">)</span>
+                <span class="n">pointing</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">group_add</span><span class="p">(</span><span class="s2">&quot;pointing&quot;</span><span class="p">,</span> <span class="n">pointing</span><span class="p">)</span>
+                <span class="n">pointing</span><span class="o">.</span><span class="n">write_times</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">daystartsec</span><span class="p">,</span> 
+                    <span class="n">daystartsec</span> <span class="o">+</span> <span class="n">day_seconds</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">pointing_daysamples</span><span class="p">))</span>
+
+                <span class="n">data</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span>
+                    <span class="n">size</span><span class="o">=</span><span class="n">pointing_daysamples</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">pointing</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;az&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+                <span class="n">data</span> <span class="o">=</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span>
+                    <span class="n">size</span><span class="o">=</span><span class="n">pointing_daysamples</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">pointing</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;el&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span>
+                    <span class="n">size</span><span class="o">=</span><span class="n">pointing_daysamples</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">pointing</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;psi&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  writing detector data&quot;</span><span class="p">)</span>
+
+                <span class="n">det</span> <span class="o">=</span> <span class="n">tidas</span><span class="o">.</span><span class="n">Group</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">det_schema</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">det_daysamples</span><span class="p">)</span>
+                <span class="n">det</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">group_add</span><span class="p">(</span><span class="s2">&quot;detectors&quot;</span><span class="p">,</span> <span class="n">det</span><span class="p">)</span>
+                <span class="n">det</span><span class="o">.</span><span class="n">write_times</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">daystartsec</span><span class="p">,</span> 
+                    <span class="n">daystartsec</span> <span class="o">+</span> <span class="n">day_seconds</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">det_daysamples</span><span class="p">))</span>
+
+                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndet</span><span class="p">):</span>
+                    <span class="n">detname</span> <span class="o">=</span> <span class="s2">&quot;det_</span><span class="si">{:04d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">32768</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+                    <span class="n">size</span><span class="o">=</span><span class="n">det_daysamples</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">)</span>
+                    <span class="n">det</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">detname</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+<span class="c1"># Take a quick peek at organization:</span>
+
+<span class="k">with</span> <span class="n">tidas</span><span class="o">.</span><span class="n">Volume</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">vol</span><span class="p">:</span>
+    <span class="n">vol</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+
 </pre></div>
 </div>
 </div>
@@ -307,7 +532,7 @@ to it.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2017, Theodore Kisner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
   </body>
 </html>

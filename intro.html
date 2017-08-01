@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Introduction &#8212; TIDAS 85f9226.dev135
+    <title>Introduction &#8212; TIDAS 0.2.0.dev138
  documentation</title>
     
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
@@ -15,25 +15,27 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '85f9226.dev135',
+        VERSION:     '0.2.0.dev138
+',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="TIDAS 0.2.0.dev138
+ documentation" href="index.html" />
     <link rel="next" title="Installation" href="install.html" />
     <link rel="prev" title="Documentation" href="index.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/tidas_logo_small.png" alt="Logo"/><h1 class="heading"><a href="index.html">
-          <span>TIDAS 85f9226.dev135
+          <span>TIDAS 0.2.0.dev138
  documentation</span></a></h1>
         <h2 class="heading"><span>Introduction</span></h2>
       </div>
@@ -67,7 +69,10 @@
 <div class="section" id="data-organization">
 <h2>Data Organization<a class="headerlink" href="#data-organization" title="Permalink to this headline">¶</a></h2>
 <p>The highest-level object in TIDAS is a &#8220;volume&#8221;.  A volume contains a hierarchy of &#8220;blocks&#8221;.  Each block is a logical collection of data based on some common property.  A block can contain data itself, and/or other blocks.  The data inside a block is organized into one or more &#8220;groups&#8221;.  The timestreams in a group are sampled consistently.  A block can optionally contain an &#8220;intervals&#8221; object which is a collection of smaller time ranges within the block.  These intervals might describe sections of good (or bad) data, or specify time ranges that have some special property.  The two objects which actually contain data (groups and intervals) also have an optional dictionary of arbitrary scalar properties.  Putting this all together, here is a crude schematic of a simple TIDAS volume:</p>
-<p>(insert figure here)</p>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">A figure here showing nested blocks and groups of timestreams would be nice.</p>
+</div>
 </div>
 <div class="section" id="code-organization-and-requirements">
 <h2>Code Organization and Requirements<a class="headerlink" href="#code-organization-and-requirements" title="Permalink to this headline">¶</a></h2>
@@ -91,7 +96,7 @@
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2017, Theodore Kisner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
   </body>
 </html>

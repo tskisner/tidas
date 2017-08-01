@@ -18,8 +18,6 @@ Contents:
    utils
    dev
 
-.. todolist::
-
 
 Indices and tables
 ==================

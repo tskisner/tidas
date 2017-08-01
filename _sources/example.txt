@@ -17,3 +17,12 @@ to it.
 
 .. literalinclude:: ../../examples/demo_weather.py
 
+
+Fake Telescope
+-------------------------
+
+In this example, we create several groups per day with data at very different
+sampling rates.
+
+.. literalinclude:: ../../examples/demo_telescope.py
+

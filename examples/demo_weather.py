@@ -32,7 +32,7 @@ wind_schema = {
 }
 
 # sampled every 10 seconds
-wind_rate = 10.0 / 60.0
+wind_rate = 1.0 / 10.0
 wind_daysamples = int(24.0 * 3600.0 * wind_rate)
 
 thermal_schema = {

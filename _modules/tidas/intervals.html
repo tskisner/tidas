@@ -1,0 +1,279 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tidas.intervals &#8212; TIDAS 85f9226.dev135
+ documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '85f9226.dev135',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="../../_static/tidas_logo_small.png" alt="Logo"/><h1 class="heading"><a href="../../index.html">
+          <span>TIDAS 85f9226.dev135
+ documentation</span></a></h1>
+        <h2 class="heading"><span>tidas.intervals</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for tidas.intervals</h1><div class="highlight"><pre>
+<span></span><span class="c1">##</span>
+<span class="c1">##  TImestream DAta Storage (TIDAS)</span>
+<span class="c1">##  Copyright (c) 2014-2017, all rights reserved.  Use of this source code </span>
+<span class="c1">##  is governed by a BSD-style license that can be found in the top-level</span>
+<span class="c1">##  LICENSE file.</span>
+<span class="c1">##</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">unicode_literals</span>
+
+<span class="kn">import</span> <span class="nn">ctypes</span> <span class="k">as</span> <span class="nn">ct</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">.ctidas</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="Intervals"><a class="viewcode-back" href="../../intervals.html#tidas.Intervals">[docs]</a><span class="k">class</span> <span class="nc">Intervals</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class which represents a TIDAS intervals object.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        size (long):   size of the list of intervals.</span>
+<span class="sd">        props (dict):  (optional) a dictionary of properties to associate</span>
+<span class="sd">            with the group.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">props</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">handle</span><span class="o">=</span><span class="kc">None</span> <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="o">=</span> <span class="n">handle</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># we are constructing from a C pointer</span>
+            <span class="n">cd</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intervals_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prps</span> <span class="o">=</span> <span class="n">dict_c2py</span><span class="p">(</span><span class="n">cd</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intervals_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span> <span class="o">=</span> <span class="n">size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prps</span> <span class="o">=</span> <span class="n">props</span>
+
+<div class="viewcode-block" id="Intervals.close"><a class="viewcode-back" href="../../intervals.html#tidas.Intervals.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Explicitly close the intervals (free the underlying C++ pointer).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intervals_free</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">props</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The dictionary of properties set at construction time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prps</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The number of intervals.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span>
+
+    <span class="k">def</span> <span class="nf">_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span>
+
+<div class="viewcode-block" id="Intervals.read"><a class="viewcode-back" href="../../intervals.html#tidas.Intervals.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read the list of intervals.</span>
+
+<span class="sd">        This reads the underlying intervals data and returns the results as</span>
+<span class="sd">        a simple Python class with data members for start / stop times and</span>
+<span class="sd">        first / last samples.</span>
+
+<span class="sd">        Returns (list):</span>
+<span class="sd">            a list of Intrvl objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nint</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_ulong</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">cdata</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intervals_read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="n">nint</span><span class="p">))</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">intrvl_list_c2py</span><span class="p">(</span><span class="n">cdata</span><span class="p">,</span> <span class="n">nint</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_list_free</span><span class="p">(</span><span class="n">cdata</span><span class="p">,</span> <span class="n">nint</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;intervals object is not associated with a block- cannot read or write data&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="Intervals.write"><a class="viewcode-back" href="../../intervals.html#tidas.Intervals.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write the list of intervals.</span>
+
+<span class="sd">        Takes a list of Intrvl objects and passes them to the underlying C++</span>
+<span class="sd">        code for writing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (list): a list of Intrvl objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ndata</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ndata</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">&quot;cannot write interval list of length </span><span class="si">{}</span><span class="s2"> to intervals object with size </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nint</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_ulong</span><span class="p">(</span><span class="n">ndata</span><span class="p">)</span>
+            <span class="n">cdata</span> <span class="o">=</span> <span class="n">intrvl_list_py2c</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intervals_write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">cdata</span><span class="p">,</span> <span class="n">nint</span><span class="p">)</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_list_free</span><span class="p">(</span><span class="n">cdata</span><span class="p">,</span> <span class="n">nint</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;intervals object is not associated with a block- cannot read or write data&quot;</span><span class="p">)</span>
+        <span class="k">return</span></div></div>
+            
+
+<span class="k">def</span> <span class="nf">intervals_samples</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sum the total number of samples in a list of Intrvl objects.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (list): a list of Intrvl objects.</span>
+
+<span class="sd">    Returns (int):</span>
+<span class="sd">        the total number of samples in all intervals.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ndata</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">nint</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_ulong</span><span class="p">(</span><span class="n">ndata</span><span class="p">)</span>
+    <span class="n">cdata</span> <span class="o">=</span> <span class="n">intrvl_list_py2c</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intervals_samples</span><span class="p">(</span><span class="n">cdata</span><span class="p">,</span> <span class="n">nint</span><span class="p">)</span>
+    <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_list_free</span><span class="p">(</span><span class="n">cdata</span><span class="p">,</span> <span class="n">nint</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+<span class="k">def</span> <span class="nf">intervals_time</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sum the total time in a list of Intrvl objects.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (list): a list of Intrvl objects.</span>
+
+<span class="sd">    Returns (float):</span>
+<span class="sd">        the total number of seconds in all intervals.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ndata</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">nint</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_ulong</span><span class="p">(</span><span class="n">ndata</span><span class="p">)</span>
+    <span class="n">cdata</span> <span class="o">=</span> <span class="n">intrvl_list_py2c</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intervals_time</span><span class="p">(</span><span class="n">cdata</span><span class="p">,</span> <span class="n">nint</span><span class="p">)</span>
+    <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_list_free</span><span class="p">(</span><span class="n">cdata</span><span class="p">,</span> <span class="n">nint</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+<span class="k">def</span> <span class="nf">intervals_seek</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the single interval that contains a specified time.</span>
+
+<span class="sd">    If no interval contains the time, an empty interval is</span>
+<span class="sd">    returned.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (list): a list of Intrvl objects.</span>
+<span class="sd">        time (float): the time to compare.</span>
+
+<span class="sd">    Returns (Intrvl):</span>
+<span class="sd">        a single Intrvl object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ndata</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">nint</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_ulong</span><span class="p">(</span><span class="n">ndata</span><span class="p">)</span>
+    <span class="n">cdata</span> <span class="o">=</span> <span class="n">intrvl_list_py2c</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">cint</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intervals_seek</span><span class="p">(</span><span class="n">cdata</span><span class="p">,</span> <span class="n">nint</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_double</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_start_get</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_stop_get</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_first_get</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_last_get</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">Intrvl</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">first</span><span class="o">=</span><span class="n">first</span><span class="p">,</span> <span class="n">last</span><span class="o">=</span><span class="n">last</span><span class="p">)</span>
+    <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_free</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+<span class="k">def</span> <span class="nf">intervals_seek_ceil</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the first interval whose stop time is after the</span>
+<span class="sd">    specified time.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (list): a list of Intrvl objects.</span>
+<span class="sd">        time (float): the time to compare.</span>
+
+<span class="sd">    Returns (Intrvl):</span>
+<span class="sd">        a single Intrvl object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ndata</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">nint</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_ulong</span><span class="p">(</span><span class="n">ndata</span><span class="p">)</span>
+    <span class="n">cdata</span> <span class="o">=</span> <span class="n">intrvl_list_py2c</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">cint</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intervals_seek</span><span class="p">(</span><span class="n">cdata</span><span class="p">,</span> <span class="n">nint</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_double</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_start_get</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_stop_get</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_first_get</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_last_get</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">Intrvl</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">first</span><span class="o">=</span><span class="n">first</span><span class="p">,</span> <span class="n">last</span><span class="o">=</span><span class="n">last</span><span class="p">)</span>
+    <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_free</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+<span class="k">def</span> <span class="nf">intervals_seek_floor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the last interval whose start time is before the</span>
+<span class="sd">    specified time.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (list): a list of Intrvl objects.</span>
+<span class="sd">        time (float): the time to compare.</span>
+
+<span class="sd">    Returns (Intrvl):</span>
+<span class="sd">        a single Intrvl object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ndata</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">nint</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_ulong</span><span class="p">(</span><span class="n">ndata</span><span class="p">)</span>
+    <span class="n">cdata</span> <span class="o">=</span> <span class="n">intrvl_list_py2c</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">cint</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intervals_seek</span><span class="p">(</span><span class="n">cdata</span><span class="p">,</span> <span class="n">nint</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_double</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_start_get</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_stop_get</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_first_get</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_last_get</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">Intrvl</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">first</span><span class="o">=</span><span class="n">first</span><span class="p">,</span> <span class="n">last</span><span class="o">=</span><span class="n">last</span><span class="p">)</span>
+    <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intrvl_free</span><span class="p">(</span><span class="n">cint</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017, Theodore Kisner.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+    </div>
+  </body>
+</html>

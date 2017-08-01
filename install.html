@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation &#8212; TIDAS 85f9226.dev135
+ documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '85f9226.dev135',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="example.html" />
+    <link rel="prev" title="Introduction" href="intro.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/tidas_logo_small.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TIDAS 85f9226.dev135
+ documentation</span></a></h1>
+        <h2 class="heading"><span>Installation</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="intro.html">Introduction</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="example.html">Examples</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="installation">
+<span id="install"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>TIDAS requires a C++11 compiler for building.  The only currently implemented &#8220;backend&#8221; storage format is HDF5, so installation also requires the serial HDF5 library.  Optional dependencies are an MPI C++ compiler compatible with the serial compiler and a modern python version.</p>
+<div class="section" id="compiled-dependencies">
+<h2>Compiled Dependencies<a class="headerlink" href="#compiled-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>The serial HDF5 library can be built from source (see <a class="reference external" href="https://support.hdfgroup.org/HDF5/">the downloads here</a>).  However, most Linux distributions and OS X package managers (MACports, Homebrew, etc) have packages for HDF5 and that is probably the easiest way to install it.</p>
+</div>
+<div class="section" id="python-dependencies">
+<h2>Python Dependencies<a class="headerlink" href="#python-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>To use the python bindings you should have a reasonably new version of python (&gt;= 2.7 or &gt;= 3.4).  We also require
+several common python packages:</p>
+<blockquote>
+<div><ul class="simple">
+<li>numpy</li>
+<li>mpi4py (&gt;= 2.0.0, only if using the MPI interface)</li>
+</ul>
+</div></blockquote>
+<p>For mpi4py, ensure that this package is compatible with the MPI C++ compiler
+used during TIDAS installation.  There are obviously several ways to meet these python requirements.  Your OS package manager may already provide these, or you might use an external Python distribution (e.g. Anaconda).</p>
+</div>
+<div class="section" id="using-configure">
+<h2>Using Configure<a class="headerlink" href="#using-configure" title="Permalink to this headline">¶</a></h2>
+<p>TIDAS uses autotools to configure, build, and install both the compiled code
+and the python tools.  If you are running from a git checkout (instead of a
+distribution tarball), then first do:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%&gt;</span> <span class="o">./</span><span class="n">autogen</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>Now run configure:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%&gt;</span> <span class="o">./</span><span class="n">configure</span> <span class="o">--</span><span class="n">prefix</span><span class="o">=/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">install</span>
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: if you have both a &#8220;python&#8221; and a &#8220;python3&#8221; executable (and they are different), and you want to use python3, be sure to specify the python to use at configure time:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%&gt;</span> <span class="n">PYTHON</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">python3</span> <span class="o">./</span><span class="n">configure</span> <span class="o">--</span><span class="n">prefix</span><span class="o">=/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">install</span>
+</pre></div>
+</div>
+<p>Run configure with the &#8220;&#8211;help&#8221; option to see all available options.  See the top-level &#8220;platforms&#8221; directory for other examples of running the
+configure script.  Now build and install the tools:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%&gt;</span> <span class="n">make</span>
+<span class="o">%&gt;</span> <span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>In order to use the installed tools, you must make sure that the installed
+location has been added to the search paths for your shell.  For example,
+the &#8220;&lt;prefix&gt;/bin&#8221; directory should be in your PATH and the python install
+location &#8220;&lt;prefix&gt;/lib/pythonX.X/site-packages&#8221; should be in your PYTHONPATH.</p>
+</div>
+<div class="section" id="testing-the-installation">
+<h2>Testing the Installation<a class="headerlink" href="#testing-the-installation" title="Permalink to this headline">¶</a></h2>
+<p>After installation, you can test the serial compiled software with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%&gt;</span> <span class="n">tidas_test</span>
+</pre></div>
+</div>
+<p>and can test the MPI compiled library with (your command for launching MPI programs may be different):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%&gt;</span> <span class="n">mpirun</span> <span class="o">-</span><span class="n">np</span> <span class="mi">4</span> <span class="n">tidas_test_mpi</span>
+</pre></div>
+</div>
+<p>You can test the Python bindings in a similar way:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%&gt;</span> <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;import tidas; tidas.test()&quot;</span>
+</pre></div>
+</div>
+<p>and:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%&gt;</span> <span class="n">mpirun</span> <span class="o">-</span><span class="n">np</span> <span class="mi">4</span> <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;import tidas; tidas.test_mpi()&quot;</span>
+</pre></div>
+</div>
+<p>Some of the above commands will create temporary output directories in your current working directory.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="intro.html">Introduction</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="example.html">Examples</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017, Theodore Kisner.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tidas.group &#8212; TIDAS 85f9226.dev135
+ documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '85f9226.dev135',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="../../_static/tidas_logo_small.png" alt="Logo"/><h1 class="heading"><a href="../../index.html">
+          <span>TIDAS 85f9226.dev135
+ documentation</span></a></h1>
+        <h2 class="heading"><span>tidas.group</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for tidas.group</h1><div class="highlight"><pre>
+<span></span><span class="c1">##</span>
+<span class="c1">##  TImestream DAta Storage (TIDAS)</span>
+<span class="c1">##  Copyright (c) 2014-2017, all rights reserved.  Use of this source code </span>
+<span class="c1">##  is governed by a BSD-style license that can be found in the top-level</span>
+<span class="c1">##  LICENSE file.</span>
+<span class="c1">##</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">unicode_literals</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">ctypes</span> <span class="k">as</span> <span class="nn">ct</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">.ctidas</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="Group"><a class="viewcode-back" href="../../group.html#tidas.Group">[docs]</a><span class="k">class</span> <span class="nc">Group</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class which represents a TIDAS group.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        schema (dict): dictionary of fields and their types and units to</span>
+<span class="sd">            create in the group.  Example:</span>
+<span class="sd">            { &quot;field1&quot; : (&quot;uint16&quot;, &quot;counts&quot;), </span>
+<span class="sd">            &quot;field2&quot; : (&quot;double&quot;, &quot;volts&quot;) }</span>
+<span class="sd">        size (long):   number of samples in the group.</span>
+<span class="sd">        props (dict):  (optional) a dictionary of properties to associate</span>
+<span class="sd">            with the group.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">props</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">handle</span><span class="o">=</span><span class="kc">None</span> <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="o">=</span> <span class="n">handle</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># we are constructing from a C pointer</span>
+            <span class="c1">#sys.stderr.write(&quot;group ctor c pointer {}\n&quot;.format(self.cp))</span>
+            <span class="n">cs</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_schema</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+            <span class="c1">#sys.stderr.write(&quot;group ctor c schema = {}\n&quot;.format(cs))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span> <span class="o">=</span> <span class="n">schema_c2py</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span>
+            <span class="c1">#sys.stderr.write(&quot;group ctor py schema = {}\n&quot;.format(self._schm))</span>
+            <span class="n">cd</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+            <span class="c1">#sys.stderr.write(&quot;group ctor c dict = {}\n&quot;.format(cd))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prps</span> <span class="o">=</span> <span class="n">dict_c2py</span><span class="p">(</span><span class="n">cd</span><span class="p">)</span>
+            <span class="c1">#sys.stderr.write(&quot;group ctor py dict = {}\n&quot;.format(self._prps))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span> <span class="o">=</span> <span class="n">schema</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prps</span> <span class="o">=</span> <span class="n">props</span>
+
+<div class="viewcode-block" id="Group.close"><a class="viewcode-back" href="../../group.html#tidas.Group.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Explicitly close the group (free the underlying C++ pointer).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1">#sys.stderr.write(&quot;group close c pointer {}\n&quot;.format(self.cp))</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_free</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">props</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The dictionary of properties set at construction time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prps</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">schema</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The schema of the group.  This is a dictionary keyed on the field</span>
+<span class="sd">        names whose values are a 2-tuple containing the datatype and units</span>
+<span class="sd">        of the field.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The number of samples in the group.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span>
+
+    <span class="k">def</span> <span class="nf">_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span>
+
+<div class="viewcode-block" id="Group.resize"><a class="viewcode-back" href="../../group.html#tidas.Group.resize">[docs]</a>    <span class="k">def</span> <span class="nf">resize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newsize</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Change the size of the group.</span>
+
+<span class="sd">        This will resize the underlying on-disk storage and may be expensive,</span>
+<span class="sd">        depending on the details of the backend format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            newsize (int): the new size of the group.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_resize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">newsize</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span> <span class="o">=</span> <span class="n">newsize</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="Group.range"><a class="viewcode-back" href="../../group.html#tidas.Group.range">[docs]</a>    <span class="k">def</span> <span class="nf">range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The start / stop of the group&#39;s time field.</span>
+
+<span class="sd">        Returns (tuple):</span>
+<span class="sd">            the start and stop times.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_double</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_double</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="n">stop</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;group is not associated with a block- cannot read or write data&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">start</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">stop</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Group.read_times"><a class="viewcode-back" href="../../group.html#tidas.Group.read_times">[docs]</a>    <span class="k">def</span> <span class="nf">read_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read the full time vector.</span>
+
+<span class="sd">        This reads the full timestamps for the group.</span>
+
+<span class="sd">        Returns (array):</span>
+<span class="sd">            the timestamps as a numpy float64 array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_read_times</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;group is not associated with a block- cannot read or write data&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="Group.write_times"><a class="viewcode-back" href="../../group.html#tidas.Group.write_times">[docs]</a>    <span class="k">def</span> <span class="nf">write_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write the full time vector.</span>
+
+<span class="sd">        This writes the full timestamps for the group.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (array): the timestamps as a numpy float64 array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cannot write full time vector which is smaller than the group&quot;</span><span class="p">)</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_write_times</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;group is not associated with a block- cannot read or write data&quot;</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="Group.read"><a class="viewcode-back" href="../../group.html#tidas.Group.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read data from the specified field.</span>
+
+<span class="sd">        Data is read for the specified sample range and returned as a</span>
+<span class="sd">        numpy array with a dtype that matches the underlying data type.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): name of the field to read.</span>
+<span class="sd">            offset (int): the first sample to read.</span>
+<span class="sd">            ndata (int): the number of samples to read.</span>
+
+<span class="sd">        Returns (array):</span>
+<span class="sd">            the data for the field.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">ndata</span>
+        <span class="k">if</span> <span class="n">last</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">&quot;cannot read sample range </span><span class="si">{}</span><span class="s2"> - </span><span class="si">{}</span><span class="s2"> from group with </span><span class="si">{}</span><span class="s2"> samples&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">last</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfield</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">pcf</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cfield</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># determine type and correct method to call</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;int8&quot;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_read_int8</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;uint8&quot;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_read_uint8</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;int16&quot;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_read_int16</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;uint16&quot;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_read_uint16</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;int32&quot;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_read_int32</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;uint32&quot;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_read_uint32</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;int64&quot;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_read_int64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;uint64&quot;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_read_uint64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;float32&quot;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_read_float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;float64&quot;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_read_double</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;string&quot;</span><span class="p">:</span>
+                <span class="n">backsize</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_backend_string_size</span><span class="p">()</span>
+                <span class="n">cdata</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_string_alloc</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">backsize</span><span class="p">)</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_read_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">cdata</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndata</span><span class="p">):</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">str</span><span class="p">(</span><span class="n">cdata</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span> <span class="p">)</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_string_free</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">cdata</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cannot read field with unknown data type </span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;group is not associated with a block- cannot read or write data&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="Group.write"><a class="viewcode-back" href="../../group.html#tidas.Group.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write data to the specified field.</span>
+
+<span class="sd">        Data is written for the specified sample range and the provided numpy</span>
+<span class="sd">        array must have a dtype that is compatible with the C/C++ interface</span>
+<span class="sd">        for the field type.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field (str): name of the field to write.</span>
+<span class="sd">            offset (int): the first sample to write.</span>
+<span class="sd">            data (array): the data to write</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Nothing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ndata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">ndata</span>
+        <span class="k">if</span> <span class="n">last</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">&quot;cannot write sample range </span><span class="si">{}</span><span class="s2"> - </span><span class="si">{}</span><span class="s2"> from group with </span><span class="si">{}</span><span class="s2"> samples&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">last</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sz</span><span class="p">))</span>
+        <span class="n">cfield</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">pcf</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cfield</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># determine type and correct method to call</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;int8&quot;</span><span class="p">:</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_write_int8</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;uint8&quot;</span><span class="p">:</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_write_uint8</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;int16&quot;</span><span class="p">:</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_write_int16</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;uint16&quot;</span><span class="p">:</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_write_uint16</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;int32&quot;</span><span class="p">:</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_write_int32</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;uint32&quot;</span><span class="p">:</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_write_uint32</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;int64&quot;</span><span class="p">:</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_write_int64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;uint64&quot;</span><span class="p">:</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_write_uint64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;float32&quot;</span><span class="p">:</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_write_float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;float64&quot;</span><span class="p">:</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_write_double</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">pcf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;string&quot;</span><span class="p">:</span>
+                <span class="n">backsize</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_backend_string_size</span><span class="p">()</span>
+                <span class="n">cdata</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_string_alloc</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">backsize</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndata</span><span class="p">):</span>
+                    <span class="n">cdata</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_write_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ndata</span><span class="p">,</span> <span class="n">cdata</span><span class="p">)</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_string_free</span><span class="p">(</span><span class="n">ndata</span><span class="p">,</span> <span class="n">cdata</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cannot write field with unknown data type </span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_schm</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;group is not associated with a block- cannot read or write data&quot;</span><span class="p">)</span>
+        <span class="k">return</span></div>
+            
+<div class="viewcode-block" id="Group.info"><a class="viewcode-back" href="../../group.html#tidas.Group.info">[docs]</a>    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print basic information about this group to stdout.</span>
+
+<span class="sd">        Mainly useful for debugging.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): the name of this group in the parent block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">prf</span> <span class="o">=</span> <span class="s2">&quot;TIDAS:  &quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">indent</span><span class="p">):</span>
+            <span class="n">prf</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prf</span><span class="p">)</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">range</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">Group </span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2"> (</span><span class="si">{}</span><span class="s2"> samples) start = </span><span class="si">{}</span><span class="s2">, stop = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prf</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">))</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">  Properties </span><span class="si">{}</span><span class="s2"> = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prf</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">  Field </span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prf</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">s</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">return</span></div></div>
+
+
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017, Theodore Kisner.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+    </div>
+  </body>
+</html>

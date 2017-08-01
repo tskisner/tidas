@@ -1,0 +1,495 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tidas.block &#8212; TIDAS 85f9226.dev135
+ documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '85f9226.dev135',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="../../_static/tidas_logo_small.png" alt="Logo"/><h1 class="heading"><a href="../../index.html">
+          <span>TIDAS 85f9226.dev135
+ documentation</span></a></h1>
+        <h2 class="heading"><span>tidas.block</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for tidas.block</h1><div class="highlight"><pre>
+<span></span><span class="c1">##</span>
+<span class="c1">##  TImestream DAta Storage (TIDAS)</span>
+<span class="c1">##  Copyright (c) 2014-2017, all rights reserved.  Use of this source code </span>
+<span class="c1">##  is governed by a BSD-style license that can be found in the top-level</span>
+<span class="c1">##  LICENSE file.</span>
+<span class="c1">##</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">unicode_literals</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">ctypes</span> <span class="k">as</span> <span class="nn">ct</span>
+
+<span class="kn">from</span> <span class="nn">.ctidas</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.group</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.intervals</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="Block"><a class="viewcode-back" href="../../volume.html#tidas.Block">[docs]</a><span class="k">class</span> <span class="nc">Block</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class which represents a TIDAS block.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">managed</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="o">=</span> <span class="n">handle</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">managed</span> <span class="o">=</span> <span class="n">managed</span>
+
+<div class="viewcode-block" id="Block.close"><a class="viewcode-back" href="../../volume.html#tidas.Block.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Explicitly close the block (free the underlying C++ pointer).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">managed</span><span class="p">:</span>
+                <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_free</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span>
+
+<div class="viewcode-block" id="Block.clear_groups"><a class="viewcode-back" href="../../volume.html#tidas.Block.clear_groups">[docs]</a>    <span class="k">def</span> <span class="nf">clear_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove all groups from this block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_clear_groups</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="Block.clear_intervals"><a class="viewcode-back" href="../../volume.html#tidas.Block.clear_intervals">[docs]</a>    <span class="k">def</span> <span class="nf">clear_intervals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove all intervals from this block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_clear_intervals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="Block.clear_blocks"><a class="viewcode-back" href="../../volume.html#tidas.Block.clear_blocks">[docs]</a>    <span class="k">def</span> <span class="nf">clear_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove all sub-blocks from this block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_clear_children</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="Block.clear"><a class="viewcode-back" href="../../volume.html#tidas.Block.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove all groups, intervals and sub-blocks from this block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_clear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="Block.range"><a class="viewcode-back" href="../../volume.html#tidas.Block.range">[docs]</a>    <span class="k">def</span> <span class="nf">range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the extrema of timestamps of all groups in this block.</span>
+<span class="sd">        </span>
+<span class="sd">        This is not recursive (does not traverse sub-blocks).</span>
+
+<span class="sd">        Returns (tuple):</span>
+<span class="sd">            the minimum / maximum start / stop times.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_double</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_double</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="n">stop</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">start</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">stop</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Block.aux_dir"><a class="viewcode-back" href="../../volume.html#tidas.Block.aux_dir">[docs]</a>    <span class="k">def</span> <span class="nf">aux_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the filesystem path of the auxilliary data directory.</span>
+
+<span class="sd">        Each block has an associated directory for extra user-defined</span>
+<span class="sd">        data.  This function returns the path to this directory for this</span>
+<span class="sd">        block.</span>
+
+<span class="sd">        Returns (str):</span>
+<span class="sd">            path to the auxilliary data directory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">tmpstr</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_aux_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="n">retstr</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tmpstr</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">libc</span><span class="o">.</span><span class="n">free</span><span class="p">(</span><span class="n">tmpstr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retstr</span></div>
+
+<div class="viewcode-block" id="Block.group_names"><a class="viewcode-back" href="../../volume.html#tidas.Block.group_names">[docs]</a>    <span class="k">def</span> <span class="nf">group_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The names of all groups in this block.</span>
+
+<span class="sd">        Returns (list):</span>
+<span class="sd">            a list of all the group names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="n">cblock_groups</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">names</span></div>
+
+<div class="viewcode-block" id="Block.groups"><a class="viewcode-back" href="../../volume.html#tidas.Block.groups">[docs]</a>    <span class="k">def</span> <span class="nf">groups</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a dictionary of all the specified groups.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            names (list): a list of strings with the group names.</span>
+
+<span class="sd">        Returns (dict):</span>
+<span class="sd">            a dictionary keyed on the names whose values are Group</span>
+<span class="sd">            instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="n">cn</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+            <span class="n">cp</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_group_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cn</span><span class="p">))</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">handle</span><span class="o">=</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="Block.group_get"><a class="viewcode-back" href="../../volume.html#tidas.Block.group_get">[docs]</a>    <span class="k">def</span> <span class="nf">group_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the specified group.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): the name of the group.</span>
+
+<span class="sd">        Returns (Group):</span>
+<span class="sd">            the requested group.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">cname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">cp</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_group_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cname</span><span class="p">))</span>
+        <span class="c1">#sys.stderr.write(&quot;group get c handle = {}\n&quot;.format(cp))</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">handle</span><span class="o">=</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="Block.group_add"><a class="viewcode-back" href="../../volume.html#tidas.Block.group_add">[docs]</a>    <span class="k">def</span> <span class="nf">group_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">grp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add the specified group to the block.</span>
+
+<span class="sd">        Adds a copy of the group to this block.  If the python Group instance</span>
+<span class="sd">        does not have a C++ handle associated with it, then a new C++ instance</span>
+<span class="sd">        is created before adding it.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): the name of the group.</span>
+<span class="sd">            grp (Group): the group to add.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns (Group):</span>
+<span class="sd">            a copy of the newly added Group associated with the block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">cgrp</span> <span class="o">=</span> <span class="n">grp</span><span class="o">.</span><span class="n">_handle</span><span class="p">()</span>
+        <span class="c1">#sys.stderr.write(&quot;group add handle = {}\n&quot;.format(cgrp))</span>
+        <span class="k">if</span> <span class="n">grp</span><span class="o">.</span><span class="n">_handle</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cschm</span> <span class="o">=</span> <span class="n">schema_py2c</span><span class="p">(</span><span class="n">grp</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+            <span class="n">cdict</span> <span class="o">=</span> <span class="n">dict_py2c</span><span class="p">(</span><span class="n">grp</span><span class="o">.</span><span class="n">props</span><span class="p">)</span>
+            <span class="c1">#sys.stderr.write(&quot;group add allocating\n&quot;)</span>
+            <span class="n">cgrp</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_alloc</span><span class="p">(</span><span class="n">cschm</span><span class="p">,</span> <span class="n">cdict</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_longlong</span><span class="p">(</span><span class="n">grp</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+            <span class="c1">#sys.stderr.write(&quot;group add temp handle = {}\n&quot;.format(cgrp))</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_schema_free</span><span class="p">(</span><span class="n">cschm</span><span class="p">)</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_dict_free</span><span class="p">(</span><span class="n">cdict</span><span class="p">)</span>
+            <span class="c1">#sys.stderr.write(&quot;group add temp schema and dict freed\n&quot;)</span>
+        <span class="n">cname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">ngrp</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_group_add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cname</span><span class="p">),</span> <span class="n">cgrp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">grp</span><span class="o">.</span><span class="n">_handle</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1">#sys.stderr.write(&quot;group add free temp handle = {}\n&quot;.format(cgrp))</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_group_free</span><span class="p">(</span><span class="n">cgrp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Group</span><span class="p">(</span><span class="n">handle</span><span class="o">=</span><span class="n">ngrp</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Block.group_del"><a class="viewcode-back" href="../../volume.html#tidas.Block.group_del">[docs]</a>    <span class="k">def</span> <span class="nf">group_del</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete the specified group from the block.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): the name of the group.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">cname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_group_del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cname</span><span class="p">))</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="Block.intervals_names"><a class="viewcode-back" href="../../volume.html#tidas.Block.intervals_names">[docs]</a>    <span class="k">def</span> <span class="nf">intervals_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The names of all intervals in this block.</span>
+
+<span class="sd">        Returns (list):</span>
+<span class="sd">            a list of all the intervals names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="n">cblock_intervals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">names</span></div>
+
+<div class="viewcode-block" id="Block.intervals"><a class="viewcode-back" href="../../volume.html#tidas.Block.intervals">[docs]</a>    <span class="k">def</span> <span class="nf">intervals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a dictionary of all the specified intervals.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            names (list): a list of strings with the intervals names.</span>
+
+<span class="sd">        Returns (dict):</span>
+<span class="sd">            a dictionary keyed on the names whose values are Intervals</span>
+<span class="sd">            instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="n">cn</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+            <span class="n">cp</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_intervals_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cn</span><span class="p">))</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span><span class="n">handle</span><span class="o">=</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="Block.intervals_get"><a class="viewcode-back" href="../../volume.html#tidas.Block.intervals_get">[docs]</a>    <span class="k">def</span> <span class="nf">intervals_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the specified intervals.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): the name of the intervals.</span>
+
+<span class="sd">        Returns (Intervals):</span>
+<span class="sd">            the requested intervals.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">cname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">cp</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_intervals_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cname</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">Intervals</span><span class="p">(</span><span class="n">handle</span><span class="o">=</span><span class="n">cp</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Block.intervals_add"><a class="viewcode-back" href="../../volume.html#tidas.Block.intervals_add">[docs]</a>    <span class="k">def</span> <span class="nf">intervals_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">intr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add the specified intervals to the block.</span>
+
+<span class="sd">        Adds a copy of the intervals to this block.  If the python Intervals</span>
+<span class="sd">        instance does not have a C++ handle associated with it, then a new </span>
+<span class="sd">        C++ instance is created before adding it.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): the name of the Intervals.</span>
+<span class="sd">            intr (Intervals): the Intervals to add.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns (Intervals):</span>
+<span class="sd">            a copy of the newly added Intervals associated with the block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">cintr</span> <span class="o">=</span> <span class="n">intr</span><span class="o">.</span><span class="n">_handle</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">intr</span><span class="o">.</span><span class="n">_handle</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cdict</span> <span class="o">=</span> <span class="n">dict_py2c</span><span class="p">(</span><span class="n">intr</span><span class="o">.</span><span class="n">props</span><span class="p">)</span>
+            <span class="n">cintr</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intervals_alloc</span><span class="p">(</span><span class="n">cdict</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_ulong</span><span class="p">(</span><span class="n">intr</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_dict_free</span><span class="p">(</span><span class="n">cdict</span><span class="p">)</span>
+        <span class="n">cname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">nintr</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_intervals_add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cname</span><span class="p">),</span> <span class="n">cintr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">intr</span><span class="o">.</span><span class="n">_handle</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_intervals_free</span><span class="p">(</span><span class="n">cintr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Intervals</span><span class="p">(</span><span class="n">handle</span><span class="o">=</span><span class="n">nintr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Block.intervals_del"><a class="viewcode-back" href="../../volume.html#tidas.Block.intervals_del">[docs]</a>    <span class="k">def</span> <span class="nf">intervals_del</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete the specified intervals from the block.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): the name of the intervals.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">cname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_intervals_del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cname</span><span class="p">))</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="Block.block_names"><a class="viewcode-back" href="../../volume.html#tidas.Block.block_names">[docs]</a>    <span class="k">def</span> <span class="nf">block_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The names of all sub-blocks in this block.</span>
+
+<span class="sd">        Returns (list):</span>
+<span class="sd">            a list of all the block names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="n">cblock_children</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">names</span></div>
+
+<div class="viewcode-block" id="Block.blocks"><a class="viewcode-back" href="../../volume.html#tidas.Block.blocks">[docs]</a>    <span class="k">def</span> <span class="nf">blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a dictionary of all the specified blocks.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            names (list): a list of strings with the block names.</span>
+
+<span class="sd">        Returns (dict):</span>
+<span class="sd">            a dictionary keyed on the names whose values are Block</span>
+<span class="sd">            instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="n">cn</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+            <span class="n">cb</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_child_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cn</span><span class="p">))</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span><span class="n">cb</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="Block.block_get"><a class="viewcode-back" href="../../volume.html#tidas.Block.block_get">[docs]</a>    <span class="k">def</span> <span class="nf">block_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the specified block.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): the name of the block.</span>
+
+<span class="sd">        Returns (Block):</span>
+<span class="sd">            the requested block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">cname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">cb</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_child_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cname</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">Block</span><span class="p">(</span><span class="n">handle</span><span class="o">=</span><span class="n">cb</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Block.block_add"><a class="viewcode-back" href="../../volume.html#tidas.Block.block_add">[docs]</a>    <span class="k">def</span> <span class="nf">block_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">blk</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add the specified child block to this block.</span>
+
+<span class="sd">        If the python Block instance does not have a C++ handle </span>
+<span class="sd">        associated with it, then a new C++ instance is created before </span>
+<span class="sd">        adding it.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): the name of the block.</span>
+<span class="sd">            blk (Block): the block to add.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns (Block):</span>
+<span class="sd">            a copy of the newly added child block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">blk</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">blk</span> <span class="o">=</span> <span class="n">Block</span><span class="p">()</span>
+        <span class="n">cblk</span> <span class="o">=</span> <span class="n">blk</span><span class="o">.</span><span class="n">_handle</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">blk</span><span class="o">.</span><span class="n">_handle</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cblk</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_alloc</span><span class="p">()</span>
+        <span class="n">cname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">nb</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_child_add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cname</span><span class="p">),</span> <span class="n">cblk</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">blk</span><span class="o">.</span><span class="n">_handle</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_free</span><span class="p">(</span><span class="n">cblk</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Block</span><span class="p">(</span><span class="n">handle</span><span class="o">=</span><span class="n">nb</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Block.block_del"><a class="viewcode-back" href="../../volume.html#tidas.Block.block_del">[docs]</a>    <span class="k">def</span> <span class="nf">block_del</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete the specified sub-block from the block.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): the name of the sub-block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">cname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_child_del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cname</span><span class="p">))</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="Block.select"><a class="viewcode-back" href="../../volume.html#tidas.Block.select">[docs]</a>    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recursively copy the current block and all descendents,</span>
+<span class="sd">        applying the specified matching pattern.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filter (str): the selection string to apply.</span>
+
+<span class="sd">        Returns (Block):</span>
+<span class="sd">            a Block copy with a pruned tree of objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;block is not associated with a volume&quot;</span><span class="p">)</span>
+        <span class="n">cfilter</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">cblk</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ctidas_block_select</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">cfilter</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">Block</span><span class="p">(</span><span class="n">handle</span><span class="o">=</span><span class="n">cblk</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Block.info"><a class="viewcode-back" href="../../volume.html#tidas.Block.info">[docs]</a>    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">recurse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print basic information about this block to stdout.</span>
+
+<span class="sd">        Mainly useful for debugging.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): the name of this group in the parent block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">prf</span> <span class="o">=</span> <span class="s2">&quot;TIDAS:  &quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">indent</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">indent</span><span class="p">):</span>
+            <span class="n">prf</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prf</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">Block&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prf</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">Block </span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prf</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_names</span><span class="p">()</span>
+        <span class="n">grps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">nm</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">grps</span><span class="p">):</span>
+            <span class="n">grps</span><span class="p">[</span><span class="n">nm</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">nm</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="p">(</span><span class="n">indent</span><span class="o">+</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_names</span><span class="p">()</span>
+        <span class="n">blks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">recurse</span><span class="p">:</span>    
+            <span class="k">for</span> <span class="n">nm</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">blks</span><span class="p">):</span>
+                <span class="n">blks</span><span class="p">[</span><span class="n">nm</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">nm</span><span class="p">,</span> <span class="n">recurse</span><span class="o">=</span><span class="n">recurse</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="p">(</span><span class="n">indent</span><span class="o">+</span><span class="mi">2</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">nm</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">blks</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">  Block </span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prf</span><span class="p">,</span> <span class="n">nm</span><span class="p">))</span>
+        <span class="k">return</span></div></div>
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017, Theodore Kisner.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+    </div>
+  </body>
+</html>

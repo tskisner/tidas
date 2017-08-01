@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Data Selection &#8212; TIDAS 85f9226.dev135
+ documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '85f9226.dev135',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Utilities" href="utils.html" />
+    <link rel="prev" title="Intervals" href="intervals.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/tidas_logo_small.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TIDAS 85f9226.dev135
+ documentation</span></a></h1>
+        <h2 class="heading"><span>Data Selection</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="intervals.html">Intervals</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="utils.html">Utilities</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="data-selection">
+<span id="selection"></span><h1>Data Selection<a class="headerlink" href="#data-selection" title="Permalink to this headline">¶</a></h1>
+<p>Selecting subsections of a volume is a fundamental feature of TIDAS.  This is useful for a wide variety of situations:</p>
+<blockquote>
+<div><ul class="simple">
+<li>You are only working with a subset of the volume and want to reduce the metadata in memory.</li>
+<li>You want to copy a subset of the volume to some other workspace or local disk.</li>
+<li>You want to symlink a portion of a large volume to a smaller one for testing analysis tools.</li>
+<li>You want to selectively delete portions of the volume.</li>
+</ul>
+</div></blockquote>
+<p>Data selection in TIDAS is performed with a regular expression syntax applied to the names of the hierarchy of blocks and their child groups and intervals.</p>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<p>The full selection string uses several special characters to split up the regular expressions applied to the objects.  Blocks are separated by a normal slash.  If we had 3 levels of blocks (not counting the root) in our volume, we might select a subset with:</p>
+<pre class="literal-block">
+/<strong>block-re-1</strong>/<strong>block-re-2</strong>/<strong>block-re-3</strong>
+</pre>
+<p>So there is a regular expression matching the block names for each level of the hierarchy.  Although any block might also contain data (groups and intervals), let us assume for this example that only the lowest level blocks have some groups and intervals.  We can apply a list of selections to the groups and intervals based on their names.  This list is enclosed in square brackets and separated by commas:</p>
+<pre class="literal-block">
+/<strong>block-re-1</strong>/<strong>block-re-2</strong>/<strong>block-re-3</strong>[grp=<strong>group-re-1</strong>,grp=<strong>group-re-2</strong>,intr=<strong>interval-re-1</strong>]
+</pre>
+<p>When using a selection string for opening or linking a volume, the above granularity (selecting whole blocks, groups, and intervals) is the only thing possible.  However, when <em>copying</em> a volume, TIDAS supports selecting only a subset of the fields in a group, and also supports selection of a subset of the values in the dictionaries of groups and intervals.  Here is an example that slices out only some fields from the first group regex, and also only gets some dictionary values:</p>
+<pre class="literal-block">
+/<strong>block-re-1</strong>/<strong>block-re-2</strong>/<strong>block-re-3</strong>[grp=<strong>group-re-1</strong>[schm=<strong>field-re</strong>,dict=<strong>key-re</strong>],grp=<strong>group-re-2</strong>,intr=<strong>interval-re-1</strong>]
+</pre>
+<p>Each of the regular expressions in the above examples simply uses a std::regex object with extended syntax.  You should follow that standard when crafting strings to match against the different object names.</p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>For a more detailed example, imagine we are copying a subset of a volume.  Our volume has top-level blocks named after years (2008, 2009, 2010, 2011, etc), and then blocks named after the months, followed by blocks named after the day of the month.  The lowest level blocks have several data groups, named daq1, daq2, daq3, etc.  We would like to export just the data from the first day of every month in the year 2010, and we only want the data from daq3.  We could duplicate the volume with the following selection string:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="mi">2010</span><span class="o">/.*/</span><span class="mi">01</span><span class="p">[</span><span class="n">grp</span><span class="o">=</span><span class="n">daq3</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="intervals.html">Intervals</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="utils.html">Utilities</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017, Theodore Kisner.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+    </div>
+  </body>
+</html>

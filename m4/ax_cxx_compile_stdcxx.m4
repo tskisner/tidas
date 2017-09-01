@@ -85,6 +85,9 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
         if test -n "$CXXCPP" ; then
           CXXCPP="$CXXCPP $switch"
         fi
+        if test -n "$MPICXX" ; then
+          MPICXX="$MPICXX $switch"
+        fi
         ac_success=yes
         break
       fi
@@ -110,6 +113,9 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
         CXX="$CXX $switch"
         if test -n "$CXXCPP" ; then
           CXXCPP="$CXXCPP $switch"
+        fi
+        if test -n "$MPICXX" ; then
+          MPICXX="$MPICXX $switch"
         fi
         ac_success=yes
         break

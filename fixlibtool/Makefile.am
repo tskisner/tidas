@@ -9,9 +9,11 @@ fixlibtool : $(top_srcdir)/libtool
 	@echo "Fixing libtool" \
     && cat $(top_srcdir)/libtool \
     | sed -e "s#CC=\"$(CC)\"#CC=\"$(MPICC)\"#g" \
-    | sed -e "s#CC=\"$(CXX)\"#CC=\"$(MPICXX)\"#g" \
+    | sed -e "s#CC=\"$(CXX_ORIG)\"#CC=\"$(MPICXX_ORIG)\"#g" \
     | sed -e "s#CC=\"$(FC)\"#CC=\"$(MPIFC)\"#g" \
     > $(top_srcdir)/libtool_mpi \
     && chmod +x $(top_srcdir)/libtool_mpi \
     && touch fixlibtool
+
+CLEANFILES = fixlibtool
 

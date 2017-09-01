@@ -383,9 +383,9 @@ def test_mpi_volume_setup(vol, nblock, nsamp):
 
 
 def test_mpi(tmpdir=None, recurse=False):
+    from mpi4py import MPI
     from .mpi_volume import MPIVolume
     from .ctidas_mpi import mpi_dist_uniform
-    from mpi4py import MPI
 
     comm = MPI.COMM_WORLD
 

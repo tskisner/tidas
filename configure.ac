@@ -76,11 +76,6 @@ dnl | C++ support
 dnl +-------------------------
 AC_PROG_CXX
 
-dnl +------------------------------------------------
-dnl | Check for C++11 language support
-dnl +------------------------------------------------
-AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
-
 dnl +-------------------------
 dnl | Fortran support
 dnl +-------------------------
@@ -103,6 +98,9 @@ dnl +------------------------------------------------
 dnl | This is a C++ project...
 dnl +------------------------------------------------
 AC_LANG([C++])
+
+dnl Ensure that pkg-config is setup
+PKG_PROG_PKG_CONFIG
 
 dnl +------------------------------------------------
 dnl | Check for MPI
@@ -133,6 +131,17 @@ if test $tidas_mpi = yes; then
 fi
 AM_CONDITIONAL([HAVE_AM_MPI], [test $tidas_mpi = yes])
 AM_CONDITIONAL([HAVE_AM_MPI_FC], [test $tidas_mpi_fortran = yes])
+
+dnl +------------------------------------------------
+dnl | Check for C++11 language support
+dnl | since this modifies CXX and MPICXX, save these
+dnl | in other variables for later use.
+dnl +------------------------------------------------
+CXX_ORIG="$CXX"
+MPICXX_ORIG="$MPICXX"
+AC_SUBST([CXX_ORIG])
+AC_SUBST([MPICXX_ORIG])
+AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 
 dnl +-------------------------
 dnl | Option to perform full static linking of executables, not just

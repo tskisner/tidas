@@ -100,7 +100,7 @@ dnl +------------------------------------------------
 AC_LANG([C++])
 
 dnl Ensure that pkg-config is setup
-PKG_PROG_PKG_CONFIG
+#PKG_PROG_PKG_CONFIG
 
 dnl +------------------------------------------------
 dnl | Check for MPI
@@ -201,16 +201,17 @@ AM_CONDITIONAL([HAVE_AM_HDF5], [test $tidas_hdf5 = yes])
 dnl +------------------------------------------------
 dnl | Check for GetData
 dnl +------------------------------------------------
-AC_LANG_PUSH([C])
-tidas_getdata=yes
-AC_ARG_ENABLE(getdata, [AC_HELP_STRING([--disable-getdata], [Disable GetData backend])], [tidas_getdata=$enable_getdata])
-if test $tidas_getdata = yes; then
-  ACX_GETDATA([], [tidas_getdata=no])
-  if test $tidas_getdata = no; then
-    AC_MSG_WARN([Could not find GetData library- disabling backend])
-  fi
-fi
-AC_LANG_POP([C])
+tidas_getdata=no
+#AC_LANG_PUSH([C])
+#tidas_getdata=yes
+#AC_ARG_ENABLE(getdata, [AC_HELP_STRING([--disable-getdata], [Disable GetData backend])], [tidas_getdata=$enable_getdata])
+#if test $tidas_getdata = yes; then
+#  ACX_GETDATA([], [tidas_getdata=no])
+#  if test $tidas_getdata = no; then
+#    AC_MSG_WARN([Could not find GetData library- disabling backend])
+#  fi
+#fi
+#AC_LANG_POP([C])
 AM_CONDITIONAL([HAVE_AM_GETDATA], [test $tidas_getdata = yes])
 
 dnl +------------------------------------------------

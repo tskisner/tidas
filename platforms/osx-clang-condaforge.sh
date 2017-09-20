@@ -34,6 +34,5 @@ export CXXFLAGS="-O3 -g"
 
 ./configure ${OPTS} \
 --disable-fortran \
---disable-getdata \
 --with-hdf5=${condabin}/h5cc
 

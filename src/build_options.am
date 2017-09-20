@@ -47,6 +47,6 @@ if HAVE_AM_GETDATA
 endif
 
 
-# Always need the C math library
+# Always need the C math
 
-AM_LIBS += -lm
+AM_LIBS += $(MATH)

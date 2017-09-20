@@ -143,6 +143,13 @@ AC_SUBST([CXX_ORIG])
 AC_SUBST([MPICXX_ORIG])
 AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 
+dnl +------------------------------------------------
+dnl | Check for the C math library
+dnl +------------------------------------------------
+AC_LANG_PUSH([C])
+ACX_MATH
+AC_LANG_POP([C])
+
 dnl +-------------------------
 dnl | Option to perform full static linking of executables, not just
 dnl | building of static libraries.

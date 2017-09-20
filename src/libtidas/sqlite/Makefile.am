@@ -27,6 +27,10 @@ libtidas_sqlite_la_include_HEADERS = \
 libtidas_sqlite_la_SOURCES = \
 	sqlite3.c
 
+libtidas_sqlite_la_CFLAGS = \
+	-DSQLITE_DISABLE_INTRINSIC \
+	$(AM_CFLAGS)
+
 libtidas_sqlite_la_LIBADD =
 
 

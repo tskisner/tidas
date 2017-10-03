@@ -25,8 +25,9 @@ tidas::mpi_volume::mpi_volume () {
 }
 
 
-tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path, backend_type type,
-    compression_type comp, std::map < std::string, std::string > extra ) {
+tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path,
+    backend_type type, compression_type comp, std::map < std::string, 
+    std::string > extra ) {
 
     comm_ = comm;
     int ret = MPI_Comm_rank ( comm_, &rank_ );

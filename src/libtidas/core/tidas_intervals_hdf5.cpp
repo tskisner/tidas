@@ -60,7 +60,10 @@ void tidas::intervals_backend_hdf5::read ( backend_path const & loc, size_t & si
 
     // open file
 
-    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
+    H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
+    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, fapl );
+    H5Pclose ( fapl );
 
     // read number of intervals
 
@@ -118,7 +121,10 @@ void tidas::intervals_backend_hdf5::write ( backend_path const & loc, size_t con
 
     // create file
 
-    hid_t file = H5Fcreate ( fspath.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT );
+    hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
+    H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
+    hid_t file = H5Fcreate ( fspath.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, fapl );
+    H5Pclose ( fapl );    
 
     // create time dataset
 
@@ -238,7 +244,10 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
 
     // open file
 
-    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
+    H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
+    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, fapl );
+    H5Pclose ( fapl );
 
     // read times
 
@@ -336,7 +345,10 @@ void tidas::intervals_backend_hdf5::write_data ( backend_path const & loc, inter
 
     string fspath = loc.path + path_sep + loc.name;
 
-    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
+    hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
+    H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
+    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, fapl );
+    H5Pclose ( fapl );
 
     // write time data
 

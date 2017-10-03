@@ -71,7 +71,10 @@ void tidas::group_backend_hdf5::read ( backend_path const & loc, index_type & ns
 
     // open file
 
-    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
+    H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
+    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, fapl );
+    H5Pclose ( fapl );
 
     // read range
 
@@ -223,7 +226,10 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
 
     // create file
 
-    hid_t file = H5Fcreate ( fspath.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT );
+    hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
+    H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
+    hid_t file = H5Fcreate ( fspath.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, fapl );
+    H5Pclose ( fapl );
 
     // create range dataset
 
@@ -329,7 +335,10 @@ void tidas::group_backend_hdf5::resize ( backend_path const & loc, index_type co
 
     // open file
 
-    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
+    hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
+    H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
+    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, fapl );
+    H5Pclose ( fapl );
 
     // we always have the FLOAT64 dataset, since we always have at least the time field
 
@@ -438,7 +447,10 @@ void tidas::group_backend_hdf5::update_range ( backend_path const & loc, time_ty
 
     // open file
 
-    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
+    hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
+    H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
+    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, fapl );
+    H5Pclose ( fapl );
 
     // open the range dataset
 

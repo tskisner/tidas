@@ -50,7 +50,10 @@ void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & f
 
     string fspath = loc.path + path_sep + loc.name;
 
-    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
+    H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
+    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, fapl );
+    H5Pclose ( fapl );
 
     // open dataset
 
@@ -137,7 +140,10 @@ void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list co
 
     hid_t file;
     if ( fsize > 0 ) {
-        file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
+        hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
+        H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
+        file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, fapl );
+        H5Pclose ( fapl );
 
         // check if dataset exists and delete it
 
@@ -147,7 +153,10 @@ void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list co
         }
 
     } else {
-        file = H5Fcreate ( fspath.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT );
+        hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
+        H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
+        file = H5Fcreate ( fspath.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, fapl );
+        H5Pclose ( fapl );
     }
 
     // create schema dataset and write

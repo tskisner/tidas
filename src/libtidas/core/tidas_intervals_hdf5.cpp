@@ -94,7 +94,8 @@ void tidas::intervals_backend_hdf5::read ( backend_path const & loc, size_t & si
 
     // clean up
 
-    herr_t status = H5Fclose ( file ); 
+    herr_t status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
+    status = H5Fclose ( file ); 
 
 #else
 
@@ -163,6 +164,7 @@ void tidas::intervals_backend_hdf5::write ( backend_path const & loc, size_t con
 
     // clean up
 
+    status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
 
     // mark volume as dirty
@@ -314,6 +316,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
 
     // close file
 
+    status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file ); 
 
     // copy buffers into intervals
@@ -396,6 +399,7 @@ void tidas::intervals_backend_hdf5::write_data ( backend_path const & loc, inter
 
     // close file
 
+    status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
 
     // mark volume as dirty

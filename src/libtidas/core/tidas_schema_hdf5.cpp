@@ -50,6 +50,8 @@ void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & f
 
     string fspath = loc.path + path_sep + loc.name;
 
+    herr_t status = H5open();
+
     hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
     H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
     hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, fapl );
@@ -87,7 +89,7 @@ void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & f
 
     char * buffer = mem_alloc < char > ( dims[0] * dims[1] * backend_string_size );
 
-    herr_t status = H5Dread ( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer );
+    status = H5Dread ( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer );
 
     size_t off = 0;
 
@@ -118,6 +120,7 @@ void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & f
     status = H5Dclose ( dataset );
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
+    status = H5close();
 
 #else
 
@@ -138,6 +141,8 @@ void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list co
     string fspath = loc.path + path_sep + loc.name;
 
     int64_t fsize = fs_stat ( fspath.c_str() );
+
+    herr_t status = H5open();
 
     hid_t file;
     if ( fsize > 0 ) {
@@ -190,7 +195,7 @@ void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list co
 
     }
 
-    herr_t status = H5Dwrite ( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer );
+    status = H5Dwrite ( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer );
 
     free ( buffer );
 
@@ -199,6 +204,7 @@ void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list co
     status = H5Dclose ( dataset );
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
+    status = H5close();
 
     // mark volume as dirty
 

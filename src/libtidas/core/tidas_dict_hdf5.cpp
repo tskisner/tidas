@@ -109,6 +109,8 @@ void tidas::dict_backend_hdf5::read ( backend_path const & loc, map < string, st
 
     string fspath = loc.path + path_sep + loc.name;
 
+    herr_t status = H5open();
+
     hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
     H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
     hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, fapl );
@@ -123,7 +125,7 @@ void tidas::dict_backend_hdf5::read ( backend_path const & loc, map < string, st
     tidas_dict_backend_hdf5_attr_data iterdata;
 
     hsize_t aoff = 0;
-    herr_t status = H5Aiterate ( dataset, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, &aoff, tidas_dict_backend_hdf5_attr_parse, (void *)&iterdata );
+    status = H5Aiterate ( dataset, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, &aoff, tidas_dict_backend_hdf5_attr_parse, (void *)&iterdata );
 
     data = iterdata.data;
     types = iterdata.types;
@@ -132,7 +134,8 @@ void tidas::dict_backend_hdf5::read ( backend_path const & loc, map < string, st
 
     status = H5Dclose ( dataset );
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
-    status = H5Fclose ( file ); 
+    status = H5Fclose ( file );
+    status = H5close();
 
     return;
 }
@@ -143,6 +146,8 @@ void tidas::dict_backend_hdf5::write ( backend_path const & loc, map < string, s
     // open file in write mode
 
     string fspath = loc.path + path_sep + loc.name;
+
+    herr_t status = H5open();
 
     hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
     H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
@@ -158,7 +163,7 @@ void tidas::dict_backend_hdf5::write ( backend_path const & loc, map < string, s
     vector < string > names;
 
     hsize_t aoff = 0;
-    herr_t status = H5Aiterate ( dataset, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, &aoff, tidas_dict_backend_hdf5_attr_list, (void *)&names );
+    status = H5Aiterate ( dataset, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, &aoff, tidas_dict_backend_hdf5_attr_list, (void *)&names );
 
     // clear all attributes.  we just delete each one by name
 
@@ -199,6 +204,8 @@ void tidas::dict_backend_hdf5::write ( backend_path const & loc, map < string, s
     status = H5Dclose ( dataset );
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
+
+    status = H5close();
 
     // mark volume as dirty
 

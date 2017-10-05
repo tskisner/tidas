@@ -71,6 +71,8 @@ void tidas::group_backend_hdf5::read ( backend_path const & loc, index_type & ns
 
     // open file
 
+    herr_t status = H5open();
+
     hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
     H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
     hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, fapl );
@@ -105,7 +107,7 @@ void tidas::group_backend_hdf5::read ( backend_path const & loc, index_type & ns
 
     double range[2];
 
-    herr_t status = H5Dread ( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)range );
+    status = H5Dread ( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)range );
 
     start = range[0];
     stop = range[1];
@@ -197,6 +199,7 @@ void tidas::group_backend_hdf5::read ( backend_path const & loc, index_type & ns
 
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
+    status = H5close();
 
 #else
 
@@ -227,6 +230,8 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
 
     // create file
 
+    herr_t status = H5open();
+
     hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
     H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
     hid_t file = H5Fcreate ( fspath.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, fapl );
@@ -249,7 +254,7 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
     range_data[0] = numeric_limits < time_type > :: max();
     range_data[1] = numeric_limits < time_type > :: min();
 
-    herr_t status = H5Dwrite ( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, range_data );
+    status = H5Dwrite ( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, range_data );
 
     H5Sclose ( dataspace );
     H5Tclose ( datatype );
@@ -308,7 +313,8 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
     }
     
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
-    status = H5Fclose ( file ); 
+    status = H5Fclose ( file );
+    status = H5close();
 
 #else
 
@@ -336,6 +342,8 @@ void tidas::group_backend_hdf5::resize ( backend_path const & loc, index_type co
     }
 
     // open file
+
+    herr_t status = H5open();
 
     hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
     H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
@@ -365,7 +373,7 @@ void tidas::group_backend_hdf5::resize ( backend_path const & loc, index_type co
     newsize[0] = dims[0];
     newsize[1] = nsamp;
 
-    herr_t status = H5Dset_extent ( dataset, newsize );
+    status = H5Dset_extent ( dataset, newsize );
 
     status = H5Sclose ( dataspace );
     status = H5Dclose ( dataset );
@@ -422,6 +430,7 @@ void tidas::group_backend_hdf5::resize ( backend_path const & loc, index_type co
 
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
+    status = H5close();
 
 #else
 
@@ -449,6 +458,8 @@ void tidas::group_backend_hdf5::update_range ( backend_path const & loc, time_ty
     }
 
     // open file
+
+    herr_t status = H5open();
 
     hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
     H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
@@ -486,13 +497,14 @@ void tidas::group_backend_hdf5::update_range ( backend_path const & loc, time_ty
     range[0] = start;
     range[1] = stop;
 
-    herr_t status = H5Dwrite ( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, range );
+    status = H5Dwrite ( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, range );
 
     status = H5Tclose ( datatype );
     status = H5Sclose ( dataspace );
     status = H5Dclose ( dataset );
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
+    status = H5close();
 
 #else
 

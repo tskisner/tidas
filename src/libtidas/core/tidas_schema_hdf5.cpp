@@ -120,7 +120,7 @@ void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & f
     status = H5Dclose ( dataset );
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
-    status = H5close();
+    //status = H5close();
 
 #else
 
@@ -204,7 +204,7 @@ void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list co
     status = H5Dclose ( dataset );
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
-    status = H5close();
+    //status = H5close();
 
     // mark volume as dirty
 

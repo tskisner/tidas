@@ -199,7 +199,7 @@ void tidas::group_backend_hdf5::read ( backend_path const & loc, index_type & ns
 
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
-    status = H5close();
+    //status = H5close();
 
 #else
 
@@ -314,7 +314,7 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
     
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
-    status = H5close();
+    //status = H5close();
 
 #else
 
@@ -430,7 +430,7 @@ void tidas::group_backend_hdf5::resize ( backend_path const & loc, index_type co
 
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
-    status = H5close();
+    //status = H5close();
 
 #else
 
@@ -504,7 +504,7 @@ void tidas::group_backend_hdf5::update_range ( backend_path const & loc, time_ty
     status = H5Dclose ( dataset );
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
-    status = H5close();
+    //status = H5close();
 
 #else
 

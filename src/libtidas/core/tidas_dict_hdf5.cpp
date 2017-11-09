@@ -135,7 +135,7 @@ void tidas::dict_backend_hdf5::read ( backend_path const & loc, map < string, st
     status = H5Dclose ( dataset );
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
-    status = H5close();
+    //status = H5close();
 
     return;
 }
@@ -205,7 +205,7 @@ void tidas::dict_backend_hdf5::write ( backend_path const & loc, map < string, s
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
 
-    status = H5close();
+    //status = H5close();
 
     // mark volume as dirty
 

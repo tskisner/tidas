@@ -1,11 +1,13 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
 
 #include <tidas_mpi_internal.hpp>
+
+#include <tidas_mpi_test.hpp>
 
 #include <chrono>
 
@@ -61,7 +63,7 @@ void tidas::test::mpi_volume_verify ( mpi_volume & vol ) {
 
     block & rt = vol.root();
 
-    vector < string > names = rt.all_blocks();
+    vector < string > names = rt.block_names();
 
     for ( vector < string > :: iterator it = names.begin(); it != names.end(); ++it ) {
 
@@ -134,7 +136,7 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
         fs_rm_r ( volpathmem.c_str() );
     }
     ret = MPI_Barrier ( comm );
-    
+
     {
         mpi_volume vol ( comm, volpath, backend_type::hdf5, compression_type::gzip, hdf_extra );
         tidas::test::mpi_volume_setup ( vol, n_samp, n_intr, n_block );
@@ -209,9 +211,9 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
         ret = MPI_Barrier ( comm );
 
         auto start = chrono::steady_clock::now();
-        
+
         mpi_volume vol ( comm, volbig, backend_type::hdf5, compression_type::none );
-        
+
         auto stop = chrono::steady_clock::now();
         auto diff = stop - start;
 
@@ -224,7 +226,7 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
         diff = stop - start;
 
         cout << "Writing large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
-        
+
         start = chrono::steady_clock::now();
         tidas::test::mpi_volume_verify ( vol );
         stop = chrono::steady_clock::now();
@@ -242,5 +244,3 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
 #endif
 
 }
-
-

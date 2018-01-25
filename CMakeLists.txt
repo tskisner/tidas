@@ -13,7 +13,7 @@ include(GNUInstallDirs)
 # External packages
 
 find_package(HDF5 REQUIRED)
-find_package(MPI)
+find_package(MPI REQUIRED)
 
 # Internal products
 

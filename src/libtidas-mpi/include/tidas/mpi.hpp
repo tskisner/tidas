@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -10,7 +10,7 @@
 
 #include <mpi.h>
 
-#include <tidas.hpp>
+#include <tidas/tidas.hpp>
 
 
 namespace tidas {
@@ -84,7 +84,7 @@ namespace tidas {
 
         mpi_pack ( data, sendstr );
         std::string sbuf ( sendstr.str() );
-        
+
         long size = sbuf.size();
 
         std::vector < char > vbuf ( size );
@@ -109,7 +109,7 @@ namespace tidas {
         std::vector < char > vbuf ( size );
 
         ret = MPI_Recv ( (void*)&vbuf[0], size, MPI_CHAR, sender, tag, comm, &status );
-        
+
         std::string buf ( &vbuf[0], size );
         std::istringstream recvstr ( buf );
 
@@ -125,7 +125,7 @@ namespace tidas {
         std::ostringstream sendstr;
 
         mpi_pack ( data, sendstr );
-        
+
         long size = sendstr.str().size();
 
         std::vector < char > vbuf ( size );
@@ -153,7 +153,7 @@ namespace tidas {
         ret = MPI_Comm_size ( comm, &nproc );
 
         // Serialize the data for sending
-        
+
         std::ostringstream sendstr;
         mpi_pack ( data, sendstr );
 
@@ -161,7 +161,7 @@ namespace tidas {
         sendstr.str("");
 
         int size = sendstrg.size();
-        
+
         std::vector < char > sendbuf ( size );
         std::copy ( sendstrg.begin(), sendstrg.end(), sendbuf.begin() );
         sendstrg.clear();
@@ -176,7 +176,7 @@ namespace tidas {
             recvptr = (void*)&recvsizes[0];
         }
 
-        ret = MPI_Gather ( (void*)&size, 1, MPI_INT, recvptr, 1, MPI_INT, 
+        ret = MPI_Gather ( (void*)&size, 1, MPI_INT, recvptr, 1, MPI_INT,
             root, comm );
 
         // Create our local receive buffer and displacements.
@@ -236,7 +236,7 @@ namespace tidas {
         ret = MPI_Comm_size ( comm, &nproc );
 
         // Serialize the data for sending
-        
+
         std::ostringstream sendstr;
         mpi_pack ( data, sendstr );
 
@@ -244,7 +244,7 @@ namespace tidas {
         sendstr.str("");
 
         int size = sendstrg.size();
-        
+
         std::vector < char > sendbuf ( size );
         std::copy ( sendstrg.begin(), sendstrg.end(), sendbuf.begin() );
         sendstrg.clear();
@@ -297,8 +297,6 @@ namespace tidas {
 }
 
 #include <tidas/mpi_volume.hpp>
-
-#include <tidas/mpi_test.hpp>
 
 
 #endif

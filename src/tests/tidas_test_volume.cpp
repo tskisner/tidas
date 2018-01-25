@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -38,7 +38,7 @@ void tidas::test::volume_verify ( volume & vol ) {
 
     block & rt = vol.root();
 
-    vector < string > names = rt.all_blocks();
+    vector < string > names = rt.block_names();
 
     for ( vector < string > :: iterator it = names.begin(); it != names.end(); ++it ) {
 
@@ -167,9 +167,9 @@ TEST_F( volumeTest, HDF5Backend ) {
         string volbig = dir + "/test_volume_big.out";
 
         auto start = chrono::steady_clock::now();
-        
+
         volume vol ( volbig, backend_type::hdf5, compression_type::none );
-        
+
         auto stop = chrono::steady_clock::now();
         auto diff = stop - start;
 
@@ -181,7 +181,7 @@ TEST_F( volumeTest, HDF5Backend ) {
         diff = stop - start;
 
         cout << "Writing large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
-        
+
         start = chrono::steady_clock::now();
         tidas::test::volume_verify ( vol );
         stop = chrono::steady_clock::now();
@@ -189,7 +189,7 @@ TEST_F( volumeTest, HDF5Backend ) {
 
         cout << "Read and verify large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
     }
-    
+
     //EXPECT_TRUE(false);
 
 #else

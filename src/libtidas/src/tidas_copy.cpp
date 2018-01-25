@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -117,19 +117,19 @@ void tidas::data_copy ( group const & in, group & out ) {
 
 void tidas::data_copy ( block const & in, block & out ) {
 
-    vector < string > grps = out.all_groups();
+    vector < string > grps = out.group_names();
 
     for ( auto name : grps ) {
         data_copy ( in.group_get( name ), out.group_get( name ) );
     }
 
-    vector < string > intrs = out.all_intervals();
+    vector < string > intrs = out.intervals_names();
 
     for ( auto name : intrs ) {
         data_copy ( in.intervals_get( name ), out.intervals_get( name ) );
     }
 
-    vector < string > blks = out.all_blocks();
+    vector < string > blks = out.block_names();
 
     for ( auto name : blks ) {
         data_copy ( in.block_get( name ), out.block_get( name ) );
@@ -147,6 +147,3 @@ void tidas::data_copy ( volume const & in, volume & out ) {
 
     return;
 }
-
-
-

@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -35,14 +35,14 @@ tidas::exception::~exception ( ) throw () {
 }
 
 
-const char * tidas::exception::what() const throw() { 
+const char * tidas::exception::what() const throw() {
     return msg_;
 }
 
 
 char ** tidas::c_string_alloc ( size_t nstring, size_t length ) {
     char ** ret = (char**) malloc( nstring * sizeof(char*) );
-    
+
     if ( ! ret ) {
         std::ostringstream o;
         o << "failed to allocate array of " << nstring << " C strings";
@@ -121,7 +121,7 @@ int tidas_fs_rm_r_callback ( char const * fpath, const struct stat * sb, int typ
 void tidas::fs_rm_r ( char const * path ) {
 
     int64_t size = fs_stat ( path );
-    
+
     if ( size >= 0 ) {
         int ret = ::nftw ( path, tidas_fs_rm_r_callback, 64, FTW_DEPTH | FTW_PHYS );
         if ( ret ) {
@@ -214,7 +214,7 @@ int tidas_fs_link_r_callback ( char const * fpath, const struct stat * sb, int t
 void tidas::fs_link_r ( char const * target, char const * path, bool hard ) {
 
     int ret = ::nftw ( target, tidas_fs_link_r_callback, 64, FTW_PHYS );
-    
+
     if ( ret ) {
         ::perror ( target );
     }
@@ -342,7 +342,7 @@ string tidas::data_type_to_string ( data_type type ) {
 data_type tidas::data_type_from_string ( string const & name ) {
 
     data_type ret;
-    
+
     if ( name.compare( "int8" ) == 0 ) {
         ret = data_type::int8;
     } else if ( name.compare( "uint8" ) == 0 ) {
@@ -377,8 +377,8 @@ data_type tidas::data_type_from_string ( string const & name ) {
 
 
 template <>
-std::string tidas::data_convert < std::string > ( std::string const & str ) {
-    return str;
+std::string tidas::data_from_string < std::string > ( std::string const & str ) {
+    return std::string(str);
 }
 
 
@@ -409,7 +409,7 @@ string tidas::filter_default ( string const & filter ) {
 //     block filter pass: ""
 
 
-// This extracts the name and sub-filter:  XXXX/.... OR XXXX[]/.... OR XXXX,.... 
+// This extracts the name and sub-filter:  XXXX/.... OR XXXX[]/.... OR XXXX,....
 
 void tidas::filter_sub ( string const & filter, string & name, string & subfilter ) {
 
@@ -599,6 +599,3 @@ map < string, string > tidas::filter_split ( string const & filter ) {
     }
     return ret;
 }
-
-
-

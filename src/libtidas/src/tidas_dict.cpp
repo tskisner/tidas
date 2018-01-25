@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -167,6 +167,21 @@ backend_path tidas::dict::location () const {
 }
 
 
+template <>
+void tidas::dict::put < float > ( std::string const & key, float const & val ) {
+    std::ostringstream o;
+    o.precision(6);
+    o.str("");
+    if ( ! ( o << val ) ) {
+        TIDAS_THROW( "cannot convert type to string \
+            for dict storage" );
+    }
+    data_[ key ] = o.str();
+    types_[ key ] = data_type_get ( typeid ( val ) );
+    return;
+}
+
+
 void tidas::dict::clear () {
     data_.clear();
     types_.clear();
@@ -182,4 +197,3 @@ std::map < std::string, std::string > const & tidas::dict::data() const {
 std::map < std::string, data_type > const & tidas::dict::types() const {
     return types_;
 }
-

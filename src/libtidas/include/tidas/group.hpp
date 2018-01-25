@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -16,7 +16,7 @@ namespace tidas {
     class group_backend {
 
         public :
-            
+
             group_backend () {}
             virtual ~group_backend () {}
 
@@ -75,7 +75,7 @@ namespace tidas {
     class group_backend_hdf5 : public group_backend {
 
         public :
-            
+
             group_backend_hdf5 ();
             ~group_backend_hdf5 ();
             group_backend_hdf5 ( group_backend_hdf5 const & other );
@@ -134,7 +134,7 @@ namespace tidas {
     class group_backend_getdata : public group_backend {
 
         public :
-            
+
             group_backend_getdata ();
             ~group_backend_getdata ();
             group_backend_getdata ( group_backend_getdata const & other );
@@ -207,7 +207,7 @@ namespace tidas {
             /// Default constructor.  The backend is set to be memory based.
             group ();
 
-            /// Constructor with specified schema, dictionary, and number 
+            /// Constructor with specified schema, dictionary, and number
             /// of samples.
             group ( schema const & schm, dict const & d, size_t const & size );
 
@@ -223,12 +223,12 @@ namespace tidas {
             /// (**Internal**) Load the group from the specified location.
             /// All meta data operations will apply to this location.
             group ( backend_path const & loc );
-            
-            /// (**Internal**) Copy from an existing group.  
-            /// Apply an optional filter to elemetns and relocate to a new 
-            /// location.  If a filter is given, a new location must be 
+
+            /// (**Internal**) Copy from an existing group.
+            /// Apply an optional filter to elemetns and relocate to a new
+            /// location.  If a filter is given, a new location must be
             /// specified.
-            group ( group const & other, std::string const & filter, 
+            group ( group const & other, std::string const & filter,
                 backend_path const & loc );
 
             // metadata ops
@@ -236,11 +236,11 @@ namespace tidas {
             /// (**Internal**) Change the location of the group.
             void relocate ( backend_path const & loc );
 
-            /// (**Internal**) Reload metadata from the current location, 
+            /// (**Internal**) Reload metadata from the current location,
             /// overwriting the current state in memory.
             void sync ();
 
-            /// (**Internal**) Write metadata to the current location, 
+            /// (**Internal**) Write metadata to the current location,
             /// overwriting the information at that location.
             void flush () const;
 
@@ -250,7 +250,7 @@ namespace tidas {
             /// (**Internal**) Create a link at the specified location.
             void link ( link_type const & type, std::string const & path ) const;
 
-            /// (**Internal**) Delete the on-disk data and metadata associated 
+            /// (**Internal**) Delete the on-disk data and metadata associated
             /// with this object.  In-memory metadata is not modified.
             void wipe () const;
 
@@ -298,6 +298,13 @@ namespace tidas {
                 return;
             }
 
+            /// Read a range of data from a field.  Store results to the bare
+            /// memory address specified.  Rather than use templates, this
+            /// casts the data pointer based on the tidas type.
+            void read_field_astype ( std::string const & field_name,
+                index_type offset, index_type ndata, tidas::data_type type,
+                void * data ) const;
+
             /// Write a range of data to a field.  Data is provided at the
             /// bare memory address specified.
             template < class T >
@@ -321,9 +328,16 @@ namespace tidas {
                 return;
             }
 
+            /// Write a range of data to a field.  Data is provided at the
+            /// bare memory address specified.  Rather than use templates, this
+            /// casts the data pointer based on the tidas type.
+            void write_field_astype ( std::string const & field_name,
+                index_type offset, index_type ndata, tidas::data_type type,
+                void const * data );
+
             // wrapper for std::vector
 
-            /// Read a range of data from a field.  Store results in the 
+            /// Read a range of data from a field.  Store results in the
             /// given vector.
             template < class T >
             void read_field ( std::string const & field_name, index_type offset, std::vector < T > & data ) const {
@@ -341,7 +355,7 @@ namespace tidas {
 
             // specialization for strings
 
-            /// Read a range of string data from a field.  Store results in 
+            /// Read a range of string data from a field.  Store results in
             /// in an array of pointers.
             void read_field ( std::string const & field_name, index_type offset, index_type ndata, char ** data ) const;
 
@@ -351,7 +365,7 @@ namespace tidas {
 
             // wrapper for vector of strings
 
-            /// Read a range of string data from a field.  Store results in 
+            /// Read a range of string data from a field.  Store results in
             /// in a vector of strings.
             void read_field ( std::string const & field_name, index_type offset, std::vector < std::string > & data ) const;
 
@@ -375,13 +389,16 @@ namespace tidas {
             /// vector provided.
             void read_times ( std::vector < time_type > & data ) const;
 
-            /// Write the timestamps for this group.  Data is provided at 
+            /// Write the timestamps for this group.  Data is provided at
             /// the bare memory address specified.
             void write_times ( index_type ndata, time_type const * data );
 
             /// Write the timestamps for this group.  Data is provided as
             /// a vector.
             void write_times ( std::vector < time_type > const & data );
+
+            /// Print information to a stream.
+            void info ( std::ostream & out, size_t indent );
 
             template < class Archive >
             void save ( Archive & ar ) const {

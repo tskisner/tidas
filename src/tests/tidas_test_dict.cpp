@@ -20,8 +20,7 @@ using namespace tidas;
 void tidas::test::dict_setup ( dict & dct ) {
 
     string sval = "blahblahblah";
-    double dval = numeric_limits < double > :: max();
-    float fval = numeric_limits < float > :: max();
+    double dval = numeric_limits < double > :: max() / 2.0;
     int8_t i8val = numeric_limits < int8_t > :: min();
     uint8_t u8val = numeric_limits < uint8_t > :: max();
     int16_t i16val = numeric_limits < int16_t > :: min();
@@ -32,17 +31,16 @@ void tidas::test::dict_setup ( dict & dct ) {
     uint64_t u64val = numeric_limits < uint64_t > :: max();
 
     dct.clear();
-    dct.put ( "string", sval );
-    dct.put ( "double", dval );
-    dct.put ( "float", fval );
-    dct.put ( "int8", i8val );
-    dct.put ( "uint8", u8val );
-    dct.put ( "int16", i16val );
-    dct.put ( "uint16", u16val );
-    dct.put ( "int32", i32val );
-    dct.put ( "uint32", u32val );
-    dct.put ( "int64", i64val );
-    dct.put ( "uint64", u64val );
+    dct.put < std::string > ( "string", sval );
+    dct.put < double > ( "double", dval );
+    dct.put < int8_t > ( "int8", i8val );
+    dct.put < uint8_t > ( "uint8", u8val );
+    dct.put < int16_t > ( "int16", i16val );
+    dct.put < uint16_t > ( "uint16", u16val );
+    dct.put < int32_t > ( "int32", i32val );
+    dct.put < uint32_t > ( "uint32", u32val );
+    dct.put < int64_t > ( "int64", i64val );
+    dct.put < uint64_t > ( "uint64", u64val );
 
 }
 
@@ -50,8 +48,7 @@ void tidas::test::dict_setup ( dict & dct ) {
 void tidas::test::dict_verify ( dict const & d ) {
 
     string sval = "blahblahblah";
-    double dval = numeric_limits < double > :: max();
-    float fval = numeric_limits < float > :: max();
+    double dval = numeric_limits < double > :: max() / 2.0;
     int8_t i8val = numeric_limits < int8_t > :: min();
     uint8_t u8val = numeric_limits < uint8_t > :: max();
     int16_t i16val = numeric_limits < int16_t > :: min();
@@ -62,8 +59,7 @@ void tidas::test::dict_verify ( dict const & d ) {
     uint64_t u64val = numeric_limits < uint64_t > :: max();
 
     EXPECT_EQ( sval, d.get < string > ( "string" ) );
-    EXPECT_EQ( dval, d.get < double > ( "double" ) );
-    EXPECT_EQ( fval, d.get < float > ( "float" ) );
+    EXPECT_DOUBLE_EQ( dval, d.get < double > ( "double" ) );
     EXPECT_EQ( i8val, d.get < int8_t > ( "int8" ) );
     EXPECT_EQ( u8val, d.get < uint8_t > ( "uint8" ) );
     EXPECT_EQ( i16val, d.get < int16_t > ( "int16" ) );

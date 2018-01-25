@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -346,7 +346,7 @@ void tidas::volume::read_props ( backend_path & loc ) {
     return;
 }
 
-            
+
 void tidas::volume::write_props ( backend_path const & loc ) const {
 
     // make directory for the volume
@@ -368,3 +368,11 @@ void tidas::volume::write_props ( backend_path const & loc ) const {
 }
 
 
+void tidas::volume::info ( std::ostream & out ) {
+    std::ostringstream ind;
+    ind.str("");
+    ind << "TIDAS:  ";
+    out << ind.str() << "Volume \"" << loc_.path << "\"" << std::endl;
+    root_.info(out, 2, true);
+    return;
+}

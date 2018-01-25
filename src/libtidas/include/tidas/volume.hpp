@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -26,7 +26,7 @@ namespace tidas {
 
             /// Destructor
             ~volume ();
-            
+
             /// Assignment operator.
             volume & operator= ( volume const & other );
 
@@ -34,12 +34,12 @@ namespace tidas {
             volume ( volume const & other );
 
             /// Create a new volume.
-            volume ( std::string const & path, backend_type type, compression_type comp, 
+            volume ( std::string const & path, backend_type type, compression_type comp,
                 std::map < std::string, std::string > extra = std::map < std::string, std::string > () );
 
             /// Open an existing volume.
             volume ( std::string const & path, access_mode mode );
-            
+
             /// (**Internal**) Copy constructor, with optional selection and new location.
             volume ( volume const & other, std::string const & filter, backend_path const & loc );
 
@@ -49,8 +49,8 @@ namespace tidas {
             void copy ( volume const & other, std::string const & filter, backend_path const & loc );
 
             /// Export a filtered subset of the volume to a new location.
-            void duplicate ( std::string const & path, backend_type type, compression_type comp, 
-                std::string const & filter = "", std::map < std::string, std::string > extra = 
+            void duplicate ( std::string const & path, backend_type type, compression_type comp,
+                std::string const & filter = "", std::map < std::string, std::string > extra =
                 std::map < std::string, std::string > () ) const;
 
             /// Create a (hard or soft) linked filtered subset of the volume to a new location.
@@ -69,7 +69,10 @@ namespace tidas {
             /// Get the (const) root block of the volume.
             block const & root () const;
 
-            /// Pass over the root block and all descendents, calling a 
+            /// Print info to a stream.
+            void info ( std::ostream & out );
+
+            /// Pass over the root block and all descendents, calling a
             /// functor on each one.  The specified class should provide the
             /// operator() method.
             template < class P >
@@ -78,12 +81,12 @@ namespace tidas {
                 if ( filter == "" ) {
 
                     root_.exec ( op, order );
-                
+
                 } else {
-                
+
                     block selected = root_.select ( filter );
                     selected.exec ( op, order );
-                
+
                 }
 
                 return;

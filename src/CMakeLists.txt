@@ -3,7 +3,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_subdirectory(libtidas)
 
-#add_subdirectory(apps)
+add_subdirectory(python)
+
+add_subdirectory(tests)
 
 #if (MPI_FOUND)
 #    add_subdirectory(libtidas-mpi)

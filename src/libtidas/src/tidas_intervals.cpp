@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -165,13 +165,12 @@ void tidas::intervals::flush () const {
 
     if ( loc_.type != backend_type::none ) {
 
-        if ( loc_.mode == access_mode::write ) {    
+        if ( loc_.mode == access_mode::write ) {
             // write our own metadata
 
             backend_->write ( loc_, size_ );
 
             // update index
-
             if ( loc_.idx ) {
                 loc_.idx->update_intervals ( loc_, size_ );
             }
@@ -283,6 +282,16 @@ void tidas::intervals::read_data ( interval_list & intr ) const {
 }
 
 
+interval_list tidas::intervals::read_data () const {
+    if ( ! backend_ ) {
+        TIDAS_THROW( "intervals read_data:  backend not assigned" );
+    }
+    interval_list intr;
+    backend_->read_data ( loc_, intr );
+    return intr;
+}
+
+
 void tidas::intervals::write_data ( interval_list const & intr ) {
     if ( ! backend_ ) {
         TIDAS_THROW( "intervals read_data:  backend not assigned" );
@@ -370,3 +379,19 @@ intrvl tidas::intervals::seek_floor ( interval_list const & intr, time_type time
 }
 
 
+void tidas::intervals::info ( std::ostream & out, size_t indent ) {
+    std::ostringstream ind;
+    ind.str("");
+    ind << "TIDAS:  ";
+    for ( size_t i = 0; i < indent; ++i ) {
+        ind << " ";
+    }
+    out << ind.str() << size() << " sample ranges" << std::endl;
+    // print dictionary values
+    out << ind.str() << "Properties:" << std::endl;
+    for ( auto const & dit : dictionary().data() ) {
+        out << ind.str() << "  " << dit.first << " = " << dit.second
+            << std::endl;
+    }
+    return;
+}

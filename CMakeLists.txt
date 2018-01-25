@@ -19,3 +19,5 @@ find_package(MPI)
 
 enable_testing()
 add_subdirectory(src)
+
+add_test(NAME serial_tests COMMAND tidas_test)

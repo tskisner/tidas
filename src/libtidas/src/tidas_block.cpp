@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -62,7 +62,7 @@ void tidas::block_link_operator::operator() ( block const & blk ) {
 
     vector < string > names;
 
-    names = blk.all_groups();
+    names = blk.group_names();
 
     for ( auto n : names ) {
         string full_link = grouplink + path_sep + n;
@@ -71,7 +71,7 @@ void tidas::block_link_operator::operator() ( block const & blk ) {
 
     // link intervals
 
-    names = blk.all_intervals();
+    names = blk.intervals_names();
 
     for ( auto n : names ) {
         string full_link = intrlink + path_sep + n;
@@ -95,7 +95,7 @@ void tidas::block_wipe_operator::operator() ( block const & blk ) {
 
     vector < string > names;
 
-    names = blk.all_groups();
+    names = blk.group_names();
 
     for ( auto n : names ) {
         blk.group_get( n ).wipe();
@@ -103,7 +103,7 @@ void tidas::block_wipe_operator::operator() ( block const & blk ) {
 
     // wipe intervals
 
-    names = blk.all_intervals();
+    names = blk.intervals_names();
 
     for ( auto n : names ) {
         blk.intervals_get( n ).wipe();
@@ -111,7 +111,7 @@ void tidas::block_wipe_operator::operator() ( block const & blk ) {
 
     // remove sub-block directories that have already been wiped.
 
-    names = blk.all_blocks();
+    names = blk.block_names();
 
     for ( auto n : names ) {
         backend_path loc = blk.block_get( n ).location();
@@ -227,7 +227,7 @@ void tidas::block::sync ( string const & filter ) {
         // extract group filter
 
         filter_sub ( filts[ group_submatch_key ], filt_name, filt_pass );
-        regex groupre ( filter_default ( filt_name ), std::regex::extended );        
+        regex groupre ( filter_default ( filt_name ), std::regex::extended );
 
         // extract intervals filter
 
@@ -432,7 +432,7 @@ void tidas::block::flush () const {
 
     for ( auto & blk : block_data_ ) {
         blk.second.flush();
-    }    
+    }
 
     return;
 }
@@ -802,7 +802,7 @@ void tidas::block::group_del ( string const & name ) {
 }
 
 
-vector < string > tidas::block::all_groups () const {
+vector < string > tidas::block::group_names () const {
     vector < string > ret;
     for ( auto & gr : group_data_ ) {
         ret.push_back ( gr.first );
@@ -812,7 +812,7 @@ vector < string > tidas::block::all_groups () const {
 
 
 void tidas::block::clear_groups () {
-    vector < string > all = all_groups();
+    vector < string > all = group_names();
     for ( auto & gr : all ) {
         group_del ( gr );
     }
@@ -886,7 +886,7 @@ void tidas::block::intervals_del ( string const & name ) {
 }
 
 
-vector < string > tidas::block::all_intervals () const {
+vector < string > tidas::block::intervals_names () const {
     vector < string > ret;
     for ( auto & inv : intervals_data_ ) {
         ret.push_back ( inv.first );
@@ -896,7 +896,7 @@ vector < string > tidas::block::all_intervals () const {
 
 
 void tidas::block::clear_intervals () {
-    vector < string > all = all_intervals();
+    vector < string > all = intervals_names();
     for ( auto & inv : all ) {
         intervals_del ( inv );
     }
@@ -972,7 +972,7 @@ void tidas::block::block_del ( string const & name ) {
 }
 
 
-vector < string > tidas::block::all_blocks () const {
+vector < string > tidas::block::block_names () const {
     vector < string > ret;
     for ( auto & blk : block_data_ ) {
         ret.push_back ( blk.first );
@@ -982,7 +982,7 @@ vector < string > tidas::block::all_blocks () const {
 
 
 void tidas::block::clear_blocks () {
-    vector < string > all = all_blocks();
+    vector < string > all = block_names();
     for ( auto & blk : all ) {
         block_del ( blk );
     }
@@ -998,33 +998,31 @@ void tidas::block::clear () {
 }
 
 
-void tidas::block::info ( string name, bool recurse, size_t indent ) {
-    string istr ( indent, ' ' );
-    string prefix = string("BLOCK:  ") + istr;
-
-    std::cout << prefix << name << std::endl;
-
-    std::cout << prefix << "  groups:" << std::endl;
-    for ( auto & gr : group_data_ ) {
-        std::cout << prefix << "    " << gr.first << std::endl;
+void tidas::block::info ( std::ostream & out, size_t indent, bool recurse ) {
+    std::ostringstream ind;
+    ind.str("");
+    ind << "TIDAS:  ";
+    for ( size_t i = 0; i < indent; ++i ) {
+        ind << " ";
     }
-
-    std::cout << prefix << "  intervals:" << std::endl;
     for ( auto & inv : intervals_data_ ) {
-        std::cout << prefix << "    " << inv.first << std::endl;
+        out << ind.str() << "Intervals \"" << inv.first << "\":" << std::endl;
+        inv.second.info(out, indent+2);
     }
-
+    for ( auto & gr : group_data_ ) {
+        out << ind.str() << "Group \"" << gr.first << "\":" << std::endl;
+        gr.second.info(out, indent+2);
+    }
     if ( recurse ) {
         for ( auto & blk : block_data_ ) {
-            blk.second.info ( blk.first, recurse, indent+2 );
+            out << ind.str() << "Block \"" << blk.first << "\":" << std::endl;
+            blk.second.info(out, indent+2, recurse);
         }
     } else {
-        std::cout << prefix << "sub-blocks:" << std::endl;
         for ( auto & blk : block_data_ ) {
-            std::cout << prefix << "  " << blk.first << std::endl;
+            out << ind.str() << "Sub-Block \"" << blk.first << "\""
+                << std::endl;
         }
     }
-
     return;
 }
-

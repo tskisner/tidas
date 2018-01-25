@@ -1,6 +1,6 @@
 ##
 ##  TImestream DAta Storage (TIDAS)
-##  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+##  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
 ##  is governed by a BSD-style license that can be found in the top-level
 ##  LICENSE file.
 ##
@@ -10,76 +10,96 @@ import os
 import sys
 import shutil
 import tempfile
+
+import numpy as np
 import numpy.testing as nt
+#
+# import ctypes as ct
 
-import ctypes as ct
+from tidas import (DataType, BackendType, CompressionType, AccessMode,
+    Dictionary, Intrvl, Intervals, Field, Schema, Group, Block, Volume)
 
-from .ctidas import *
-from .group import *
-from .intervals import *
-from .block import *
-from .volume import *
+# from .group import *
+# from .intervals import *
+# from .block import *
+# from .volume import *
 
 
 def test_dict_setup():
-    ret = {}
-    ret["string"] = "blahblahblah"
-    ret["double"] = -123456789.0123
-    ret["float"] = -123456789.0123
-    ret["int8"] = -100
-    ret["uint8"] = 100
-    ret["int16"] = -10000
-    ret["uint16"] = 10000
-    ret["int32"] = -1000000000
-    ret["uint32"] = 1000000000
-    ret["int64"] = -100000000000
-    ret["uint64"] = 100000000000
+    ret = Dictionary()
+    ret.put_string("string", "blahblahblah")
+    ret.put_float64("float64", -123456789.0123)
+    ret.put_float32("float32", -123.456)
+    ret.put_int8("int8", -100)
+    ret.put_uint8("uint8", 100)
+    ret.put_int16("int16", -10000)
+    ret.put_uint16("uint16", 10000)
+    ret.put_int32("int32", -1000000000)
+    ret.put_uint32("uint32", 1000000000)
+    ret.put_int64("int64", -100000000000)
+    ret.put_uint64("uint64", 100000000000)
     return ret
 
 
 def test_dict_verify(dct):
-    nt.assert_equal(dct["string"], "blahblahblah")
-    nt.assert_equal(dct["int8"], -100)
-    nt.assert_equal(dct["uint8"], 100)
-    nt.assert_equal(dct["int16"], -10000)
-    nt.assert_equal(dct["uint16"], 10000)
-    nt.assert_equal(dct["int32"], -1000000000)
-    nt.assert_equal(dct["uint32"], 1000000000)
-    nt.assert_equal(dct["int64"], -100000000000)
-    nt.assert_equal(dct["uint64"], 100000000000)
-    nt.assert_almost_equal(dct["float"], -123456789.0123)
-    nt.assert_almost_equal(dct["double"], -123456789.0123)
+    nt.assert_equal(dct.get_string("string"), "blahblahblah")
+    nt.assert_equal(dct.get_int8("int8"), -100)
+    nt.assert_equal(dct.get_uint8("uint8"), 100)
+    nt.assert_equal(dct.get_int16("int16"), -10000)
+    nt.assert_equal(dct.get_uint16("uint16"), 10000)
+    nt.assert_equal(dct.get_int32("int32"), -1000000000)
+    nt.assert_equal(dct.get_uint32("uint32"), 1000000000)
+    nt.assert_equal(dct.get_int64("int64"), -100000000000)
+    nt.assert_equal(dct.get_uint64("uint64"), 100000000000)
+    nt.assert_almost_equal(dct.get_float32("float32"), -123.456, decimal=3)
+    nt.assert_almost_equal(dct.get_float64("float64"), -123456789.0123)
     return
 
 
 def test_schema_setup():
-    fields = {}
-    fields["int8"] = ("int8", "int8")
-    fields["uint8"] = ("uint8", "uint8")
-    fields["int16"] = ("int16", "int16")
-    fields["uint16"] = ("uint16", "uint16")
-    fields["int32"] = ("int32", "int32")
-    fields["uint32"] = ("uint32", "uint32")
-    fields["int64"] = ("int64", "int64")
-    fields["uint64"] = ("uint64", "uint64")
-    fields["float32"] = ("float32", "float32")
-    fields["float64"] = ("float64", "float64")
-    fields["string"] = ("string", "string")
-    return fields
+    fields = list()
+    fields.append( Field("int8", DataType.int8, "int8") )
+    fields.append( Field("uint8", DataType.uint8, "uint8") )
+    fields.append( Field("int16", DataType.int16, "int16") )
+    fields.append( Field("uint16", DataType.uint16, "uint16") )
+    fields.append( Field("int32", DataType.int32, "int32") )
+    fields.append( Field("uint32", DataType.uint32, "uint32") )
+    fields.append( Field("int64", DataType.int64, "int64") )
+    fields.append( Field("uint64", DataType.uint64, "uint64") )
+    fields.append( Field("float32", DataType.float32, "float32") )
+    fields.append( Field("float64", DataType.float64, "float64") )
+    fields.append( Field("string", DataType.string, "string") )
+    ret = Schema(fields)
+    return ret
 
 
 def test_schema_verify(fields):
-    assert fields["int8"] == ("int8", "int8")
-    assert fields["uint8"] == ("uint8", "uint8")
-    assert fields["int16"] == ("int16", "int16")
-    assert fields["uint16"] == ("uint16", "uint16")
-    assert fields["int32"] == ("int32", "int32")
-    assert fields["uint32"] == ("uint32", "uint32")
-    assert fields["int64"] == ("int64", "int64")
-    assert fields["uint64"] == ("uint64", "uint64")
-    assert fields["float32"] == ("float32", "float32")
-    assert fields["float64"] == ("float64", "float64")
-    assert fields["string"] == ("string", "string")
+    for fl in fields:
+        assert(fl.name == fl.units)
+        if fl.name == "int8":
+            assert(fl.type == DataType.int8)
+        elif fl.name == "uint8":
+            assert(fl.type == DataType.uint8)
+        elif fl.name == "int16":
+            assert(fl.type == DataType.int16)
+        elif fl.name == "uint16":
+            assert(fl.type == DataType.uint16)
+        elif fl.name == "int32":
+            assert(fl.type == DataType.int32)
+        elif fl.name == "uint32":
+            assert(fl.type == DataType.uint32)
+        elif fl.name == "int64":
+            assert(fl.type == DataType.int64)
+        elif fl.name == "uint64":
+            assert(fl.type == DataType.uint64)
+        elif fl.name == "float32":
+            assert(fl.type == DataType.float32)
+        elif fl.name == "float64":
+            assert(fl.type == DataType.float64)
+        elif fl.name == "string":
+            assert(fl.type == DataType.string)
+        else:
+            print("error, unrecognized field \"{}\"".format(fl.name))
     return
 
 
@@ -208,45 +228,24 @@ def test_group_verify(grp, nsamp):
 
 
 def test_block_setup(blk, nsamp):
-    #sys.stderr.write("block setup {}\n".format(blk._handle()))
-
     blk.clear()
-
-    #sys.stderr.write("block setup {} dict\n".format(blk._handle()))
 
     dct = test_dict_setup()
 
-    #sys.stderr.write("block setup {} ilist\n".format(blk._handle()))
-
     ilist = test_intervals_setup()
+    intr = Intervals(dct, len(ilist))
 
-    #sys.stderr.write("block setup {} intervals\n".format(blk._handle()))
-
-    intr = Intervals(size=len(ilist), props=dct)
-
-    #sys.stderr.write("block setup {} group\n".format(blk._handle()))
-
-    fields = test_schema_setup()
-    grp = Group(schema=fields, size=nsamp, props=dct)
-
-    #sys.stderr.write("block setup {} add group A\n".format(blk._handle()))
+    schm = test_schema_setup()
+    grp = Group(schm, dct, nsamp)
 
     ga = blk.group_add("group_A", grp)
-    #sys.stderr.write("block setup {} got group A {}\n".format(blk._handle(), ga._handle()))
-
     test_group_setup(ga, nsamp)
-
-    #sys.stderr.write("block setup {} add group B\n".format(blk._handle()))
 
     gb = blk.group_add("group_B", grp)
     test_group_setup(gb, nsamp)
 
-    #sys.stderr.write("block setup {} add intr A\n".format(blk._handle()))
-
     ia = blk.intervals_add("intr_A", intr)
     ia.write(ilist)
-
-    #sys.stderr.write("block setup {} add intr B\n".format(blk._handle()))
 
     ib = blk.intervals_add("intr_B", intr)
     ib.write(ilist)
@@ -255,8 +254,6 @@ def test_block_setup(blk, nsamp):
 
 
 def test_block_verify(blk, nsamp):
-    #sys.stderr.write("block verify {}\n".format(blk._handle()))
-
     grp = blk.group_get("group_A")
     test_group_verify(grp, nsamp)
 
@@ -272,21 +269,19 @@ def test_block_verify(blk, nsamp):
     test_intervals_verify(ilist)
 
     names = blk.block_names()
-    all = blk.blocks(names)
 
-    for b in all:
-        test_block_verify(b, nsamp)
+    for b in names:
+        bl = blk.block_get(b)
+        test_block_verify(bl, nsamp)
 
     return
 
 
 def test_volume_setup(vol, nblock, nsamp):
     rt = vol.root()
-    #sys.stderr.write("volume setup root {}\n".format(rt._handle()))
     rt.clear()
     for b in range(nblock):
-        child = rt.block_add("block_{}".format(b), Block(None))
-        #sys.stderr.write("volume setup root/child {}\n".format(child._handle()))
+        child = rt.block_add("block_{}".format(b), Block())
         test_block_setup(child, nsamp)
     return
 
@@ -300,7 +295,7 @@ def test_volume_verify(vol, nblock, nsamp):
 
 
 
-def test(tmpdir=None, recurse=False):
+def run(tmpdir=None):
     dirpath = ""
     if tmpdir is None:
         dirpath = tempfile.mkdtemp()
@@ -309,40 +304,25 @@ def test(tmpdir=None, recurse=False):
         if not os.path.isdir(tmpdir):
             os.makedirs(dirpath)
 
-    print("Testing dictionary conversion...")
+    print("Testing dictionary creation...")
 
     pd = test_dict_setup()
-    
-    cd = dict_py2c(pd)
-    check_pd = dict_c2py(cd)
-    lib.ctidas_dict_free(cd)
-
-    test_dict_verify(check_pd)
+    test_dict_verify(pd)
 
     print("   PASS")
 
-    print("Testing schema conversion...")
+    print("Testing schema creation...")
 
     ps = test_schema_setup()
+    test_schema_verify(ps.fields())
 
-    cs = schema_py2c(ps)
-    check_ps = schema_c2py(cs)
-    lib.ctidas_schema_free(cs)
-
-    test_schema_verify(check_ps)
-    
     print("   PASS")
 
-    print("Testing interval list conversion...")
+    print("Testing interval list creation...")
 
     pt = test_intervals_setup()
+    test_intervals_verify(pt)
 
-    ct = intrvl_list_py2c(pt)
-    check_pt = intrvl_list_c2py(ct, len(pt))
-    lib.ctidas_intrvl_list_free(ct, len(pt))
-
-    test_intervals_verify(check_pt)
-    
     print("   PASS")
 
     print("Testing volume operations...")
@@ -354,76 +334,76 @@ def test(tmpdir=None, recurse=False):
     nblock = 3
     nsamp = 10
 
-    with Volume(volpath, backend="hdf5", comp="gzip") as vol:
-        test_volume_setup(vol, nblock, nsamp)
+    vol = Volume(volpath, BackendType.hdf5, CompressionType.gzip, dict())
+    test_volume_setup(vol, nblock, nsamp)
 
-    with Volume(volpath, mode="r") as vol:
-        test_volume_verify(vol, nblock, nsamp)
-        #vol.info(recurse=recurse)
+    vol = Volume(volpath, AccessMode.read)
+    test_volume_verify(vol, nblock, nsamp)
+    vol.info()
 
     print("   PASS")
 
     return
 
-
-def test_mpi_volume_setup(vol, nblock, nsamp):
-    from .ctidas_mpi import mpi_dist_uniform
-
-    rt = vol.root()
-    #sys.stderr.write("volume setup root {}\n".format(rt._handle()))
-    rt.clear()
-
-    offset, nlocal = mpi_dist_uniform(vol.comm, nblock)
-
-    for b in range(offset, offset + nlocal):
-        #print("TEST setup process {} blocks {}-{}".format(vol.comm.rank, offset, offset+nlocal-1))
-        child = rt.block_add("block_{}".format(b), Block(None))
-        test_block_setup(child, nsamp)
-    return
-
-
-def test_mpi(tmpdir=None, recurse=False):
-    from mpi4py import MPI
-    from .mpi_volume import MPIVolume
-    from .ctidas_mpi import mpi_dist_uniform
-
-    comm = MPI.COMM_WORLD
-
-    dirpath = ""
-
-    if comm.rank == 0:
-        if tmpdir is None:
-            dirpath = tempfile.mkdtemp()
-        else:
-            dirpath = os.path.abspath(tmpdir)
-            if not os.path.isdir(tmpdir):
-                os.makedirs(dirpath)
-
-    dirpath = comm.bcast(dirpath, root=0)
-
-    if comm.rank == 0:
-        print("Testing MPI volume operations...")
-
-    volpath = os.path.join(dirpath, "tidas_py_mpi_volume")
-
-    if comm.rank == 0:
-        if os.path.isdir(volpath):
-            shutil.rmtree(volpath)
-    comm.barrier()
-
-    nblock = 10
-    nsamp = 10
-
-    with MPIVolume(comm, volpath, backend="hdf5", comp="gzip") as vol:
-        test_mpi_volume_setup(vol, nblock, nsamp)
-
-    with MPIVolume(comm, volpath, mode="r") as vol:
-        test_volume_verify(vol, nblock, nsamp)
-        #vol.info(recurse=recurse)
-
-    if comm.rank == 0:
-        print("   PASS")
-
-    return
-
-
+#
+# def test_mpi_volume_setup(vol, nblock, nsamp):
+#     from .ctidas_mpi import mpi_dist_uniform
+#
+#     rt = vol.root()
+#     #sys.stderr.write("volume setup root {}\n".format(rt._handle()))
+#     rt.clear()
+#
+#     offset, nlocal = mpi_dist_uniform(vol.comm, nblock)
+#
+#     for b in range(offset, offset + nlocal):
+#         #print("TEST setup process {} blocks {}-{}".format(vol.comm.rank, offset, offset+nlocal-1))
+#         child = rt.block_add("block_{}".format(b), Block(None))
+#         test_block_setup(child, nsamp)
+#     return
+#
+#
+# def test_mpi(tmpdir=None, recurse=False):
+#     from mpi4py import MPI
+#     from .mpi_volume import MPIVolume
+#     from .ctidas_mpi import mpi_dist_uniform
+#
+#     comm = MPI.COMM_WORLD
+#
+#     dirpath = ""
+#
+#     if comm.rank == 0:
+#         if tmpdir is None:
+#             dirpath = tempfile.mkdtemp()
+#         else:
+#             dirpath = os.path.abspath(tmpdir)
+#             if not os.path.isdir(tmpdir):
+#                 os.makedirs(dirpath)
+#
+#     dirpath = comm.bcast(dirpath, root=0)
+#
+#     if comm.rank == 0:
+#         print("Testing MPI volume operations...")
+#
+#     volpath = os.path.join(dirpath, "tidas_py_mpi_volume")
+#
+#     if comm.rank == 0:
+#         if os.path.isdir(volpath):
+#             shutil.rmtree(volpath)
+#     comm.barrier()
+#
+#     nblock = 10
+#     nsamp = 10
+#
+#     with MPIVolume(comm, volpath, backend="hdf5", comp="gzip") as vol:
+#         test_mpi_volume_setup(vol, nblock, nsamp)
+#
+#     with MPIVolume(comm, volpath, mode="r") as vol:
+#         test_volume_verify(vol, nblock, nsamp)
+#         #vol.info(recurse=recurse)
+#
+#     if comm.rank == 0:
+#         print("   PASS")
+#
+#     return
+#
+#

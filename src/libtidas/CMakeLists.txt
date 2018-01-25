@@ -1,11 +1,4 @@
 
-# Add internal googletest framework.  Must be added before the library
-# in order to define some variables.
-
-set(gtest_force_shared_crt TRUE)
-add_subdirectory(gtest)
-include_directories("${gtest_SOURCE_DIR}/include")
-
 # Add the library target
 
 add_library(tidas
@@ -29,16 +22,6 @@ add_library(tidas
     src/tidas_schema.cpp
     src/tidas_schema_getdata.cpp
     src/tidas_schema_hdf5.cpp
-    src/tidas_test_block.cpp
-    src/tidas_test_cereal.cpp
-    src/tidas_test_dict.cpp
-    src/tidas_test_group.cpp
-    src/tidas_test_indexdb.cpp
-    src/tidas_test_intervals.cpp
-    src/tidas_test_runner.cpp
-    src/tidas_test_schema.cpp
-    src/tidas_test_utils.cpp
-    src/tidas_test_volume.cpp
     src/tidas_utils.cpp
     src/tidas_volume.cpp
 )
@@ -53,4 +36,8 @@ target_include_directories(tidas PUBLIC
     $<INSTALL_INTERFACE:include>
     PRIVATE src)
 
-target_link_libraries(tidas gtest gtest_main ${HDF5_C_LIBRARIES})
+target_link_libraries(tidas ${HDF5_C_LIBRARIES})
+
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(TARGETS tidas DESTINATION ${CMAKE_INSTALL_LIBDIR})

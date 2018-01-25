@@ -65,7 +65,7 @@ void tidas::test::block_verify ( block & blk ) {
     intr.read_data ( inv );
     tidas::test::intervals_verify ( inv );
 
-    vector < string > blks = blk.all_blocks();
+    vector < string > blks = blk.block_names();
 
     for ( size_t i = 0; i < blks.size(); ++i ) {
         block subblk = blk.block_get ( blks[i] );
@@ -128,12 +128,12 @@ TEST_F( blockTest, Select ) {
             string filter = path_sep + name.str() + path_sep + subname.str();
             block blk = top.select ( filter );
 
-            vector < string > children = blk.all_blocks();
+            vector < string > children = blk.block_names();
             EXPECT_EQ ( children.size(), 1 );
             EXPECT_EQ ( children[0], name.str() );
 
             block sub = blk.block_get ( children[0] );
-            children = sub.all_blocks();
+            children = sub.block_names();
             EXPECT_EQ ( children.size(), 1 );
             EXPECT_EQ ( children[0], subname.str() );
         }

@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -16,7 +16,7 @@ namespace tidas {
     class exception : public std::exception {
 
         public:
-            
+
             exception ( char const * msg, char const * file, int line );
             ~exception ( ) throw ();
             char const * what() const throw();
@@ -24,10 +24,10 @@ namespace tidas {
         private:
 
             // use C strings here for passing to what()
-            static size_t const msg_len_ = 1024; 
+            static size_t const msg_len_ = 1024;
             char msg_[ msg_len_ ];
-      
-    };  
+
+    };
 
     typedef void (*TIDAS_EXCEPTION_HANDLER) ( tidas::exception & e );
 
@@ -113,7 +113,7 @@ namespace tidas {
 
     /// Convert a string into the specified type.
     template < typename T >
-    T data_convert ( std::string const & str ) {
+    T data_from_string ( std::string const & str ) {
         T ret;
 
         int8_t int8;
@@ -154,7 +154,18 @@ namespace tidas {
     }
 
     template <>
-    std::string data_convert < std::string > ( std::string const & str );
+    std::string data_from_string < std::string > ( std::string const & str );
+
+    template < typename T >
+    std::string data_to_string ( T const & val ) {
+        std::ostringstream o;
+        o.precision(16);
+        o.str("");
+        if ( ! ( o << val ) ) {
+            TIDAS_THROW( "cannot convert data to string" );
+        }
+        return o.str();
+    }
 
 
     // general regular expression filters

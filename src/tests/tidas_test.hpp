@@ -41,6 +41,10 @@ namespace tidas { namespace test {
 
     void group_verify ( tidas::group & grp, size_t offset, size_t full_nsamp );
 
+    void group_setup_astype ( tidas::group & grp, size_t offset, size_t full_nsamp );
+
+    void group_verify_astype ( tidas::group & grp, size_t offset, size_t full_nsamp );
+
     void group_verify_int ( tidas::group & grp, size_t offset, size_t full_nsamp );
 
 

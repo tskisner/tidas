@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -23,7 +23,7 @@ namespace tidas {
     /// A block represents a logical grouping of data.  A block can have zero
     /// or more groups, intervals and sub-blocks.  Child objects are added
     /// with a "name" associated to them.  These names are used when performing
-    /// selection / query operations.  
+    /// selection / query operations.
     /// Some public methods are only used internally and are not needed for
     /// normal use of the object.  These are labelled "internal".
 
@@ -36,17 +36,17 @@ namespace tidas {
 
             /// Destructor
             ~block ();
-            
+
             /// Assignment operator.
             block & operator= ( block const & other );
 
             /// Copy constructor.
             block ( block const & other );
 
-            /// (**Internal**) Load a block from disk with the specified 
+            /// (**Internal**) Load a block from disk with the specified
             /// selection filter.
             block ( backend_path const & loc, std::string const & filter = "" );
-            
+
             /// (**Internal**) Create a copy of a block, with optional selection and new location.
             block ( block const & other, std::string const & filter, backend_path const & loc );
 
@@ -59,7 +59,7 @@ namespace tidas {
             /// children from disk.  Optionally apply a selection filter.
             void sync ( std::string const & filter = "" );
 
-            /// (**Internal**) Recursively write metadata for the block and its 
+            /// (**Internal**) Recursively write metadata for the block and its
             /// children.
             void flush () const;
 
@@ -69,14 +69,14 @@ namespace tidas {
             /// (**Internal**) Create a link at the specified location.
             void link ( link_type const & type, std::string const & path ) const;
 
-            /// (**Internal**) Delete the on-disk data and metadata associated 
+            /// (**Internal**) Delete the on-disk data and metadata associated
             /// with this object.  In-memory metadata is not modified.
             void wipe () const;
 
             /// (**Internal**) The current location.
             backend_path location () const;
 
-            /// Return the filesystem path of the auxilliary directory for 
+            /// Return the filesystem path of the auxilliary directory for
             /// this block.
             std::string aux_dir () const;
 
@@ -100,41 +100,41 @@ namespace tidas {
             /// Get a (non-const) reference to the group with the specified
             /// name.
             group const & group_get ( std::string const & name ) const;
-            
+
             /// Delete the specified group.
             void group_del ( std::string const & name );
 
             /// Return a list of the names of all groups.
-            std::vector < std::string > all_groups () const;
-            
+            std::vector < std::string > group_names () const;
+
             /// Remove all groups from this block.
             void clear_groups();
 
-            /// Add an intervals object to this block using the specified 
+            /// Add an intervals object to this block using the specified
             /// name.  Returns a refererence to the newly added intervals.
             intervals & intervals_add ( std::string const & name, intervals const & intr );
-            
-            /// Get a (non-const) reference to the intervals object with 
+
+            /// Get a (non-const) reference to the intervals object with
             /// the specified name.
             intervals & intervals_get ( std::string const & name );
 
-            /// Get a (const) reference to the intervals object with 
+            /// Get a (const) reference to the intervals object with
             /// the specified name.
             intervals const & intervals_get ( std::string const & name ) const;
-            
+
             /// Delete the specified intervals object.
             void intervals_del ( std::string const & name );
-            
+
             /// Return a list of the names of all intervals.
-            std::vector < std::string > all_intervals () const;
-            
+            std::vector < std::string > intervals_names () const;
+
             /// Remove all intervals objects from this block.
             void clear_intervals();
 
             /// Add a sub-block to this block using the specified name.
             /// Returns a reference to the newly added block.
             block & block_add ( std::string const & name, block const & blk );
-            
+
             /// Get a (non-const) reference to the sub-block with the
             /// specified name.
             block & block_get ( std::string const & name );
@@ -142,13 +142,13 @@ namespace tidas {
             /// Get a (const) reference to the sub-block with the
             /// specified name.
             block const & block_get ( std::string const & name ) const;
-            
+
             /// Remove the specified sub-block.
             void block_del ( std::string const & name );
-            
+
             /// Return a list of the names of all sub-blocks.
-            std::vector < std::string > all_blocks () const;
-            
+            std::vector < std::string > block_names () const;
+
             /// Remove all sub-blocks from this block.
             void clear_blocks();
 
@@ -156,9 +156,9 @@ namespace tidas {
             /// applying the specified matching pattern.
             block select ( std::string const & filter = "" ) const;
 
-            /// (**Internal**) Print metadat info for this block.  Mainly
+            /// (**Internal**) Print metadata info for this block.  Mainly
             /// used for debugging.
-            void info ( std::string name, bool recurse, size_t indent );
+            void info ( std::ostream & out, size_t indent, bool recurse );
 
 
             // non-const version
@@ -179,7 +179,7 @@ namespace tidas {
                     if ( order == exec_order::leaf ) {
                         op ( *this );
                     }
-                
+
                 } else {
                     // operate on sub blocks
 
@@ -198,7 +198,7 @@ namespace tidas {
 
 
             // const version
-            
+
             /// Pass over this block and all descendents, calling a functor
             /// on each one.  The specified class should provide the
             /// operator() method.  Blocks are treated as const in this version.
@@ -215,7 +215,7 @@ namespace tidas {
                     if ( order == exec_order::leaf ) {
                         op ( *this );
                     }
-                
+
                 } else {
                     // operate on sub blocks
 
@@ -251,9 +251,9 @@ namespace tidas {
         private :
 
             backend_path group_loc ( backend_path const & loc, std::string const & name ) const;
-            
+
             backend_path intervals_loc ( backend_path const & loc, std::string const & name ) const;
-            
+
             backend_path block_loc ( backend_path const & loc, std::string const & name ) const;
 
             std::map < std::string, block > block_data_;

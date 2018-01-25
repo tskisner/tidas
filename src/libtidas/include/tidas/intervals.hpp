@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -52,7 +52,7 @@ namespace tidas {
     class intervals_backend {
 
         public :
-            
+
             intervals_backend () {}
             virtual ~intervals_backend () {}
 
@@ -65,7 +65,7 @@ namespace tidas {
             virtual void wipe ( backend_path const & loc ) const = 0;
 
             virtual void read_data ( backend_path const & loc, interval_list & intr ) const = 0;
-            
+
             virtual void write_data ( backend_path const & loc, interval_list const & intr ) = 0;
 
             virtual std::string dict_meta () const = 0;
@@ -78,7 +78,7 @@ namespace tidas {
     class intervals_backend_hdf5 : public intervals_backend {
 
         public :
-            
+
             intervals_backend_hdf5 ();
             ~intervals_backend_hdf5 ();
             intervals_backend_hdf5 ( intervals_backend_hdf5 const & other );
@@ -93,7 +93,7 @@ namespace tidas {
             void wipe ( backend_path const & loc ) const;
 
             void read_data ( backend_path const & loc, interval_list & intr ) const;
-            
+
             void write_data ( backend_path const & loc, interval_list const & intr );
 
             std::string dict_meta () const;
@@ -106,14 +106,14 @@ namespace tidas {
     class intervals_backend_getdata : public intervals_backend {
 
         public :
-            
+
             intervals_backend_getdata ();
             ~intervals_backend_getdata ();
             intervals_backend_getdata ( intervals_backend_getdata const & other );
             intervals_backend_getdata & operator= ( intervals_backend_getdata const & other );
 
             void read ( backend_path const & loc, size_t & size );
-            
+
             void write ( backend_path const & loc, size_t const & size ) const;
 
             void link ( backend_path const & loc, link_type type, std::string const & path ) const;
@@ -157,12 +157,12 @@ namespace tidas {
             intervals ( intervals const & other );
 
             /// (**Internal**) Load the intervals from the specified
-            /// location.  
+            /// location.
             /// All meta data operations will apply to this location.
             intervals ( backend_path const & loc );
-            
-            /// (**Internal**) Copy from an existing intervals instance.  
-            /// Apply an optional filter to elements and relocate to a new 
+
+            /// (**Internal**) Copy from an existing intervals instance.
+            /// Apply an optional filter to elements and relocate to a new
             /// location.  If a filter is given, a new location must be
             /// specified.
             intervals ( intervals const & other, std::string const & filter,
@@ -173,11 +173,11 @@ namespace tidas {
             /// (**Internal**) Change the location of the intervals.
             void relocate ( backend_path const & loc );
 
-            /// (**Internal**) Reload metadata from the current location, 
+            /// (**Internal**) Reload metadata from the current location,
             /// overwriting the current state in memory.
             void sync ();
 
-            /// (**Internal**) Write metadata to the current location, 
+            /// (**Internal**) Write metadata to the current location,
             /// overwriting the information at that location.
             void flush () const;
 
@@ -187,7 +187,7 @@ namespace tidas {
             /// (**Internal**) Create a link at the specified location.
             void link ( link_type const & type, std::string const & path ) const;
 
-            /// (**Internal**) Delete the on-disk data and metadata associated 
+            /// (**Internal**) Delete the on-disk data and metadata associated
             /// with this object.  In-memory metadata is not modified.
             void wipe () const;
 
@@ -206,6 +206,9 @@ namespace tidas {
             /// Read the list of intervals from the current location.
             void read_data ( interval_list & intr ) const;
 
+            /// Read the list of intervals from the current location.
+            interval_list read_data () const;
+
             /// Write the list of intervals to the current location.
             void write_data ( interval_list const & intr );
 
@@ -217,16 +220,19 @@ namespace tidas {
 
             /// Return the single interval that contains a specified time.
             /// If no interval contains the time, an empty interval is
-            /// returned.  
+            /// returned.
             static intrvl seek ( interval_list const & intr, time_type time );
 
             /// Return the first interval whose stop time is after the
             /// specified time.
             static intrvl seek_ceil ( interval_list const & intr, time_type time );
-            
+
             /// Return the last interval whose start time is before the
             /// specified time.
             static intrvl seek_floor ( interval_list const & intr, time_type time );
+
+            /// Print information to a stream.
+            void info ( std::ostream & out, size_t indent );
 
             template < class Archive >
             void save ( Archive & ar ) const {

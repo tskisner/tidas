@@ -71,6 +71,75 @@ void tidas::test::group_setup ( group & grp, size_t offset, size_t full_nsamp ) 
 }
 
 
+
+void tidas::test::group_setup_astype ( group & grp, size_t offset, size_t full_nsamp ) {
+
+    // write data
+
+    size_t nsamp = (size_t)( full_nsamp / 2 );
+
+    vector < time_type > time ( full_nsamp );
+
+    vector < int8_t > int8_data ( nsamp );
+    vector < uint8_t > uint8_data ( nsamp );
+
+    vector < int16_t > int16_data ( nsamp );
+    vector < uint16_t > uint16_data ( nsamp );
+
+    vector < int32_t > int32_data ( nsamp );
+    vector < uint32_t > uint32_data ( nsamp );
+
+    vector < int64_t > int64_data ( nsamp );
+    vector < uint64_t > uint64_data ( nsamp );
+
+    vector < float > float_data ( nsamp );
+    vector < double > double_data ( nsamp );
+
+    for ( size_t i = 0; i < full_nsamp; ++i ) {
+        time[i] = (double)( offset + i ) / 10.0;
+    }
+
+    for ( size_t i = 0; i < nsamp; ++i ) {
+        uint8_data[i] = (uint8_t)i;
+        int8_data[i] = -(int8_t)(i);
+        uint16_data[i] = (uint16_t)i;
+        int16_data[i] = -(int16_t)(i);
+        uint32_data[i] = (uint32_t)i;
+        int32_data[i] = -(int32_t)(i);
+        uint64_data[i] = (uint64_t)i;
+        int64_data[i] = -(int64_t)(i);
+        float_data[i] = (float)i / 10.0;
+        double_data[i] = (double)i / 10.0;
+    }
+
+    size_t off = offset + full_nsamp - nsamp;
+
+    grp.write_times ( time );
+    grp.write_field_astype ( "int8", off, int8_data.size(),
+        tidas::data_type::int8, static_cast<void*>(int8_data.data()) );
+    grp.write_field_astype ( "uint8", off, uint8_data.size(),
+        tidas::data_type::uint8, static_cast<void*>(uint8_data.data()) );
+    grp.write_field_astype ( "int16", off, int16_data.size(),
+        tidas::data_type::int16, static_cast<void*>(int16_data.data()) );
+    grp.write_field_astype ( "uint16", off, uint16_data.size(),
+        tidas::data_type::uint16, static_cast<void*>(uint16_data.data()) );
+    grp.write_field_astype ( "int32", off, int32_data.size(),
+        tidas::data_type::int32, static_cast<void*>(int32_data.data()) );
+    grp.write_field_astype ( "uint32", off, uint32_data.size(),
+        tidas::data_type::uint32, static_cast<void*>(uint32_data.data()) );
+    grp.write_field_astype ( "int64", off, int64_data.size(),
+        tidas::data_type::int64, static_cast<void*>(int64_data.data()) );
+    grp.write_field_astype ( "uint64", off, uint64_data.size(),
+        tidas::data_type::uint64, static_cast<void*>(uint64_data.data()) );
+    grp.write_field_astype ( "float32", off, float_data.size(),
+        tidas::data_type::float32, static_cast<void*>(float_data.data()) );
+    grp.write_field_astype ( "float64", off, double_data.size(),
+        tidas::data_type::float64, static_cast<void*>(double_data.data()) );
+
+    return;
+}
+
+
 void tidas::test::group_verify ( group & grp, size_t offset, size_t full_nsamp ) {
 
     // read data and check
@@ -147,6 +216,114 @@ void tidas::test::group_verify ( group & grp, size_t offset, size_t full_nsamp )
     grp.read_field ( "uint64", off, uint64_check );
     grp.read_field ( "float32", off, float_check );
     grp.read_field ( "float64", off, double_check );
+
+    for ( index_type i = 0; i < full_nsamp; ++i ) {
+        EXPECT_EQ( time[i], check[i] );
+    }
+
+    for ( index_type i = 0; i < nsamp; ++i ) {
+        EXPECT_EQ( int8_data[i], int8_check[i] );
+        EXPECT_EQ( uint8_data[i], uint8_check[i] );
+        EXPECT_EQ( int16_data[i], int16_check[i] );
+        EXPECT_EQ( uint16_data[i], uint16_check[i] );
+        EXPECT_EQ( int32_data[i], int32_check[i] );
+        EXPECT_EQ( uint32_data[i], uint32_check[i] );
+        EXPECT_EQ( int64_data[i], int64_check[i] );
+        EXPECT_EQ( uint64_data[i], uint64_check[i] );
+        EXPECT_EQ( float_data[i], float_check[i] );
+        EXPECT_EQ( double_data[i], double_check[i] );
+    }
+
+    return;
+}
+
+
+void tidas::test::group_verify_astype ( group & grp, size_t offset, size_t full_nsamp ) {
+
+    // read data and check
+
+    size_t nsamp = (size_t)( full_nsamp / 2 );
+
+    vector < time_type > time ( full_nsamp );
+    vector < time_type > check ( full_nsamp );
+
+    vector < int8_t > int8_data ( nsamp );
+    vector < int8_t > int8_check ( nsamp );
+    vector < uint8_t > uint8_data ( nsamp );
+    vector < uint8_t > uint8_check ( nsamp );
+
+    vector < int16_t > int16_data ( nsamp );
+    vector < int16_t > int16_check ( nsamp );
+    vector < uint16_t > uint16_data ( nsamp );
+    vector < uint16_t > uint16_check ( nsamp );
+
+    vector < int32_t > int32_data ( nsamp );
+    vector < int32_t > int32_check ( nsamp );
+    vector < uint32_t > uint32_data ( nsamp );
+    vector < uint32_t > uint32_check ( nsamp );
+
+    vector < int64_t > int64_data ( nsamp );
+    vector < int64_t > int64_check ( nsamp );
+    vector < uint64_t > uint64_data ( nsamp );
+    vector < uint64_t > uint64_check ( nsamp );
+
+    vector < float > float_data ( nsamp );
+    vector < float > float_check ( nsamp );
+    vector < double > double_data ( nsamp );
+    vector < double > double_check ( nsamp );
+
+    for ( size_t i = 0; i < full_nsamp; ++i ) {
+        time[i] = (double)( offset + i ) / 10.0;
+    }
+
+    for ( size_t i = 0; i < nsamp; ++i ) {
+        uint8_data[i] = (uint8_t)i;
+        int8_data[i] = -(int8_t)(i);
+        uint16_data[i] = (uint16_t)i;
+        int16_data[i] = -(int16_t)(i);
+        uint32_data[i] = (uint32_t)i;
+        int32_data[i] = -(int32_t)(i);
+        uint64_data[i] = (uint64_t)i;
+        int64_data[i] = -(int64_t)(i);
+        float_data[i] = (float)i / 10.0;
+        double_data[i] = (double)i / 10.0;
+    }
+
+    check.assign ( full_nsamp, 0 );
+    int8_check.assign ( nsamp, 0 );
+    uint8_check.assign ( nsamp, 0 );
+    int16_check.assign ( nsamp, 0 );
+    uint16_check.assign ( nsamp, 0 );
+    int32_check.assign ( nsamp, 0 );
+    uint32_check.assign ( nsamp, 0 );
+    int64_check.assign ( nsamp, 0 );
+    uint64_check.assign ( nsamp, 0 );
+    float_check.assign ( nsamp, 0 );
+    double_check.assign ( nsamp, 0 );
+
+    size_t off = offset + full_nsamp - nsamp;
+
+    grp.read_times ( check );
+    grp.read_field_astype ( "int8", off, int8_check.size(),
+        tidas::data_type::int8, static_cast<void*>(int8_check.data()) );
+    grp.read_field_astype ( "uint8", off, uint8_check.size(),
+        tidas::data_type::uint8, static_cast<void*>(uint8_check.data()) );
+    grp.read_field_astype ( "int16", off, int16_check.size(),
+        tidas::data_type::int16, static_cast<void*>(int16_check.data()) );
+    grp.read_field_astype ( "uint16", off, uint16_check.size(),
+        tidas::data_type::uint16, static_cast<void*>(uint16_check.data()) );
+    grp.read_field_astype ( "int32", off, int32_check.size(),
+        tidas::data_type::int32, static_cast<void*>(int32_check.data()) );
+    grp.read_field_astype ( "uint32", off, uint32_check.size(),
+        tidas::data_type::uint32, static_cast<void*>(uint32_check.data()) );
+    grp.read_field_astype ( "int64", off, int64_check.size(),
+        tidas::data_type::int64, static_cast<void*>(int64_check.data()) );
+    grp.read_field_astype ( "uint64", off, uint64_check.size(),
+        tidas::data_type::uint64, static_cast<void*>(uint64_check.data()) );
+    grp.read_field_astype ( "float32", off, float_check.size(),
+        tidas::data_type::float32, static_cast<void*>(float_check.data()) );
+    grp.read_field_astype ( "float64", off, double_check.size(),
+        tidas::data_type::float64, static_cast<void*>(double_check.data()) );
 
     for ( index_type i = 0; i < full_nsamp; ++i ) {
         EXPECT_EQ( time[i], check[i] );
@@ -270,6 +447,25 @@ TEST_F( groupTest, HDF5Backend ) {
     group grp ( schm, dt, gnsamp );
 
     backend_path loc;
+
+    // test astype version of read and write
+    loc.type = backend_type::hdf5;
+    loc.path = tidas::test::output_dir();
+    fs_mkdir ( loc.path.c_str() );
+    loc.name = "test_group_astype.hdf5.out";
+    loc.mode = access_mode::write;
+
+    group grp1 ( grp, "", loc );
+    grp1.flush();
+
+    // write test data
+    tidas::test::group_setup_astype ( grp1, 0, grp1.size() );
+
+    // read and verify
+    tidas::test::group_verify_astype ( grp1, 0, grp1.size() );
+
+    // Now test std::vector interface
+
     loc.type = backend_type::hdf5;
     loc.path = tidas::test::output_dir();
     fs_mkdir ( loc.path.c_str() );

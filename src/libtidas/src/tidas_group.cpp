@@ -415,7 +415,6 @@ void tidas::group::read_field_astype ( std::string const & field_name,
                     type_indx_.at( field_name ), offset, ndata,
                     static_cast < int16_t * > (data) );
                 dp = static_cast < int16_t * > (data);
-                std::cerr << "read int16 " << dp[0] << " " << dp[1] << std::endl;
                 break;
             case data_type::uint16:
                 backend_->read_field ( loc_, field_name,
@@ -498,8 +497,6 @@ void tidas::group::write_field_astype ( std::string const & field_name, index_ty
                     type_indx_.at( field_name ), offset, ndata,
                     static_cast < int16_t const * > (data) );
                 dp = static_cast < int16_t const * > (data);
-                std::cerr << "write int16 " << dp[0] << " " << dp[1]
-                    << std::endl;
                 break;
             case data_type::uint16:
                 backend_->write_field ( loc_, field_name,

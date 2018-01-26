@@ -12,7 +12,14 @@
 
 int main ( int argc, char *argv[] ) {
 	tidas::mpi_init ( argc, argv );
-    int ret = tidas::test::mpi_runner ( argc, argv );
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int rank;
+    int ret = MPI_Comm_rank ( comm, &rank );
+    std::string dir = tidas::test::output_dir();
+    if ( rank == 0 ) {
+        tidas::fs_mkdir ( dir.c_str() );
+    }
+    ret = tidas::test::mpi_runner ( argc, argv );
     tidas::mpi_finalize();
     return ret;
 }

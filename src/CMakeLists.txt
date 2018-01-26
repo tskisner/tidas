@@ -10,7 +10,7 @@ add_subdirectory(python)
 
 add_subdirectory(tests)
 
-if (MPI_FOUND)
+if(MPI_FOUND AND MPI4PY_FOUND)
     add_subdirectory(libtidas-mpi)
     add_subdirectory(tests-mpi)
-endif (MPI_FOUND)
+endif(MPI_FOUND AND MPI4PY_FOUND)

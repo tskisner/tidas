@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -22,19 +22,19 @@ namespace tidas {
             mpi_volume ( mpi_volume const & other );
 
             /// Create a new volume.
-            mpi_volume ( MPI_Comm comm, std::string const & path, 
-                backend_type type, compression_type comp, 
-                std::map < std::string, std::string > extra = 
+            mpi_volume ( MPI_Comm comm, std::string const & path,
+                backend_type type, compression_type comp,
+                std::map < std::string, std::string > extra =
                 std::map < std::string, std::string > () );
 
             /// Open an existing volume.
-            mpi_volume ( MPI_Comm comm, std::string const & path, 
+            mpi_volume ( MPI_Comm comm, std::string const & path,
                 access_mode mode, std::string const & dist = "" );
-            
-            mpi_volume ( mpi_volume const & other, std::string const & filter, 
+
+            mpi_volume ( mpi_volume const & other, std::string const & filter,
                 backend_path const & loc );
 
-            mpi_volume ( MPI_Comm comm, mpi_volume const & other, std::string const & filter, 
+            mpi_volume ( MPI_Comm comm, mpi_volume const & other, std::string const & filter,
                 backend_path const & loc );
 
             MPI_Comm comm ( ) const;
@@ -55,17 +55,17 @@ namespace tidas {
 
             // metadata ops
 
-            void copy ( MPI_Comm comm, mpi_volume const & other, std::string const & filter, 
+            void copy ( MPI_Comm comm, mpi_volume const & other, std::string const & filter,
                 backend_path const & loc );
 
             /// Export a filtered subset of the volume to a new location.
-            void duplicate ( std::string const & path, backend_type type, 
-                compression_type comp, std::string const & filter = "", 
-                std::map < std::string, std::string > extra = 
+            void duplicate ( std::string const & path, backend_type type,
+                compression_type comp, std::string const & filter = "",
+                std::map < std::string, std::string > extra =
                 std::map < std::string, std::string > () ) const;
 
             /// Create a (hard or soft) linked filtered subset of the volume to a new location.
-            void link ( std::string const & path, link_type const & type, 
+            void link ( std::string const & path, link_type const & type,
                 std::string const & filter ) const;
 
             /// Delete the on-disk data and metadata associated with this object.
@@ -80,18 +80,21 @@ namespace tidas {
             /// Get the (const) root block of the volume.
             block const & root () const;
 
+            /// Print info to a stream.
+            void info ( std::ostream & out );
+
             template < class P >
             void exec ( P & op, exec_order order, std::string const & filter = "" ) {
 
                 if ( filter == "" ) {
 
                     root_.exec ( op, order );
-                
+
                 } else {
-                
+
                     block selected = root_.select ( filter );
                     selected.exec ( op, order );
-                
+
                 }
 
                 return;

@@ -345,65 +345,62 @@ def run(tmpdir=None):
 
     return
 
-#
-# def test_mpi_volume_setup(vol, nblock, nsamp):
-#     from .ctidas_mpi import mpi_dist_uniform
-#
-#     rt = vol.root()
-#     #sys.stderr.write("volume setup root {}\n".format(rt._handle()))
-#     rt.clear()
-#
-#     offset, nlocal = mpi_dist_uniform(vol.comm, nblock)
-#
-#     for b in range(offset, offset + nlocal):
-#         #print("TEST setup process {} blocks {}-{}".format(vol.comm.rank, offset, offset+nlocal-1))
-#         child = rt.block_add("block_{}".format(b), Block(None))
-#         test_block_setup(child, nsamp)
-#     return
-#
-#
-# def test_mpi(tmpdir=None, recurse=False):
-#     from mpi4py import MPI
-#     from .mpi_volume import MPIVolume
-#     from .ctidas_mpi import mpi_dist_uniform
-#
-#     comm = MPI.COMM_WORLD
-#
-#     dirpath = ""
-#
-#     if comm.rank == 0:
-#         if tmpdir is None:
-#             dirpath = tempfile.mkdtemp()
-#         else:
-#             dirpath = os.path.abspath(tmpdir)
-#             if not os.path.isdir(tmpdir):
-#                 os.makedirs(dirpath)
-#
-#     dirpath = comm.bcast(dirpath, root=0)
-#
-#     if comm.rank == 0:
-#         print("Testing MPI volume operations...")
-#
-#     volpath = os.path.join(dirpath, "tidas_py_mpi_volume")
-#
-#     if comm.rank == 0:
-#         if os.path.isdir(volpath):
-#             shutil.rmtree(volpath)
-#     comm.barrier()
-#
-#     nblock = 10
-#     nsamp = 10
-#
-#     with MPIVolume(comm, volpath, backend="hdf5", comp="gzip") as vol:
-#         test_mpi_volume_setup(vol, nblock, nsamp)
-#
-#     with MPIVolume(comm, volpath, mode="r") as vol:
-#         test_volume_verify(vol, nblock, nsamp)
-#         #vol.info(recurse=recurse)
-#
-#     if comm.rank == 0:
-#         print("   PASS")
-#
-#     return
-#
-#
+
+def test_mpi_volume_setup(vol, nblock, nsamp):
+    from tidas.mpi import mpi_dist_uniform
+
+    rt = vol.root()
+    rt.clear()
+
+    offset, nlocal = mpi_dist_uniform(vol.comm, nblock)
+
+    for b in range(offset, offset + nlocal):
+        child = rt.block_add("block_{}".format(b), Block())
+        test_block_setup(child, nsamp)
+    return
+
+
+
+def run_mpi(tmpdir=None):
+    from mpi4py import MPI
+    from tidas.mpi import MPIVolume, mpi_dist_uniform
+
+    comm = MPI.COMM_WORLD
+
+    dirpath = ""
+
+    if comm.rank == 0:
+        if tmpdir is None:
+            dirpath = tempfile.mkdtemp()
+        else:
+            dirpath = os.path.abspath(tmpdir)
+            if not os.path.isdir(tmpdir):
+                os.makedirs(dirpath)
+
+    dirpath = comm.bcast(dirpath, root=0)
+
+    if comm.rank == 0:
+        print("Testing MPI volume operations...")
+
+    volpath = os.path.join(dirpath, "tidas_py_mpi_volume")
+
+    if comm.rank == 0:
+        if os.path.isdir(volpath):
+            shutil.rmtree(volpath)
+    comm.barrier()
+
+    nblock = 10
+    nsamp = 10
+
+    vol = MPIVolume(comm, volpath, BackendType.hdf5, CompressionType.gzip,
+        dict())
+    test_mpi_volume_setup(vol, nblock, nsamp)
+
+    vol = MPIVolume(comm, volpath, AccessMode.read)
+    test_volume_verify(vol, nblock, nsamp)
+    vol.info()
+
+    if comm.rank == 0:
+        print("   PASS")
+
+    return

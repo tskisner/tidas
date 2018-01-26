@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -26,7 +26,7 @@ tidas::mpi_volume::mpi_volume () {
 
 
 tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path,
-    backend_type type, compression_type comp, std::map < std::string, 
+    backend_type type, compression_type comp, std::map < std::string,
     std::string > extra ) {
 
     comm_ = comm;
@@ -83,7 +83,7 @@ tidas::mpi_volume::mpi_volume ( mpi_volume const & other ) {
 }
 
 
-tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path, 
+tidas::mpi_volume::mpi_volume ( MPI_Comm comm, string const & path,
     access_mode mode, std::string const & dist ) {
 
     // FIXME: eventually the dist string will be used to distribute
@@ -445,7 +445,7 @@ void tidas::mpi_volume::link ( std::string const & path, link_type const & ltype
     if ( rank_ == 0 ) {
 
         // make the top level directory
-    
+
         if ( fs_stat ( lpath.c_str() ) >= 0 ) {
             ostringstream o;
             o << "cannot create volume link \"" << lpath << "\", a file or directory already exists";
@@ -575,7 +575,7 @@ void tidas::mpi_volume::read_props ( backend_path & loc ) {
     return;
 }
 
-            
+
 void tidas::mpi_volume::write_props ( backend_path const & loc ) const {
 
     if ( rank_ == 0 ) {
@@ -603,6 +603,18 @@ void tidas::mpi_volume::write_props ( backend_path const & loc ) const {
 }
 
 
+void tidas::mpi_volume::info ( std::ostream & out ) {
+    if ( rank_ == 0 ) {
+        std::ostringstream ind;
+        ind.str("");
+        ind << "TIDAS:  ";
+        out << ind.str() << "Volume \"" << loc_.path << "\"" << std::endl;
+        root_.info(out, 2, true);
+    }
+    return;
+}
+
+
 void tidas::data_copy ( mpi_volume const & in, mpi_volume & out ) {
 
     int rank;
@@ -622,4 +634,3 @@ void tidas::data_copy ( mpi_volume const & in, mpi_volume & out ) {
 
     return;
 }
-

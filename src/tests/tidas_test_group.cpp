@@ -41,16 +41,27 @@ void tidas::test::group_setup ( group & grp, size_t offset, size_t full_nsamp ) 
     }
 
     for ( size_t i = 0; i < nsamp; ++i ) {
-        uint8_data[i] = (uint8_t)i;
-        int8_data[i] = -(int8_t)(i);
-        uint16_data[i] = (uint16_t)i;
-        int16_data[i] = -(int16_t)(i);
-        uint32_data[i] = (uint32_t)i;
-        int32_data[i] = -(int32_t)(i);
-        uint64_data[i] = (uint64_t)i;
-        int64_data[i] = -(int64_t)(i);
-        float_data[i] = (float)i / 10.0;
-        double_data[i] = (double)i / 10.0;
+        float fi = (float)i;
+        int8_data[i] = -(i % 128);
+        uint8_data[i] = (i % 128);
+        int16_data[i] = -(i % 32678);
+        uint16_data[i] = (i % 32678);
+        int32_data[i] = -i;
+        uint32_data[i] = i;
+        int64_data[i] = -i;
+        uint64_data[i] = i;
+        float_data[i] = fi;
+        double_data[i] = fi;
+        // uint8_data[i] = (uint8_t)i;
+        // int8_data[i] = -(int8_t)(i);
+        // uint16_data[i] = (uint16_t)i;
+        // int16_data[i] = -(int16_t)(i);
+        // uint32_data[i] = (uint32_t)i;
+        // int32_data[i] = -(int32_t)(i);
+        // uint64_data[i] = (uint64_t)i;
+        // int64_data[i] = -(int64_t)(i);
+        // float_data[i] = (float)i / 10.0;
+        // double_data[i] = (double)i / 10.0;
     }
 
     size_t off = offset + full_nsamp - nsamp;
@@ -100,16 +111,27 @@ void tidas::test::group_setup_astype ( group & grp, size_t offset, size_t full_n
     }
 
     for ( size_t i = 0; i < nsamp; ++i ) {
-        uint8_data[i] = (uint8_t)i;
-        int8_data[i] = -(int8_t)(i);
-        uint16_data[i] = (uint16_t)i;
-        int16_data[i] = -(int16_t)(i);
-        uint32_data[i] = (uint32_t)i;
-        int32_data[i] = -(int32_t)(i);
-        uint64_data[i] = (uint64_t)i;
-        int64_data[i] = -(int64_t)(i);
-        float_data[i] = (float)i / 10.0;
-        double_data[i] = (double)i / 10.0;
+        float fi = (float)i;
+        int8_data[i] = -(i % 128);
+        uint8_data[i] = (i % 128);
+        int16_data[i] = -(i % 32678);
+        uint16_data[i] = (i % 32678);
+        int32_data[i] = -i;
+        uint32_data[i] = i;
+        int64_data[i] = -i;
+        uint64_data[i] = i;
+        float_data[i] = fi;
+        double_data[i] = fi;
+        // uint8_data[i] = (uint8_t)i;
+        // int8_data[i] = -(int8_t)(i);
+        // uint16_data[i] = (uint16_t)i;
+        // int16_data[i] = -(int16_t)(i);
+        // uint32_data[i] = (uint32_t)i;
+        // int32_data[i] = -(int32_t)(i);
+        // uint64_data[i] = (uint64_t)i;
+        // int64_data[i] = -(int64_t)(i);
+        // float_data[i] = (float)i / 10.0;
+        // double_data[i] = (double)i / 10.0;
     }
 
     size_t off = offset + full_nsamp - nsamp;
@@ -179,16 +201,27 @@ void tidas::test::group_verify ( group & grp, size_t offset, size_t full_nsamp )
     }
 
     for ( size_t i = 0; i < nsamp; ++i ) {
-        uint8_data[i] = (uint8_t)i;
-        int8_data[i] = -(int8_t)(i);
-        uint16_data[i] = (uint16_t)i;
-        int16_data[i] = -(int16_t)(i);
-        uint32_data[i] = (uint32_t)i;
-        int32_data[i] = -(int32_t)(i);
-        uint64_data[i] = (uint64_t)i;
-        int64_data[i] = -(int64_t)(i);
-        float_data[i] = (float)i / 10.0;
-        double_data[i] = (double)i / 10.0;
+        float fi = (float)i;
+        int8_data[i] = -(i % 128);
+        uint8_data[i] = (i % 128);
+        int16_data[i] = -(i % 32678);
+        uint16_data[i] = (i % 32678);
+        int32_data[i] = -i;
+        uint32_data[i] = i;
+        int64_data[i] = -i;
+        uint64_data[i] = i;
+        float_data[i] = fi;
+        double_data[i] = fi;
+        // uint8_data[i] = (uint8_t)i;
+        // int8_data[i] = -(int8_t)(i);
+        // uint16_data[i] = (uint16_t)i;
+        // int16_data[i] = -(int16_t)(i);
+        // uint32_data[i] = (uint32_t)i;
+        // int32_data[i] = -(int32_t)(i);
+        // uint64_data[i] = (uint64_t)i;
+        // int64_data[i] = -(int64_t)(i);
+        // float_data[i] = (float)i / 10.0;
+        // double_data[i] = (double)i / 10.0;
     }
 
     check.assign ( full_nsamp, 0 );
@@ -277,16 +310,27 @@ void tidas::test::group_verify_astype ( group & grp, size_t offset, size_t full_
     }
 
     for ( size_t i = 0; i < nsamp; ++i ) {
-        uint8_data[i] = (uint8_t)i;
-        int8_data[i] = -(int8_t)(i);
-        uint16_data[i] = (uint16_t)i;
-        int16_data[i] = -(int16_t)(i);
-        uint32_data[i] = (uint32_t)i;
-        int32_data[i] = -(int32_t)(i);
-        uint64_data[i] = (uint64_t)i;
-        int64_data[i] = -(int64_t)(i);
-        float_data[i] = (float)i / 10.0;
-        double_data[i] = (double)i / 10.0;
+        float fi = (float)i;
+        int8_data[i] = -(i % 128);
+        uint8_data[i] = (i % 128);
+        int16_data[i] = -(i % 32678);
+        uint16_data[i] = (i % 32678);
+        int32_data[i] = -i;
+        uint32_data[i] = i;
+        int64_data[i] = -i;
+        uint64_data[i] = i;
+        float_data[i] = fi;
+        double_data[i] = fi;
+        // uint8_data[i] = (uint8_t)i;
+        // int8_data[i] = -(int8_t)(i);
+        // uint16_data[i] = (uint16_t)i;
+        // int16_data[i] = -(int16_t)(i);
+        // uint32_data[i] = (uint32_t)i;
+        // int32_data[i] = -(int32_t)(i);
+        // uint64_data[i] = (uint64_t)i;
+        // int64_data[i] = -(int64_t)(i);
+        // float_data[i] = (float)i / 10.0;
+        // double_data[i] = (double)i / 10.0;
     }
 
     check.assign ( full_nsamp, 0 );
@@ -372,10 +416,14 @@ void tidas::test::group_verify_int ( group & grp, size_t offset, size_t full_nsa
     }
 
     for ( size_t i = 0; i < nsamp; ++i ) {
-        int8_data[i] = (int8_t)(-i);
-        int16_data[i] = (int16_t)(-i);
-        int32_data[i] = (int32_t)(-i);
-        int64_data[i] = (int64_t)(-i);
+        int8_data[i] = -(i % 128);
+        int16_data[i] = -(i % 32678);
+        int32_data[i] = -i;
+        int64_data[i] = -i;
+        // int8_data[i] = (int8_t)(-i);
+        // int16_data[i] = (int16_t)(-i);
+        // int32_data[i] = (int32_t)(-i);
+        // int64_data[i] = (int64_t)(-i);
     }
 
     check.assign ( full_nsamp, 0 );
@@ -414,6 +462,8 @@ groupTest::groupTest () {
 
 void groupTest::SetUp () {
     gnsamp = 10 + hdf5_chunk_default;
+    //gnsamp = 130;
+    //gnsamp = 384;
 }
 
 

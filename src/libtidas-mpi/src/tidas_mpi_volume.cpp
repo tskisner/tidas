@@ -359,6 +359,9 @@ void tidas::mpi_volume::copy ( MPI_Comm comm, mpi_volume const & other, string c
     // Check that we have no outstanding transactions in the source volume.
     size_t histsize = other.localdb_->history().size();
     if ( histsize > 0 ) {
+        for ( auto & it : other.localdb_->history() ) {
+            it.print(std::cerr);
+        }
         ostringstream o;
         o << "process " << rank_ << " in mpi_volume copy source has " << histsize << " outstanding transactions";
         TIDAS_THROW( o.str().c_str() );
@@ -507,6 +510,8 @@ void tidas::mpi_volume::duplicate ( std::string const & path, backend_type type,
 
     data_copy ( (*this), newvol );
 
+    newvol.meta_sync();
+
     return;
 }
 
@@ -603,7 +608,7 @@ void tidas::mpi_volume::write_props ( backend_path const & loc ) const {
 }
 
 
-void tidas::mpi_volume::info ( std::ostream & out ) {
+void tidas::mpi_volume::info ( std::ostream & out ) const {
     if ( rank_ == 0 ) {
         std::ostringstream ind;
         ind.str("");

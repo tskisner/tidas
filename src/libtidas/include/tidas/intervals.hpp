@@ -232,7 +232,7 @@ namespace tidas {
             static intrvl seek_floor ( interval_list const & intr, time_type time );
 
             /// Print information to a stream.
-            void info ( std::ostream & out, size_t indent );
+            void info ( std::ostream & out, size_t indent ) const;
 
             template < class Archive >
             void save ( Archive & ar ) const {

@@ -55,8 +55,8 @@ namespace tidas {
 
             // metadata ops
 
-            void copy ( MPI_Comm comm, mpi_volume const & other, std::string const & filter,
-                backend_path const & loc );
+            void copy ( MPI_Comm comm, mpi_volume const & other,
+                std::string const & filter, backend_path const & loc );
 
             /// Export a filtered subset of the volume to a new location.
             void duplicate ( std::string const & path, backend_type type,
@@ -81,7 +81,7 @@ namespace tidas {
             block const & root () const;
 
             /// Print info to a stream.
-            void info ( std::ostream & out );
+            void info ( std::ostream & out ) const;
 
             template < class P >
             void exec ( P & op, exec_order order, std::string const & filter = "" ) {

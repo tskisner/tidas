@@ -379,7 +379,7 @@ intrvl tidas::intervals::seek_floor ( interval_list const & intr, time_type time
 }
 
 
-void tidas::intervals::info ( std::ostream & out, size_t indent ) {
+void tidas::intervals::info ( std::ostream & out, size_t indent ) const {
     std::ostringstream ind;
     ind.str("");
     ind << "TIDAS:  ";

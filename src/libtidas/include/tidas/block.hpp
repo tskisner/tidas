@@ -158,7 +158,7 @@ namespace tidas {
 
             /// (**Internal**) Print metadata info for this block.  Mainly
             /// used for debugging.
-            void info ( std::ostream & out, size_t indent, bool recurse );
+            void info ( std::ostream & out, size_t indent, bool recurse ) const;
 
 
             // non-const version

@@ -998,7 +998,7 @@ void tidas::block::clear () {
 }
 
 
-void tidas::block::info ( std::ostream & out, size_t indent, bool recurse ) {
+void tidas::block::info ( std::ostream & out, size_t indent, bool recurse ) const {
     std::ostringstream ind;
     ind.str("");
     ind << "TIDAS:  ";

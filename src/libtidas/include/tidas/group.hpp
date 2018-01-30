@@ -398,7 +398,7 @@ namespace tidas {
             void write_times ( std::vector < time_type > const & data );
 
             /// Print information to a stream.
-            void info ( std::ostream & out, size_t indent );
+            void info ( std::ostream & out, size_t indent ) const;
 
             template < class Archive >
             void save ( Archive & ar ) const {

@@ -70,7 +70,7 @@ namespace tidas {
             block const & root () const;
 
             /// Print info to a stream.
-            void info ( std::ostream & out );
+            void info ( std::ostream & out ) const;
 
             /// Pass over the root block and all descendents, calling a
             /// functor on each one.  The specified class should provide the

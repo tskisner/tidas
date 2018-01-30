@@ -352,11 +352,17 @@ def test_mpi_volume_setup(vol, nblock, nsamp):
     rt = vol.root()
     rt.clear()
 
-    offset, nlocal = mpi_dist_uniform(vol.comm, nblock)
+    print(vol.comm())
+
+    rank = vol.comm().rank
+
+    offset, nlocal = mpi_dist_uniform(vol.comm(), nblock)
 
     for b in range(offset, offset + nlocal):
         child = rt.block_add("block_{}".format(b), Block())
         test_block_setup(child, nsamp)
+
+    vol.meta_sync()
     return
 
 

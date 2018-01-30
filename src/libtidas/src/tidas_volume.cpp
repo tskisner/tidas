@@ -368,7 +368,7 @@ void tidas::volume::write_props ( backend_path const & loc ) const {
 }
 
 
-void tidas::volume::info ( std::ostream & out ) {
+void tidas::volume::info ( std::ostream & out ) const {
     std::ostringstream ind;
     ind.str("");
     ind << "TIDAS:  ";

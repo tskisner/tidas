@@ -53,7 +53,7 @@ void tidas::test::mpi_volume_setup ( mpi_volume & vol, size_t n_samp, size_t n_i
         tidas::test::block_setup ( blk, n_samp, n_intr );
     }
 
-    //vol.meta_sync();
+    vol.meta_sync();
 
     return;
 }
@@ -140,7 +140,6 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
     {
         mpi_volume vol ( comm, volpath, backend_type::hdf5, compression_type::gzip, hdf_extra );
         tidas::test::mpi_volume_setup ( vol, n_samp, n_intr, n_block );
-        vol.meta_sync();
         tidas::test::mpi_volume_verify ( vol );
 
         vol.duplicate ( volpathmem, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
@@ -221,7 +220,6 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
 
         start = chrono::steady_clock::now();
         tidas::test::mpi_volume_setup ( vol, n_big, n_intr, n_block );
-        vol.meta_sync();
         stop = chrono::steady_clock::now();
         diff = stop - start;
 

@@ -16,9 +16,25 @@
 
 namespace py = pybind11;
 
+static void reprint(PyObject *obj) {
+    PyObject* repr = PyObject_Repr(obj);
+    PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+    const char *bytes = PyBytes_AS_STRING(str);
+
+    printf("REPR: %s\n", bytes);
+
+    Py_XDECREF(repr);
+    Py_XDECREF(str);
+}
 
 MPI_Comm tidas_mpi_extract_comm (py::object & pycomm) {
-    MPI_Comm * comm = PyMPIComm_Get(pycomm.ptr());
+    std::cerr << "ptr = " << pycomm.ptr() << std::endl;
+    PyObject * pp = pycomm.ptr();
+    reprint(pp);
+
+    //MPI_Comm * comm = PyMPIComm_Get(pp);
+    MPI_Comm * comm = (&((struct PyMPICommObject *)pp)->ob_mpi);
+
     if (import_mpi4py() < 0) {
         throw std::runtime_error("could not import mpi4py\n");
     }
@@ -36,22 +52,11 @@ PYBIND11_MODULE(_pytidas_mpi, m) {
 
     m.def("mpi_dist_uniform", [](py::object & pycomm, size_t n) {
         MPI_Comm comm = tidas_mpi_extract_comm(pycomm);
-
-        py::array_t < size_t > offset;
-        offset.resize( {n} );
-        py::buffer_info offset_info = offset.request();
-        size_t * raw_offset = static_cast < size_t * > (offset_info.ptr);
-
-        py::array_t < size_t > nlocal;
-        nlocal.resize( {n} );
-        py::buffer_info nlocal_info = nlocal.request();
-        size_t * raw_nlocal = static_cast < size_t * > (nlocal_info.ptr);
-
-        tidas::mpi_dist_uniform (comm, n, raw_offset, raw_nlocal);
-
+        size_t offset;
+        size_t nlocal;
+        tidas::mpi_dist_uniform (comm, n, &offset, &nlocal);
         return py::make_tuple(offset, nlocal);
     });
-
 
     py::class_ < tidas::mpi_volume > (m, "MPIVolume")
         .def(py::init ([](py::object & pycomm, std::string const & path,
@@ -66,11 +71,12 @@ PYBIND11_MODULE(_pytidas_mpi, m) {
             return new tidas::mpi_volume (comm, path, typ, comp, extra);
         }))
         .def("comm", [](tidas::mpi_volume & self) {
-            return PyMPIComm_New(self.comm());
+            return py::reinterpret_steal<py::object>(PyMPIComm_New(self.comm()));
         })
         .def("comm_rank", &tidas::mpi_volume::comm_rank)
         .def("comm_size", &tidas::mpi_volume::comm_size)
         .def("duplicate", &tidas::mpi_volume::duplicate)
+        .def("meta_sync", &tidas::mpi_volume::meta_sync)
         .def("link", &tidas::mpi_volume::link)
         .def("root", (tidas::block & (tidas::mpi_volume::*)())
             &tidas::mpi_volume::root,

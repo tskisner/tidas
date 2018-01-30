@@ -706,7 +706,7 @@ void tidas::group::write_times ( std::vector < time_type > const & data ) {
 }
 
 
-void tidas::group::info ( std::ostream & out, size_t indent ) {
+void tidas::group::info ( std::ostream & out, size_t indent ) const {
     std::ostringstream ind;
     ind.str("");
     ind << "TIDAS:  ";

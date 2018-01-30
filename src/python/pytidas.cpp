@@ -86,7 +86,6 @@ py::buffer_info tidas_buffer_info(tidas::data_type typ, ssize_t len) {
         itemsize = tidas::backend_string_size;
     }
     py::buffer_info ret(nullptr, itemsize, format, 1, {len}, {1});
-    std::cerr << "buffer info " << ret.format << std::endl;
     return ret;
 }
 

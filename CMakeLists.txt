@@ -1,7 +1,12 @@
 # TIDAS
 
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
-project(tidas VERSION 0.3.0)
+
+if (POLICY CMP0048)
+  cmake_policy(SET CMP0048 NEW)
+endif (POLICY CMP0048)
+
+project(tidas VERSION 0.3.0 LANGUAGES C CXX)
 
 # Auxiliary files
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")

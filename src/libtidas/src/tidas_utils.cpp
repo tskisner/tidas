@@ -50,6 +50,7 @@ char ** tidas::c_string_alloc ( size_t nstring, size_t length ) {
         o << "failed to allocate buffer of " << nstring << " C strings";
         TIDAS_THROW( o.str().c_str() );
     }
+    memset ( (void*)raw, 0, nstring * length * sizeof(char) );
 
     char ** ret = (char**) malloc( nstring * sizeof(char*) );
     if ( ! ret ) {
@@ -60,6 +61,7 @@ char ** tidas::c_string_alloc ( size_t nstring, size_t length ) {
 
     for ( size_t i = 0; i < nstring; ++i ) {
         ret[i] = &(raw[i * backend_string_size]);
+        strcpy(ret[i], "");
     }
 
     return ret;

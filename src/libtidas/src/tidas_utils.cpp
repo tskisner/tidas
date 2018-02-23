@@ -41,21 +41,25 @@ const char * tidas::exception::what() const throw() {
 
 
 char ** tidas::c_string_alloc ( size_t nstring, size_t length ) {
-    char ** ret = (char**) malloc( nstring * sizeof(char*) );
+    // Allocate a contiguous buffer of chars, then set up pointers
+    // into that memory.
 
+    char * raw = (char*) malloc ( nstring * length * sizeof(char) );
+    if ( ! raw ) {
+        std::ostringstream o;
+        o << "failed to allocate buffer of " << nstring << " C strings";
+        TIDAS_THROW( o.str().c_str() );
+    }
+
+    char ** ret = (char**) malloc( nstring * sizeof(char*) );
     if ( ! ret ) {
         std::ostringstream o;
-        o << "failed to allocate array of " << nstring << " C strings";
+        o << "failed to allocate array of " << nstring << " char *";
         TIDAS_THROW( o.str().c_str() );
     }
 
     for ( size_t i = 0; i < nstring; ++i ) {
-        ret[i] = (char*) malloc ( (length + 1) * sizeof(char) );
-        if ( ! ret[i] ) {
-            std::ostringstream o;
-            o << "failed to allocate C string of " << (length+1) << " characters";
-            TIDAS_THROW( o.str().c_str() );
-        }
+        ret[i] = &(raw[i * backend_string_size]);
     }
 
     return ret;
@@ -64,12 +68,12 @@ char ** tidas::c_string_alloc ( size_t nstring, size_t length ) {
 
 void tidas::c_string_free ( size_t nstring, char ** str ) {
     if ( str != NULL ) {
-        for ( size_t i = 0; i < nstring; ++i ) {
-            if ( str[i] != NULL ) {
-                free( str[i] );
-            }
-        }
+        // First, get the memory address of the underlying buffer.
+        char * raw = str[0];
+        // Now free the list of pointers
         free(str);
+        // Then free the raw buffer
+        free(raw);
     }
     return;
 }

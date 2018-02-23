@@ -139,7 +139,9 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
 
     {
         mpi_volume vol ( comm, volpath, backend_type::hdf5, compression_type::gzip, hdf_extra );
+
         tidas::test::mpi_volume_setup ( vol, n_samp, n_intr, n_block );
+
         tidas::test::mpi_volume_verify ( vol );
 
         vol.duplicate ( volpathmem, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
@@ -184,6 +186,8 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
         vol.duplicate ( volpathro, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
     }
 
+    ret = MPI_Barrier ( comm );
+
     {
         mpi_volume vol ( comm, volpathro, access_mode::read );
         tidas::test::mpi_volume_verify ( vol );
@@ -213,20 +217,27 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
 
         mpi_volume vol ( comm, volbig, backend_type::hdf5, compression_type::none );
 
+        ret = MPI_Barrier ( comm );
         auto stop = chrono::steady_clock::now();
         auto diff = stop - start;
 
         cout << "Creating large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
 
         start = chrono::steady_clock::now();
+
         tidas::test::mpi_volume_setup ( vol, n_big, n_intr, n_block );
+
+        ret = MPI_Barrier ( comm );
         stop = chrono::steady_clock::now();
         diff = stop - start;
 
         cout << "Writing large volume: " << chrono::duration <double, milli> (diff).count() << " ms" << endl;
 
         start = chrono::steady_clock::now();
+
         tidas::test::mpi_volume_verify ( vol );
+
+        ret = MPI_Barrier ( comm );
         stop = chrono::steady_clock::now();
         diff = stop - start;
 

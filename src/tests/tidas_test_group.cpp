@@ -36,6 +36,8 @@ void tidas::test::group_setup ( group & grp, size_t offset, size_t full_nsamp ) 
     vector < float > float_data ( nsamp );
     vector < double > double_data ( nsamp );
 
+    vector < std::string > string_data ( nsamp );
+
     for ( size_t i = 0; i < full_nsamp; ++i ) {
         time[i] = (double)( offset + i ) / 10.0;
     }
@@ -44,14 +46,15 @@ void tidas::test::group_setup ( group & grp, size_t offset, size_t full_nsamp ) 
         float fi = (float)i;
         int8_data[i] = -(i % 128);
         uint8_data[i] = (i % 128);
-        int16_data[i] = -(i % 32678);
-        uint16_data[i] = (i % 32678);
+        int16_data[i] = -(i % 32768);
+        uint16_data[i] = (i % 32768);
         int32_data[i] = -i;
         uint32_data[i] = i;
         int64_data[i] = -i;
         uint64_data[i] = i;
         float_data[i] = fi;
         double_data[i] = fi;
+        string_data[i] = "foobarbahblat";
         // uint8_data[i] = (uint8_t)i;
         // int8_data[i] = -(int8_t)(i);
         // uint16_data[i] = (uint16_t)i;
@@ -77,6 +80,8 @@ void tidas::test::group_setup ( group & grp, size_t offset, size_t full_nsamp ) 
     grp.write_field ( "uint64", off, uint64_data );
     grp.write_field ( "float32", off, float_data );
     grp.write_field ( "float64", off, double_data );
+
+    grp.write_field ( "string", off, string_data );
 
     return;
 }
@@ -106,6 +111,8 @@ void tidas::test::group_setup_astype ( group & grp, size_t offset, size_t full_n
     vector < float > float_data ( nsamp );
     vector < double > double_data ( nsamp );
 
+    char ** string_data = c_string_alloc ( nsamp, backend_string_size );
+
     for ( size_t i = 0; i < full_nsamp; ++i ) {
         time[i] = (double)( offset + i ) / 10.0;
     }
@@ -114,14 +121,15 @@ void tidas::test::group_setup_astype ( group & grp, size_t offset, size_t full_n
         float fi = (float)i;
         int8_data[i] = -(i % 128);
         uint8_data[i] = (i % 128);
-        int16_data[i] = -(i % 32678);
-        uint16_data[i] = (i % 32678);
+        int16_data[i] = -(i % 32768);
+        uint16_data[i] = (i % 32768);
         int32_data[i] = -i;
         uint32_data[i] = i;
         int64_data[i] = -i;
         uint64_data[i] = i;
         float_data[i] = fi;
         double_data[i] = fi;
+        strcpy(string_data[i], "foobarbahblat");
         // uint8_data[i] = (uint8_t)i;
         // int8_data[i] = -(int8_t)(i);
         // uint16_data[i] = (uint16_t)i;
@@ -157,6 +165,11 @@ void tidas::test::group_setup_astype ( group & grp, size_t offset, size_t full_n
         tidas::data_type::float32, static_cast<void*>(float_data.data()) );
     grp.write_field_astype ( "float64", off, double_data.size(),
         tidas::data_type::float64, static_cast<void*>(double_data.data()) );
+
+    grp.write_field_astype ( "string", off, nsamp,
+        tidas::data_type::string, static_cast<void*>(string_data) );
+
+    c_string_free(nsamp, string_data);
 
     return;
 }
@@ -196,6 +209,9 @@ void tidas::test::group_verify ( group & grp, size_t offset, size_t full_nsamp )
     vector < double > double_data ( nsamp );
     vector < double > double_check ( nsamp );
 
+    vector < std::string > string_data ( nsamp );
+    vector < std::string > string_check ( nsamp );
+
     for ( size_t i = 0; i < full_nsamp; ++i ) {
         time[i] = (double)( offset + i ) / 10.0;
     }
@@ -204,14 +220,15 @@ void tidas::test::group_verify ( group & grp, size_t offset, size_t full_nsamp )
         float fi = (float)i;
         int8_data[i] = -(i % 128);
         uint8_data[i] = (i % 128);
-        int16_data[i] = -(i % 32678);
-        uint16_data[i] = (i % 32678);
+        int16_data[i] = -(i % 32768);
+        uint16_data[i] = (i % 32768);
         int32_data[i] = -i;
         uint32_data[i] = i;
         int64_data[i] = -i;
         uint64_data[i] = i;
         float_data[i] = fi;
         double_data[i] = fi;
+        string_data[i] = "foobarbahblat";
         // uint8_data[i] = (uint8_t)i;
         // int8_data[i] = -(int8_t)(i);
         // uint16_data[i] = (uint16_t)i;
@@ -236,6 +253,8 @@ void tidas::test::group_verify ( group & grp, size_t offset, size_t full_nsamp )
     float_check.assign ( nsamp, 0 );
     double_check.assign ( nsamp, 0 );
 
+    string_check.assign ( nsamp, std::string("") );
+
     size_t off = offset + full_nsamp - nsamp;
 
     grp.read_times ( check );
@@ -249,6 +268,7 @@ void tidas::test::group_verify ( group & grp, size_t offset, size_t full_nsamp )
     grp.read_field ( "uint64", off, uint64_check );
     grp.read_field ( "float32", off, float_check );
     grp.read_field ( "float64", off, double_check );
+    grp.read_field ( "string", off, string_check );
 
     for ( index_type i = 0; i < full_nsamp; ++i ) {
         EXPECT_EQ( time[i], check[i] );
@@ -265,6 +285,7 @@ void tidas::test::group_verify ( group & grp, size_t offset, size_t full_nsamp )
         EXPECT_EQ( uint64_data[i], uint64_check[i] );
         EXPECT_EQ( float_data[i], float_check[i] );
         EXPECT_EQ( double_data[i], double_check[i] );
+        EXPECT_EQ( string_data[i], string_check[i] );
     }
 
     return;
@@ -305,6 +326,9 @@ void tidas::test::group_verify_astype ( group & grp, size_t offset, size_t full_
     vector < double > double_data ( nsamp );
     vector < double > double_check ( nsamp );
 
+    char ** string_data = c_string_alloc ( nsamp, backend_string_size );
+    char ** string_check = c_string_alloc ( nsamp, backend_string_size );
+
     for ( size_t i = 0; i < full_nsamp; ++i ) {
         time[i] = (double)( offset + i ) / 10.0;
     }
@@ -313,14 +337,16 @@ void tidas::test::group_verify_astype ( group & grp, size_t offset, size_t full_
         float fi = (float)i;
         int8_data[i] = -(i % 128);
         uint8_data[i] = (i % 128);
-        int16_data[i] = -(i % 32678);
-        uint16_data[i] = (i % 32678);
+        int16_data[i] = -(i % 32768);
+        uint16_data[i] = (i % 32768);
         int32_data[i] = -i;
         uint32_data[i] = i;
         int64_data[i] = -i;
         uint64_data[i] = i;
         float_data[i] = fi;
         double_data[i] = fi;
+        strcpy(string_data[i], "foobarbahblat");
+        strcpy(string_check[i], "");
         // uint8_data[i] = (uint8_t)i;
         // int8_data[i] = -(int8_t)(i);
         // uint16_data[i] = (uint16_t)i;
@@ -369,6 +395,9 @@ void tidas::test::group_verify_astype ( group & grp, size_t offset, size_t full_
     grp.read_field_astype ( "float64", off, double_check.size(),
         tidas::data_type::float64, static_cast<void*>(double_check.data()) );
 
+    grp.read_field_astype ( "string", off, nsamp,
+        tidas::data_type::string, static_cast<void*>(string_check) );
+
     for ( index_type i = 0; i < full_nsamp; ++i ) {
         EXPECT_EQ( time[i], check[i] );
     }
@@ -384,7 +413,11 @@ void tidas::test::group_verify_astype ( group & grp, size_t offset, size_t full_
         EXPECT_EQ( uint64_data[i], uint64_check[i] );
         EXPECT_EQ( float_data[i], float_check[i] );
         EXPECT_EQ( double_data[i], double_check[i] );
+        EXPECT_EQ( strcmp(string_data[i], string_check[i]), 0 );
     }
+
+    c_string_free(nsamp, string_data);
+    c_string_free(nsamp, string_check);
 
     return;
 }
@@ -417,7 +450,7 @@ void tidas::test::group_verify_int ( group & grp, size_t offset, size_t full_nsa
 
     for ( size_t i = 0; i < nsamp; ++i ) {
         int8_data[i] = -(i % 128);
-        int16_data[i] = -(i % 32678);
+        int16_data[i] = -(i % 32768);
         int32_data[i] = -i;
         int64_data[i] = -i;
         // int8_data[i] = (int8_t)(-i);

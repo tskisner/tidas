@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -25,6 +25,7 @@ void tidas::test::schema_setup ( tidas::field_list & flist ) {
     field f_uint64;
     field f_float32;
     field f_float64;
+    field f_string;
 
     f_int8.type = data_type::int8;
     f_int8.name = "int8";
@@ -66,6 +67,10 @@ void tidas::test::schema_setup ( tidas::field_list & flist ) {
     f_float64.name = "float64";
     f_float64.units = "float64";
 
+    f_string.type = data_type::string;
+    f_string.name = "string";
+    f_string.units = "string";
+
     flist.clear();
     flist.push_back ( f_int8 );
     flist.push_back ( f_uint8 );
@@ -77,8 +82,7 @@ void tidas::test::schema_setup ( tidas::field_list & flist ) {
     flist.push_back ( f_uint64 );
     flist.push_back ( f_float32 );
     flist.push_back ( f_float64 );
-
-
+    flist.push_back ( f_string );
 
     return;
 }
@@ -93,7 +97,7 @@ void tidas::test::schema_verify ( tidas::field_list const & flist ) {
     EXPECT_EQ( check.size(), flist.size() );
 
     for ( size_t i = 0; i < flist.size(); ++i ) {
-        EXPECT_EQ( check[i], flist[i] );    
+        EXPECT_EQ( check[i], flist[i] );
     }
 
     return;
@@ -206,4 +210,3 @@ TEST_F( schemaTest, HDF5Backend ) {
 #endif
 
 }
-

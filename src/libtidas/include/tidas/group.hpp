@@ -355,13 +355,13 @@ namespace tidas {
 
             // specialization for strings
 
-            /// Read a range of string data from a field.  Store results in
-            /// in an array of pointers.
-            void read_field ( std::string const & field_name, index_type offset, index_type ndata, char ** data ) const;
-
-            /// Write a range of string data to a field.  Data is provided at
-            /// the bare memory address specified.
-            void write_field ( std::string const & field_name, index_type offset, index_type ndata, char * const * data );
+            // /// Read a range of string data from a field.  Store results in
+            // /// in an array of pointers.
+            // void read_field ( std::string const & field_name, index_type offset, index_type ndata, char ** data ) const;
+            //
+            // /// Write a range of string data to a field.  Data is provided at
+            // /// the bare memory address specified.
+            // void write_field ( std::string const & field_name, index_type offset, index_type ndata, char * const * data );
 
             // wrapper for vector of strings
 
@@ -373,29 +373,27 @@ namespace tidas {
             /// a vector of strings.
             void write_field ( std::string const & field_name, index_type offset, std::vector < std::string > const & data );
 
-            // overload for time_type which updates range
-
-            void write_field ( std::string const & field_name, index_type offset, index_type ndata, time_type const * data );
-
-            void write_field ( std::string const & field_name, index_type offset, std::vector < time_type > const & data );
-
             // read / write the full time stamp vector
 
             /// Read the timestamps for this group.  Data is stored in the
             /// bare memory address provided.
-            void read_times ( index_type ndata, time_type * data ) const;
+            void read_times ( index_type ndata, time_type * data,
+                index_type offset = 0 ) const;
 
             /// Read the timestamps for this group.  Data is stored in the
             /// vector provided.
-            void read_times ( std::vector < time_type > & data ) const;
+            void read_times ( std::vector < time_type > & data,
+                index_type offset = 0 ) const;
 
             /// Write the timestamps for this group.  Data is provided at
             /// the bare memory address specified.
-            void write_times ( index_type ndata, time_type const * data );
+            void write_times ( index_type ndata, time_type const * data,
+                index_type offset = 0 );
 
             /// Write the timestamps for this group.  Data is provided as
             /// a vector.
-            void write_times ( std::vector < time_type > const & data );
+            void write_times ( std::vector < time_type > const & data,
+                index_type offset = 0 );
 
             /// Print information to a stream.
             void info ( std::ostream & out, size_t indent ) const;

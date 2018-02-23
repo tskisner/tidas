@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -19,13 +19,153 @@ using namespace tidas;
 
 
 
+void tidas::hdf5_helper_field_read_raw ( backend_path const & loc,
+    size_t type_indx, index_type offset, index_type ndata, data_type type,
+    void * data ) {
+
+    // check if file exists
+
+    std::string fspath = loc.path + path_sep + loc.name;
+
+    int64_t fsize = fs_stat ( fspath.c_str() );
+    if ( fsize <= 0 ) {
+        std::ostringstream o;
+        o << "HDF5 group file " << fspath << " does not exist";
+        TIDAS_THROW( o.str().c_str() );
+    }
+
+    // open file and dataset
+
+    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+
+    std::string mpath = std::string("/") + group_hdf5_dataset_prefix + std::string("_") + data_type_to_string( type );
+
+    hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
+
+    // set up file and memory dataspaces
+
+    hid_t file_dataspace = H5Dget_space ( dataset );
+
+    hsize_t dims[1];
+    dims[0] = ndata;
+
+    hid_t mem_dataspace = H5Screate_simple ( 1, dims, NULL );
+
+    // select hyperslab of file dataspace
+
+    hsize_t doff[2];
+    hsize_t dspan[2];
+
+    doff[0] = type_indx;
+    doff[1] = offset;
+
+    dspan[0] = 1;
+    dspan[1] = ndata;
+
+    herr_t status = H5Sselect_hyperslab ( file_dataspace, H5S_SELECT_SET, doff, NULL, dspan, NULL );
+
+    // read data
+
+    hid_t mem_datatype = hdf5_data_type ( type );
+
+    status = H5Dread ( dataset, mem_datatype, mem_dataspace, file_dataspace, H5P_DEFAULT, data );
+
+    // clean up
+
+    status = H5Tclose ( mem_datatype );
+    status = H5Sclose ( mem_dataspace );
+    status = H5Sclose ( file_dataspace );
+    status = H5Dclose ( dataset );
+    status = H5Fclose ( file );
+
+    return;
+}
+
+
+void tidas::hdf5_helper_field_write_raw ( backend_path const & loc,
+    size_t type_indx, index_type offset, index_type ndata,
+    data_type type, void const * data ) {
+
+    // check if file exists
+
+    std::string fspath = loc.path + path_sep + loc.name;
+
+    int64_t fsize = fs_stat ( fspath.c_str() );
+    if ( fsize <= 0 ) {
+        std::ostringstream o;
+        o << "HDF5 group file " << fspath << " does not exist";
+        TIDAS_THROW( o.str().c_str() );
+    }
+
+    // open file and dataset
+
+    hid_t file = H5Fopen ( fspath.c_str(), H5F_ACC_RDWR, H5P_DEFAULT );
+
+    std::string mpath = std::string("/") + group_hdf5_dataset_prefix + std::string("_") + data_type_to_string( type );
+
+    hid_t dataset = H5Dopen ( file, mpath.c_str(), H5P_DEFAULT );
+
+    // set up file and memory dataspaces
+
+    hid_t file_dataspace = H5Dget_space ( dataset );
+
+    hsize_t dims[1];
+    dims[0] = ndata;
+
+    hid_t mem_dataspace = H5Screate_simple ( 1, dims, NULL );
+
+    // select hyperslab of file dataspace
+
+    hsize_t doff[2];
+    hsize_t dspan[2];
+
+    doff[0] = type_indx;
+    doff[1] = offset;
+
+    dspan[0] = 1;
+    dspan[1] = ndata;
+
+    herr_t status = H5Sselect_hyperslab ( file_dataspace, H5S_SELECT_SET, doff, NULL, dspan, NULL );
+
+    // read data
+
+    hid_t mem_datatype = hdf5_data_type ( type );
+
+    status = H5Dwrite ( dataset, mem_datatype, mem_dataspace, file_dataspace, H5P_DEFAULT, data );
+
+    // clean up
+
+    status = H5Tclose ( mem_datatype );
+    status = H5Sclose ( mem_dataspace );
+    status = H5Sclose ( file_dataspace );
+    status = H5Dclose ( dataset );
+    status = H5Fclose ( file );
+
+    return;
+}
+
+
+void tidas::hdf5_helper_field_read_str ( backend_path const & loc, size_t type_indx, index_type offset, index_type ndata, char ** data ) {
+    hdf5_helper_field_read_raw(loc, type_indx, offset, ndata,
+        data_type::string, static_cast < void * > (data[0]) );
+    return;
+}
+
+
+void tidas::hdf5_helper_field_write_str ( backend_path const & loc, size_t type_indx, index_type offset, index_type ndata, char * const * data ) {
+    hdf5_helper_field_write_raw(loc, type_indx, offset, ndata,
+        data_type::string, static_cast < void const * > (data[0]) );
+    return;
+}
+
+
 tidas::group_backend_hdf5::group_backend_hdf5 ( ) {
 
 }
 
 
 tidas::group_backend_hdf5::~group_backend_hdf5 () {
-    
+
 }
 
 
@@ -244,7 +384,7 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
 
     range_dims[0] = 2;
 
-    hid_t dataspace = H5Screate_simple ( 1, range_dims, NULL ); 
+    hid_t dataspace = H5Screate_simple ( 1, range_dims, NULL );
 
     hid_t datatype = hdf5_data_type ( data_type::float64 );
 
@@ -286,15 +426,15 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
         maxdims[0] = it->second;
         maxdims[1] = H5S_UNLIMITED;
 
-        dataspace = H5Screate_simple ( 2, dims, maxdims ); 
+        dataspace = H5Screate_simple ( 2, dims, maxdims );
 
         datatype = hdf5_data_type ( it->first );
 
         // we create the dataset using chunks, and optionally compression.
 
-        
 
-        hsize_t chunk_dims[2] = { 1, chunksize }; 
+
+        hsize_t chunk_dims[2] = { 1, chunksize };
 
         hid_t dataprops = H5Pcreate ( H5P_DATASET_CREATE );
         H5Pset_chunk ( dataprops, 2, chunk_dims );
@@ -311,7 +451,7 @@ void tidas::group_backend_hdf5::write ( backend_path const & loc, index_type con
         status = H5Dclose ( dataset );
 
     }
-    
+
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
     status = H5Fclose ( file );
     //status = H5close();
@@ -661,16 +801,12 @@ void tidas::group_backend_hdf5::write_field ( backend_path const & loc, string c
 
 
 void tidas::group_backend_hdf5::read_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, index_type ndata, char ** data ) const {
-    hdf5_helper_field_read ( loc, type_indx, offset, ndata, data );
+    hdf5_helper_field_read_str ( loc, type_indx, offset, ndata, data );
     return;
 }
 
 
 void tidas::group_backend_hdf5::write_field ( backend_path const & loc, string const & field_name, size_t type_indx, index_type offset, index_type ndata, char * const * data ) {
-    hdf5_helper_field_write ( loc, type_indx, offset, ndata, data );
+    hdf5_helper_field_write_str ( loc, type_indx, offset, ndata, data );
     return;
 }
-
-
-
-

@@ -141,20 +141,22 @@ def test_group_setup(grp, nsamp):
     uint64_data = np.zeros(nsamp, dtype=np.uint64)
     float32_data = np.zeros(nsamp, dtype=np.float32)
     float64_data = np.zeros(nsamp, dtype=np.float64)
+    string_data = np.empty(nsamp, dtype='S64')
 
     for i in range(nsamp):
         fi = float(i)
         time[i] = fi * 0.001
         int8_data[i] = -(i % 128)
         uint8_data[i] = (i % 128)
-        int16_data[i] = -(i % 32678)
-        uint16_data[i] = (i % 32678)
+        int16_data[i] = -(i % 32768)
+        uint16_data[i] = (i % 32768)
         int32_data[i] = -i
         uint32_data[i] = i
         int64_data[i] = -i
         uint64_data[i] = i
         float32_data[i] = fi
         float64_data[i] = fi
+        string_data[i] = 'foobarbahblat'
 
     grp.write_times(time)
     grp.write("int8", 0, int8_data)
@@ -167,6 +169,7 @@ def test_group_setup(grp, nsamp):
     grp.write("uint64", 0, uint64_data)
     grp.write("float32", 0, float32_data)
     grp.write("float64", 0, float64_data)
+    grp.write("string", 0, string_data)
 
     return
 
@@ -184,20 +187,22 @@ def test_group_verify(grp, nsamp):
     uint64_data_check = np.zeros(nsamp, dtype=np.uint64)
     float32_data_check = np.zeros(nsamp, dtype=np.float32)
     float64_data_check = np.zeros(nsamp, dtype=np.float64)
+    string_data_check = np.zeros(nsamp, dtype='S64')
 
     for i in range(nsamp):
         fi = float(i)
         time_check[i] = fi * 0.001
         int8_data_check[i] = -(i % 128)
         uint8_data_check[i] = (i % 128)
-        int16_data_check[i] = -(i % 32678)
-        uint16_data_check[i] = (i % 32678)
+        int16_data_check[i] = -(i % 32768)
+        uint16_data_check[i] = (i % 32768)
         int32_data_check[i] = -i
         uint32_data_check[i] = i
         int64_data_check[i] = -i
         uint64_data_check[i] = i
         float32_data_check[i] = fi
         float64_data_check[i] = fi
+        string_data_check[i] = 'foobarbahblat'
 
     time = grp.read_times()
     int8_data = grp.read("int8", 0, nsamp)
@@ -210,6 +215,7 @@ def test_group_verify(grp, nsamp):
     uint64_data = grp.read("uint64", 0, nsamp)
     float32_data = grp.read("float32", 0, nsamp)
     float64_data = grp.read("float64", 0, nsamp)
+    string_data = grp.read("string", 0, nsamp)
 
     nt.assert_equal(int8_data, int8_data_check)
     nt.assert_equal(uint8_data, uint8_data_check)
@@ -219,6 +225,7 @@ def test_group_verify(grp, nsamp):
     nt.assert_equal(uint32_data, uint32_data_check)
     nt.assert_equal(int64_data, int64_data_check)
     nt.assert_equal(uint64_data, uint64_data_check)
+    nt.assert_equal(string_data, string_data_check)
 
     nt.assert_almost_equal(float32_data, float32_data_check)
     nt.assert_almost_equal(float64_data, float64_data_check)
@@ -339,7 +346,7 @@ def run(tmpdir=None):
 
     vol = Volume(volpath, AccessMode.read)
     test_volume_verify(vol, nblock, nsamp)
-    vol.info()
+    #vol.info()
 
     print("   PASS")
 
@@ -351,8 +358,6 @@ def test_mpi_volume_setup(vol, nblock, nsamp):
 
     rt = vol.root()
     rt.clear()
-
-    print(vol.comm())
 
     rank = vol.comm().rank
 
@@ -404,7 +409,7 @@ def run_mpi(tmpdir=None):
 
     vol = MPIVolume(comm, volpath, AccessMode.read)
     test_volume_verify(vol, nblock, nsamp)
-    vol.info()
+    #vol.info()
 
     if comm.rank == 0:
         print("   PASS")

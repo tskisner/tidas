@@ -28,9 +28,9 @@ static void reprint(PyObject *obj) {
 }
 
 MPI_Comm tidas_mpi_extract_comm (py::object & pycomm) {
-    std::cerr << "ptr = " << pycomm.ptr() << std::endl;
+    //std::cerr << "ptr = " << pycomm.ptr() << std::endl;
     PyObject * pp = pycomm.ptr();
-    reprint(pp);
+    //reprint(pp);
 
     //MPI_Comm * comm = PyMPIComm_Get(pp);
     MPI_Comm * comm = (&((struct PyMPICommObject *)pp)->ob_mpi);

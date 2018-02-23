@@ -46,47 +46,50 @@ tidas::data_type numpy_format_to_tidas(std::string const & format) {
     }
 }
 
-py::buffer_info tidas_buffer_info(tidas::data_type typ, ssize_t len) {
+
+std::string tidas_format_descr(tidas::data_type typ) {
     std::string format;
-    ssize_t itemsize;
     if (typ == tidas::data_type::float64) {
         format = "d";
-        itemsize = sizeof(double);
     } else if (typ == tidas::data_type::float32) {
         format = "f";
-        itemsize = sizeof(float);
     } else if (typ == tidas::data_type::int64) {
         format = "l";
-        itemsize = sizeof(int64_t);
     } else if (typ == tidas::data_type::uint64) {
         format = "L";
-        itemsize = sizeof(uint64_t);
     } else if (typ == tidas::data_type::int32) {
         format = "i";
-        itemsize = sizeof(int32_t);
     } else if (typ == tidas::data_type::uint32) {
         format = "I";
-        itemsize = sizeof(uint32_t);
     } else if (typ == tidas::data_type::int16) {
         format = "h";
-        itemsize = sizeof(int16_t);
     } else if (typ == tidas::data_type::uint16) {
         format = "H";
-        itemsize = sizeof(uint16_t);
     } else if (typ == tidas::data_type::int8) {
         format = "b";
-        itemsize = sizeof(int8_t);
     } else if (typ == tidas::data_type::uint8) {
         format = "B";
-        itemsize = sizeof(uint8_t);
     } else if (typ == tidas::data_type::string) {
         std::ostringstream o;
         o << "S" << tidas::backend_string_size;
         format = o.str();
-        itemsize = tidas::backend_string_size;
     }
-    py::buffer_info ret(nullptr, itemsize, format, 1, {len}, {1});
-    return ret;
+    return format;
+}
+
+
+py::array tidas_numpy_array(tidas::data_type typ, ssize_t len) {
+    std::string format = tidas_format_descr(typ);
+    // The numpy dtype format for this array
+    py::dtype dt(format);
+    // pybind11 does not let us easily control the creation flags of numpy
+    // arrays allocated directly.  In particular, it does not let us set the
+    // flags for contiguous and aligned memory.  Instead, we first allocate a
+    // zero-size array (so memory buffer is NULL).  Then we resize the array,
+    // which triggers allocation within numpy that "does the right thing".
+    py::array nparray(dt, {0}, {1});
+    nparray.resize( {len} );
+    return nparray;
 }
 
 
@@ -280,11 +283,16 @@ PYBIND11_MODULE(_pytidas, m) {
             }
             tidas::schema schm = self.schema_get();
             tidas::field fld = schm.field_get(field_name);
-            py::buffer_info info = tidas_buffer_info(fld.type, ndata);
             // Create a numpy array and fill it
-            py::array data(info);
-            self.read_field_astype ( field_name, offset, ndata, fld.type,
-                data.mutable_data() );
+            py::array data = tidas_numpy_array(fld.type, ndata);
+            if ( fld.type == tidas::data_type::string ) {
+                char * cp = static_cast < char * > (data.mutable_data());
+                self.read_field_astype ( field_name, offset, ndata, fld.type,
+                    static_cast < void * > (&cp) );
+            } else {
+                self.read_field_astype ( field_name, offset, ndata, fld.type,
+                    data.mutable_data() );
+            }
             return data;
         })
         .def("write", [](tidas::group & self, std::string field_name,
@@ -302,17 +310,21 @@ PYBIND11_MODULE(_pytidas, m) {
             // Get information about the field
             tidas::schema schm = self.schema_get();
             tidas::field fld = schm.field_get(field_name);
-            py::buffer_info fldinfo = tidas_buffer_info(fld.type, ndata);
-            // std::cerr << "write field " << field_name << std::endl;
-            // std::cerr << "  buffer type = " << info.format << std::endl;
-            // std::cerr << "  field type = " << fldinfo.format << std::endl;
-            // std::cerr << "  " << ndata << " samples" << std::endl;
-            // Check compatible types
-            if (info.format != fldinfo.format) {
+            std::string format = tidas_format_descr(fld.type);
+            // Check compatible types (strings are special, since the numpy
+            // format code is not the same as what is stored in the pybind11
+            // format descriptor).
+            if ((fld.type != tidas::data_type::string) && (info.format != format)) {
                 throw std::runtime_error("Incompatible buffer data type");
             }
-            self.write_field_astype ( field_name, offset, ndata, fld.type,
-                info.ptr );
+            if ( fld.type == tidas::data_type::string ) {
+                char * cp = static_cast < char * > (info.ptr);
+                self.write_field_astype ( field_name, offset, ndata, fld.type,
+                    static_cast < void * > (&cp) );
+            } else {
+                self.write_field_astype ( field_name, offset, ndata, fld.type,
+                    info.ptr );
+            }
             return;
         });
 

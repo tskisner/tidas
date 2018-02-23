@@ -217,6 +217,9 @@ void tidas::mpi_volume::open ( ) {
         // }
     }
 
+    // We disable the index here to avoid generating spurious transactions.
+    loc_.idx.reset();
+
     // copy the root block before broadcast, so that we don't invalidate
     // existing pointers to the root.
 
@@ -225,18 +228,15 @@ void tidas::mpi_volume::open ( ) {
     // broadcast all objects (does not send index)
     mpi_bcast ( comm_, rootcopy, 0 );
 
-    // copy result back to the root member variable
+    // Copy result back to the root member variable.
     root_.copy ( rootcopy, "", root_loc ( loc_ ) );
 
     // broadcast transactions
     mpi_bcast ( comm_, hist, 0 );
 
     // replay transactions into local DB
-    // std::cout << "DBG: mpi_volume open replaying:" << std::endl;
-    // for ( auto const & h : hist ) {
-    //     h.print ( std::cout );
-    // }
 
+    localdb_->history_clear();
     localdb_->replay ( hist );
 
     // recursively set active DB to in-memory one
@@ -244,14 +244,6 @@ void tidas::mpi_volume::open ( ) {
     root_.relocate ( root_loc ( loc_ ) );
 
     int ret = MPI_Barrier ( comm_ );
-
-    // for ( size_t i = 0; i < nproc_; ++i ) {
-    //     if ( rank_ == i ) {
-    //         std::cout << "DBG OPEN:  proc " << i << " has blocks:" << std::endl;
-    //         root_.info ( "/", true, 0 );
-    //     }
-    //     ret = MPI_Barrier ( comm_ );
-    // }
 
     return;
 }

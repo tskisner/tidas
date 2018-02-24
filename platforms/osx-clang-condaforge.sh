@@ -2,7 +2,7 @@
 #
 # This config assumes use of clang and Anaconda python,
 # using mpich, mpi4py, HDF5 from the conda-forge channel.
-# 
+#
 # 1.  Install miniconda / anaconda
 #
 # 2.  Edit ~/.condarc to look like this:
@@ -23,16 +23,26 @@
 
 OPTS="$@"
 
-condabin=$(dirname $(which python))
+cmake \
+-DCMAKE_C_COMPILER="clang" \
+-DCMAKE_CXX_COMPILER="clang++" \
+-DCMAKE_C_FLAGS="-O3 -g -fPIC" \
+-DCMAKE_CXX_FLAGS="-O3 -g -fPIC" \
+-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+${OPTS} \
+..
 
-export CC=clang
-export CXX=clang++
-export MPICC=mpicc
-export MPICXX=mpicxx
-export CFLAGS="-O3 -g"
-export CXXFLAGS="-O3 -g"
-
-./configure ${OPTS} \
---disable-fortran \
---with-hdf5=${condabin}/h5cc
-
+#
+# condabin=$(dirname $(which python))
+#
+# export CC=clang
+# export CXX=clang++
+# export MPICC=mpicc
+# export MPICXX=mpicxx
+# export CFLAGS="-O3 -g"
+# export CXXFLAGS="-O3 -g"
+#
+# ./configure ${OPTS} \
+# --disable-fortran \
+# --with-hdf5=${condabin}/h5cc
+#

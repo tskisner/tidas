@@ -2,16 +2,10 @@
 
 OPTS="$@"
 
-export CC=icc
-export CXX=icpc
-export FC=ifort
-export MPICC=cc
-export MPICXX=CC
-export MPIFC=ftn
-export CFLAGS="-O3 -g -fPIC -xmic-avx512 -pthread"
-export CXXFLAGS="-O3 -g -fPIC -xmic-avx512 -pthread"
-export FCFLAGS="-O3 -g -fPIC -xmic-avx512 -pthread"
-
-./configure ${OPTS} \
-    --build x86_64-pc-linux-gnu --host x86_64-unknown-linux-gnu
-
+cmake \
+-DCMAKE_C_COMPILER="cc" \
+-DCMAKE_CXX_COMPILER="CC" \
+-DCMAKE_C_FLAGS="-O3 -g -fPIC -xmic-avx512 -pthread" \
+-DCMAKE_CXX_FLAGS="-O3 -g -fPIC -xmic-avx512 -pthread" \
+${OPTS} \
+..

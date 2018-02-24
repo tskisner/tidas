@@ -2,12 +2,10 @@
 
 OPTS="$@"
 
-export CC=icc
-export CXX=icpc
-export MPICC=cc
-export MPICXX=CC
-export CFLAGS="-O3 -g -fPIC -xavx -pthread"
-export CXXFLAGS="-O3 -g -fPIC -xavx -pthread"
-
-./configure ${OPTS}
-
+cmake \
+-DCMAKE_C_COMPILER="cc" \
+-DCMAKE_CXX_COMPILER="CC" \
+-DCMAKE_C_FLAGS="-O3 -g -fPIC -xavx -pthread" \
+-DCMAKE_CXX_FLAGS="-O3 -g -fPIC -xavx -pthread" \
+${OPTS} \
+..

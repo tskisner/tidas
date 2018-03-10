@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -163,7 +163,7 @@ void tidas::indexdb_sql::open () {
 
         if ( size > 0 ) {
             // just open
-            
+
             if ( mode_ == access_mode::write ) {
                 flags = flags | SQLITE_OPEN_READWRITE;
             } else {
@@ -222,73 +222,73 @@ void tidas::indexdb_sql::open () {
 
         command.str("");
         command << "INSERT OR REPLACE INTO dct_grp ( parent, data, types ) VALUES ( @parent, @data, @types );";
-        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
+        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(),
             command.str().size() + 1, &(stmt_dictgroup_ins_), NULL );
         SQLERR( ret != SQLITE_OK, "dict group insert prepare" );
 
         command.str("");
         command << "INSERT OR REPLACE INTO dct_intrvl ( parent, data, types ) VALUES ( @parent, @data, @types );";
-        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
+        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(),
             command.str().size() + 1, &(stmt_dictinterval_ins_), NULL );
         SQLERR( ret != SQLITE_OK, "dict interval insert prepare" );
 
         command.str("");
         command << "DELETE FROM dct_grp WHERE parent = @parent;";
-        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
+        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(),
             command.str().size() + 1, &(stmt_dictgroup_del_), NULL );
         SQLERR( ret != SQLITE_OK, "dict group delete prepare" );
 
         command.str("");
         command << "DELETE FROM dct_intrvl WHERE parent = @parent;";
-        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
+        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(),
             command.str().size() + 1, &(stmt_dictinterval_del_), NULL );
         SQLERR( ret != SQLITE_OK, "dict interval delete prepare" );
 
         command.str("");
         command << "INSERT OR REPLACE INTO schm ( parent, fields ) VALUES ( @parent, @fields );";
-        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
+        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(),
             command.str().size() + 1, &(stmt_schema_ins_), NULL );
         SQLERR( ret != SQLITE_OK, "schema insert prepare" );
 
         command.str("");
         command << "DELETE FROM schm WHERE parent = @parent;";
-        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
+        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(),
             command.str().size() + 1, &(stmt_schema_del_), NULL );
         SQLERR( ret != SQLITE_OK, "schema delete prepare" );
 
         command.str("");
         command << "INSERT OR REPLACE INTO grp ( path, parent, nsamp, start, stop, counts ) VALUES ( @path, @parent, @nsamp, @start, @stop, @counts );";
-        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
+        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(),
             command.str().size() + 1, &(stmt_group_ins_), NULL );
         SQLERR( ret != SQLITE_OK, "group insert prepare" );
 
         command.str("");
         command << "DELETE FROM grp WHERE path = @path;";
-        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
+        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(),
             command.str().size() + 1, &(stmt_group_del_), NULL );
         SQLERR( ret != SQLITE_OK, "group delete prepare" );
 
         command.str("");
         command << "INSERT OR REPLACE INTO intrvl ( path, parent, size ) VALUES ( @path, @parent, @size );";
-        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
+        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(),
             command.str().size() + 1, &(stmt_interval_ins_), NULL );
         SQLERR( ret != SQLITE_OK, "interval insert prepare" );
 
         command.str("");
         command << "DELETE FROM intrvl WHERE path = @path;";
-        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
+        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(),
             command.str().size() + 1, &(stmt_interval_del_), NULL );
         SQLERR( ret != SQLITE_OK, "interval delete prepare" );
 
         command.str("");
         command << "INSERT OR REPLACE INTO blk ( path, parent ) VALUES ( @path, @parent );";
-        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
+        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(),
             command.str().size() + 1, &(stmt_block_ins_), NULL );
         SQLERR( ret != SQLITE_OK, "block insert prepare" );
 
         command.str("");
         command << "DELETE FROM blk WHERE path = @path;";
-        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), 
+        ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(),
             command.str().size() + 1, &(stmt_block_del_), NULL );
         SQLERR( ret != SQLITE_OK, "block delete prepare" );
 
@@ -439,7 +439,7 @@ void tidas::indexdb_sql::ops_dict ( backend_path loc, indexdb_op op, map < strin
             stmt = stmt_dictgroup_ins_;
 
         } else {
-            
+
             pos = dpath.find( block_fs_intervals_dir );
             if ( pos != string::npos ) {
 
@@ -459,7 +459,7 @@ void tidas::indexdb_sql::ops_dict ( backend_path loc, indexdb_op op, map < strin
             cereal::PortableBinaryOutputArchive outdata ( datastr );
             outdata ( data );
         }
-        
+
         ret = sqlite3_bind_blob ( stmt, 2, (void*)datastr.str().c_str(), datastr.str().size() + 1, SQLITE_TRANSIENT );
         SQLERR( ret != SQLITE_OK, "dict bind data" );
 
@@ -767,7 +767,7 @@ void tidas::indexdb_sql::ops_block ( backend_path loc, indexdb_op op ) {
 
         ret = sqlite3_bind_text ( stmt, 1, dpath.c_str(), -1, SQLITE_TRANSIENT );
         SQLERR( ret != SQLITE_OK, "block bind path" );
-        
+
     } else {
         TIDAS_THROW( "unknown indexdb block operation" );
     }
@@ -1523,7 +1523,7 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
                 chloc = loc;
                 chloc.path = chloc.path + path_sep + chloc.name;
                 chloc.name = c;
-                
+
                 tree_node( chloc, filt_pass, trans );
             } else {
                 //cerr << "tree_node  rejecting block " << c << endl;
@@ -1546,3 +1546,4 @@ void tidas::indexdb_sql::tree ( backend_path root, std::string const & filter, s
 }
 
 
+CEREAL_REGISTER_TYPE( tidas::indexdb_sql );

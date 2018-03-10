@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -703,14 +703,14 @@ void tidas::indexdb_mem::replay ( deque < indexdb_transaction > const & trans ) 
     return;
 }
 
+CEREAL_REGISTER_DYNAMIC_INIT(tidas)
 
-
+CEREAL_REGISTER_TYPE( tidas::indexdb_object );
 CEREAL_REGISTER_TYPE( tidas::indexdb_dict );
 CEREAL_REGISTER_TYPE( tidas::indexdb_schema );
 CEREAL_REGISTER_TYPE( tidas::indexdb_group );
 CEREAL_REGISTER_TYPE( tidas::indexdb_intervals );
 CEREAL_REGISTER_TYPE( tidas::indexdb_block );
 
-
-
-
+CEREAL_REGISTER_TYPE( tidas::indexdb );
+CEREAL_REGISTER_TYPE( tidas::indexdb_mem );

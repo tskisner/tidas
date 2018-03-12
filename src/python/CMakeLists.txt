@@ -13,8 +13,12 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# Hardcode this to "lib" for now, since lib32/lib64 is a pain
+# to use on many systems.
+#set(PYTHON_SITE
+#    "${CMAKE_INSTALL_LIBDIR}/python${PYTHON_MAJORMINOR}/site-packages")
 set(PYTHON_SITE
-    "${CMAKE_INSTALL_LIBDIR}/python${PYTHON_MAJORMINOR}/site-packages")
+    "lib/python${PYTHON_MAJORMINOR}/site-packages")
 
 # Create a module for the serial tidas library
 

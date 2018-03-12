@@ -40,4 +40,8 @@ target_link_libraries(tidas ${HDF5_C_LIBRARIES})
 
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-install(TARGETS tidas DESTINATION ${CMAKE_INSTALL_LIBDIR})
+# Hardcode this to "lib" for now, since lib32/lib64 is a pain
+# to use on many systems.
+#install(TARGETS tidas DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS tidas DESTINATION lib)
+

@@ -146,6 +146,9 @@ namespace tidas {
             /// Clear all elements of the dictionary.
             void clear();
 
+            /// Return a list of keys in the dictionary.
+            std::vector < std::string > keys() const;
+
             /// Return a const reference to the underlying data map.
             std::map < std::string, std::string > const & data() const;
 

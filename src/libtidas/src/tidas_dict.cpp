@@ -189,6 +189,15 @@ void tidas::dict::clear () {
 }
 
 
+std::vector < std::string > tidas::dict::keys() const {
+    std::vector < std::string > ret;
+    for ( auto const & it : data_ ) {
+        ret.push_back(it.first);
+    }
+    return ret;
+}
+
+
 std::map < std::string, std::string > const & tidas::dict::data() const {
     return data_;
 }

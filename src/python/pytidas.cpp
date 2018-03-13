@@ -156,6 +156,7 @@ PYBIND11_MODULE(_pytidas, m) {
     py::class_ < tidas::dict > (m, "Dictionary")
         .def(py::init<>())
         .def("clear", &tidas::dict::clear)
+        .def("keys", &tidas::dict::keys)
         .def("get_int8", &tidas::dict::get<int8_t>)
         .def("get_uint8", &tidas::dict::get<uint8_t>)
         .def("get_int16", &tidas::dict::get<int16_t>)

@@ -35,9 +35,13 @@ TIDAS uses cmake to build and install both the compiled code and the python bind
     %> cmake ..
     %> make -j 4
 
-In practice, there are likely other options you want to pass to cmake....
+In practice, there are likely other options you want to pass to cmake.  The "platforms" directory contains several examples of running cmake.  For example, to use the ubuntu gcc example and install to $HOME/software, one could do::
 
-
+    %> mkdir build
+    %> cd build
+    %> ../platforms/ubuntu-gcc.sh -DCMAKE_INSTALL_PREFIX=$HOME/software
+    %> make -j 4
+    %> make install
 
 
 Testing the Installation
@@ -53,10 +57,10 @@ and can test the MPI compiled library with (your command for launching MPI progr
 
 You can test the Python bindings in a similar way::
 
-    %> python -c "import tidas; tidas.test()"
+    %> python -c "import tidas.test; tidas.test.run()"
 
 and::
 
-    %> mpirun -np 4 python -c "import tidas; tidas.test_mpi()"
+    %> mpirun -np 4 python -c "import tidas.test; tidas.test.run_mpi()"
 
 Some of the above commands will create temporary output directories in your current working directory.

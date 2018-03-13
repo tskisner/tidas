@@ -1,6 +1,6 @@
 ##
 ##  TImestream DAta Storage (TIDAS)
-##  Copyright (c) 2014-2017, all rights reserved.  Use of this source code
+##  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
 ##  is governed by a BSD-style license that can be found in the top-level
 ##  LICENSE file.
 ##
@@ -13,4 +13,5 @@ timestreams.
 from __future__ import absolute_import, division, print_function
 
 from ._pytidas import (DataType, BackendType, CompressionType, AccessMode,
-    Dictionary, Intrvl, Intervals, Field, Schema, Group, Block, Volume)
+    LinkType, ExecOrder, Dictionary, Intrvl, Intervals, Field, Schema, Group,
+    Block, Volume)

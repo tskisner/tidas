@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -47,7 +47,7 @@ namespace tidas {
     class schema_backend {
 
         public :
-            
+
             schema_backend () {}
             virtual ~schema_backend () {}
 
@@ -63,7 +63,7 @@ namespace tidas {
     class schema_backend_hdf5 : public schema_backend {
 
         public :
-            
+
             schema_backend_hdf5 ();
             ~schema_backend_hdf5 ();
             schema_backend_hdf5 ( schema_backend_hdf5 const & other );
@@ -81,7 +81,7 @@ namespace tidas {
     class schema_backend_getdata : public schema_backend {
 
         public :
-            
+
             schema_backend_getdata ();
             ~schema_backend_getdata ();
             schema_backend_getdata ( schema_backend_getdata const & other );
@@ -103,7 +103,7 @@ namespace tidas {
             schema ();
 
             schema ( field_list const & fields );
-            
+
             ~schema ();
             schema & operator= ( schema const & other );
 
@@ -128,13 +128,13 @@ namespace tidas {
             // data ops
 
             void clear ();
-            
+
             void field_add ( field const & fld );
-            
+
             void field_del ( std::string const & name );
-            
+
             field const & field_get ( std::string const & name ) const;
-            
+
             field_list const & fields () const;
 
             template < class Archive >

@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -97,7 +97,7 @@ void tidas::intervals_backend_hdf5::read ( backend_path const & loc, size_t & si
     // clean up
 
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
-    status = H5Fclose ( file ); 
+    status = H5Fclose ( file );
     //status = H5close();
 
 #else
@@ -105,7 +105,7 @@ void tidas::intervals_backend_hdf5::read ( backend_path const & loc, size_t & si
     TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
 
 #endif
-    
+
     return;
 }
 
@@ -130,14 +130,14 @@ void tidas::intervals_backend_hdf5::write ( backend_path const & loc, size_t con
     hid_t fapl = H5Pcreate ( H5P_FILE_ACCESS );
     H5Pset_fclose_degree ( fapl, H5F_CLOSE_STRONG );
     hid_t file = H5Fcreate ( fspath.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, fapl );
-    H5Pclose ( fapl );    
+    H5Pclose ( fapl );
 
     // create time dataset
 
     hsize_t dims[1];
     dims[0] = 2 * size;
 
-    hid_t dataspace = H5Screate_simple ( 1, dims, NULL ); 
+    hid_t dataspace = H5Screate_simple ( 1, dims, NULL );
 
     hid_t datatype = H5Tcopy ( H5T_NATIVE_DOUBLE );
 
@@ -153,7 +153,7 @@ void tidas::intervals_backend_hdf5::write ( backend_path const & loc, size_t con
 
     // create index dataset
 
-    dataspace = H5Screate_simple ( 1, dims, NULL ); 
+    dataspace = H5Screate_simple ( 1, dims, NULL );
 
     datatype = H5Tcopy ( H5T_NATIVE_INT64 );
 
@@ -185,7 +185,7 @@ void tidas::intervals_backend_hdf5::write ( backend_path const & loc, size_t con
     TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
 
 #endif
-    
+
     return;
 }
 
@@ -325,7 +325,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
     // close file
 
     status = H5Fflush ( file, H5F_SCOPE_GLOBAL );
-    status = H5Fclose ( file ); 
+    status = H5Fclose ( file );
     //status = H5close();
 
     // copy buffers into intervals
@@ -344,7 +344,7 @@ void tidas::intervals_backend_hdf5::read_data ( backend_path const & loc, interv
     TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
 
 #endif
-    
+
     return;
 }
 
@@ -426,8 +426,6 @@ void tidas::intervals_backend_hdf5::write_data ( backend_path const & loc, inter
     TIDAS_THROW( "TIDAS not compiled with HDF5 support" );
 
 #endif
-    
+
     return;
 }
-
-

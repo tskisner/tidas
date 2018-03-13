@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -62,7 +62,7 @@ void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & f
     hid_t dataset = H5Dopen ( file, loc.meta.c_str(), H5P_DEFAULT );
 
     hid_t dataspace = H5Dget_space ( dataset );
-    
+
     hid_t datatype = H5Dget_type ( dataset );
 
     int ndims = H5Sget_simple_extent_ndims ( dataspace );
@@ -74,7 +74,7 @@ void tidas::schema_backend_hdf5::read ( backend_path const & loc, field_list & f
     }
 
     hsize_t dims[2];
-    
+
     hsize_t maxdims[2];
 
     int ret = H5Sget_simple_extent_dims ( dataspace, dims, maxdims );
@@ -171,7 +171,7 @@ void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list co
     dims[0] = fields.size();
     dims[1] = 3;
 
-    hid_t dataspace = H5Screate_simple ( 2, dims, NULL ); 
+    hid_t dataspace = H5Screate_simple ( 2, dims, NULL );
 
     hid_t datatype = hdf5_data_type ( data_type::string );
 
@@ -179,13 +179,13 @@ void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list co
 
     char * buffer = mem_alloc < char > ( 3 * fields.size() * backend_string_size );
 
-    size_t off = 0;    
+    size_t off = 0;
 
     for ( field_list :: const_iterator it = fields.begin(); it != fields.end(); ++it ) {
 
         strncpy ( &(buffer[ off ]), it->name.c_str(), backend_string_size );
         off += backend_string_size;
-        
+
         strncpy ( &(buffer[ off ]), it->units.c_str(), backend_string_size );
         off += backend_string_size;
 
@@ -221,6 +221,3 @@ void tidas::schema_backend_hdf5::write ( backend_path const & loc, field_list co
 
     return;
 }
-
-
-

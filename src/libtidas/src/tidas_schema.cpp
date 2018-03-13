@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -174,7 +174,7 @@ void tidas::schema::flush () const {
 }
 
 
-void tidas::schema::copy ( schema const & other, string const & filter, backend_path const & loc ) {    
+void tidas::schema::copy ( schema const & other, string const & filter, backend_path const & loc ) {
 
     // extract filters
 
@@ -261,5 +261,3 @@ field const & tidas::schema::field_get ( string const & name ) const {
 field_list const & tidas::schema::fields () const {
     return fields_;
 }
-
-

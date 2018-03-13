@@ -1,6 +1,6 @@
 /*
   TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2017, all rights reserved.  Use of this source code 
+  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
   is governed by a BSD-style license that can be found in the top-level
   LICENSE file.
 */
@@ -274,7 +274,7 @@ TEST( utilstest, filter ) {
                     + string("w") + submatch_assign + string("z") + submatch_end
                     + submatch_end;
 
-    filt = submatch_begin 
+    filt = submatch_begin
             + string("foo1") + submatch_assign + string("bar1") + submatch_sep
             + string("foo2") + submatch_assign + string("bar2") + nested + submatch_sep
             + string("foo3") + submatch_assign + string("bar3") + submatch_sep
@@ -287,7 +287,7 @@ TEST( utilstest, filter ) {
 
     check = "bar2" + nested;
     EXPECT_EQ( check, filts[ "foo2" ] );
-    
+
     EXPECT_EQ( "bar3", filts[ "foo3" ] );
 
     check = "bar4" + nested;
@@ -341,7 +341,7 @@ TEST( utilstest, filter ) {
     EXPECT_FALSE( stop );
 
     EXPECT_EQ( blksub, local );
-    
+
     string temp = sub;
     filter_block ( temp, local, sub, stop );
     EXPECT_EQ( blkcheck2, sub );
@@ -369,7 +369,3 @@ TEST( utilstest, filter ) {
     EXPECT_TRUE( stop );
 
 }
-
-
-
-

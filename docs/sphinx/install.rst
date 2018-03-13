@@ -25,33 +25,23 @@ For mpi4py, ensure that this package is compatible with the MPI C++ compiler
 used during TIDAS installation.  There are obviously several ways to meet these python requirements.  Your OS package manager may already provide these, or you might use an external Python distribution (e.g. Anaconda).
 
 
-Using Configure
+CMake Build System
 -----------------------
 
-TIDAS uses autotools to configure, build, and install both the compiled code
-and the python tools.  If you are running from a git checkout (instead of a
-distribution tarball), then first do::
+TIDAS uses cmake to build and install both the compiled code and the python bindings.  You should use an out-of-source build.  For example, make a top-level "build" directory and run cmake from there::
 
-    %> ./autogen.sh
+    %> mkdir build
+    %> cd build
+    %> cmake ..
+    %> make -j 4
 
-Now run configure::
+In practice, there are likely other options you want to pass to cmake.  The "platforms" directory contains several examples of running cmake.  For example, to use the ubuntu gcc example and install to $HOME/software, one could do::
 
-    %> ./configure --prefix=/path/to/install
-
-**NOTE**: if you have both a "python" and a "python3" executable (and they are different), and you want to use python3, be sure to specify the python to use at configure time::
-
-    %> PYTHON=/usr/bin/python3 ./configure --prefix=/path/to/install
-
-Run configure with the "--help" option to see all available options.  See the top-level "platforms" directory for other examples of running the
-configure script.  Now build and install the tools::
-
-    %> make
+    %> mkdir build
+    %> cd build
+    %> ../platforms/ubuntu-gcc.sh -DCMAKE_INSTALL_PREFIX=$HOME/software
+    %> make -j 4
     %> make install
-
-In order to use the installed tools, you must make sure that the installed
-location has been added to the search paths for your shell.  For example,
-the "<prefix>/bin" directory should be in your PATH and the python install
-location "<prefix>/lib/pythonX.X/site-packages" should be in your PYTHONPATH.
 
 
 Testing the Installation
@@ -67,11 +57,10 @@ and can test the MPI compiled library with (your command for launching MPI progr
 
 You can test the Python bindings in a similar way::
 
-    %> python -c "import tidas; tidas.test()"
+    %> python -c "import tidas.test; tidas.test.run()"
 
 and::
 
-    %> mpirun -np 4 python -c "import tidas; tidas.test_mpi()"
+    %> mpirun -np 4 python -c "import tidas.test; tidas.test.run_mpi()"
 
 Some of the above commands will create temporary output directories in your current working directory.
-

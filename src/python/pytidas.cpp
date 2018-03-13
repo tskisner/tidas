@@ -178,7 +178,27 @@ PYBIND11_MODULE(_pytidas, m) {
         .def("put_uint64", &tidas::dict::put<uint64_t>)
         .def("put_float32", &tidas::dict::put<float>)
         .def("put_float64", &tidas::dict::put<double>)
-        .def("put_string", &tidas::dict::put<std::string>);
+        .def("put_string", &tidas::dict::put<std::string>)
+        .def(py::pickle(
+            [](tidas::dict const & p) { // __getstate__
+                /* Return a serialized string representation */
+                std::ostringstream sstrm;
+                {
+                    cereal::PortableBinaryOutputArchive outarch ( sstrm );
+                    outarch ( p );
+                }
+                return py::bytes(sstrm.str());
+            },
+            [](py::bytes t) { // __setstate__
+                tidas::dict p;
+                std::istringstream sstrm ( t.cast < std::string > () );
+                {
+                    cereal::PortableBinaryInputArchive inarch ( sstrm );
+                    inarch ( p );
+                }
+                return p;
+            }
+        ));
 
 
     py::class_ < tidas::intrvl > (m, "Intrvl")
@@ -188,7 +208,27 @@ PYBIND11_MODULE(_pytidas, m) {
         .def_readwrite("start", &tidas::intrvl::start)
         .def_readwrite("stop", &tidas::intrvl::stop)
         .def_readwrite("first", &tidas::intrvl::first)
-        .def_readwrite("last", &tidas::intrvl::last);
+        .def_readwrite("last", &tidas::intrvl::last)
+        .def(py::pickle(
+            [](tidas::intrvl const & p) { // __getstate__
+                /* Return a serialized string representation */
+                std::ostringstream sstrm;
+                {
+                    cereal::PortableBinaryOutputArchive outarch ( sstrm );
+                    outarch ( p );
+                }
+                return py::bytes(sstrm.str());
+            },
+            [](py::bytes t) { // __setstate__
+                tidas::intrvl p;
+                std::istringstream sstrm ( t.cast < std::string > () );
+                {
+                    cereal::PortableBinaryInputArchive inarch ( sstrm );
+                    inarch ( p );
+                }
+                return p;
+            }
+        ));
 
 
     py::class_ < tidas::intervals > (m, "Intervals")

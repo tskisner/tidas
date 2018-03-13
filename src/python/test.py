@@ -128,6 +128,18 @@ def test_intervals_verify(ilist):
         assert ilist[i].last == comp[i].last
 
 
+def test_intervals_pickle():
+    try:
+        import cPickle as pickle # Use cPickle on Python 2.7
+    except ImportError:
+        import pickle
+    ilist = test_intervals_setup()
+    pl = pickle.dumps(ilist, -1)
+    check = pickle.loads(pl)
+    test_intervals_verify(check)
+    return
+
+
 def test_group_setup(grp, nsamp):
 
     time = np.zeros(nsamp, dtype=np.float64)
@@ -329,6 +341,7 @@ def run(tmpdir=None):
 
     pt = test_intervals_setup()
     test_intervals_verify(pt)
+    test_intervals_pickle()
 
     print("   PASS")
 

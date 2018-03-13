@@ -41,6 +41,22 @@ namespace tidas {
             /// Last sample index in the interval.
             index_type last;
 
+            template < class Archive >
+            void save ( Archive & ar ) const {
+                ar ( CEREAL_NVP( start ) );
+                ar ( CEREAL_NVP( stop ) );
+                ar ( CEREAL_NVP( first ) );
+                ar ( CEREAL_NVP( last ) );
+            }
+
+            template < class Archive >
+            void load ( Archive & ar ) {
+                ar ( CEREAL_NVP( start ) );
+                ar ( CEREAL_NVP( stop ) );
+                ar ( CEREAL_NVP( first ) );
+                ar ( CEREAL_NVP( last ) );
+            }
+
     };
 
     /// Convenience typedef for a vector of intervals.

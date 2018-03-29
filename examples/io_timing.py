@@ -172,7 +172,7 @@ def group_setup(grp, ndet, nsamp):
         float64_data[i] = fi
         string_data[i] = 'foobarbahblat'
 
-    grp.write_times(time)
+    grp.write_times(0, time)
     grp.write("int8", 0, int8_data)
     grp.write("uint8", 0, uint8_data)
     grp.write("int16", 0, int16_data)
@@ -224,7 +224,7 @@ def group_verify(grp, ndet, nsamp):
         float64_data_check[i] = fi
         string_data_check[i] = 'foobarbahblat'
 
-    time = grp.read_times()
+    time = grp.read_times(0, nsamp)
     int8_data = grp.read("int8", 0, nsamp)
     uint8_data = grp.read("uint8", 0, nsamp)
     int16_data = grp.read("int16", 0, nsamp)

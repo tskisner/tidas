@@ -275,6 +275,9 @@ namespace tidas {
             /// The extrema values of the timestamp field.
             void range ( time_type & start, time_type & stop ) const;
 
+            /// Explicitly check timestamps and update group metadata.
+            void update_range ();
+
             /// Read a range of data from a field.  Store results to the bare
             /// memory address specified.
             template < class T >

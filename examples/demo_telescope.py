@@ -140,7 +140,7 @@ for year in ["2018",]:
             weather = tidas.Group(weather_schema, tidas.Dictionary(),
                 weather_daysamples)
             weather = db.group_add("weather", weather)
-            weather.write_times(np.linspace(daystartsec,
+            weather.write_times(0, np.linspace(daystartsec,
                 daystartsec + day_seconds, num=weather_daysamples))
 
             data = np.absolute(np.random.normal(loc=0.0, scale=5.0,
@@ -171,7 +171,7 @@ for year in ["2018",]:
 
             hk = tidas.Group(hk_schema, tidas.Dictionary(), hk_daysamples)
             hk = db.group_add("hk", hk)
-            hk.write_times(np.linspace(daystartsec,
+            hk.write_times(0, np.linspace(daystartsec,
                 daystartsec + day_seconds, num=hk_daysamples))
 
             data = np.random.normal(loc=273.0, scale=5.0,
@@ -187,7 +187,7 @@ for year in ["2018",]:
             pointing = tidas.Group(pointing_schema, tidas.Dictionary(),
                 pointing_daysamples)
             pointing = db.group_add("pointing", pointing)
-            pointing.write_times(np.linspace(daystartsec,
+            pointing.write_times(0, np.linspace(daystartsec,
                 daystartsec + day_seconds, num=pointing_daysamples))
 
             data = 2.0 * np.pi * np.random.random(
@@ -207,7 +207,7 @@ for year in ["2018",]:
             det = tidas.Group(det_schema, tidas.Dictionary(),
                 det_daysamples)
             det = db.group_add("detectors", det)
-            det.write_times(np.linspace(daystartsec,
+            det.write_times(0, np.linspace(daystartsec,
                 daystartsec + day_seconds, num=det_daysamples))
 
             for d in range(ndet):

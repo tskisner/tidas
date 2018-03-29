@@ -294,9 +294,8 @@ interval_list tidas::intervals::read_data () const {
 
 void tidas::intervals::write_data ( interval_list const & intr ) {
     if ( ! backend_ ) {
-        TIDAS_THROW( "intervals read_data:  backend not assigned" );
+        TIDAS_THROW( "intervals write_data:  backend not assigned" );
     }
-
     backend_->write_data ( loc_, intr );
     return;
 }

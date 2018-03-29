@@ -17,7 +17,6 @@ using namespace tidas;
 
 tidas::group::group () {
     size_ = 0;
-
     compute_counts();
     relocate ( loc_ );
 }
@@ -371,6 +370,8 @@ void tidas::group::resize ( index_type const & newsize ) {
         } else {
             TIDAS_THROW( "cannot resize group in read-only mode" );
         }
+    } else {
+        size_ = newsize;
     }
 
     return;
@@ -380,6 +381,37 @@ void tidas::group::resize ( index_type const & newsize ) {
 void tidas::group::range ( time_type & start, time_type & stop ) const {
     start = start_;
     stop = stop_;
+    return;
+}
+
+
+void tidas::group::update_range () {
+    std::vector < time_type > data(1);
+
+    read_field ( group_time_field, 0, data );
+    time_type newstart = data[0];
+
+    read_field ( group_time_field, (size_ - 1), data );
+    time_type newstop = data[0];
+
+    bool update = false;
+
+    if ( newstart < start_ ) {
+        start_ = newstart;
+        update = true;
+    }
+
+    if ( newstop > stop_ ) {
+        stop_ = newstop;
+        update = true;
+    }
+
+    if ( update ) {
+        backend_->update_range ( loc_, start_, stop_ );
+        if ( loc_.idx ) {
+            loc_.idx->update_group ( loc_, size_, start_, stop_, counts_ );
+        }
+    }
     return;
 }
 
@@ -544,48 +576,6 @@ void tidas::group::write_field_astype ( std::string const & field_name, index_ty
     return;
 }
 
-//
-// void tidas::group::read_field ( std::string const & field_name, index_type offset, index_type ndata, char ** data ) const {
-//     field check = schm_.field_get ( field_name );
-//     if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
-//         std::ostringstream o;
-//         o << "cannot read non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
-//         TIDAS_THROW( o.str().c_str() );
-//     }
-//     if ( offset + ndata > size_ ) {
-//         std::ostringstream o;
-//         o << "cannot read field " << field_name << ", samples " << offset << " - " << (offset+ndata-1) << " from group " << loc_.name << " (" << size_ << " samples)";
-//         TIDAS_THROW( o.str().c_str() );
-//     }
-//     if ( loc_.type != backend_type::none ) {
-//         backend_->read_field ( loc_, field_name, type_indx_.at( field_name ), offset, ndata, data );
-//     } else {
-//         TIDAS_THROW( "cannot read field- backend not assigned" );
-//     }
-//     return;
-// }
-//
-//
-// void tidas::group::write_field ( std::string const & field_name, index_type offset, index_type ndata, char * const * data ) {
-//     field check = schm_.field_get ( field_name );
-//     if ( ( check.name != field_name ) && ( field_name != group_time_field ) ) {
-//         std::ostringstream o;
-//         o << "cannot write non-existent field " << field_name << " from group " << loc_.path << "/" << loc_.name;
-//         TIDAS_THROW( o.str().c_str() );
-//     }
-//     if ( offset + ndata > size_ ) {
-//         std::ostringstream o;
-//         o << "cannot write field " << field_name << ", samples " << offset << " - " << (offset+ndata-1) << " to group " << loc_.name << " (" << size_ << " samples)";
-//         TIDAS_THROW( o.str().c_str() );
-//     }
-//     if ( loc_.type != backend_type::none ) {
-//         backend_->write_field ( loc_, field_name, type_indx_.at( field_name ), offset, ndata, data );
-//     } else {
-//         TIDAS_THROW( "cannot write field- backend not assigned" );
-//     }
-//     return;
-// }
-
 
 void tidas::group::read_field ( std::string const & field_name, index_type offset, std::vector < std::string > & data ) const {
     // create string buffer for read
@@ -633,26 +623,7 @@ void tidas::group::read_times ( std::vector < time_type > & data,
 void tidas::group::write_times ( index_type ndata, time_type const * data,
     index_type offset ) {
     write_field ( group_time_field, offset, ndata, data );
-
-    bool update = false;
-
-    if ( data[0] < start_ ) {
-        start_ = data[0];
-        update = true;
-    }
-
-    if ( data[ ndata - 1 ] > stop_ ) {
-        stop_ = data[ ndata - 1 ];
-        update = true;
-    }
-
-    if ( update ) {
-        backend_->update_range ( loc_, start_, stop_ );
-
-        if ( loc_.idx ) {
-            loc_.idx->update_group ( loc_, size_, start_, stop_, counts_ );
-        }
-    }
+    update_range ();
     return;
 }
 

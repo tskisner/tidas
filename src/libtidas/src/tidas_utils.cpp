@@ -388,6 +388,103 @@ std::string tidas::data_from_string < std::string > ( std::string const & str ) 
 }
 
 
+std::string tidas::data_to_string ( double const & val ) {
+    std::ostringstream o;
+    o.precision(18);
+    o.str("");
+    if ( ! ( o << std::scientific << val ) ) {
+        TIDAS_THROW( "cannot convert double data to string" );
+    }
+    return o.str();
+}
+
+
+std::string tidas::data_to_string ( float const & val ) {
+    std::ostringstream o;
+    o.precision(8);
+    o.str("");
+    if ( ! ( o << std::scientific << val ) ) {
+        TIDAS_THROW( "cannot convert float data to string" );
+    }
+    return o.str();
+}
+
+
+std::string tidas::data_to_string ( int64_t const & val ) {
+    std::ostringstream o;
+    o.str("");
+    if ( ! ( o << val ) ) {
+        TIDAS_THROW( "cannot convert int64 data to string" );
+    }
+    return o.str();
+}
+
+
+std::string tidas::data_to_string ( uint64_t const & val ) {
+    std::ostringstream o;
+    o.str("");
+    if ( ! ( o << val ) ) {
+        TIDAS_THROW( "cannot convert uint64 data to string" );
+    }
+    return o.str();
+}
+
+
+std::string tidas::data_to_string ( int32_t const & val ) {
+    std::ostringstream o;
+    o.str("");
+    if ( ! ( o << val ) ) {
+        TIDAS_THROW( "cannot convert int32 data to string" );
+    }
+    return o.str();
+}
+
+
+std::string tidas::data_to_string ( uint32_t const & val ) {
+    std::ostringstream o;
+    o.str("");
+    if ( ! ( o << val ) ) {
+        TIDAS_THROW( "cannot convert uint32 data to string" );
+    }
+    return o.str();
+}
+
+
+std::string tidas::data_to_string ( int16_t const & val ) {
+    std::ostringstream o;
+    o.str("");
+    if ( ! ( o << val ) ) {
+        TIDAS_THROW( "cannot convert int16 data to string" );
+    }
+    return o.str();
+}
+
+
+std::string tidas::data_to_string ( uint16_t const & val ) {
+    std::ostringstream o;
+    o.str("");
+    if ( ! ( o << val ) ) {
+        TIDAS_THROW( "cannot convert uint16 data to string" );
+    }
+    return o.str();
+}
+
+
+std::string tidas::data_to_string ( std::string const & val ) {
+    return std::string ( val );
+}
+
+
+std::string tidas::data_to_string ( int8_t const & val ) {
+    return tidas::data_to_string ( static_cast < int16_t > ( val ) );
+}
+
+
+std::string tidas::data_to_string ( uint8_t const & val ) {
+    return tidas::data_to_string ( static_cast < uint16_t > ( val ) );
+}
+
+
 string tidas::filter_default ( string const & filter ) {
     string ret = filter;
     if ( ret == "" ) {

@@ -59,6 +59,41 @@ void tidas::test::mpi_volume_setup ( mpi_volume & vol, size_t n_samp, size_t n_i
 }
 
 
+void tidas::test::mpi_volume_root_setup ( mpi_volume & vol, size_t n_samp, size_t n_intr, size_t n_block ) {
+
+    vol.root().clear();
+
+    MPI_Comm comm = vol.comm();
+    int rank = vol.comm_rank();
+    int nproc = vol.comm_size();
+
+    size_t offset;
+    size_t nlocal;
+
+    // Test case where a single process adds all blocks and then sync
+    // metadata with some processes having no transactions.
+
+    if ( rank == 0 ) {
+
+        for ( size_t b = offset; b < offset+nlocal; ++b ) {
+            //std::cout << "Process " << rank << " setting up block " << b << std::endl;
+
+            ostringstream blkname;
+            blkname << "block_" << b;
+
+            block & blk = vol.root().block_add ( blkname.str(), block() );
+
+            tidas::test::block_setup ( blk, n_samp, n_intr );
+        }
+
+    }
+
+    vol.meta_sync();
+
+    return;
+}
+
+
 void tidas::test::mpi_volume_verify ( mpi_volume & vol ) {
 
     block & rt = vol.root();
@@ -245,6 +280,67 @@ TEST_F( MPIvolumeTest, HDF5Backend ) {
     }
 
     //EXPECT_TRUE(false);
+
+#else
+
+    cout << "  skipping (not compiled with HDF5 support)" << endl;
+
+#endif
+
+}
+
+
+TEST_F( MPIvolumeTest, HDF5BackendRoot ) {
+
+    // HDF5 backend with root process initialization
+
+#ifdef HAVE_HDF5
+
+    int ret;
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int rank;
+    int nproc;
+    ret = MPI_Comm_rank ( comm, &rank );
+    ret = MPI_Comm_size ( comm, &nproc );
+
+    string dir = tidas::test::output_dir();
+    if ( rank == 0 ) {
+        fs_mkdir ( dir.c_str() );
+    }
+
+    // We use the backend-specific options to override the default
+    // chunk size.
+
+    ostringstream chkstr;
+    chkstr << chunk;
+    map < string, string > hdf_extra;
+    hdf_extra[key_hdf5_chunk] = chkstr.str();
+
+    // test deep copy from mem
+
+    string volpath = dir + "/test_mpi_volume_root.out";
+    string volpathmem = dir + "/test_mpi_volume_root_dup_mem.out";
+
+    if ( rank == 0 ) {
+        fs_rm_r ( volpath.c_str() );
+        fs_rm_r ( volpathmem.c_str() );
+    }
+    ret = MPI_Barrier ( comm );
+
+    {
+        mpi_volume vol ( comm, volpath, backend_type::hdf5, compression_type::gzip, hdf_extra );
+
+        tidas::test::mpi_volume_root_setup ( vol, n_samp, n_intr, n_block );
+
+        tidas::test::mpi_volume_verify ( vol );
+
+        vol.duplicate ( volpathmem, backend_type::hdf5, compression_type::gzip, "", hdf_extra );
+    }
+
+    {
+        mpi_volume vol ( comm, volpathmem, access_mode::write );
+        tidas::test::mpi_volume_verify ( vol );
+    }
 
 #else
 

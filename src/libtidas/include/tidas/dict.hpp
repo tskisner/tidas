@@ -131,7 +131,7 @@ namespace tidas {
             /// Insert a value into the dictionary with the specified key.
             template < class T >
             void put ( std::string const & key, T const & val ) {
-                std::string sval = tidas::data_to_string < T > ( val );
+                std::string sval = tidas::data_to_string ( val );
                 data_[ key ] = sval;
                 types_[ key ] = data_type_get ( typeid ( val ) );
                 return;

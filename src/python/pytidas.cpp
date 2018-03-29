@@ -157,17 +157,28 @@ PYBIND11_MODULE(_pytidas, m) {
         .def(py::init<>())
         .def("clear", &tidas::dict::clear)
         .def("keys", &tidas::dict::keys)
-        .def("get_int8", &tidas::dict::get<int8_t>)
-        .def("get_uint8", &tidas::dict::get<uint8_t>)
-        .def("get_int16", &tidas::dict::get<int16_t>)
-        .def("get_uint16", &tidas::dict::get<uint16_t>)
-        .def("get_int32", &tidas::dict::get<int32_t>)
-        .def("get_uint32", &tidas::dict::get<uint32_t>)
-        .def("get_int64", &tidas::dict::get<int64_t>)
-        .def("get_uint64", &tidas::dict::get<uint64_t>)
-        .def("get_float32", &tidas::dict::get<float>)
-        .def("get_float64", &tidas::dict::get<double>)
-        .def("get_string", &tidas::dict::get<std::string>)
+        .def("get_int8", &tidas::dict::get<int8_t>,
+            py::return_value_policy::copy)
+        .def("get_uint8", &tidas::dict::get<uint8_t>,
+            py::return_value_policy::copy)
+        .def("get_int16", &tidas::dict::get<int16_t>,
+            py::return_value_policy::copy)
+        .def("get_uint16", &tidas::dict::get<uint16_t>,
+            py::return_value_policy::copy)
+        .def("get_int32", &tidas::dict::get<int32_t>,
+            py::return_value_policy::copy)
+        .def("get_uint32", &tidas::dict::get<uint32_t>,
+            py::return_value_policy::copy)
+        .def("get_int64", &tidas::dict::get<int64_t>,
+            py::return_value_policy::copy)
+        .def("get_uint64", &tidas::dict::get<uint64_t>,
+            py::return_value_policy::copy)
+        .def("get_float32", &tidas::dict::get<float>,
+            py::return_value_policy::copy)
+        .def("get_float64", &tidas::dict::get<double>,
+            py::return_value_policy::copy)
+        .def("get_string", &tidas::dict::get<std::string>,
+            py::return_value_policy::copy)
         .def("put_int8", &tidas::dict::put<int8_t>)
         .def("put_uint8", &tidas::dict::put<uint8_t>)
         .def("put_int16", &tidas::dict::put<int16_t>)
@@ -198,7 +209,10 @@ PYBIND11_MODULE(_pytidas, m) {
                 }
                 return p;
             }
-        ));
+        ))
+        .def("get_type", [](tidas::dict & self, std::string const & key) {
+            return tidas_format_descr(self.types().at(key));
+        });
 
 
     py::class_ < tidas::intrvl > (m, "Intrvl")
@@ -235,11 +249,12 @@ PYBIND11_MODULE(_pytidas, m) {
         .def(py::init<>())
         .def(py::init< tidas::dict, size_t >())
         .def("dictionary", &tidas::intervals::dictionary,
-            py::return_value_policy::copy)
-        .def("size", &tidas::intervals::size)
+            py::return_value_policy::reference_internal)
+        .def("size", &tidas::intervals::size,
+            py::return_value_policy::take_ownership)
         .def("read", (std::vector <tidas::intrvl>
             (tidas::intervals::*)() const) &tidas::intervals::read_data,
-            py::return_value_policy::copy)
+            py::return_value_policy::take_ownership)
         .def("write", &tidas::intervals::write_data)
         .def_static("total_samples", &tidas::intervals::total_samples)
         .def_static("total_time", &tidas::intervals::total_time)
@@ -264,19 +279,20 @@ PYBIND11_MODULE(_pytidas, m) {
         .def("field_add", &tidas::schema::field_add)
         .def("field_del", &tidas::schema::field_del)
         .def("field_get", &tidas::schema::field_get,
-            py::return_value_policy::copy)
+            py::return_value_policy::reference_internal)
         .def("fields", &tidas::schema::fields,
-            py::return_value_policy::copy);
+            py::return_value_policy::reference_internal);
 
 
     py::class_ < tidas::group > (m, "Group")
         .def(py::init<>())
         .def(py::init< tidas::schema, tidas::dict, size_t >())
         .def("dictionary", &tidas::group::dictionary,
-            py::return_value_policy::copy)
+            py::return_value_policy::reference_internal)
         .def("schema", &tidas::group::schema_get,
-            py::return_value_policy::copy)
-        .def("size", &tidas::group::size)
+            py::return_value_policy::reference_internal)
+        .def("size", &tidas::group::size,
+            py::return_value_policy::take_ownership)
         .def("resize", &tidas::group::resize)
         .def("range", [](tidas::group & self) {
             tidas::time_type start;
@@ -284,15 +300,16 @@ PYBIND11_MODULE(_pytidas, m) {
             self.range(start, stop);
             return std::make_tuple(start, stop);
         })
-        .def("write_times", [](tidas::group & self, py::buffer times) {
+        .def("write_times", [](tidas::group & self, tidas::index_type offset,
+            py::buffer times) {
             py::buffer_info info = times.request();
             if (info.ndim != 1) {
                 throw std::runtime_error("Incompatible buffer dimension!");
             }
             size_t ndata = info.size;
             size_t n = self.size();
-            if (ndata != n) {
-                throw std::runtime_error("timestamp array has different length than group!");
+            if (offset + ndata > n) {
+                throw std::runtime_error("offset plus length out of range!");
             }
             // Check that we have a compatible type
             if (info.format != "d") {
@@ -300,18 +317,22 @@ PYBIND11_MODULE(_pytidas, m) {
             }
             tidas::time_type * raw = static_cast < tidas::time_type * >
                 (info.ptr);
-            self.write_times ( ndata, raw );
+            self.write_times ( ndata, raw, offset );
             return;
         })
-        .def("read_times", [](tidas::group & self) {
-            size_t ndata = self.size();
+        .def("read_times", [](tidas::group & self, tidas::index_type offset,
+            tidas::index_type ndata) {
+            size_t n = self.size();
+            if (offset + ndata > n) {
+                throw std::runtime_error("offset plus ndata out of range!");
+            }
             // Create a numpy array
             py::array_t < tidas::time_type > times;
             times.resize( {ndata} );
             py::buffer_info info = times.request();
             tidas::time_type * raw = static_cast < tidas::time_type * >
                 (info.ptr);
-            self.read_times ( ndata, raw );
+            self.read_times ( ndata, raw, offset );
             return times;
         })
         .def("info", &tidas::group::info)
@@ -372,7 +393,8 @@ PYBIND11_MODULE(_pytidas, m) {
 
     py::class_ < tidas::block > (m, "Block")
         .def(py::init<>())
-        .def("aux_dir", &tidas::block::aux_dir)
+        .def("aux_dir", &tidas::block::aux_dir,
+            py::return_value_policy::take_ownership)
         .def("clear", &tidas::block::clear)
         .def("range", [](tidas::block & self) {
             tidas::time_type start;
@@ -389,7 +411,7 @@ PYBIND11_MODULE(_pytidas, m) {
         .def("group_del", &tidas::block::group_del)
         .def("clear_groups", &tidas::block::clear_groups)
         .def("group_names", &tidas::block::group_names,
-            py::return_value_policy::copy)
+            py::return_value_policy::take_ownership)
         .def("intervals_add", &tidas::block::intervals_add,
             py::return_value_policy::reference_internal)
         .def("intervals_get", (tidas::intervals &
@@ -399,9 +421,9 @@ PYBIND11_MODULE(_pytidas, m) {
         .def("intervals_del", &tidas::block::intervals_del)
         .def("clear_intervals", &tidas::block::clear_intervals)
         .def("intervals_names", &tidas::block::intervals_names,
-            py::return_value_policy::copy)
+            py::return_value_policy::take_ownership)
         .def("block_add", &tidas::block::block_add,
-            py::return_value_policy::copy)
+            py::return_value_policy::reference_internal)
         .def("block_get", (tidas::block &
             (tidas::block::*)(std::string const &))
             &tidas::block::block_get,
@@ -409,8 +431,9 @@ PYBIND11_MODULE(_pytidas, m) {
         .def("block_del", &tidas::block::block_del)
         .def("clear_blocks", &tidas::block::clear_blocks)
         .def("block_names", &tidas::block::block_names,
-            py::return_value_policy::copy)
-        .def("select", &tidas::block::select)
+            py::return_value_policy::take_ownership)
+        .def("select", &tidas::block::select,
+            py::return_value_policy::take_ownership)
         .def("info", &tidas::block::info);
 
 //

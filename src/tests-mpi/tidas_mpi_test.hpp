@@ -15,8 +15,11 @@ namespace tidas { namespace test {
 
     int mpi_runner ( int argc, char *argv[] );
 
-    void mpi_volume_setup ( tidas::mpi_volume & vol, size_t n_samp, size_t n_intr,
-        size_t n_block );
+    void mpi_volume_setup ( tidas::mpi_volume & vol, size_t n_samp,
+        size_t n_intr, size_t n_block );
+
+    void mpi_volume_root_setup ( tidas::mpi_volume & vol, size_t n_samp,
+        size_t n_intr, size_t n_block );
 
     void mpi_volume_verify ( tidas::mpi_volume & vol );
 

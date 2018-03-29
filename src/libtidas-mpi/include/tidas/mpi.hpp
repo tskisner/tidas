@@ -204,8 +204,8 @@ namespace tidas {
 
         // Communicate
 
-        ret = MPI_Gatherv ( (void*)&sendbuf[0], size, MPI_CHAR, recvptr, counts, displs,
-            MPI_CHAR, root, comm );
+        ret = MPI_Gatherv ( (void*)&sendbuf[0], size, MPI_CHAR, recvptr,
+            counts, displs, MPI_CHAR, root, comm );
 
         // Clear the result vector and deserialize
 

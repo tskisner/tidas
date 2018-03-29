@@ -110,13 +110,13 @@ for year in ["2018", "2019"]:
 
             # Write timestamps to all groups
 
-            wind.write_times(np.linspace(daystartsec,
+            wind.write_times(0, np.linspace(daystartsec,
                 daystartsec + day_seconds, num=wind_daysamples))
 
-            thermal.write_times(np.linspace(daystartsec,
+            thermal.write_times(0, np.linspace(daystartsec,
                 daystartsec + day_seconds, num=thermal_daysamples))
 
-            precip.write_times(np.linspace(daystartsec,
+            precip.write_times(0, np.linspace(daystartsec,
                 daystartsec + day_seconds, num=precip_daysamples))
 
             # Write some random data to the fields

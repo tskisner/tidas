@@ -28,8 +28,8 @@ from tidas import (DataType, BackendType, CompressionType, AccessMode,
 def test_dict_setup():
     ret = Dictionary()
     ret.put_string("string", "blahblahblah")
-    ret.put_float64("float64", -123456789.0123)
-    ret.put_float32("float32", -123.456)
+    ret.put_float64("float64", -1.234567890123e9)
+    ret.put_float32("float32", -1.234567)
     ret.put_int8("int8", -100)
     ret.put_uint8("uint8", 100)
     ret.put_int16("int16", -10000)
@@ -51,8 +51,8 @@ def test_dict_verify(dct):
     nt.assert_equal(dct.get_uint32("uint32"), 1000000000)
     nt.assert_equal(dct.get_int64("int64"), -100000000000)
     nt.assert_equal(dct.get_uint64("uint64"), 100000000000)
-    nt.assert_almost_equal(dct.get_float32("float32"), -123.456, decimal=3)
-    nt.assert_almost_equal(dct.get_float64("float64"), -123456789.0123)
+    nt.assert_almost_equal(dct.get_float32("float32"), -1.234567)
+    nt.assert_almost_equal(dct.get_float64("float64"), -1.234567890123e9)
     return
 
 
@@ -170,7 +170,7 @@ def test_group_setup(grp, nsamp):
         float64_data[i] = fi
         string_data[i] = 'foobarbahblat'
 
-    grp.write_times(time)
+    grp.write_times(0, time)
     grp.write("int8", 0, int8_data)
     grp.write("uint8", 0, uint8_data)
     grp.write("int16", 0, int16_data)
@@ -216,7 +216,7 @@ def test_group_verify(grp, nsamp):
         float64_data_check[i] = fi
         string_data_check[i] = 'foobarbahblat'
 
-    time = grp.read_times()
+    time = grp.read_times(0, nsamp)
     int8_data = grp.read("int8", 0, nsamp)
     uint8_data = grp.read("uint8", 0, nsamp)
     int16_data = grp.read("int16", 0, nsamp)

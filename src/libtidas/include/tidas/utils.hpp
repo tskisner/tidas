@@ -128,9 +128,9 @@ namespace tidas {
         double f64;
 
         if ( typeid ( ret ) == typeid ( int8 ) ) {
-            ret = static_cast < T > ( str[0] );
+            ret = static_cast < T > ( stol ( str ) );
         } else if ( typeid ( ret ) == typeid ( uint8 ) ) {
-            ret = static_cast < T > ( str[0] );
+            ret = static_cast < T > ( stoul ( str ) );
         } else if ( typeid ( ret ) == typeid ( int16 ) ) {
             ret = static_cast < T > ( stol ( str ) );
         } else if ( typeid ( ret ) == typeid ( uint16 ) ) {
@@ -156,16 +156,31 @@ namespace tidas {
     template <>
     std::string data_from_string < std::string > ( std::string const & str );
 
-    template < typename T >
-    std::string data_to_string ( T const & val ) {
-        std::ostringstream o;
-        o.precision(16);
-        o.str("");
-        if ( ! ( o << val ) ) {
-            TIDAS_THROW( "cannot convert data to string" );
-        }
-        return o.str();
-    }
+
+    // Here we explicitly provide overloads for each time, to avoid template
+    // resolution doing the wrong thing.
+
+    std::string data_to_string ( double const & val );
+
+    std::string data_to_string ( float const & val );
+
+    std::string data_to_string ( int64_t const & val );
+
+    std::string data_to_string ( uint64_t const & val );
+
+    std::string data_to_string ( int32_t const & val );
+
+    std::string data_to_string ( uint32_t const & val );
+
+    std::string data_to_string ( int16_t const & val );
+
+    std::string data_to_string ( uint16_t const & val );
+
+    std::string data_to_string ( std::string const & val );
+
+    std::string data_to_string ( int8_t const & val );
+
+    std::string data_to_string ( uint8_t const & val );
 
 
     // general regular expression filters

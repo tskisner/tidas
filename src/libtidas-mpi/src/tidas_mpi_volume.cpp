@@ -260,9 +260,9 @@ void tidas::mpi_volume::close ( ) {
 
     // for ( int p = 0; p < nproc_; ++p ) {
     //     if ( rank_ == p ) {
-    //         std::cout << "DBG: mpi_volume close proc " << p << " local:" << std::endl;
+    //         std::cerr << "DBG: mpi_volume close proc " << p << " local:" << std::endl;
     //         for ( auto const & h : hist ) {
-    //             h.print ( std::cout );
+    //             h.print ( std::cerr );
     //         }
     //     }
     //     int blah = MPI_Barrier ( comm_ );
@@ -276,9 +276,9 @@ void tidas::mpi_volume::close ( ) {
 
     if ( rank_ == 0 ) {
         for ( size_t i = 0; i < nproc_; ++i ) {
-            // std::cout << "DBG: mpi_volume close replaying from proc " << i << ":" << std::endl;
+            // std::cerr << "DBG: mpi_volume close replaying from proc " << i << ":" << std::endl;
             // for ( auto const & h : allhist[i] ) {
-            //     h.print ( std::cout );
+            //     h.print ( std::cerr );
             // }
 
             if ( loc_.path != "" ) {
@@ -351,9 +351,9 @@ void tidas::mpi_volume::copy ( MPI_Comm comm, mpi_volume const & other, string c
     // Check that we have no outstanding transactions in the source volume.
     size_t histsize = other.localdb_->history().size();
     if ( histsize > 0 ) {
-        for ( auto & it : other.localdb_->history() ) {
-            it.print(std::cerr);
-        }
+        // for ( auto & it : other.localdb_->history() ) {
+        //     it.print(std::cerr);
+        // }
         ostringstream o;
         o << "process " << rank_ << " in mpi_volume copy source has " << histsize << " outstanding transactions";
         TIDAS_THROW( o.str().c_str() );

@@ -12,7 +12,7 @@ Planning the Layout of a Volume
 
 An important feature of TIDAS volumes is the ability to open / copy / link only a subset of the data.  This selection operation is performed with a regular expression match on the tree of block names.  This means that it is critical to plan out the organization of blocks to make it possible to do any desired data selections.
 
-Most data collected from monitoring systems, experimental apparatuses, etc, have natural ways that the data might be split up into pieces.  For example, if the data collection is started fresh each day, you might have a block for each day.  If there are different sorts of data within one day which you might want to frequently split up, then you could have sub-blocks in each day for the different data types.  Going the other direction up the hierarchy, you might organize the days into blocks for each month, each quarter, each year, etc. 
+Most data collected from monitoring systems, experimental apparatuses, etc, have natural ways that the data might be split up into pieces.  For example, if the data collection is started fresh each day, you might have a block for each day.  If there are different sorts of data within one day which you might want to frequently split up, then you could have sub-blocks in each day for the different data types.  Going the other direction up the hierarchy, you might organize the days into blocks for each month, each quarter, each year, etc.
 
 
 Interface
@@ -73,7 +73,7 @@ see those changes until the synchronization method is called.
 Python
 ~~~~~~~~~
 
-.. autoclass:: tidas.mpi_volume.MPIVolume
+.. autoclass:: tidas.mpi.MPIVolume
     :members:
 
 
@@ -83,4 +83,3 @@ C++
 .. doxygenclass:: tidas::mpi_volume
     :members:
     :no-link:
-

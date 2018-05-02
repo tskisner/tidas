@@ -1,59 +1,10 @@
-# http://www.gnu.org/software/automake
-
-Makefile
-Makefile.in
-/test-driver
-
-# http://www.gnu.org/software/autoconf
-
-/autom4te.cache
-/aclocal.m4
-/compile
-/configure
-/depcomp
-/install-sh
-/missing
-/stamp-h1
-/config.guess
-/config.h
-/config.h.in
-/config.log
-/config.status
-/config.sub
-
-# libtool files
-
-/libtool
-/libtool_mpi
-/ltmain.sh
-*.la
-*.lo
-.deps
-.libs
-/m4/libtool.m4
-/m4/ltoptions.m4
-/m4/ltsugar.m4
-/m4/ltversion.m4
-/m4/lt~obsolete.m4
-fixlibtool/fixlibtool
 
 # Build outputs
 
 *~
-*.o
+/build
+
+# Generated documentation
 
 /docs/xml
-/docs/sphinx/build
-
-/src/libtidas/sqlite/tidas_sqlite
-
-/src/apps-mpi/tidas_test_mpi
-/src/apps/tidas_test
-
-# python files
-
-py-compile
-*.pyc
-
-/src/python/ctidas.py
-/src/python/ctidas_mpi.py
+/docs/sphinx/_build

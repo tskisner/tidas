@@ -38,7 +38,7 @@ extensions = [
     'breathe'
 ]
 
-# TODOs                                                                                                      
+# TODOs
 todo_include_todos = True
 
 # Add any paths that contain templates here, relative to this directory.
@@ -57,7 +57,7 @@ master_doc = 'index'
 project = u'TIDAS'
 copyright = u'2014-2017, Theodore Kisner'
 
-# breathe                                                                                                    
+# breathe
 breathe_projects = { "TIDAS": "../xml/" }
 breathe_default_project = "TIDAS"
 #breathe_default_members = ('members',)
@@ -67,7 +67,7 @@ breathe_default_project = "TIDAS"
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-fullversion = sp.run(["../../m4/git-version.sh"], check=True, 
+fullversion = sp.run(["../../cmake/git-version.sh"], check=True,
     stdout=sp.PIPE, universal_newlines=True).stdout
 fvparts = fullversion.split(".")
 

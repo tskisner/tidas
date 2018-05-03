@@ -16,7 +16,8 @@ addons:
     apt:
         packages:
             - build-essential
-            - g++
+            - gcc-6
+            - g++-6
             - cmake
             - libhdf5-dev
             - libmpich-dev

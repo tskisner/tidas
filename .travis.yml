@@ -1,0 +1,56 @@
+
+# We set the language to python, so that we can more easily specify our
+# build matrix.  We simply apt install the compiled dependencies.
+language: python
+
+os:
+    - linux
+    - osx
+
+# These use container-based images (faster boot) and Ubuntu 14.04 LTS
+sudo: false
+dist: trusty
+
+# The apt packages here install our compiled code dependencies.
+addons:
+    apt:
+        packages:
+            - build-essential
+            - g++
+            - cmake
+            - libhdf5-dev
+            - libmpich-dev
+
+# The versions to test
+python:
+    - 2.7
+    - 3.6
+
+# Set up MPI and mpi4py
+
+before_install:
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; brew install mpich2; fi
+    - curl -SL https://pypi.python.org/packages/ee/b8/f443e1de0b6495479fc73c5863b7b5272a4ece5122e3589db6cd3bb57eeb/mpi4py-2.0.0.tar.gz#md5=4f7d8126d7367c239fd67615680990e3 -o mpi4py-2.0.0.tar.gz
+    - tar xzf mpi4py-2.0.0.tar.gz
+    - cd mpi4py-2.0.0
+    - python setup.py install
+
+# Configure and build
+
+install:
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export CC=clang; export CXX=clang++; fi
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CC=gcc; export CXX=g++; fi
+    - export tidas_prefix=$(dirname $(dirname $(which python)))
+    - mkdir -p build
+    - cd build
+    - cmake -DCMAKE_C_COMPILER="${CC}" -DCMAKE_CXX_COMPILER="${CXX}" -DCMAKE_C_FLAGS="-O3 -g -fPIC" -DCMAKE_CXX_FLAGS="-O3 -g -fPIC" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX="${tidas_prefix}" ..
+    - make
+    - make install
+
+# Run tests
+
+script:
+    - tidas_test
+    - tidas_test_mpi
+    - python -c "import tidas.test; tidas.test.run()"
+    - python -c "import tidas.test; tidas.test.run_mpi()"

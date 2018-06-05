@@ -51,8 +51,9 @@ def test_dict_verify(dct):
     nt.assert_equal(dct.get_uint32("uint32"), 1000000000)
     nt.assert_equal(dct.get_int64("int64"), -100000000000)
     nt.assert_equal(dct.get_uint64("uint64"), 100000000000)
-    nt.assert_almost_equal(dct.get_float32("float32"), -1.234567)
-    nt.assert_almost_equal(dct.get_float64("float64"), -1.234567890123e9)
+    nt.assert_almost_equal(dct.get_float32("float32"), -1.234567, decimal=4)
+    nt.assert_almost_equal(dct.get_float64("float64"), -1.234567890123e9,
+                           decimal=8)
     return
 
 

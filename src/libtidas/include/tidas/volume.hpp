@@ -27,6 +27,12 @@ namespace tidas {
             /// Destructor
             ~volume ();
 
+            /// Open index
+            void open ();
+
+            /// Close index
+            void close ();
+
             /// Assignment operator.
             volume & operator= ( volume const & other );
 

@@ -153,11 +153,9 @@ void tidas::indexdb_sql::open () {
         TIDAS_THROW( "cannot open sqlite db with empty path" );
     }
 
-    if ( sql_ ) {
-        TIDAS_THROW( "sqlite DB already open" );
-    } else {
-
+    if ( ! sql_ ) {
         int64_t size = fs_stat ( path_.c_str() );
+        //std::cerr << "TIDAS open sqlite DB at " << path_ << std::endl;
 
         int flags = 0;
 
@@ -199,7 +197,7 @@ void tidas::indexdb_sql::open () {
         ret = sqlite3_exec ( sql_, "PRAGMA TEMP_STORE = MEMORY", NULL, NULL, &sqlerr );
         SQLERR( ret != SQLITE_OK, "pragma temp_store" );
 
-        ret = sqlite3_exec ( sql_, "PRAGMA JOURNAL_MODE = MEMORY", NULL, NULL, &sqlerr );
+        ret = sqlite3_exec ( sql_, "PRAGMA JOURNAL_MODE = PERSIST", NULL, NULL, &sqlerr );
         SQLERR( ret != SQLITE_OK, "pragma journal_mode" );
 
         ret = sqlite3_exec ( sql_, "PRAGMA SYNCHRONOUS = NORMAL", NULL, NULL, &sqlerr );
@@ -207,6 +205,9 @@ void tidas::indexdb_sql::open () {
 
         ret = sqlite3_exec ( sql_, "PRAGMA LOCKING_MODE = NORMAL", NULL, NULL, &sqlerr );
         SQLERR( ret != SQLITE_OK, "pragma locking_mode" );
+
+        ret = sqlite3_exec ( sql_, "PRAGMA BUSY_TIMEOUT = 60000", NULL, NULL, &sqlerr );
+        SQLERR( ret != SQLITE_OK, "pragma busy timeout" );
 
         ret = sqlite3_exec ( sql_, "PRAGMA PAGE_SIZE = 4096", NULL, NULL, &sqlerr );
         SQLERR( ret != SQLITE_OK, "pragma page_size" );
@@ -345,6 +346,7 @@ void tidas::indexdb_sql::close () {
         ret = sqlite3_close_v2 ( sql_ );
         SQLERR( ret != SQLITE_OK, "close" );
         sql_ = NULL;
+        //std::cerr << "TIDAS closed sqlite DB" << std::endl;
     }
 
     return;
@@ -364,12 +366,10 @@ void tidas::indexdb_sql::sql_err ( bool err, char const * msg, char const * file
 
 
 void tidas::indexdb_sql::ops_begin ( ) {
-    if ( ! sql_ ) {
-        TIDAS_THROW( "sqlite DB is not open" );
-    }
-
+    //std::cerr << "TIDAS:  sqlite ops_begin()" << std::endl;
+    open();
     // sql_t1_ = chrono::steady_clock::now();
-    // std::cout << "DBG: BEGIN TRANSACTION" << std::endl;
+    // std::cerr << "DBG: BEGIN TRANSACTION" << std::endl;
 
     ostringstream command;
     command.str("");
@@ -386,6 +386,7 @@ void tidas::indexdb_sql::ops_begin ( ) {
 
 
 void tidas::indexdb_sql::ops_end ( ) {
+    //std::cerr << "TIDAS:  sqlite ops_end()" << std::endl;
     if ( ! sql_ ) {
         TIDAS_THROW( "sqlite DB is not open" );
     }
@@ -403,8 +404,9 @@ void tidas::indexdb_sql::ops_end ( ) {
     // sql_t2_ = chrono::steady_clock::now();
     // auto diff = sql_t2_ - sql_t1_;
     // double sec = 0.001 * chrono::duration<double, milli>(diff).count();
-    // std::cout << "DBG: END TRANSACTION at " << sec << " seconds" << std::endl;
+    // std::cerr << "DBG: END TRANSACTION at " << sec << " seconds" << std::endl;
 
+    close();
     return;
 }
 
@@ -427,7 +429,7 @@ void tidas::indexdb_sql::ops_dict ( backend_path loc, indexdb_op op, map < strin
 
     string dpath = dbpath ( path );
 
-    //std::cout << "DBG ops_dict path = " << dpath << std::endl;
+    //std::cerr << "DBG ops_dict path = " << dpath << std::endl;
 
     sqlite3_stmt * stmt;
 
@@ -528,7 +530,7 @@ void tidas::indexdb_sql::ops_schema ( backend_path loc, indexdb_op op, field_lis
 
     string dpath = dbpath ( path );
 
-    //std::cout << "DBG ops_schema path = " << dpath << std::endl;
+    //std::cerr << "DBG ops_schema path = " << dpath << std::endl;
 
     sqlite3_stmt * stmt;
 
@@ -590,7 +592,7 @@ void tidas::indexdb_sql::ops_group ( backend_path loc, indexdb_op op, index_type
 
     string dpath = dbpath ( path );
 
-    //std::cout << "DBG ops_group path = " << dpath << std::endl;
+    //std::cerr << "DBG ops_group path = " << dpath << std::endl;
 
     sqlite3_stmt * stmt;
 
@@ -673,7 +675,7 @@ void tidas::indexdb_sql::ops_intervals ( backend_path loc, indexdb_op op, size_t
 
     string dpath = dbpath ( path );
 
-    //std::cout << "DBG ops_intervals path = " << dpath << std::endl;
+    //std::cerr << "DBG ops_intervals path = " << dpath << std::endl;
 
     sqlite3_stmt * stmt;
 
@@ -741,7 +743,7 @@ void tidas::indexdb_sql::ops_block ( backend_path loc, indexdb_op op ) {
 
     string dpath = dbpath ( path );
 
-    //std::cout << "DBG ops_block path = " << dpath << std::endl;
+    //std::cerr << "DBG ops_block path = " << dpath << std::endl;
 
     sqlite3_stmt * stmt;
 
@@ -913,9 +915,7 @@ bool tidas::indexdb_sql::query_dict ( backend_path loc, map < string, string > &
 
     bool found = false;
 
-    if ( ! sql_ ) {
-        TIDAS_THROW( "sqlite DB is not open" );
-    }
+    open();
 
     string path = loc.path + path_sep + loc.name;
 
@@ -976,6 +976,8 @@ bool tidas::indexdb_sql::query_dict ( backend_path loc, map < string, string > &
     ret = sqlite3_finalize ( stmt );
     SQLERR( ret != SQLITE_OK, "dict query finalize" );
 
+    close();
+
     return found;
 }
 
@@ -984,9 +986,7 @@ bool tidas::indexdb_sql::query_schema ( backend_path loc, field_list & fields ) 
 
     bool found = false;
 
-    if ( ! sql_ ) {
-        TIDAS_THROW( "sqlite DB is not open" );
-    }
+    open();
 
     string path = loc.path + path_sep + loc.name;
 
@@ -1024,6 +1024,8 @@ bool tidas::indexdb_sql::query_schema ( backend_path loc, field_list & fields ) 
     ret = sqlite3_finalize ( stmt );
     SQLERR( ret != SQLITE_OK, "schema query finalize" );
 
+    close();
+
     return found;
 }
 
@@ -1032,9 +1034,7 @@ bool tidas::indexdb_sql::query_group ( backend_path loc, index_type & nsamp, tim
 
     bool found = false;
 
-    if ( ! sql_ ) {
-        TIDAS_THROW( "sqlite DB is not open" );
-    }
+    open();
 
     string path = loc.path + path_sep + loc.name;
 
@@ -1075,6 +1075,8 @@ bool tidas::indexdb_sql::query_group ( backend_path loc, index_type & nsamp, tim
     ret = sqlite3_finalize ( stmt );
     SQLERR( ret != SQLITE_OK, "group query finalize" );
 
+    close();
+
     return found;
 }
 
@@ -1083,9 +1085,7 @@ bool tidas::indexdb_sql::query_intervals ( backend_path loc, size_t & size ) {
 
     bool found = false;
 
-    if ( ! sql_ ) {
-        TIDAS_THROW( "sqlite DB is not open" );
-    }
+    open();
 
     string path = loc.path + path_sep + loc.name;
 
@@ -1111,6 +1111,8 @@ bool tidas::indexdb_sql::query_intervals ( backend_path loc, size_t & size ) {
     ret = sqlite3_finalize ( stmt );
     SQLERR( ret != SQLITE_OK, "intervals query finalize" );
 
+    close();
+
     return found;
 }
 
@@ -1119,9 +1121,7 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
 
     bool found = false;
 
-    if ( ! sql_ ) {
-        TIDAS_THROW( "sqlite DB is not open" );
-    }
+    open();
 
     child_blocks.clear();
     child_groups.clear();
@@ -1137,7 +1137,7 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
     command.str("");
     command << "SELECT * FROM blk WHERE path = \"" << dpath << "\";";
 
-    //std::cout << command.str() << std::endl;
+    //std::cerr << command.str() << std::endl;
 
     sqlite3_stmt * bstmt;
     int ret = sqlite3_prepare_v2 ( sql_, command.str().c_str(), command.str().size() + 1, &bstmt, NULL );
@@ -1210,11 +1210,14 @@ bool tidas::indexdb_sql::query_block ( backend_path loc, vector < string > & chi
     ret = sqlite3_finalize ( bstmt );
     SQLERR( ret != SQLITE_OK, "block query finalize" );
 
+    close();
+
     return found;
 }
 
 
 void tidas::indexdb_sql::commit ( deque < indexdb_transaction > const & trans ) {
+    //std::cerr << "TIDAS:  sqlite commit " << trans.size() << " transactions" << std::endl;
 
     if ( trans.size() == 0 ) {
         return;
@@ -1229,10 +1232,10 @@ void tidas::indexdb_sql::commit ( deque < indexdb_transaction > const & trans ) 
         string fullpath;
         if ( volpath_ == "" ) {
             fullpath = tr.obj->path;
-            //std::cout << "commit volpath empty: " << fullpath << std::endl;
+            //std::cerr << "commit volpath empty: " << fullpath << std::endl;
         } else {
             fullpath = volpath_ + path_sep + tr.obj->path;
-            //std::cout << "commit volpath non-empty: " << fullpath << std::endl;
+            //std::cerr << "commit volpath non-empty: " << fullpath << std::endl;
         }
 
         backend_path loc;
@@ -1288,7 +1291,7 @@ void tidas::indexdb_sql::tree_node ( backend_path loc, std::string const & filte
 
     string dpath = dbpath ( path );
 
-    //std::cout << "tree_node " << path << " --> " << dpath << std::endl;
+    //std::cerr << "tree_node " << path << " --> " << dpath << std::endl;
 
     vector < string > child_blocks;
     vector < string > child_groups;

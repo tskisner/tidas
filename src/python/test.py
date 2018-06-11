@@ -355,12 +355,12 @@ def run(tmpdir=None):
     nblock = 3
     nsamp = 10
 
-    vol = Volume(volpath, BackendType.hdf5, CompressionType.gzip, dict())
-    test_volume_setup(vol, nblock, nsamp)
+    with Volume(volpath, BackendType.hdf5, CompressionType.gzip, dict()) as vol:
+        test_volume_setup(vol, nblock, nsamp)
 
-    vol = Volume(volpath, AccessMode.read)
-    test_volume_verify(vol, nblock, nsamp)
-    #vol.info()
+    with Volume(volpath, AccessMode.read) as vol:
+        test_volume_verify(vol, nblock, nsamp)
+        #vol.info()
 
     print("   PASS")
 
@@ -417,13 +417,13 @@ def run_mpi(tmpdir=None):
     nblock = 10
     nsamp = 10
 
-    vol = MPIVolume(comm, volpath, BackendType.hdf5, CompressionType.gzip,
-        dict())
-    test_mpi_volume_setup(vol, nblock, nsamp)
+    with MPIVolume(comm, volpath, BackendType.hdf5, CompressionType.gzip,
+        dict()) as vol:
+        test_mpi_volume_setup(vol, nblock, nsamp)
 
-    vol = MPIVolume(comm, volpath, AccessMode.read)
-    test_volume_verify(vol, nblock, nsamp)
-    #vol.info()
+    with MPIVolume(comm, volpath, AccessMode.read) as vol:
+        test_volume_verify(vol, nblock, nsamp)
+        #vol.info()
 
     if comm.rank == 0:
         print("   PASS")

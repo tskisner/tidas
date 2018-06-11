@@ -18,7 +18,7 @@ using namespace tidas;
 
 
 tidas::volume::volume () {
-    index_setup();
+    open();
 }
 
 
@@ -56,7 +56,7 @@ tidas::volume::volume ( string const & path, backend_type type, compression_type
 
     // open index
 
-    index_setup();
+    open();
 
     // relocate root block
 
@@ -66,6 +66,18 @@ tidas::volume::volume ( string const & path, backend_type type, compression_type
 
     root_.flush();
 
+}
+
+
+void tidas::volume::open ( ) {
+    index_setup();
+    return;
+}
+
+
+void tidas::volume::close ( ) {
+    db_.reset();
+    return;
 }
 
 
@@ -113,7 +125,7 @@ tidas::volume::volume ( string const & path, access_mode mode ) {
 
     // open index
 
-    index_setup();
+    open();
 
     // relocate root block
 

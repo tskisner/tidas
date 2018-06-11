@@ -468,6 +468,12 @@ PYBIND11_MODULE(_pytidas, m) {
         .def(py::init < std::string, tidas::access_mode > ())
         .def(py::init < std::string, tidas::backend_type,
             tidas::compression_type, std::map < std::string, std::string > > ())
+        .def("__enter__", [](tidas::volume & self) {
+            return self;
+        })
+        .def("__exit__",  [](tidas::volume & self, py::args) {
+            self.close();
+        })
         .def("duplicate", &tidas::volume::duplicate)
         .def("link", &tidas::volume::link)
         .def("root", (tidas::block & (tidas::volume::*)())

@@ -70,6 +70,12 @@ PYBIND11_MODULE(_pytidas_mpi, m) {
             MPI_Comm comm = tidas_mpi_extract_comm(pycomm);
             return new tidas::mpi_volume (comm, path, typ, comp, extra);
         }))
+        .def("__enter__", [](tidas::mpi_volume & self) {
+            return self;
+        })
+        .def("__exit__",  [](tidas::mpi_volume & self, py::args) {
+            self.close();
+        })
         .def("comm", [](tidas::mpi_volume & self) {
             return py::reinterpret_steal<py::object>(PyMPIComm_New(self.comm()));
         })

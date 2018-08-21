@@ -182,6 +182,10 @@ namespace tidas {
 
     };
 
+    // The specialization of a member function must be declared at the same
+    // namespace scope as the class...
+    template <>
+    void dict::put < float > ( std::string const & key, float const & val );
 
 }
 

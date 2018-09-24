@@ -50,16 +50,10 @@ tidas::indexdb_sql::indexdb_sql ( indexdb_sql const & other ) : indexdb( other )
 
 
 void tidas::indexdb_sql::copy ( indexdb_sql const & other ) {
-
     close();
-    sql_ = NULL;
-
     path_ = other.path_;
     volpath_ = other.volpath_;
     mode_ = other.mode_;
-
-    open();
-
     return;
 }
 
@@ -68,7 +62,6 @@ tidas::indexdb_sql::indexdb_sql ( string const & path, string const & volpath, a
     path_ = path;
     mode_ = mode;
     sql_ = NULL;
-    open();
 }
 
 
@@ -191,8 +184,8 @@ void tidas::indexdb_sql::open () {
 
         }
 
-        // Set database options for high performance.  If the DB is corrupted, it
-        // will be recreated on next open in read-write mode.
+        ret = sqlite3_busy_timeout(sql_, 60000);
+        SQLERR( ret != SQLITE_OK, "pragma busy timeout" );
 
         ret = sqlite3_exec ( sql_, "PRAGMA TEMP_STORE = MEMORY", NULL, NULL, &sqlerr );
         SQLERR( ret != SQLITE_OK, "pragma temp_store" );
@@ -205,9 +198,6 @@ void tidas::indexdb_sql::open () {
 
         ret = sqlite3_exec ( sql_, "PRAGMA LOCKING_MODE = NORMAL", NULL, NULL, &sqlerr );
         SQLERR( ret != SQLITE_OK, "pragma locking_mode" );
-
-        ret = sqlite3_exec ( sql_, "PRAGMA BUSY_TIMEOUT = 60000", NULL, NULL, &sqlerr );
-        SQLERR( ret != SQLITE_OK, "pragma busy timeout" );
 
         ret = sqlite3_exec ( sql_, "PRAGMA PAGE_SIZE = 4096", NULL, NULL, &sqlerr );
         SQLERR( ret != SQLITE_OK, "pragma page_size" );
@@ -788,17 +778,21 @@ void tidas::indexdb_sql::ops_block ( backend_path loc, indexdb_op op ) {
 
 
 void tidas::indexdb_sql::add_dict ( backend_path loc, map < string, string > const & data, map < string, data_type > const & types ) {
+    open();
     ops_begin();
     ops_dict ( loc, indexdb_op::add, data, types );
     ops_end();
+    close();
     return;
 }
 
 
 void tidas::indexdb_sql::update_dict ( backend_path loc, map < string, string > const & data, map < string, data_type > const & types ) {
+    open();
     ops_begin();
     ops_dict ( loc, indexdb_op::update, data, types );
     ops_end();
+    close();
     return;
 }
 
@@ -806,107 +800,133 @@ void tidas::indexdb_sql::update_dict ( backend_path loc, map < string, string > 
 void tidas::indexdb_sql::del_dict ( backend_path loc ) {
     map < string, string > fakedata;
     map < string, data_type > faketypes;
+    open();
     ops_begin();
     ops_dict ( loc, indexdb_op::del, fakedata, faketypes );
     ops_end();
+    close();
     return;
 }
 
 
 void tidas::indexdb_sql::add_schema ( backend_path loc, field_list const & fields ) {
+    open();
     ops_begin();
     ops_schema ( loc, indexdb_op::add, fields );
     ops_end();
+    close();
     return;
 }
 
 
 void tidas::indexdb_sql::update_schema ( backend_path loc, field_list const & fields ) {
+    open();
     ops_begin();
     ops_schema ( loc, indexdb_op::update, fields );
     ops_end();
+    close();
     return;
 }
 
 
 void tidas::indexdb_sql::del_schema ( backend_path loc ) {
     field_list fakefields;
+    open();
     ops_begin();
     ops_schema ( loc, indexdb_op::del, fakefields );
     ops_end();
+    close();
     return;
 }
 
 
 void tidas::indexdb_sql::add_group ( backend_path loc, index_type const & nsamp, time_type const & start, time_type const & stop, map < data_type, size_t > const & counts ) {
+    open();
     ops_begin();
     ops_group ( loc, indexdb_op::add, nsamp, start, stop, counts );
     ops_end();
+    close();
     return;
 }
 
 
 void tidas::indexdb_sql::update_group ( backend_path loc, index_type const & nsamp, time_type const & start, time_type const & stop, map < data_type, size_t > const & counts ) {
+    open();
     ops_begin();
     ops_group ( loc, indexdb_op::update, nsamp, start, stop, counts );
     ops_end();
+    close();
     return;
 }
 
 
 void tidas::indexdb_sql::del_group ( backend_path loc ) {
     map < data_type, size_t > fakecounts;
+    open();
     ops_begin();
     ops_group ( loc, indexdb_op::del, 0, 0.0, 0.0, fakecounts );
     ops_end();
+    close();
     return;
 }
 
 
 void tidas::indexdb_sql::add_intervals ( backend_path loc, size_t const & size ) {
+    open();
     ops_begin();
     ops_intervals ( loc, indexdb_op::add, size );
     ops_end();
+    close();
     return;
 }
 
 
 void tidas::indexdb_sql::update_intervals ( backend_path loc, size_t const & size ) {
+    open();
     ops_begin();
     ops_intervals ( loc, indexdb_op::update, size );
     ops_end();
+    close();
     return;
 }
 
 
 void tidas::indexdb_sql::del_intervals ( backend_path loc ) {
+    open();
     ops_begin();
     ops_intervals ( loc, indexdb_op::del, 0 );
     ops_end();
+    close();
     return;
 }
 
 
 void tidas::indexdb_sql::add_block ( backend_path loc ) {
+    open();
     ops_begin();
     ops_block ( loc, indexdb_op::add );
     ops_end();
+    close();
     return;
 }
 
 
 void tidas::indexdb_sql::update_block ( backend_path loc ) {
+    open();
     ops_begin();
     ops_block ( loc, indexdb_op::update );
     ops_end();
+    close();
     return;
 }
 
 
 void tidas::indexdb_sql::del_block ( backend_path loc ) {
+    open();
     ops_begin();
     ops_block ( loc, indexdb_op::del );
     ops_end();
+    close();
     return;
 }
 
@@ -1223,6 +1243,8 @@ void tidas::indexdb_sql::commit ( deque < indexdb_transaction > const & trans ) 
         return;
     }
 
+    open();
+
     ops_begin();
 
     for ( auto tr : trans ) {
@@ -1280,6 +1302,8 @@ void tidas::indexdb_sql::commit ( deque < indexdb_transaction > const & trans ) 
     }
 
     ops_end();
+
+    close();
 
     return;
 }

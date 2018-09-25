@@ -1,6 +1,8 @@
 # TIDAS
 
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+# This minimum version is mostly set in order to get a newer version
+# of the FindMPI check.
+cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
 if (POLICY CMP0048)
   cmake_policy(SET CMP0048 NEW)
@@ -15,6 +17,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 # platforms.
 include(GNUInstallDirs)
 
+# Build defaults
+include(BuildType)
+
 # External packages
 
 find_package(HDF5 REQUIRED)
@@ -27,5 +32,3 @@ find_package(MPI4PY)
 
 enable_testing()
 add_subdirectory(src)
-
-add_test(NAME serial_tests COMMAND tidas_test)

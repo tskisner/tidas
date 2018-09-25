@@ -33,3 +33,5 @@ if (HDF5_FOUND)
 endif (HDF5_FOUND)
 
 install(TARGETS tidas_test DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_test(NAME serial_tests COMMAND tidas_test)

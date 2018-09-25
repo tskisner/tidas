@@ -34,3 +34,5 @@ if (HDF5_FOUND)
 endif (HDF5_FOUND)
 
 install(TARGETS tidas_test_mpi DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_test(NAME mpi_tests COMMAND tidas_test_mpi)

@@ -8,6 +8,8 @@
 #ifndef TIDAS_UTILS_HPP
 #define TIDAS_UTILS_HPP
 
+#include <chrono>
+
 
 namespace tidas {
 
@@ -192,6 +194,26 @@ namespace tidas {
     void filter_block ( std::string const & filter, std::string & local, std::string & subfilter, bool & stop );
 
     std::map < std::string, std::string > filter_split ( std::string const & filter );
+
+    // Simple class to help with timing parts of the code.
+
+    class timer {
+
+        typedef std::chrono::high_resolution_clock::time_point time_point;
+
+        public :
+            timer();
+            void start();
+            void stop();
+            double seconds();
+            void report(char const * message);
+
+        private :
+            time_point start_;
+            time_point stop_;
+            bool running_;
+
+    };
 
 
 }

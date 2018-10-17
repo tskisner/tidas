@@ -702,3 +702,48 @@ map < string, string > tidas::filter_split ( string const & filter ) {
     }
     return ret;
 }
+
+
+tidas::timer::timer() {
+    start_ = std::chrono::high_resolution_clock::now();
+    stop_ = start_;
+    running_ = false;
+}
+
+
+void tidas::timer::start() {
+    if (! running_) {
+        start_ = std::chrono::high_resolution_clock::now();
+        running_ = true;
+    }
+    return;
+}
+
+
+void tidas::timer::stop() {
+    if (running_) {
+        stop_ = std::chrono::high_resolution_clock::now();
+        running_ = false;
+    }
+    return;
+}
+
+
+double tidas::timer::seconds() {
+    if (running_) {
+        std::cerr << "Timer is still running!" << std::endl;
+        return -1.0;
+    }
+    std::chrono::duration <double> elapsed =
+        std::chrono::duration_cast <std::chrono::duration <double> >
+            (stop_ - start_);
+    return elapsed.count();
+}
+
+
+void tidas::timer::report(char const * message) {
+    double t = seconds();
+    fprintf(stdout, "%s:  %.2f seconds\n", message, t);
+    fflush(stdout);
+    return;
+}

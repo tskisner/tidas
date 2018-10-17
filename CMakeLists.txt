@@ -2,7 +2,7 @@
 
 # This minimum version is mostly set in order to get a newer version
 # of the FindMPI check.
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 if (POLICY CMP0048)
   cmake_policy(SET CMP0048 NEW)

@@ -168,30 +168,45 @@ void tidas::group::sync () {
 
 void tidas::group::flush () const {
 
+    //timer tm;
+
     if ( loc_.type != backend_type::none ) {
 
         if ( loc_.mode == access_mode::write ) {
             // write our own metadata
-
+            //tm.start();
             backend_->write ( loc_, size_, counts_ );
+            //tm.stop();
+            //tm.report("backend write size and counts");
+
+            //tm.start();
             backend_->update_range ( loc_, start_, stop_ );
+            //tm.stop();
+            //tm.report("backend write range (start/stop)");
 
             // update index
 
+            //tm.start();
             if ( loc_.idx ) {
                 loc_.idx->add_group ( loc_, size_, start_, stop_, counts_ );
             }
+            //tm.stop();
+            //tm.report("index add group");
         }
 
     }
 
     // flush schema
-
+    //tm.start();
     schm_.flush();
+    //tm.stop();
+    //tm.report("flush schema");
 
     // flush dict
-
+    //tm.start();
     dict_.flush();
+    //tm.stop();
+    //tm.report("flush dict");
 
     return;
 }

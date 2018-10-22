@@ -31,7 +31,7 @@ namespace tidas {
     static const std::string extension_hdf5_dataset_prefix = "data";
 
     static const std::string key_hdf5_chunk = "CHUNK";
-    static const size_t hdf5_chunk_default = 65536;
+    static const size_t hdf5_chunk_default = 256;
 
 #ifdef HAVE_HDF5
 

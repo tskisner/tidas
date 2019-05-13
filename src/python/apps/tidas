@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+
+import sys
+
+from collections import deque
+
+import numpy as np
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QPushButton,
+                             QHBoxLayout, QAction, qApp, QTreeView,
+                             QVBoxLayout, QLabel, QSplitter, QFileDialog)
+from PyQt5.QtGui import (QIcon, QStandardItemModel, QStandardItem, QPixmap)
+from PyQt5.QtGui import (QPainter, QColor, QPen)
+
+import tidas as tds
+import tidas.ui as ui
+from tidas.ui import pyqtgraph as pg
+
+
+class MainWidget(QWidget):
+
+    def __init__(self, vol=None):
+        super().__init__()
+        self.vol = vol
+        self.initUI()
+
+
+    # def display(self, name):
+    #     selected = self.tree.selectedItems()
+    #     if selected:
+    #         rowstart = selected[0]
+    #         itemname = rowstart.text(0)
+    #     print(itemname, flush=True)
+    #     return
+    #
+    # def selectionChanged(self, selected, deselected):
+    #     # Get the metadata path by traversing up the tree.
+    #     # Find the top-level item in the tree.
+    #     tree_indx = selected.indexes()[0]
+    #     nodename = self.model.index(0, 0, tree_index).data().toString()
+    #     metapath = nodename
+    #     parent = tree_index.parent()
+    #     while parent.isValid():
+    #         tree_index = parent
+    #         nodename = self.model.index(0, 0, tree_index).data().toString()
+    #         metapath = "{}/{}".format(nodename, metapath)
+    #         parent = parent.parent()
+    #     metapath = "/{}".format(metapath)
+
+
+    def initUI(self):
+        self.vol_model = ui.VolumeModel(self.vol, None)
+        self.vol_view = ui.VolumeView(self.vol_model)
+
+        self.blkmodel = ui.BlockModel(None)
+        self.blkview = ui.BlockView(self.blkmodel)
+
+        view = QSplitter(Qt.Horizontal)
+        view.addWidget(self.vol_view)
+        view.addWidget(self.blkview)
+
+        layout = QHBoxLayout(self)
+        layout.addWidget(view)
+
+
+class MainWindow(QMainWindow):
+
+    def __init__(self, volpath=None):
+        super().__init__()
+        # Enable antialiasing for prettier plots
+        pg.setConfigOptions(antialias=True)
+        self.vol = None
+        self.volpath = volpath
+        if volpath is not None:
+            self._open_volume()
+        self.initUI()
+
+    def __del__(self):
+        try:
+            self._close_volume()
+        except:
+            pass
+        return
+
+    def _open_volume(self):
+        del self.vol
+        self.vol = tds.Volume(self.volpath, tds.AccessMode.read)
+        return
+
+    def _close_volume(self):
+        if self.vol is not None:
+            del self.vol
+            self.vol = None
+        return
+
+    def _open_file_dialog(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        dir_name = QFileDialog.getExistingDirectory(self, "Select Volume", options=options)
+        #file_name, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "", "All Files (*);;", options=options)
+        print(dir_name)
+        if dir_name:
+            self._close_volume()
+            self.volpath = dir_name
+            self._open_volume()
+        return
+
+    def _create_menus(self):
+        openAct = QAction(QIcon("open.png"), "&Open", self)
+        openAct.setShortcut("Ctrl+O")
+        openAct.setStatusTip("Open Volume")
+        openAct.triggered.connect(self._open_file_dialog)
+
+        exitAct = QAction(QIcon("exit.png"), "&Exit", self)
+        exitAct.setShortcut("Ctrl+Q")
+        exitAct.setStatusTip("Exit application")
+        exitAct.triggered.connect(qApp.quit)
+
+        menubar = self.menuBar()
+        fileMenu = menubar.addMenu("&File")
+        fileMenu.addAction(openAct)
+        fileMenu.addAction(exitAct)
+        return
+
+
+    def initUI(self):
+        self._create_menus()
+        self.statusBar().showMessage("Ready")
+
+        self.main = MainWidget(self.vol)
+        self.setCentralWidget(self.main)
+
+        self.setGeometry(300, 200, 680, 320)
+        self.move(300, 150)
+        self.setWindowTitle("TIDAS")
+
+
+def usage():
+    print("\nUsage:\n", flush=True)
+    print("  tidas-ui [optional path to volume]\n", flush=True)
+    return
+
+
+if __name__ == "__main__":
+    volpath = None
+    if len(sys.argv) > 2:
+        usage()
+        sys.exit(1)
+    if len(sys.argv) == 2:
+        volpath = sys.argv[1]
+
+    app = QApplication(sys.argv)
+    mw = MainWindow(volpath)
+    mw.show()
+    sys.exit(app.exec_())

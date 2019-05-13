@@ -3,6 +3,10 @@
 
 add_subdirectory(pybind11)
 
+# Apps for installation
+
+add_subdirectory(apps)
+
 # Determine our python install location and set up a rule to install the modules
 
 execute_process(
@@ -37,6 +41,11 @@ install(TARGETS _pytidas DESTINATION ${PYTHON_SITE}/tidas)
 install(FILES
     __init__.py
     test.py
+    DESTINATION ${PYTHON_SITE}/tidas
+)
+
+install(DIRECTORY
+    ui
     DESTINATION ${PYTHON_SITE}/tidas
 )
 

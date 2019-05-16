@@ -13,7 +13,7 @@
 
 #include <chrono>
 
-#include <cereal/archives/portable_binary.hpp>
+#include <tidas/cereal/archives/portable_binary.hpp>
 
 using namespace std;
 using namespace tidas;

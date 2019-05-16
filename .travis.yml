@@ -1,0 +1,125 @@
+# We set the language to python, since we are focused on a recent python
+# version and want to use the build matrix for testing different compiler
+# versions.
+language: python
+
+# We use APT to get as many packages as possible.  Then we compile the rest
+# of our dependencies.  If you change any packages in the build matrix, you
+# should also update the travis dependency build script and rebuild the
+# tarballs of dependencies.
+
+matrix:
+  include:
+    # GCC 4.9 - Decent C++11 support
+    - os: linux
+      dist: trusty
+      sudo: false
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - build-essential
+            - git
+            - pkg-config
+            - locales
+            - libgl1-mesa-glx
+            - xvfb
+            - libhdf5-dev
+            - libmpich-dev
+            - gcc-4.9
+            - g++-4.9
+      env:
+        - MATRIX_EVAL="export CC=$(which gcc-4.9) && export CXX=$(which g++-4.9) && export DEPGCC=-4.9"
+    # GCC 5 - default version for ubuntu 16.04 LTS
+    - os: linux
+      dist: trusty
+      sudo: false
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - build-essential
+            - git
+            - pkg-config
+            - locales
+            - libgl1-mesa-glx
+            - xvfb
+            - libhdf5-dev
+            - libmpich-dev
+            - gcc-5
+            - g++-5
+      env:
+        - MATRIX_EVAL="export CC=$(which gcc-5) && export CXX=$(which g++-5) && export DEPGCC=-5"
+    # GCC 7 - default version for ubuntu 18.04 LTS
+    - os: linux
+      dist: trusty
+      sudo: false
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - build-essential
+            - git
+            - pkg-config
+            - locales
+            - libgl1-mesa-glx
+            - xvfb
+            - libhdf5-dev
+            - libmpich-dev
+            - gcc-7
+            - g++-7
+      env:
+        - MATRIX_EVAL="export CC=$(which gcc-7) && export CXX=$(which g++-7) && export DEPGCC=-7"
+    - os: osx
+      osx_image: xcode9.4
+      language: generic
+      addons:
+        homebrew:
+          packages:
+            - git
+            - hdf5
+            - cmake
+            - mpich2
+      env:
+        - MATRIX_EVAL="export CC=$(which clang) && export CXX=$(which clang++)"
+
+# The python versions to test.
+python:
+    - 3.6
+
+before_install:
+    # Set the C and C++ compilers
+    - eval "${MATRIX_EVAL}"
+    - echo "  CC = ${CC} $(${CC} -dumpversion)"
+    - echo "  CXX = ${CXX} $(${CXX} -dumpversion)"
+    # Set python site version
+    - export PYSITE=$(python3 --version 2>&1 | awk '{print $2}' | sed -e "s#\(.*\)\.\(.*\)\..*#\1.\2#")
+    - echo "Python site version = ${PYSITE}"
+    - if [[ "$TRAVIS_OS_NAME" != "osx" ]]; then pip3 install -q cmake; fi
+    - pip3 install -q numpy mpi4py
+    # MPI compilers
+    - export MPICC=$(which mpicc)
+    - export MPICXX=$(which mpicxx)
+    - echo "  MPICC = ${MPICC}"
+    - echo "  MPICXX = ${MPICXX}"
+
+# Install TIDAS.
+
+install:
+    - export tidas_prefix=$(dirname $(dirname $(which python)))
+    - mkdir -p build
+    - cd build
+    - cmake -DCMAKE_C_COMPILER="${CC}" -DCMAKE_CXX_COMPILER="${CXX}" -DCMAKE_C_FLAGS="-O2 -g -fPIC" -DCMAKE_CXX_FLAGS="-O2 -g -fPIC" -DPYTHON_EXECUTABLE:FILEPATH=$(which python3) -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX="${tidas_prefix}" ..
+    - make
+    - make install
+
+# Run tests
+
+script:
+    - tidas_test
+    - tidas_test_mpi
+    - python3 -c "import tidas.test; tidas.test.run()"
+    - python3 -c "import tidas.test; tidas.test.run_mpi()"

@@ -112,7 +112,7 @@ install:
     - export tidas_prefix=$(dirname $(dirname $(which python)))
     - mkdir -p build
     - cd build
-    - cmake -DCMAKE_C_COMPILER="${CC}" -DCMAKE_CXX_COMPILER="${CXX}" -DCMAKE_C_FLAGS="-O3 -g -fPIC" -DCMAKE_CXX_FLAGS="-O3 -g -fPIC" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX="${tidas_prefix}" ..
+    - cmake -DCMAKE_C_COMPILER="${CC}" -DCMAKE_CXX_COMPILER="${CXX}" -DCMAKE_C_FLAGS="-O2 -g -fPIC" -DCMAKE_CXX_FLAGS="-O2 -g -fPIC" -DPYTHON_EXECUTABLE:FILEPATH=$(which python3) -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX="${tidas_prefix}" ..
     - make
     - make install
 

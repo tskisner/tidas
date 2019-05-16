@@ -81,6 +81,7 @@ matrix:
           packages:
             - git
             - hdf5
+            - cmake
             - mpich2
       env:
         - MATRIX_EVAL="export CC=$(which clang) && export CXX=$(which clang++)"
@@ -97,7 +98,8 @@ before_install:
     # Set python site version
     - export PYSITE=$(python3 --version 2>&1 | awk '{print $2}' | sed -e "s#\(.*\)\.\(.*\)\..*#\1.\2#")
     - echo "Python site version = ${PYSITE}"
-    - pip3 install -q numpy cmake mpi4py
+    - if [[ "$TRAVIS_OS_NAME" != "osx" ]]; then pip3 install -q cmake; fi
+    - pip3 install -q numpy mpi4py
     # MPI compilers
     - export MPICC=$(which mpicc)
     - export MPICXX=$(which mpicxx)

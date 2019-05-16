@@ -19,18 +19,18 @@
 
 #include <cstdint>
 
-#include <cereal/cereal.hpp>
+#include <tidas/cereal/cereal.hpp>
 
-#include <cereal/types/base_class.hpp>
-#include <cereal/types/polymorphic.hpp>
-#include <cereal/types/string.hpp>
-#include <cereal/types/deque.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/vector.hpp>
-#include <cereal/types/memory.hpp>
+#include <tidas/cereal/types/base_class.hpp>
+#include <tidas/cereal/types/polymorphic.hpp>
+#include <tidas/cereal/types/string.hpp>
+#include <tidas/cereal/types/deque.hpp>
+#include <tidas/cereal/types/map.hpp>
+#include <tidas/cereal/types/vector.hpp>
+#include <tidas/cereal/types/memory.hpp>
 
-#include <cereal/archives/portable_binary.hpp>
-#include <cereal/archives/xml.hpp>
+#include <tidas/cereal/archives/portable_binary.hpp>
+#include <tidas/cereal/archives/xml.hpp>
 
 
 namespace tidas {

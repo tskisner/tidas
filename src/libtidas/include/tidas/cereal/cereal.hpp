@@ -39,10 +39,10 @@
 #include <cstdint>
 #include <functional>
 
-#include "cereal/macros.hpp"
-#include "cereal/details/traits.hpp"
-#include "cereal/details/helpers.hpp"
-#include "cereal/types/base_class.hpp"
+#include "tidas/cereal/macros.hpp"
+#include "tidas/cereal/details/traits.hpp"
+#include "tidas/cereal/details/helpers.hpp"
+#include "tidas/cereal/types/base_class.hpp"
 
 namespace cereal
 {
@@ -126,7 +126,7 @@ namespace cereal
         intended serialization functions may not be called.  You can manually
         ensure that your classes that have custom serialization are correct
         by using the traits is_output_serializable and is_input_serializable
-        in cereal/details/traits.hpp.
+        in tidas/cereal/details/traits.hpp.
       @ingroup Internal */
   enum Flags { AllowEmptyClassElision = 1 };
 
@@ -982,6 +982,6 @@ namespace cereal
 } // namespace cereal
 
 // This include needs to come after things such as binary_data, make_nvp, etc
-#include "cereal/types/common.hpp"
+#include "tidas/cereal/types/common.hpp"
 
 #endif // CEREAL_CEREAL_HPP_

@@ -45,10 +45,10 @@
 #ifndef CEREAL_DETAILS_POLYMORPHIC_IMPL_HPP_
 #define CEREAL_DETAILS_POLYMORPHIC_IMPL_HPP_
 
-#include "cereal/details/polymorphic_impl_fwd.hpp"
-#include "cereal/details/static_object.hpp"
-#include "cereal/types/memory.hpp"
-#include "cereal/types/string.hpp"
+#include "tidas/cereal/details/polymorphic_impl_fwd.hpp"
+#include "tidas/cereal/details/static_object.hpp"
+#include "tidas/cereal/types/memory.hpp"
+#include "tidas/cereal/types/string.hpp"
 #include <functional>
 #include <typeindex>
 #include <map>

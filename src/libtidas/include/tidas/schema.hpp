@@ -1,9 +1,9 @@
 /*
-  TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
-  is governed by a BSD-style license that can be found in the top-level
-  LICENSE file.
-*/
+   TImestream DAta Storage (TIDAS)
+   Copyright (c) 2014-2018, all rights reserved.  Use of this source code
+   is governed by a BSD-style license that can be found in the top-level
+   LICENSE file.
+ */
 
 #ifndef TIDAS_SCHEMA_HPP
 #define TIDAS_SCHEMA_HPP
@@ -11,157 +11,151 @@
 
 namespace tidas {
 
-    // one field of the schema
+// one field of the schema
 
-    class field {
+class field {
+    public:
 
-        public :
+        field();
+        field(std::string const & name, data_type type, std::string const & units);
 
-            field ();
-            field ( std::string const & name, data_type type, std::string const & units );
+        bool operator==(const field & other) const;
+        bool operator!=(const field & other) const;
 
-            bool operator== ( const field & other ) const;
-            bool operator!= ( const field & other ) const;
+        data_type type;
+        std::string name;
+        std::string units;
 
-            data_type type;
-            std::string name;
-            std::string units;
+        template <class Archive>
+        void serialize(Archive & ar) {
+            ar(CEREAL_NVP(type));
+            ar(CEREAL_NVP(name));
+            ar(CEREAL_NVP(units));
+            return;
+        }
+};
 
-            template < class Archive >
-            void serialize ( Archive & ar ) {
-                ar ( CEREAL_NVP( type ) );
-                ar ( CEREAL_NVP( name ) );
-                ar ( CEREAL_NVP( units ) );
-                return;
-            }
+typedef std::vector <field> field_list;
 
-    };
-
-    typedef std::vector < field > field_list;
-
-    field_list field_filter_type ( field_list const & fields, data_type type );
+field_list field_filter_type(field_list const & fields, data_type type);
 
 
-    // base class for schema backend interface
+// base class for schema backend interface
 
-    class schema_backend {
+class schema_backend {
+    public:
 
-        public :
+        schema_backend() {}
 
-            schema_backend () {}
-            virtual ~schema_backend () {}
+        virtual ~schema_backend() {}
 
-            virtual void read ( backend_path const & loc, field_list & fields ) = 0;
+        virtual void read(backend_path const & loc, field_list & fields) = 0;
 
-            virtual void write ( backend_path const & loc, field_list const & fields ) const = 0;
-
-    };
-
-
-    // HDF5 backend class
-
-    class schema_backend_hdf5 : public schema_backend {
-
-        public :
-
-            schema_backend_hdf5 ();
-            ~schema_backend_hdf5 ();
-            schema_backend_hdf5 ( schema_backend_hdf5 const & other );
-            schema_backend_hdf5 & operator= ( schema_backend_hdf5 const & other );
-
-            void read ( backend_path const & loc, field_list & fields );
-
-            void write ( backend_path const & loc, field_list const & fields ) const;
-
-    };
+        virtual void write(backend_path const & loc,
+                           field_list const & fields) const = 0;
+};
 
 
-    // GetData backend class
+// HDF5 backend class
 
-    class schema_backend_getdata : public schema_backend {
+class schema_backend_hdf5 : public schema_backend {
+    public:
 
-        public :
+        schema_backend_hdf5();
+        ~schema_backend_hdf5();
+        schema_backend_hdf5(schema_backend_hdf5 const & other);
+        schema_backend_hdf5 & operator=(schema_backend_hdf5 const & other);
 
-            schema_backend_getdata ();
-            ~schema_backend_getdata ();
-            schema_backend_getdata ( schema_backend_getdata const & other );
-            schema_backend_getdata & operator= ( schema_backend_getdata const & other );
+        void read(backend_path const & loc, field_list & fields);
 
-            void read ( backend_path const & loc, field_list & fields );
-
-            void write ( backend_path const & loc, field_list const & fields ) const;
-
-    };
+        void write(backend_path const & loc, field_list const & fields) const;
+};
 
 
-    // a schema used for a group
+// GetData backend class
 
-    class schema {
+class schema_backend_getdata : public schema_backend {
+    public:
 
-        public :
+        schema_backend_getdata();
+        ~schema_backend_getdata();
+        schema_backend_getdata(schema_backend_getdata const & other);
+        schema_backend_getdata & operator=(schema_backend_getdata const & other);
 
-            schema ();
+        void read(backend_path const & loc, field_list & fields);
 
-            schema ( field_list const & fields );
+        void write(backend_path const & loc, field_list const & fields) const;
+};
 
-            ~schema ();
-            schema & operator= ( schema const & other );
 
-            schema ( schema const & other );
+// a schema used for a group
 
-            schema ( backend_path const & loc );
+class schema {
+    public:
 
-            schema ( schema const & other, std::string const & filter, backend_path const & loc );
+        schema();
 
-            // metadata ops
+        schema(field_list const & fields);
 
-            void relocate ( backend_path const & loc );
+        ~schema();
+        schema & operator=(schema const & other);
 
-            void sync ();
+        schema(schema const & other);
 
-            void flush () const;
+        schema(backend_path const & loc);
 
-            void copy ( schema const & other, std::string const & filter, backend_path const & loc );
+        schema(schema const & other, std::string const & filter,
+               backend_path const & loc);
 
-            backend_path location () const;
+        // metadata ops
 
-            // data ops
+        void relocate(backend_path const & loc);
 
-            void clear ();
+        void sync();
 
-            void field_add ( field const & fld );
+        void flush() const;
 
-            void field_del ( std::string const & name );
+        void copy(schema const & other, std::string const & filter,
+                  backend_path const & loc);
 
-            field const & field_get ( std::string const & name ) const;
+        backend_path location() const;
 
-            field_list const & fields () const;
+        // data ops
 
-            template < class Archive >
-            void save ( Archive & ar ) const {
-                ar ( CEREAL_NVP( loc_ ) );
-                ar ( CEREAL_NVP( fields_ ) );
-            }
+        void clear();
 
-            template < class Archive >
-            void load ( Archive & ar ) {
-                ar ( CEREAL_NVP( loc_ ) );
-                ar ( CEREAL_NVP( fields_ ) );
-                set_backend();
-            }
+        void field_add(field const & fld);
 
-        private :
+        void field_del(std::string const & name);
 
-            void set_backend ();
+        field const & field_get(std::string const & name) const;
 
-            field_list fields_;
+        field_list const & fields() const;
 
-            backend_path loc_;
-            std::unique_ptr < schema_backend > backend_;
+        template <class Archive>
+        void save(Archive & ar) const {
+            ar(CEREAL_NVP(loc_));
+            ar(CEREAL_NVP(fields_));
+        }
 
-    };
+        template <class Archive>
+        void load(Archive & ar) {
+            ar(CEREAL_NVP(loc_));
+            ar(CEREAL_NVP(fields_));
+            set_backend();
+        }
+
+    private:
+
+        void set_backend();
+
+        field_list fields_;
+
+        backend_path loc_;
+        std::unique_ptr <schema_backend> backend_;
+};
 
 }
 
 
-#endif
+#endif // ifndef TIDAS_SCHEMA_HPP

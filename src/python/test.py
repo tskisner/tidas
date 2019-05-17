@@ -13,11 +13,24 @@ import tempfile
 
 import numpy as np
 import numpy.testing as nt
+
 #
 # import ctypes as ct
 
-from tidas import (DataType, BackendType, CompressionType, AccessMode,
-    Dictionary, Intrvl, Intervals, Field, Schema, Group, Block, Volume)
+from tidas import (
+    DataType,
+    BackendType,
+    CompressionType,
+    AccessMode,
+    Dictionary,
+    Intrvl,
+    Intervals,
+    Field,
+    Schema,
+    Group,
+    Block,
+    Volume,
+)
 
 # from .group import *
 # from .intervals import *
@@ -52,55 +65,54 @@ def test_dict_verify(dct):
     nt.assert_equal(dct.get_int64("int64"), -100000000000)
     nt.assert_equal(dct.get_uint64("uint64"), 100000000000)
     nt.assert_almost_equal(dct.get_float32("float32"), -1.234567, decimal=4)
-    nt.assert_almost_equal(dct.get_float64("float64"), -1.234567890123e9,
-                           decimal=8)
+    nt.assert_almost_equal(dct.get_float64("float64"), -1.234567890123e9, decimal=8)
     return
 
 
 def test_schema_setup():
     fields = list()
-    fields.append( Field("int8", DataType.int8, "int8") )
-    fields.append( Field("uint8", DataType.uint8, "uint8") )
-    fields.append( Field("int16", DataType.int16, "int16") )
-    fields.append( Field("uint16", DataType.uint16, "uint16") )
-    fields.append( Field("int32", DataType.int32, "int32") )
-    fields.append( Field("uint32", DataType.uint32, "uint32") )
-    fields.append( Field("int64", DataType.int64, "int64") )
-    fields.append( Field("uint64", DataType.uint64, "uint64") )
-    fields.append( Field("float32", DataType.float32, "float32") )
-    fields.append( Field("float64", DataType.float64, "float64") )
-    fields.append( Field("string", DataType.string, "string") )
+    fields.append(Field("int8", DataType.int8, "int8"))
+    fields.append(Field("uint8", DataType.uint8, "uint8"))
+    fields.append(Field("int16", DataType.int16, "int16"))
+    fields.append(Field("uint16", DataType.uint16, "uint16"))
+    fields.append(Field("int32", DataType.int32, "int32"))
+    fields.append(Field("uint32", DataType.uint32, "uint32"))
+    fields.append(Field("int64", DataType.int64, "int64"))
+    fields.append(Field("uint64", DataType.uint64, "uint64"))
+    fields.append(Field("float32", DataType.float32, "float32"))
+    fields.append(Field("float64", DataType.float64, "float64"))
+    fields.append(Field("string", DataType.string, "string"))
     ret = Schema(fields)
     return ret
 
 
 def test_schema_verify(fields):
     for fl in fields:
-        assert(fl.name == fl.units)
+        assert fl.name == fl.units
         if fl.name == "int8":
-            assert(fl.type == DataType.int8)
+            assert fl.type == DataType.int8
         elif fl.name == "uint8":
-            assert(fl.type == DataType.uint8)
+            assert fl.type == DataType.uint8
         elif fl.name == "int16":
-            assert(fl.type == DataType.int16)
+            assert fl.type == DataType.int16
         elif fl.name == "uint16":
-            assert(fl.type == DataType.uint16)
+            assert fl.type == DataType.uint16
         elif fl.name == "int32":
-            assert(fl.type == DataType.int32)
+            assert fl.type == DataType.int32
         elif fl.name == "uint32":
-            assert(fl.type == DataType.uint32)
+            assert fl.type == DataType.uint32
         elif fl.name == "int64":
-            assert(fl.type == DataType.int64)
+            assert fl.type == DataType.int64
         elif fl.name == "uint64":
-            assert(fl.type == DataType.uint64)
+            assert fl.type == DataType.uint64
         elif fl.name == "float32":
-            assert(fl.type == DataType.float32)
+            assert fl.type == DataType.float32
         elif fl.name == "float64":
-            assert(fl.type == DataType.float64)
+            assert fl.type == DataType.float64
         elif fl.name == "string":
-            assert(fl.type == DataType.string)
+            assert fl.type == DataType.string
         else:
-            print("error, unrecognized field \"{}\"".format(fl.name))
+            print('error, unrecognized field "{}"'.format(fl.name))
     return
 
 
@@ -112,10 +124,10 @@ def test_intervals_setup():
     gap_samp = 5
     span_samp = 617
     for i in range(nint):
-        start = gap + float(i) * ( span + gap )
-        stop = float(i + 1) * ( span + gap )
-        first = gap_samp + i * ( span_samp + gap_samp );
-        last = (i + 1) * ( span_samp + gap_samp );
+        start = gap + float(i) * (span + gap)
+        stop = float(i + 1) * (span + gap)
+        first = gap_samp + i * (span_samp + gap_samp)
+        last = (i + 1) * (span_samp + gap_samp)
         ilist.append(Intrvl(start, stop, first, last))
     return ilist
 
@@ -131,7 +143,7 @@ def test_intervals_verify(ilist):
 
 def test_intervals_pickle():
     try:
-        import cPickle as pickle # Use cPickle on Python 2.7
+        import cPickle as pickle  # Use cPickle on Python 2.7
     except ImportError:
         import pickle
     ilist = test_intervals_setup()
@@ -154,22 +166,22 @@ def test_group_setup(grp, nsamp):
     uint64_data = np.zeros(nsamp, dtype=np.uint64)
     float32_data = np.zeros(nsamp, dtype=np.float32)
     float64_data = np.zeros(nsamp, dtype=np.float64)
-    string_data = np.empty(nsamp, dtype='S64')
+    string_data = np.empty(nsamp, dtype="S64")
 
     for i in range(nsamp):
         fi = float(i)
         time[i] = fi * 0.001
         int8_data[i] = -(i % 128)
-        uint8_data[i] = (i % 128)
+        uint8_data[i] = i % 128
         int16_data[i] = -(i % 32768)
-        uint16_data[i] = (i % 32768)
+        uint16_data[i] = i % 32768
         int32_data[i] = -i
         uint32_data[i] = i
         int64_data[i] = -i
         uint64_data[i] = i
         float32_data[i] = fi
         float64_data[i] = fi
-        string_data[i] = 'foobarbahblat'
+        string_data[i] = "foobarbahblat"
 
     grp.write_times(0, time)
     grp.write("int8", 0, int8_data)
@@ -200,22 +212,22 @@ def test_group_verify(grp, nsamp):
     uint64_data_check = np.zeros(nsamp, dtype=np.uint64)
     float32_data_check = np.zeros(nsamp, dtype=np.float32)
     float64_data_check = np.zeros(nsamp, dtype=np.float64)
-    string_data_check = np.zeros(nsamp, dtype='S64')
+    string_data_check = np.zeros(nsamp, dtype="S64")
 
     for i in range(nsamp):
         fi = float(i)
         time_check[i] = fi * 0.001
         int8_data_check[i] = -(i % 128)
-        uint8_data_check[i] = (i % 128)
+        uint8_data_check[i] = i % 128
         int16_data_check[i] = -(i % 32768)
-        uint16_data_check[i] = (i % 32768)
+        uint16_data_check[i] = i % 32768
         int32_data_check[i] = -i
         uint32_data_check[i] = i
         int64_data_check[i] = -i
         uint64_data_check[i] = i
         float32_data_check[i] = fi
         float64_data_check[i] = fi
-        string_data_check[i] = 'foobarbahblat'
+        string_data_check[i] = "foobarbahblat"
 
     time = grp.read_times(0, nsamp)
     int8_data = grp.read("int8", 0, nsamp)
@@ -314,7 +326,6 @@ def test_volume_verify(vol, nblock, nsamp):
     return
 
 
-
 def run(tmpdir=None):
     dirpath = ""
     if tmpdir is None:
@@ -360,7 +371,7 @@ def run(tmpdir=None):
 
     with Volume(volpath, AccessMode.read) as vol:
         test_volume_verify(vol, nblock, nsamp)
-        #vol.info()
+        # vol.info()
 
     print("   PASS")
 
@@ -383,7 +394,6 @@ def test_mpi_volume_setup(vol, nblock, nsamp):
 
     vol.meta_sync()
     return
-
 
 
 def run_mpi(tmpdir=None):
@@ -417,13 +427,14 @@ def run_mpi(tmpdir=None):
     nblock = 10
     nsamp = 10
 
-    with MPIVolume(comm, volpath, BackendType.hdf5, CompressionType.gzip,
-        dict()) as vol:
+    with MPIVolume(
+        comm, volpath, BackendType.hdf5, CompressionType.gzip, dict()
+    ) as vol:
         test_mpi_volume_setup(vol, nblock, nsamp)
 
     with MPIVolume(comm, volpath, AccessMode.read) as vol:
         test_volume_verify(vol, nblock, nsamp)
-        #vol.info()
+        # vol.info()
 
     if comm.rank == 0:
         print("   PASS")

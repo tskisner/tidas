@@ -12,6 +12,19 @@ timestreams.
 
 from __future__ import absolute_import, division, print_function
 
-from ._pytidas import (DataType, BackendType, CompressionType, AccessMode,
-    LinkType, ExecOrder, Dictionary, Intrvl, Intervals, Field, Schema, Group,
-    Block, Volume)
+from ._pytidas import (
+    DataType,
+    BackendType,
+    CompressionType,
+    AccessMode,
+    LinkType,
+    ExecOrder,
+    Dictionary,
+    Intrvl,
+    Intervals,
+    Field,
+    Schema,
+    Group,
+    Block,
+    Volume,
+)

@@ -1,9 +1,9 @@
 /*
-  TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
-  is governed by a BSD-style license that can be found in the top-level
-  LICENSE file.
-*/
+   TImestream DAta Storage (TIDAS)
+   Copyright (c) 2014-2018, all rights reserved.  Use of this source code
+   is governed by a BSD-style license that can be found in the top-level
+   LICENSE file.
+ */
 
 #include <tidas_test.hpp>
 
@@ -12,9 +12,7 @@ using namespace std;
 using namespace tidas;
 
 
-
-void tidas::test::schema_setup ( tidas::field_list & flist ) {
-
+void tidas::test::schema_setup(tidas::field_list & flist) {
     field f_int8;
     field f_uint8;
     field f_int16;
@@ -72,141 +70,126 @@ void tidas::test::schema_setup ( tidas::field_list & flist ) {
     f_string.units = "string";
 
     flist.clear();
-    flist.push_back ( f_int8 );
-    flist.push_back ( f_uint8 );
-    flist.push_back ( f_int16 );
-    flist.push_back ( f_uint16 );
-    flist.push_back ( f_int32 );
-    flist.push_back ( f_uint32 );
-    flist.push_back ( f_int64 );
-    flist.push_back ( f_uint64 );
-    flist.push_back ( f_float32 );
-    flist.push_back ( f_float64 );
-    flist.push_back ( f_string );
+    flist.push_back(f_int8);
+    flist.push_back(f_uint8);
+    flist.push_back(f_int16);
+    flist.push_back(f_uint16);
+    flist.push_back(f_int32);
+    flist.push_back(f_uint32);
+    flist.push_back(f_int64);
+    flist.push_back(f_uint64);
+    flist.push_back(f_float32);
+    flist.push_back(f_float64);
+    flist.push_back(f_string);
 
     return;
 }
 
-
-void tidas::test::schema_verify ( tidas::field_list const & flist ) {
-
+void tidas::test::schema_verify(tidas::field_list const & flist) {
     tidas::field_list check;
 
-    tidas::test::schema_setup ( check );
+    tidas::test::schema_setup(check);
 
-    EXPECT_EQ( check.size(), flist.size() );
+    EXPECT_EQ(check.size(), flist.size());
 
-    for ( size_t i = 0; i < flist.size(); ++i ) {
-        EXPECT_EQ( check[i], flist[i] );
+    for (size_t i = 0; i < flist.size(); ++i) {
+        EXPECT_EQ(check[i], flist[i]);
     }
 
     return;
 }
 
+schemaTest::schemaTest() {}
 
-schemaTest::schemaTest () {
-
-}
-
-
-TEST_F( schemaTest, MetaOps ) {
-
+TEST_F(schemaTest, MetaOps) {
     schema schm;
 
     // should throw
     try {
-        field ftest = schm.field_get ( "dummy" );
-        EXPECT_EQ( ftest.name, "" );
-        EXPECT_EQ( ftest.units, "" );
-        EXPECT_EQ( ftest.type, data_type::none );
-    } catch(...) {
+        field ftest = schm.field_get("dummy");
+        EXPECT_EQ(ftest.name, "");
+        EXPECT_EQ(ftest.units, "");
+        EXPECT_EQ(ftest.type, data_type::none);
+    } catch (...) {
         cout << "schema::field_get successfully threw exception" << endl;
     }
-
     // should return empty list
     field_list flist = schm.fields();
-    EXPECT_EQ( 0, flist.size() );
+    EXPECT_EQ(0, flist.size());
 
-    tidas::test::schema_setup ( flist );
+    tidas::test::schema_setup(flist);
 
-    schema schm2 ( flist );
+    schema schm2(flist);
 
-    tidas::test::schema_verify ( schm2.fields() );
-
+    tidas::test::schema_verify(schm2.fields());
 }
 
 
-TEST_F( schemaTest, AddRemove ) {
-
+TEST_F(schemaTest, AddRemove) {
     field_list flist;
 
-    tidas::test::schema_setup ( flist );
+    tidas::test::schema_setup(flist);
 
-    schema schm ( flist );
+    schema schm(flist);
 
-    for ( size_t i = 0; i < flist.size(); ++i ) {
-        schm.field_del ( flist[i].name );
+    for (size_t i = 0; i < flist.size(); ++i) {
+        schm.field_del(flist[i].name);
     }
 
-    EXPECT_EQ( 0, schm.fields().size() );
+    EXPECT_EQ(0, schm.fields().size());
 
-    for ( size_t i = 0; i < flist.size(); ++i ) {
-        schm.field_add ( flist[i] );
+    for (size_t i = 0; i < flist.size(); ++i) {
+        schm.field_add(flist[i]);
     }
 
-    tidas::test::schema_verify ( schm.fields() );
-
+    tidas::test::schema_verify(schm.fields());
 }
 
 
-TEST_F( schemaTest, Filter ) {
-
+TEST_F(schemaTest, Filter) {
     field_list flist;
 
-    tidas::test::schema_setup ( flist );
+    tidas::test::schema_setup(flist);
 
-    schema schm ( flist );
+    schema schm(flist);
 
     backend_path loc;
 
-    schema filt_ischm ( schm, "int.*", loc );
-    EXPECT_EQ( 4, filt_ischm.fields().size() );
+    schema filt_ischm(schm, "int.*", loc);
+    EXPECT_EQ(4, filt_ischm.fields().size());
 
-    schema filt_aischm ( schm, ".*int.*", loc );
-    EXPECT_EQ( 8, filt_aischm.fields().size() );
-
+    schema filt_aischm(schm, ".*int.*", loc);
+    EXPECT_EQ(8, filt_aischm.fields().size());
 }
 
 
-TEST_F( schemaTest, HDF5Backend ) {
-
+TEST_F(schemaTest, HDF5Backend) {
     field_list flist;
 
-    tidas::test::schema_setup ( flist );
+    tidas::test::schema_setup(flist);
 
-    schema schm ( flist );
+    schema schm(flist);
 
 #ifdef HAVE_HDF5
 
     backend_path loc;
     loc.type = backend_type::hdf5;
     loc.path = tidas::test::output_dir();
-    fs_mkdir ( loc.path.c_str() );
+    fs_mkdir(loc.path.c_str());
     loc.name = "test_schema.hdf5.out";
     loc.meta = string("/") + schema_hdf5_dataset;
     loc.mode = access_mode::write;
 
-    schema schm2 ( schm, ".*", loc );
+    schema schm2(schm, ".*", loc);
     schm2.flush();
 
-    schema schm3 ( loc );
+    schema schm3(loc);
 
-    tidas::test::schema_verify ( schm3.fields() );
+    tidas::test::schema_verify(schm3.fields());
 
-#else
+#else // ifdef HAVE_HDF5
 
     cout << "  skipping (not compiled with HDF5 support)" << endl;
 
-#endif
-
+#endif // ifdef HAVE_HDF5
 }

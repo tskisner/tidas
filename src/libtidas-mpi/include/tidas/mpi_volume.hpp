@@ -1,9 +1,9 @@
 /*
-  TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
-  is governed by a BSD-style license that can be found in the top-level
-  LICENSE file.
-*/
+   TImestream DAta Storage (TIDAS)
+   Copyright (c) 2014-2018, all rights reserved.  Use of this source code
+   is governed by a BSD-style license that can be found in the top-level
+   LICENSE file.
+ */
 
 #ifndef TIDAS_MPI_VOLUME_HPP
 #define TIDAS_MPI_VOLUME_HPP
@@ -11,128 +11,119 @@
 
 namespace tidas {
 
-    class mpi_volume {
+class mpi_volume {
+    public:
 
-        public :
+        mpi_volume();
+        ~mpi_volume();
+        mpi_volume & operator=(mpi_volume const & other);
 
-            mpi_volume ();
-            ~mpi_volume ();
-            mpi_volume & operator= ( mpi_volume const & other );
+        mpi_volume(mpi_volume const & other);
 
-            mpi_volume ( mpi_volume const & other );
+        /// Create a new volume.
+        mpi_volume(MPI_Comm comm, std::string const & path,
+                   backend_type type, compression_type comp,
+                   std::map <std::string, std::string> extra =
+                       std::map <std::string, std::string> ());
 
-            /// Create a new volume.
-            mpi_volume ( MPI_Comm comm, std::string const & path,
-                backend_type type, compression_type comp,
-                std::map < std::string, std::string > extra =
-                std::map < std::string, std::string > () );
+        /// Open an existing volume.
+        mpi_volume(MPI_Comm comm, std::string const & path,
+                   access_mode mode, std::string const & dist = "");
 
-            /// Open an existing volume.
-            mpi_volume ( MPI_Comm comm, std::string const & path,
-                access_mode mode, std::string const & dist = "" );
+        mpi_volume(mpi_volume const & other, std::string const & filter,
+                   backend_path const & loc);
 
-            mpi_volume ( mpi_volume const & other, std::string const & filter,
-                backend_path const & loc );
+        mpi_volume(MPI_Comm comm, mpi_volume const & other, std::string const & filter,
+                   backend_path const & loc);
 
-            mpi_volume ( MPI_Comm comm, mpi_volume const & other, std::string const & filter,
-                backend_path const & loc );
+        MPI_Comm comm() const;
 
-            MPI_Comm comm ( ) const;
+        int comm_rank() const;
 
-            int comm_rank ( ) const;
+        int comm_size() const;
 
-            int comm_size ( ) const;
+        std::string path_make(std::string const & path) const;
 
-            std::string path_make ( std::string const & path ) const;
+        std::string path_get(std::string const & path) const;
 
-            std::string path_get ( std::string const & path ) const;
+        void open();
 
-            void open ( );
+        void close();
 
-            void close ( );
+        void meta_sync();
 
-            void meta_sync ( );
+        // metadata ops
 
-            // metadata ops
+        void copy(MPI_Comm comm, mpi_volume const & other,
+                  std::string const & filter, backend_path const & loc);
 
-            void copy ( MPI_Comm comm, mpi_volume const & other,
-                std::string const & filter, backend_path const & loc );
+        /// Export a filtered subset of the volume to a new location.
+        void duplicate(std::string const & path, backend_type type,
+                       compression_type comp, std::string const & filter = "",
+                       std::map <std::string, std::string> extra =
+                           std::map <std::string, std::string> ()) const;
 
-            /// Export a filtered subset of the volume to a new location.
-            void duplicate ( std::string const & path, backend_type type,
-                compression_type comp, std::string const & filter = "",
-                std::map < std::string, std::string > extra =
-                std::map < std::string, std::string > () ) const;
+        /// Create a (hard or soft) linked filtered subset of the volume to a new
+        // location.
+        void link(std::string const & path, link_type const & type,
+                  std::string const & filter) const;
 
-            /// Create a (hard or soft) linked filtered subset of the volume to a new location.
-            void link ( std::string const & path, link_type const & type,
-                std::string const & filter ) const;
+        /// Delete the on-disk data and metadata associated with this object.
+        /// In-memory metadata is not modified.
+        void wipe(std::string const & filter) const;
 
-            /// Delete the on-disk data and metadata associated with this object.
-            /// In-memory metadata is not modified.
-            void wipe ( std::string const & filter ) const;
+        backend_path location() const;
 
-            backend_path location () const;
+        /// Get the root block of the volume.
+        block & root();
 
-            /// Get the root block of the volume.
-            block & root ();
+        /// Get the (const) root block of the volume.
+        block const & root() const;
 
-            /// Get the (const) root block of the volume.
-            block const & root () const;
+        /// Print info to a stream.
+        void info(std::ostream & out) const;
 
-            /// Print info to a stream.
-            void info ( std::ostream & out ) const;
-
-            template < class P >
-            void exec ( P & op, exec_order order, std::string const & filter = "" ) {
-
-                if ( filter == "" ) {
-
-                    root_.exec ( op, order );
-
-                } else {
-
-                    block selected = root_.select ( filter );
-                    selected.exec ( op, order );
-
-                }
-
-                return;
+        template <class P>
+        void exec(P & op, exec_order order, std::string const & filter = "") {
+            if (filter == "") {
+                root_.exec(op, order);
+            } else {
+                block selected = root_.select(filter);
+                selected.exec(op, order);
             }
 
-        private :
+            return;
+        }
 
-            void index_setup ();
+    private:
 
-            void read_props ( backend_path & loc );
+        void index_setup();
 
-            void write_props ( backend_path const & loc ) const;
+        void read_props(backend_path & loc);
 
-            backend_path root_loc ( backend_path const & loc ) const;
+        void write_props(backend_path const & loc) const;
 
-            backend_path loc_;
+        backend_path root_loc(backend_path const & loc) const;
 
-            block root_;
+        backend_path loc_;
 
-            MPI_Comm comm_;
-            int nproc_;
-            int rank_;
+        block root_;
 
-            std::string dist_;
+        MPI_Comm comm_;
+        int nproc_;
+        int rank_;
 
-            std::shared_ptr < indexdb_mem > localdb_;
-            std::shared_ptr < indexdb > masterdb_;
+        std::string dist_;
 
-    };
+        std::shared_ptr <indexdb_mem> localdb_;
+        std::shared_ptr <indexdb> masterdb_;
+};
 
-    // mpi_volume copy
+// mpi_volume copy
 
-    void data_copy ( mpi_volume const & in, mpi_volume & out );
+void data_copy(mpi_volume const & in, mpi_volume & out);
 
 }
-
-
-
 
 
 // Notes:
@@ -143,7 +134,8 @@ namespace tidas {
 // - how to handle merging?
 // - OR should we have a command queue???
 
-// - each distributed process gets its own root block, which is a filtered copy of the main block
+// - each distributed process gets its own root block, which is a filtered copy of the
+// main block
 
 
 // methods:
@@ -191,5 +183,4 @@ namespace tidas {
 // flush() does indexdb merge
 
 
-
-#endif
+#endif // ifndef TIDAS_MPI_VOLUME_HPP

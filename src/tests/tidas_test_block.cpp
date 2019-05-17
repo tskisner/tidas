@@ -1,9 +1,9 @@
 /*
-  TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
-  is governed by a BSD-style license that can be found in the top-level
-  LICENSE file.
-*/
+   TImestream DAta Storage (TIDAS)
+   Copyright (c) 2014-2018, all rights reserved.  Use of this source code
+   is governed by a BSD-style license that can be found in the top-level
+   LICENSE file.
+ */
 
 #include <tidas_test.hpp>
 
@@ -12,90 +12,78 @@ using namespace std;
 using namespace tidas;
 
 
-
-void tidas::test::block_setup ( block & blk, size_t n_samp, size_t n_intr ) {
-
+void tidas::test::block_setup(block & blk, size_t n_samp, size_t n_intr) {
     blk.clear();
 
     dict dt;
-    tidas::test::dict_setup ( dt );
+    tidas::test::dict_setup(dt);
 
-    intervals intr ( dt, n_intr );
+    intervals intr(dt, n_intr);
 
     interval_list inv;
-    tidas::test::intervals_setup ( inv );
+    tidas::test::intervals_setup(inv);
 
     field_list flist;
-    tidas::test::schema_setup ( flist );
-    schema schm ( flist );
+    tidas::test::schema_setup(flist);
+    schema schm(flist);
 
-    group grp ( schm, dt, n_samp );
+    group grp(schm, dt, n_samp);
 
-    group & grefa = blk.group_add ( "group_A", grp );
-    tidas::test::group_setup ( grefa, 0, grefa.size() );
+    group & grefa = blk.group_add("group_A", grp);
+    tidas::test::group_setup(grefa, 0, grefa.size());
 
-    group & grefb = blk.group_add ( "group_B", grp );
-    tidas::test::group_setup ( grefb, 0, grefb.size() );
+    group & grefb = blk.group_add("group_B", grp);
+    tidas::test::group_setup(grefb, 0, grefb.size());
 
-    intervals & irefa = blk.intervals_add ( "intr_A", intr );
-    irefa.write_data ( inv );
+    intervals & irefa = blk.intervals_add("intr_A", intr);
+    irefa.write_data(inv);
 
-    intervals & irefb = blk.intervals_add ( "intr_B", intr );
-    irefb.write_data ( inv );
+    intervals & irefb = blk.intervals_add("intr_B", intr);
+    irefb.write_data(inv);
 
     return;
 }
 
+void tidas::test::block_verify(block & blk) {
+    group grp = blk.group_get("group_A");
+    tidas::test::group_verify(grp, 0, grp.size());
 
-void tidas::test::block_verify ( block & blk ) {
-
-    group grp = blk.group_get ( "group_A" );
-    tidas::test::group_verify ( grp, 0, grp.size() );
-
-    grp = blk.group_get ( "group_B" );
-    tidas::test::group_verify ( grp, 0, grp.size() );
+    grp = blk.group_get("group_B");
+    tidas::test::group_verify(grp, 0, grp.size());
 
     interval_list inv;
 
-    intervals intr = blk.intervals_get ( "intr_A" );
-    intr.read_data ( inv );
-    tidas::test::intervals_verify ( inv );
+    intervals intr = blk.intervals_get("intr_A");
+    intr.read_data(inv);
+    tidas::test::intervals_verify(inv);
 
-    intr = blk.intervals_get ( "intr_B" );
-    intr.read_data ( inv );
-    tidas::test::intervals_verify ( inv );
+    intr = blk.intervals_get("intr_B");
+    intr.read_data(inv);
+    tidas::test::intervals_verify(inv);
 
-    vector < string > blks = blk.block_names();
+    vector <string> blks = blk.block_names();
 
-    for ( size_t i = 0; i < blks.size(); ++i ) {
-        block subblk = blk.block_get ( blks[i] );
-        tidas::test::block_verify ( subblk );
+    for (size_t i = 0; i < blks.size(); ++i) {
+        block subblk = blk.block_get(blks[i]);
+        tidas::test::block_verify(subblk);
     }
 
     return;
 }
 
+blockTest::blockTest() {}
 
-blockTest::blockTest () {
-
-}
-
-
-void blockTest::SetUp () {
+void blockTest::SetUp() {
     n_samp = 10 + hdf5_chunk_default;
     n_intr = 10;
 }
 
-
-TEST_F( blockTest, MetaOps ) {
-
+TEST_F(blockTest, MetaOps) {
     block blk;
-
 }
 
 
-TEST_F( blockTest, Select ) {
-
+TEST_F(blockTest, Select) {
     block top;
 
     backend_path loc;
@@ -105,45 +93,45 @@ TEST_F( blockTest, Select ) {
     loc.mode = access_mode::write;
     loc.comp = compression_type::none;
 
-    top.relocate ( loc );
+    top.relocate(loc);
 
-    for ( size_t i = 0; i < 5; ++i ) {
+    for (size_t i = 0; i < 5; ++i) {
         ostringstream name;
         name << "block_" << i;
-        block & blk = top.block_add ( name.str(), tidas::block() );
-        for ( size_t j = 0; j < 5; ++j ) {
+        block & blk = top.block_add(name.str(), tidas::block());
+        for (size_t j = 0; j < 5; ++j) {
             ostringstream subname;
             subname << "sub_" << j;
-            block & sub = blk.block_add ( subname.str(), tidas::block() );
+            block & sub = blk.block_add(subname.str(), tidas::block());
         }
     }
 
-    for ( size_t i = 0; i < 5; ++i ) {
+    for (size_t i = 0; i < 5; ++i) {
         ostringstream name;
         name << "block_" << i;
-        for ( size_t j = 0; j < 5; ++j ) {
+        for (size_t j = 0; j < 5; ++j) {
             ostringstream subname;
             subname << "sub_" << j;
-            // string filter = path_sep + name.str() + path_sep + subname.str() + path_sep;
+
+            // string filter = path_sep + name.str() + path_sep + subname.str() +
+            // path_sep;
             string filter = path_sep + name.str() + path_sep + subname.str();
-            block blk = top.select ( filter );
+            block blk = top.select(filter);
 
-            vector < string > children = blk.block_names();
-            EXPECT_EQ ( children.size(), 1 );
-            EXPECT_EQ ( children[0], name.str() );
+            vector <string> children = blk.block_names();
+            EXPECT_EQ(children.size(), 1);
+            EXPECT_EQ(children[0], name.str());
 
-            block sub = blk.block_get ( children[0] );
+            block sub = blk.block_get(children[0]);
             children = sub.block_names();
-            EXPECT_EQ ( children.size(), 1 );
-            EXPECT_EQ ( children[0], subname.str() );
+            EXPECT_EQ(children.size(), 1);
+            EXPECT_EQ(children[0], subname.str());
         }
     }
-
 }
 
 
-TEST_F( blockTest, HDF5Backend ) {
-
+TEST_F(blockTest, HDF5Backend) {
     // HDF5 backend
 
 #ifdef HAVE_HDF5
@@ -156,17 +144,16 @@ TEST_F( blockTest, HDF5Backend ) {
     loc.comp = compression_type::gzip;
 
     block blk;
-    blk.relocate ( loc );
+    blk.relocate(loc);
     blk.flush();
 
-    tidas::test::block_setup ( blk, n_samp, n_intr );
+    tidas::test::block_setup(blk, n_samp, n_intr);
 
-    tidas::test::block_verify ( blk );
+    tidas::test::block_verify(blk);
 
-#else
+#else // ifdef HAVE_HDF5
 
     cout << "  skipping (not compiled with HDF5 support)" << endl;
 
-#endif
-
+#endif // ifdef HAVE_HDF5
 }

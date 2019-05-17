@@ -39,7 +39,7 @@ blkrun="-l 88"
 blktest="--check"
 
 # Directories to process
-cppdirs="libtidas/src libtidas/include libtidas-mpi/src libtidas-mpi/include tests tests-mpi"
+cppdirs="libtidas/src libtidas/include libtidas-mpi/src libtidas-mpi/include tests tests-mpi python"
 pydirs="python"
 
 # Test

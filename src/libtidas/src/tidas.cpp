@@ -1,9 +1,9 @@
-/*
-  TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
-  is governed by a BSD-style license that can be found in the top-level
-  LICENSE file.
-*/
+
+// TImestream DAta Storage (TIDAS).
+//
+// Copyright (c) 2015-2019 by the parties listed in the AUTHORS file.  All rights
+// reserved.  Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include <tidas_internal.hpp>
 
@@ -12,8 +12,7 @@ using namespace std;
 using namespace tidas;
 
 
-
-tidas::backend_path::backend_path () {
+tidas::backend_path::backend_path() {
     path = "";
     name = "";
     meta = "";
@@ -24,33 +23,31 @@ tidas::backend_path::backend_path () {
     idx.reset();
 }
 
-
-bool tidas::backend_path::operator== ( const backend_path & other ) const {
-    if ( path != other.path ) {
+bool tidas::backend_path::operator==(const backend_path & other) const {
+    if (path != other.path) {
         return false;
     }
-    if ( name != other.name ) {
+    if (name != other.name) {
         return false;
     }
-    if ( meta != other.meta ) {
+    if (meta != other.meta) {
         return false;
     }
-    if ( type != other.type ) {
+    if (type != other.type) {
         return false;
     }
-    if ( comp != other.comp ) {
+    if (comp != other.comp) {
         return false;
     }
-    if ( mode != other.mode ) {
+    if (mode != other.mode) {
         return false;
     }
-    if ( backparams != other.backparams ) {
+    if (backparams != other.backparams) {
         return false;
     }
     return true;
 }
 
-
-bool tidas::backend_path::operator!= ( const backend_path & other ) const {
-    return ! ( *this == other );
+bool tidas::backend_path::operator!=(const backend_path & other) const {
+    return !(*this == other);
 }

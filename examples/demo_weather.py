@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-##
-##  TImestream DAta Storage (TIDAS)
-##  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
-##  is governed by a BSD-style license that can be found in the top-level
-##  LICENSE file.
-##
+#
+# TImestream DAta Storage (TIDAS).
+#
+# Copyright (c) 2015-2019 by the parties listed in the AUTHORS file.  All rights
+# reserved.  Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # WARNING:  Running this script will generate a several GB of data...
 
@@ -28,8 +28,8 @@ path = "demo_weather"
 # Create the schemas for the data groups that we will have for each day
 
 wfields = list()
-wfields.append( tidas.Field("speed", tdt.float32, "Meters / second") )
-wfields.append( tidas.Field("direction", tdt.float32, "Degrees") )
+wfields.append(tidas.Field("speed", tdt.float32, "Meters / second"))
+wfields.append(tidas.Field("direction", tdt.float32, "Degrees"))
 wind_schema = tidas.Schema(wfields)
 
 # sampled every 10 seconds
@@ -37,9 +37,9 @@ wind_rate = 1.0 / 10.0
 wind_daysamples = int(24.0 * 3600.0 * wind_rate)
 
 tfields = list()
-tfields.append( tidas.Field("temperature", tdt.float32, "Degrees Celsius") )
-tfields.append( tidas.Field("pressure", tdt.float32, "Millibars") )
-tfields.append( tidas.Field("humidity", tdt.float32, "Percent") )
+tfields.append(tidas.Field("temperature", tdt.float32, "Degrees Celsius"))
+tfields.append(tidas.Field("pressure", tdt.float32, "Millibars"))
+tfields.append(tidas.Field("humidity", tdt.float32, "Percent"))
 thermal_schema = tidas.Schema(tfields)
 
 # sampled once per minute
@@ -47,7 +47,7 @@ thermal_rate = 1.0 / 60.0
 thermal_daysamples = int(24.0 * 3600.0 * thermal_rate)
 
 pfields = list()
-pfields.append( tidas.Field("rainfall", tdt.float32, "Centimeters") )
+pfields.append(tidas.Field("rainfall", tdt.float32, "Centimeters"))
 precip_schema = tidas.Schema(pfields)
 
 # sampled every 5 minutes
@@ -63,8 +63,7 @@ if os.path.isdir(path):
 
 # Create the volume all at once.
 
-vol = tidas.Volume(path, tidas.BackendType.hdf5,
-    tidas.CompressionType.none, dict())
+vol = tidas.Volume(path, tidas.BackendType.hdf5, tidas.CompressionType.none, dict())
 
 # Get the root block of the volume
 root = vol.root()
@@ -82,11 +81,10 @@ for year in ["2018", "2019"]:
         mb = yb.block_add(month, tidas.Block())
 
         weekday, nday = calendar.monthrange(int(year), monthnum)
-        for dy in range(1, nday+1):
+        for dy in range(1, nday + 1):
 
             daystart = datetime.datetime(int(year), monthnum, dy)
-            daystartsec = (daystart - volstart).total_seconds() \
-                + volstartsec
+            daystartsec = (daystart - volstart).total_seconds() + volstartsec
 
             # Add a block for the day
             day = "{:02d}".format(dy)
@@ -96,56 +94,73 @@ for year in ["2018", "2019"]:
 
             print("Writing data for {} {:02d}, {}".format(month, dy, year))
 
-            wind = tidas.Group(wind_schema, tidas.Dictionary(),
-                wind_daysamples)
+            wind = tidas.Group(wind_schema, tidas.Dictionary(), wind_daysamples)
             wind = db.group_add("wind", wind)
 
-            thermal = tidas.Group(thermal_schema, tidas.Dictionary(),
-                thermal_daysamples)
+            thermal = tidas.Group(
+                thermal_schema, tidas.Dictionary(), thermal_daysamples
+            )
             thermal = db.group_add("thermal", thermal)
 
-            precip = tidas.Group(precip_schema, tidas.Dictionary(),
-                precip_daysamples)
+            precip = tidas.Group(precip_schema, tidas.Dictionary(), precip_daysamples)
             precip = db.group_add("precip", precip)
 
             # Write timestamps to all groups
 
-            wind.write_times(0, np.linspace(daystartsec,
-                daystartsec + day_seconds, num=wind_daysamples))
+            wind.write_times(
+                0,
+                np.linspace(
+                    daystartsec, daystartsec + day_seconds, num=wind_daysamples
+                ),
+            )
 
-            thermal.write_times(0, np.linspace(daystartsec,
-                daystartsec + day_seconds, num=thermal_daysamples))
+            thermal.write_times(
+                0,
+                np.linspace(
+                    daystartsec, daystartsec + day_seconds, num=thermal_daysamples
+                ),
+            )
 
-            precip.write_times(0, np.linspace(daystartsec,
-                daystartsec + day_seconds, num=precip_daysamples))
+            precip.write_times(
+                0,
+                np.linspace(
+                    daystartsec, daystartsec + day_seconds, num=precip_daysamples
+                ),
+            )
 
             # Write some random data to the fields
 
             seed = int(year) * 1000000 + monthnum * 10000 + dy * 100
             np.random.seed(seed)
 
-            data = np.absolute(np.random.normal(loc=0.0, scale=5.0,
-                size=wind_daysamples)).astype(np.float32)
+            data = np.absolute(
+                np.random.normal(loc=0.0, scale=5.0, size=wind_daysamples)
+            ).astype(np.float32)
             wind.write("speed", 0, data)
 
-            data = 360.0 * np.absolute(np.random.random(
-                size=wind_daysamples)).astype(np.float32)
+            data = 360.0 * np.absolute(np.random.random(size=wind_daysamples)).astype(
+                np.float32
+            )
             wind.write("direction", 0, data)
 
-            data = np.absolute(np.random.normal(loc=25.0, scale=5.0,
-                size=thermal_daysamples)).astype(np.float32)
+            data = np.absolute(
+                np.random.normal(loc=25.0, scale=5.0, size=thermal_daysamples)
+            ).astype(np.float32)
             thermal.write("temperature", 0, data)
 
-            data = np.absolute(np.random.normal(loc=1013.25, scale=30.0,
-                size=thermal_daysamples)).astype(np.float32)
+            data = np.absolute(
+                np.random.normal(loc=1013.25, scale=30.0, size=thermal_daysamples)
+            ).astype(np.float32)
             thermal.write("pressure", 0, data)
 
-            data = np.absolute(np.random.normal(loc=30.0, scale=10.0,
-                size=thermal_daysamples)).astype(np.float32)
+            data = np.absolute(
+                np.random.normal(loc=30.0, scale=10.0, size=thermal_daysamples)
+            ).astype(np.float32)
             thermal.write("humidity", 0, data)
 
-            data = 360.0 * np.absolute(np.random.random(
-                size=precip_daysamples)).astype(np.float32)
+            data = 360.0 * np.absolute(np.random.random(size=precip_daysamples)).astype(
+                np.float32
+            )
             precip.write("rainfall", 0, data)
 
 
@@ -162,8 +177,13 @@ sfile = "demo_weather_small"
 if os.path.isdir(sfile):
     shutil.rmtree(sfile)
 
-vol.duplicate(sfile, tidas.BackendType.hdf5,
-    tidas.CompressionType.none, "/2019/Jan/.*[grp=wind[schm=speed]]", dict())
+vol.duplicate(
+    sfile,
+    tidas.BackendType.hdf5,
+    tidas.CompressionType.none,
+    "/2019/Jan/.*[grp=wind[schm=speed]]",
+    dict(),
+)
 
 # Take a quick peek at the small data volume:
 

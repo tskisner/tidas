@@ -1,9 +1,9 @@
-/*
-  TImestream DAta Storage (TIDAS)
-  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
-  is governed by a BSD-style license that can be found in the top-level
-  LICENSE file.
-*/
+
+// TImestream DAta Storage (TIDAS).
+//
+// Copyright (c) 2015-2019 by the parties listed in the AUTHORS file.  All rights
+// reserved.  Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef TIDAS_MPI_TEST_HPP
 #define TIDAS_MPI_TEST_HPP
@@ -13,27 +13,27 @@
 
 namespace tidas { namespace test {
 
-    int mpi_runner ( int argc, char *argv[] );
+int mpi_runner(int argc, char * argv[]);
 
-    void mpi_volume_setup ( tidas::mpi_volume & vol, size_t n_samp,
-        size_t n_intr, size_t n_block );
+void mpi_volume_setup(tidas::mpi_volume & vol, size_t n_samp,
+                      size_t n_intr, size_t n_block);
 
-    void mpi_volume_root_setup ( tidas::mpi_volume & vol, size_t n_samp,
-        size_t n_intr, size_t n_block );
+void mpi_volume_root_setup(tidas::mpi_volume & vol, size_t n_samp,
+                           size_t n_intr, size_t n_block);
 
-    void mpi_volume_verify ( tidas::mpi_volume & vol );
+void mpi_volume_verify(tidas::mpi_volume & vol);
 
 } }
 
 
 class MPIvolumeTest : public ::testing::Test {
+    public:
 
-    public :
+        MPIvolumeTest();
+        ~MPIvolumeTest() {}
 
-        MPIvolumeTest ();
-        ~MPIvolumeTest () { }
         virtual void SetUp();
-        virtual void TearDown() { }
+        virtual void TearDown() {}
 
         size_t chunk;
         size_t n_samp;
@@ -43,5 +43,4 @@ class MPIvolumeTest : public ::testing::Test {
 };
 
 
-
-#endif
+#endif // ifndef TIDAS_MPI_TEST_HPP

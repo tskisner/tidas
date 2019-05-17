@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-##
-##  TImestream DAta Storage (TIDAS)
-##  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
-##  is governed by a BSD-style license that can be found in the top-level
-##  LICENSE file.
-##
+#
+# TImestream DAta Storage (TIDAS).
+#
+# Copyright (c) 2015-2019 by the parties listed in the AUTHORS file.  All rights
+# reserved.  Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 from __future__ import absolute_import, division, print_function
 
 from mpi4py import MPI
@@ -19,8 +20,20 @@ import numpy.testing as nt
 
 import calendar
 
-from tidas import (DataType, BackendType, CompressionType, AccessMode,
-    Dictionary, Intrvl, Intervals, Field, Schema, Group, Block, Volume)
+from tidas import (
+    DataType,
+    BackendType,
+    CompressionType,
+    AccessMode,
+    Dictionary,
+    Intrvl,
+    Intervals,
+    Field,
+    Schema,
+    Group,
+    Block,
+    Volume,
+)
 
 from tidas.mpi import mpi_dist_uniform, MPIVolume
 
@@ -58,20 +71,20 @@ def dict_verify(dct):
 
 def schema_setup(ndet):
     fields = list()
-    fields.append( Field("int8", DataType.int8, "int8") )
-    fields.append( Field("uint8", DataType.uint8, "uint8") )
-    fields.append( Field("int16", DataType.int16, "int16") )
-    fields.append( Field("uint16", DataType.uint16, "uint16") )
-    fields.append( Field("int32", DataType.int32, "int32") )
-    fields.append( Field("uint32", DataType.uint32, "uint32") )
-    fields.append( Field("int64", DataType.int64, "int64") )
-    fields.append( Field("uint64", DataType.uint64, "uint64") )
-    fields.append( Field("float32", DataType.float32, "float32") )
-    fields.append( Field("float64", DataType.float64, "float64") )
-    fields.append( Field("string", DataType.string, "string") )
+    fields.append(Field("int8", DataType.int8, "int8"))
+    fields.append(Field("uint8", DataType.uint8, "uint8"))
+    fields.append(Field("int16", DataType.int16, "int16"))
+    fields.append(Field("uint16", DataType.uint16, "uint16"))
+    fields.append(Field("int32", DataType.int32, "int32"))
+    fields.append(Field("uint32", DataType.uint32, "uint32"))
+    fields.append(Field("int64", DataType.int64, "int64"))
+    fields.append(Field("uint64", DataType.uint64, "uint64"))
+    fields.append(Field("float32", DataType.float32, "float32"))
+    fields.append(Field("float64", DataType.float64, "float64"))
+    fields.append(Field("string", DataType.string, "string"))
     for d in range(ndet):
         dname = "det_{}".format(d)
-        fields.append( Field(dname, DataType.float64, "volts") )
+        fields.append(Field(dname, DataType.float64, "volts"))
     ret = Schema(fields)
     return ret
 
@@ -79,42 +92,42 @@ def schema_setup(ndet):
 def test_schema_verify(fields):
     for fl in fields:
         if fl.name == "int8":
-            assert(fl.type == DataType.int8)
-            assert(fl.name == fl.units)
+            assert fl.type == DataType.int8
+            assert fl.name == fl.units
         elif fl.name == "uint8":
-            assert(fl.type == DataType.uint8)
-            assert(fl.name == fl.units)
+            assert fl.type == DataType.uint8
+            assert fl.name == fl.units
         elif fl.name == "int16":
-            assert(fl.type == DataType.int16)
-            assert(fl.name == fl.units)
+            assert fl.type == DataType.int16
+            assert fl.name == fl.units
         elif fl.name == "uint16":
-            assert(fl.type == DataType.uint16)
-            assert(fl.name == fl.units)
+            assert fl.type == DataType.uint16
+            assert fl.name == fl.units
         elif fl.name == "int32":
-            assert(fl.type == DataType.int32)
-            assert(fl.name == fl.units)
+            assert fl.type == DataType.int32
+            assert fl.name == fl.units
         elif fl.name == "uint32":
-            assert(fl.type == DataType.uint32)
-            assert(fl.name == fl.units)
+            assert fl.type == DataType.uint32
+            assert fl.name == fl.units
         elif fl.name == "int64":
-            assert(fl.type == DataType.int64)
-            assert(fl.name == fl.units)
+            assert fl.type == DataType.int64
+            assert fl.name == fl.units
         elif fl.name == "uint64":
-            assert(fl.type == DataType.uint64)
-            assert(fl.name == fl.units)
+            assert fl.type == DataType.uint64
+            assert fl.name == fl.units
         elif fl.name == "float32":
-            assert(fl.type == DataType.float32)
-            assert(fl.name == fl.units)
+            assert fl.type == DataType.float32
+            assert fl.name == fl.units
         elif fl.name == "float64":
-            assert(fl.type == DataType.float64)
-            assert(fl.name == fl.units)
+            assert fl.type == DataType.float64
+            assert fl.name == fl.units
         elif fl.name == "string":
-            assert(fl.type == DataType.string)
-            assert(fl.name == fl.units)
+            assert fl.type == DataType.string
+            assert fl.name == fl.units
         else:
             # Must be a det
-            assert(fl.type == DataType.float64)
-            assert(fl.units == "volts")
+            assert fl.type == DataType.float64
+            assert fl.units == "volts"
     return
 
 
@@ -125,10 +138,10 @@ def intervals_setup(nint):
     gap_samp = 5
     span_samp = 617
     for i in range(nint):
-        start = gap + float(i) * ( span + gap )
-        stop = float(i + 1) * ( span + gap )
-        first = gap_samp + i * ( span_samp + gap_samp );
-        last = (i + 1) * ( span_samp + gap_samp );
+        start = gap + float(i) * (span + gap)
+        stop = float(i + 1) * (span + gap)
+        first = gap_samp + i * (span_samp + gap_samp)
+        last = (i + 1) * (span_samp + gap_samp)
         ilist.append(Intrvl(start, stop, first, last))
     return ilist
 
@@ -155,22 +168,22 @@ def group_setup(grp, ndet, nsamp):
     uint64_data = np.zeros(nsamp, dtype=np.uint64)
     float32_data = np.zeros(nsamp, dtype=np.float32)
     float64_data = np.zeros(nsamp, dtype=np.float64)
-    string_data = np.empty(nsamp, dtype='S64')
+    string_data = np.empty(nsamp, dtype="S64")
 
     for i in range(nsamp):
         fi = float(i)
         time[i] = fi * 0.001
         int8_data[i] = -(i % 128)
-        uint8_data[i] = (i % 128)
+        uint8_data[i] = i % 128
         int16_data[i] = -(i % 32768)
-        uint16_data[i] = (i % 32768)
+        uint16_data[i] = i % 32768
         int32_data[i] = -i
         uint32_data[i] = i
         int64_data[i] = -i
         uint64_data[i] = i
         float32_data[i] = fi
         float64_data[i] = fi
-        string_data[i] = 'foobarbahblat'
+        string_data[i] = "foobarbahblat"
 
     grp.write_times(0, time)
     grp.write("int8", 0, int8_data)
@@ -207,22 +220,22 @@ def group_verify(grp, ndet, nsamp):
     uint64_data_check = np.zeros(nsamp, dtype=np.uint64)
     float32_data_check = np.zeros(nsamp, dtype=np.float32)
     float64_data_check = np.zeros(nsamp, dtype=np.float64)
-    string_data_check = np.zeros(nsamp, dtype='S64')
+    string_data_check = np.zeros(nsamp, dtype="S64")
 
     for i in range(nsamp):
         fi = float(i)
         time_check[i] = fi * 0.001
         int8_data_check[i] = -(i % 128)
-        uint8_data_check[i] = (i % 128)
+        uint8_data_check[i] = i % 128
         int16_data_check[i] = -(i % 32768)
-        uint16_data_check[i] = (i % 32768)
+        uint16_data_check[i] = i % 32768
         int32_data_check[i] = -i
         uint32_data_check[i] = i
         int64_data_check[i] = -i
         uint64_data_check[i] = i
         float32_data_check[i] = fi
         float64_data_check[i] = fi
-        string_data_check[i] = 'foobarbahblat'
+        string_data_check[i] = "foobarbahblat"
 
     time = grp.read_times(0, nsamp)
     int8_data = grp.read("int8", 0, nsamp)
@@ -259,7 +272,6 @@ def group_verify(grp, ndet, nsamp):
         nt.assert_almost_equal(data, check)
 
     return
-
 
 
 def block_create(blk, gnames, inames, ndet, nsamp, nint):
@@ -333,43 +345,45 @@ def main():
     global_start = MPI.Wtime()
     start = global_start
 
-    parser = argparse.ArgumentParser(
-        description="TIDAS I/O Timing Tests")
+    parser = argparse.ArgumentParser(description="TIDAS I/O Timing Tests")
 
-    parser.add_argument("--path", required=False, type=str, default="tidas_demo",
-                        help="Path to volume")
+    parser.add_argument(
+        "--path", required=False, type=str, default="tidas_demo", help="Path to volume"
+    )
 
-    parser.add_argument("--ndet", required=False, type=int, default=1,
-                        help="Number of detectors")
+    parser.add_argument(
+        "--ndet", required=False, type=int, default=1, help="Number of detectors"
+    )
 
-    parser.add_argument("--rate", required=False, type=float, default=0.01,
-                        help="Sample rate in Hz")
+    parser.add_argument(
+        "--rate", required=False, type=float, default=0.01, help="Sample rate in Hz"
+    )
 
-    parser.add_argument("--startyear", required=False, default=2018, type=int,
-                        help="Starting year")
+    parser.add_argument(
+        "--startyear", required=False, default=2018, type=int, help="Starting year"
+    )
 
-    parser.add_argument("--years", required=False, default=1, type=int,
-                        help="Number of years of data")
+    parser.add_argument(
+        "--years", required=False, default=1, type=int, help="Number of years of data"
+    )
 
-    parser.add_argument("--intervals", required=False, default=100, type=int,
-                        help="Number of intervals in one day")
+    parser.add_argument(
+        "--intervals",
+        required=False,
+        default=100,
+        type=int,
+        help="Number of intervals in one day",
+    )
 
     args = parser.parse_args()
 
     # Group names to create
 
-    gnames = [
-        "readout_0",
-        "readout_1",
-        "readout_2"
-    ]
+    gnames = ["readout_0", "readout_1", "readout_2"]
 
     # Intervals to create
 
-    inames = [
-        "subscans",
-        "otherevents"
-    ]
+    inames = ["subscans", "otherevents"]
 
     # Compute the total number of observations.
 
@@ -380,7 +394,7 @@ def main():
     totaldays = 0
     for yr in range(args.startyear, args.startyear + args.years):
         for mn in range(12):
-            weekday, nday = calendar.monthrange(yr, mn+1)
+            weekday, nday = calendar.monthrange(yr, mn + 1)
             for dy in range(nday):
                 cur = totaldays + dy
                 day_to_mday[cur] = dy + 1
@@ -404,8 +418,7 @@ def main():
     if comm.rank == 0:
         timing("Reading options and wiping old data")
 
-    vol = MPIVolume(comm, args.path, BackendType.hdf5, CompressionType.gzip,
-        dict())
+    vol = MPIVolume(comm, args.path, BackendType.hdf5, CompressionType.gzip, dict())
     root = vol.root()
 
     if comm.rank == 0:
@@ -413,12 +426,12 @@ def main():
         # years and months.
         for yr in range(args.startyear, args.startyear + args.years):
             yrblock = root.block_add("{:04d}".format(yr), Block())
-            #print("Add block {}".format("/{:04d}".format(yr)))
+            # print("Add block {}".format("/{:04d}".format(yr)))
             sys.stdout.flush()
             for mn in range(12):
-                mnstr = calendar.month_abbr[mn+1]
+                mnstr = calendar.month_abbr[mn + 1]
                 mnblock = yrblock.block_add(mnstr, Block())
-                #print("Add block {}".format("/{:04d}/{}".format(yr, mnstr)))
+                # print("Add block {}".format("/{:04d}/{}".format(yr, mnstr)))
 
     # sync this meta data to all processes
     vol.meta_sync()
@@ -429,23 +442,23 @@ def main():
         mn = day_to_month[dy]
         mday = day_to_mday[dy]
         sys.stdout.flush()
-        #print("Getting year block {:04d}".format(yr))
+        # print("Getting year block {:04d}".format(yr))
         sys.stdout.flush()
         yrblk = root.block_get("{:04d}".format(yr))
         sys.stdout.flush()
-        #print("Getting month block {}".format(calendar.month_abbr[mn+1]))
+        # print("Getting month block {}".format(calendar.month_abbr[mn+1]))
         sys.stdout.flush()
-        mblk = yrblk.block_get("{}".format(calendar.month_abbr[mn+1]))
+        mblk = yrblk.block_get("{}".format(calendar.month_abbr[mn + 1]))
         dyblk = mblk.block_add("{:02d}".format(mday), Block())
         sys.stdout.flush()
-        #print("Add block /{:04d}/{}/{:02d}".format(yr, calendar.month_abbr[mn+1], mday))
+        # print("Add block /{:04d}/{}/{:02d}".format(yr, calendar.month_abbr[mn+1], mday))
         sys.stdout.flush()
         block_create(dyblk, gnames, inames, args.ndet, daysamples, args.intervals)
 
     # sync this meta data to all processes
     vol.meta_sync()
 
-    #root.info("/")
+    # root.info("/")
 
     comm.barrier()
     if comm.rank == 0:
@@ -464,18 +477,17 @@ def main():
         mn = day_to_month[dy]
         mday = day_to_mday[dy]
         yrblk = root.block_get("{:04d}".format(yr))
-        mname = "{}".format(calendar.month_abbr[mn+1])
+        mname = "{}".format(calendar.month_abbr[mn + 1])
         mblk = yrblk.block_get(mname)
         dyblk = mblk.block_get("{:02d}".format(mday))
         sys.stdout.flush()
-        print("Writing /{:04d}/{}/{:02d}".format(yr, calendar.month_abbr[mn+1], mday))
+        print("Writing /{:04d}/{}/{:02d}".format(yr, calendar.month_abbr[mn + 1], mday))
         sys.stdout.flush()
         block_write(dyblk, gnames, inames, args.ndet, daysamples, args.intervals)
 
     comm.barrier()
     if comm.rank == 0:
         timing("Write Volume")
-
 
 
 if __name__ == "__main__":

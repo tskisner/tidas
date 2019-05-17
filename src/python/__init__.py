@@ -1,9 +1,8 @@
-##
-##  TImestream DAta Storage (TIDAS)
-##  Copyright (c) 2014-2018, all rights reserved.  Use of this source code
-##  is governed by a BSD-style license that can be found in the top-level
-##  LICENSE file.
-##
+# TImestream DAta Storage (TIDAS).
+#
+# Copyright (c) 2015-2019 by the parties listed in the AUTHORS file.  All rights
+# reserved.  Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 """
 TImestream DAta Storage (TIDAS) is a software package for reading,
 writing, selecting, and facilitating operations on collections of

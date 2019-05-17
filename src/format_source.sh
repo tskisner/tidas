@@ -44,10 +44,10 @@ pydirs="python"
 
 # Test
 for cppd in ${cppdirs}; do
-    find "${base}/${cppd}" -name "*.hpp" -not -path '*cereal/*' -not -path '*gtest/*' -exec ${unexe} ${unrun} '{}' \;
-    find "${base}/${cppd}" -name "*.cpp" -not -path '*cereal/*' -not -path '*gtest/*' -exec ${unexe} ${unrun} '{}' \;
+    find "${base}/${cppd}" -name "*.hpp" -not -path '*cereal/*' -not -path '*gtest/*' -not -path '*pybind11/*' -exec ${unexe} ${unrun} '{}' \;
+    find "${base}/${cppd}" -name "*.cpp" -not -path '*cereal/*' -not -path '*gtest/*' -not -path '*pybind11/*' -exec ${unexe} ${unrun} '{}' \;
 done
 
 for pyd in ${pydirs}; do
-    find "${base}/${pyd}" -name "*.py" -exec ${blkexe} ${blkrun} '{}' \;
+    find "${base}/${pyd}" -name "*.py" -not -path '*pybind11/*' -exec ${blkexe} ${blkrun} '{}' \;
 done

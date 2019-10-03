@@ -4,11 +4,21 @@
 # of the FindMPI check.
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
-if (POLICY CMP0048)
-  cmake_policy(SET CMP0048 NEW)
-endif (POLICY CMP0048)
+foreach(policy
+    CMP0048
+    CMP0074
+    CMP0077
+  )
+  if(POLICY ${policy})
+    cmake_policy(SET ${policy} NEW)
+  endif()
+endforeach()
 
-project(tidas VERSION 0.3.1 LANGUAGES C CXX)
+project(tidas VERSION 0.3.4 LANGUAGES C CXX)
+
+# Force C++11
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Auxiliary files
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")

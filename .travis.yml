@@ -78,6 +78,7 @@ matrix:
       language: generic
       addons:
         homebrew:
+	  update: true
           packages:
             - git
             - hdf5

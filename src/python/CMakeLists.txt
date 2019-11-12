@@ -1,4 +1,16 @@
 
+# Name of the serial internal static library
+set(TIDAS_STATIC tidas_)
+
+# Name of the serial loadable module / shared library
+set(TIDAS_SHARED tidas)
+
+# Name of the MPI internal static library
+set(TIDAS_MPI_STATIC tidas-mpi_)
+
+# Name of the MPI loadable module / shared library
+set(TIDAS_MPI_SHARED tidas-mpi)
+
 # pybind11 - this also finds the python interpreter
 
 add_subdirectory(pybind11)
@@ -23,7 +35,7 @@ set(PYTHON_SITE
 # Create a module for the serial tidas library
 
 pybind11_add_module(_pytidas MODULE pytidas.cpp)
-target_link_libraries(_pytidas PRIVATE tidas)
+target_link_libraries(_pytidas PRIVATE ${TIDAS_STATIC})
 
 # This is for the internal libtidas headers
 target_include_directories(_pytidas PRIVATE
@@ -45,7 +57,10 @@ install(FILES
 if(MPI_FOUND AND MPI4PY_FOUND)
     pybind11_add_module(_pytidas_mpi MODULE pytidas-mpi.cpp)
     target_compile_options(_pytidas_mpi PRIVATE "${MPI_CXX_COMPILE_FLAGS}")
-    target_link_libraries(_pytidas_mpi PRIVATE tidas-mpi "${MPI_CXX_LIBRARIES}")
+    target_link_libraries(_pytidas_mpi PRIVATE
+        ${TIDAS_MPI_STATIC}
+        "${MPI_CXX_LIBRARIES}"
+    )
     target_include_directories(_pytidas_mpi PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/../libtidas/src"
         "${CMAKE_CURRENT_SOURCE_DIR}/../libtidas-mpi/src"

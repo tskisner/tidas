@@ -1,4 +1,7 @@
 
+# Name of the MPI internal static library
+set(TIDAS_MPI_STATIC tidas-mpi_)
+
 add_executable(tidas_test_mpi
     tidas_test_mpi.cpp
     tidas_mpi_test.cpp
@@ -26,7 +29,7 @@ set_target_properties(tidas_test_mpi
 )
 
 target_link_libraries(tidas_test_mpi
-    tidas-mpi gtest gtest_main "${MPI_CXX_LIBRARIES}"
+    ${TIDAS_MPI_STATIC} gtest gtest_main "${MPI_CXX_LIBRARIES}"
 )
 
 if (HDF5_FOUND)

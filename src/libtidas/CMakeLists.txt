@@ -1,7 +1,13 @@
 
-# Add the library target
+# Name of the internal static library
+set(TIDAS_STATIC tidas_)
 
-add_library(tidas
+# Name of the loadable module / shared library
+set(TIDAS_SHARED tidas)
+
+# Sources
+
+set(TIDAS_SOURCES
     src/sqlite3.c
     src/tidas_backend_getdata.cpp
     src/tidas_backend_hdf5.cpp
@@ -26,22 +32,30 @@ add_library(tidas
     src/tidas_volume.cpp
 )
 
+# Add the library targets
+
+add_library(${TIDAS_STATIC} STATIC ${TIDAS_SOURCES})
+add_library(${TIDAS_SHARED} SHARED ${TIDAS_SOURCES})
+
 if (HDF5_FOUND)
-    target_compile_definitions(tidas PRIVATE HAVE_HDF5=1)
-    target_include_directories(tidas PUBLIC ${HDF5_INCLUDE_DIRS})
+    target_compile_definitions(${TIDAS_STATIC} PRIVATE HAVE_HDF5=1)
+    target_compile_definitions(${TIDAS_SHARED} PRIVATE HAVE_HDF5=1)
+    target_include_directories(${TIDAS_STATIC} PUBLIC ${HDF5_INCLUDE_DIRS})
+    target_include_directories(${TIDAS_SHARED} PUBLIC ${HDF5_INCLUDE_DIRS})
+    target_link_libraries(${TIDAS_STATIC} ${HDF5_C_LIBRARIES})
+    target_link_libraries(${TIDAS_SHARED} ${HDF5_C_LIBRARIES})
 endif (HDF5_FOUND)
 
-target_include_directories(tidas PUBLIC
+target_include_directories(${TIDAS_STATIC} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     PRIVATE src)
 
-target_link_libraries(tidas ${HDF5_C_LIBRARIES})
+target_include_directories(${TIDAS_SHARED} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    PRIVATE src)
 
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-# Hardcode this to "lib" for now, since lib32/lib64 is a pain
-# to use on many systems.
-#install(TARGETS tidas DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(TARGETS tidas DESTINATION lib)
-
+install(TARGETS ${TIDAS_SHARED} DESTINATION ${CMAKE_INSTALL_LIBDIR})

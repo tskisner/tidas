@@ -1,8 +1,12 @@
 
+# Name of the serial internal static library
+set(TIDAS_STATIC tidas_)
+
 # Add internal googletest framework.  Must be added before the library
 # in order to define some variables.
 
-set(gtest_force_shared_crt TRUE)
+set(gtest_force_shared_crt ON CACHE BOOL "Always use shared." FORCE)
+
 add_subdirectory(gtest)
 include_directories("${gtest_SOURCE_DIR}/include")
 
@@ -26,7 +30,7 @@ target_include_directories(tidas_test PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../libtidas/src"
 )
 
-target_link_libraries(tidas_test tidas gtest gtest_main)
+target_link_libraries(tidas_test ${TIDAS_STATIC} gtest gtest_main)
 
 if (HDF5_FOUND)
     target_compile_definitions(tidas_test PRIVATE HAVE_HDF5=1)
